@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -42,7 +43,7 @@ public class User extends IdentifiedEntity {
     @Column(name = "main_image")
     private String mainImage;
 
-    @Column(nullable = false)
+    @Column(name ="enabled", nullable = false, columnDefinition = "TINYINT")
     private boolean enabled;
 
     @NotEmpty(message = "At least one role must be assigned to the user.")
