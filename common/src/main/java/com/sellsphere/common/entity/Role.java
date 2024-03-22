@@ -3,6 +3,7 @@ package com.sellsphere.common.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -29,6 +30,11 @@ public class Role extends IdentifiedEntity {
     @Column(name = "description", length = 150, nullable = false)
     private String description;
 
+    @Transient
+    public String getSimpleName() {
+        return this.name.replace("ROLE_", "");
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
@@ -49,4 +55,5 @@ public class Role extends IdentifiedEntity {
         return this instanceof HibernateProxy ?
                 ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
+
 }

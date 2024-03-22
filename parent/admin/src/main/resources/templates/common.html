@@ -5,16 +5,22 @@
 
     <title th:text="${'SellSphere Administration - ' + title}"></title>
 
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
     <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/general.css}">
 
     <!-- Font awesome   -->
     <link rel="stylesheet" th:href="@{/node_modules/@fortawesome/fontawesome-free/css/all.css}">
 
+    <!-- JQuery   -->
+    <script th:src="@{/node_modules/jquery/dist/jquery.min.js}"></script>
+
     <!-- Bootstrap   -->
     <link rel="stylesheet" type="text/css" th:href="@{/node_modules/bootstrap/dist/css/bootstrap.css}">
-
     <script type="text/javascript" th:src="@{/node_modules/bootstrap/dist/js/bootstrap.bundle.js}"></script>
+
+    <!-- Lazy loading of images   -->
+    <script type="text/javascript" th:src="@{/js/lazy_loading.js}"></script>
 
 </th:block>
 

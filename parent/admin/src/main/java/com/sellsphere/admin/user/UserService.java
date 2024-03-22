@@ -13,7 +13,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public static final int USERS_PER_PAGE = 5;
+    public static final int USERS_PER_PAGE = 10;
 
     public Page<User> listPage(Integer pageNum, String sortField, String sortDirection) {
         PageRequest pageRequest = PagingHelper.getPageRequest(pageNum, USERS_PER_PAGE, sortField, sortDirection);

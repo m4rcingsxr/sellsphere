@@ -13,6 +13,7 @@ import org.hibernate.proxy.HibernateProxy;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @Setter
@@ -57,6 +58,20 @@ public class User extends IdentifiedEntity {
 
     public void addRole(Role role) {
         roles.add(role);
+    }
+
+    @Transient
+    public String getMainImagePath() {
+        return Constants.S3_BASE_URI + (id == null || mainImage == null ?
+                "/default.png" :
+                "/user-photos/" + this.id + "/" + this.mainImage);
+    }
+
+    @Transient
+    public String getRoleNames() {
+        return this.roles.stream()
+                .map(Role::getSimpleName)
+                .collect(Collectors.joining(",", "[", "]"));
     }
 
     @Override

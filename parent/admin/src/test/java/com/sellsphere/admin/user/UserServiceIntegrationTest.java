@@ -30,8 +30,8 @@ class UserServiceIntegrationTest {
 
         // Given
         int expectedTotalElements = 10;
-        int expectedPages = 2;
-        int expectedContentSize = 5;
+        int expectedPages = 1;
+        int expectedContentSize = 10;
 
         // When
         Page<User> users = userService.listPage(0, "firstName", Constants.SORT_ASCENDING);
