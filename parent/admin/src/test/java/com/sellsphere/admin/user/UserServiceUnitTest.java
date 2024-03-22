@@ -31,7 +31,8 @@ class UserServiceUnitTest {
     private UserService userService;
 
     @Test
-    void when_listPage_then_returnPageOfUsers() {
+    void whenListPage_thenReturnPageOfUsers() {
+
         // Given
         int pageNum = 0;
         String sortField = "firstName";

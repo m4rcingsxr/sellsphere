@@ -1,0 +1,65 @@
+<!--COMMON LIST HEAD-->
+<head th:fragment="common_head(title)">
+    <th:block th:replace="common :: head_all(${title})"></th:block>
+</head>
+
+<!-- COLUMN SORT LINK -->
+<th th:fragment="column_link(endpoint, currentPage, newSortFieldName, sortField, reversedSortDir, sortDir, keyword, columnLabel)">
+    <a th:href="@{|${endpoint}/${currentPage}?sortField=${newSortFieldName}&sortDir=${sortField != newSortFieldName ? 'asc' : reversedSortDir}&keyword=${keyword != null ? keyword : ''}|}"
+       class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" th:text="${columnLabel}">
+    </a>
+
+    <span th:if="${sortField == newSortFieldName}" th:class="${sortDir == 'asc' ? 'fas fa-sort-up fa-2xs' : 'fas fa-sort-down fa-2xs'}"></span>
+</th>
+
+<!--PAGINATION-->
+<nav th:if="${totalPages > 1}"
+     th:fragment="large_pagination(endpoint, currentPage, totalPages, sortField, sortDir, keyword, currentCategory)"
+     class="mt-4 big-pagination large" id="pagination">
+    <ul class="pagination d-flex justify-content-center">
+        <li class="page-item">
+            <a th:replace=":: page_link(${endpoint}, 0, 'angles-left', null, ${sortField}, ${sortDir}, ${keyword}, ${currentCategory})"></a>
+        </li>
+        <li th:class="${currentPage >= 1 ? 'page-item' : 'page-item disabled'}">
+            <a th:replace=":: page_link(${endpoint}, ${currentPage - 1}, 'chevron-left', null, ${sortField}, ${sortDir}, ${keyword}, ${currentCategory})"></a>
+        </li>
+
+        <li th:each="i : ${#numbers.sequence(1, totalPages)}"
+            th:class="${currentPage != i - 1 ? 'page-item' : 'page-item active'}">
+            <a th:replace=":: page_link(${endpoint}, ${i - 1}, null, ${i}, ${sortField}, ${sortDir}, ${keyword}, ${currentCategory})"></a>
+        </li>
+        <li th:class="${currentPage < totalPages - 1 ? 'page-item' : 'page-item disabled'}">
+            <a th:replace=":: page_link(${endpoint}, ${currentPage + 1}, 'chevron-right', null, ${sortField}, ${sortDir}, ${keyword}, ${currentCategory})"></a>
+        </li>
+        <li class="page-item">
+            <a th:replace=":: page_link(${endpoint}, ${totalPages - 1}, 'angles-right', null, ${sortField}, ${sortDir}, ${keyword}, ${currentCategory})"></a>
+        </li>
+    </ul>
+</nav>
+
+<!--ENTITY PAGE LINK-->
+<a th:fragment="page_link(endpoint, currentPage, icon, body, sortField, sortDir, keyword, currentCategory)"
+   th:href="@{|${endpoint}/${currentPage}?sortField=${sortField}&sortDir=${sortDir}${keyword != null ? '&keyword=' + keyword : ''}${currentCategory != null ? '&category=' + currentCategory.id : ''}|}"
+   class="page-link">
+    <i th:if="${icon != null}" th:class="'fa-solid fa-' + ${icon}"></i>
+    <span th:if="${body != null}" th:text="${body}"></span>
+</a>
+
+<!--SEARCH BAR-->
+<form th:fragment="search_bar(action, placeholder, defaultSortField, keyword, totalItems, categoryId)" method="GET" th:action="@{${action}}" class="input-group mb-3">
+    <input type="hidden" name="sortField" th:value="${defaultSortField}"/>
+    <input type="hidden" name="sortDir" value="asc"/>
+    <input th:if="${categoryId != null}" type="hidden" name="category" th:value="${categoryId}"/>
+    <input type="text" name="keyword" class="form-control" th:placeholder="${placeholder}" th:value="${keyword}" aria-label="Recipient's username" aria-describedby="button-addon2"/>
+    <button class="btn btn-outline-secondary" type="submit" id="button-addon2"><i class="fa-solid fa-magnifying-glass"></i></button>
+
+    <p th:if="${keyword != null && keyword.length() > 0 && totalItems > 0}" class="mt-2 text-dark-emphasis text-center">
+        <span th:text="'Search for ''' + ${keyword} + ''' was successful. Found ''' + ${totalItems} + ''' records.'"></span>
+    </p>
+    <p th:if="${keyword != null && keyword.length() > 0 && totalItems == 0}" class="mt-2 text-dark-emphasis text-center">
+        <span th:text="'No record found for ''' + ${keyword} + ''''"></span>
+    </p>
+</form>
+
+
+
