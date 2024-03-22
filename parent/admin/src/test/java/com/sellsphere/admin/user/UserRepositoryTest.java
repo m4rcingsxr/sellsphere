@@ -1,5 +1,6 @@
 package com.sellsphere.admin.user;
 
+import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import jakarta.persistence.EntityManager;
@@ -8,7 +9,10 @@ import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
+import util.PagingTestHelper;
 
 import java.util.*;
 
@@ -186,6 +190,25 @@ class UserRepositoryTest {
         // then
         assertTrue(exists, "User should exist");
     }
+
+    @Test
+    void whenListWithPageRequest_thenReturnPageOfUsers() {
+
+        // Given
+        String sortField = "firstName";
+        PageRequest pageRequest = PagingTestHelper.createPageRequest(0, 5, sortField, Constants.SORT_ASCENDING);
+        int expectedTotalElements = 10;
+        int expectedPages = 2;
+        int expectedContentSize = 5;
+
+        // When
+        Page<User> users = userRepository.findAll(pageRequest);
+
+        // Then
+        PagingTestHelper.assertPagingResults(users, expectedContentSize, expectedPages, expectedTotalElements, sortField, true);
+    }
+
+
 
     private void initializeRoles() {
         List<Role> roles = entityManager
