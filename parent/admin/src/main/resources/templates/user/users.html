@@ -2,35 +2,52 @@
 <html lang="en">
 <head th:replace="~{list_fragments :: common_head('Manage Users')}"></head>
 <body>
-<section>
-    <div class="container mt-7">
-        <h1 class="subheading text-center">Manage Users</h1>
-        <form th:replace="~{list_fragments :: search_bar('/users/page/0', 'Search for the user', 'firstName')}"></form>
+
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="mt-4">
+    <h1 class="text-center">Manage Users</h1>
+
+    <div class="container-md mt-5">
+
+        <!-- Search Bar -->
+        <form th:replace="~{list_fragments :: search_bar('/users/page/0', 'Search for the user', 'firstName', ${keyword}, ${totalItems}, null)}"></form>
+
+        <!-- User Table -->
         <table class="table table-hover mt-4">
             <thead class="table-dark">
             <tr>
-                <th th:replace="~{list_fragments :: column_link('/users/page', 'id', 'ID')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'ID')}"></th>
                 <th></th>
-                <th th:replace="~{list_fragments :: column_link('/users/page', 'email', 'Email')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/users/page', 'firstName', 'First Name')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/users/page', 'lastName', 'Last Name')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'email', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Email')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'firstName', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'First Name')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'lastName', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Last Name')}"></th>
                 <th>Roles</th>
-                <th th:replace="~{list_fragments :: column_link('/users/page', 'enabled', 'Enabled')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'enabled', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Enabled')}"></th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="user : ${userList}">
                 <td th:text="${user.id}"></td>
-                <td></td>
+                <td>
+                    <div th:replace="~{list_fragments :: entity_image(${user.mainImagePath})}"></div>
+                </td>
                 <td th:text="${user.email}"></td>
                 <td th:text="${user.firstName}"></td>
                 <td th:text="${user.lastName}"></td>
-                <td th:text="${user.roles}"></td>
+                <td th:text="${user.roleNames}"></td>
+                <td></td>
             </tr>
             </tbody>
         </table>
     </div>
-    <nav th:replace="~{list_fragments :: large_pagination('/users/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"></nav>
-</section>
+
+    <!-- Pagination -->
+    <nav th:replace="~{list_fragments :: large_pagination('/users/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+         class="mt-4"></nav>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
 </body>
 </html>
