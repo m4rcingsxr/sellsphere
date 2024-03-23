@@ -1,0 +1,234 @@
+package com.sellsphere.admin;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * Utility class for Amazon S3 operations such as listing folders,
+ * uploading files, and deleting files or folders.
+ */
+@UtilityClass
+@Log4j2
+public class S3Utility {
+
+    private static final ExecutorService executor =
+            Executors.newFixedThreadPool(
+                    Runtime.getRuntime().availableProcessors());
+
+    @Setter
+    private static String bucketName;
+
+    @Setter
+    private static String region;
+
+    @Setter
+    @Getter
+    private static S3Client s3Client;
+
+    static {
+        bucketName = System.getenv("AWS_BUCKET_NAME");
+        region = System.getenv("AWS_REGION");
+        s3Client = createS3Client();
+    }
+
+    /**
+     * Lists all objects in a specified folder within the S3 bucket.
+     *
+     * @param folderName the name of the folder
+     * @return a list of keys (file paths) within the folder
+     */
+    public static List<String> listFolder(String folderName) throws S3Exception {
+        try (S3Client client = getS3Client()) {
+            ListObjectsRequest listRequest = ListObjectsRequest.builder()
+                    .bucket(bucketName)
+                    .prefix(folderName)
+                    .build();
+
+            ListObjectsResponse response = client.listObjects(listRequest);
+            return response.contents()
+                    .stream()
+                    .map(S3Object::key)
+                    .toList();
+        }
+    }
+
+    /**
+     * Uploads a file to the specified folder in the S3 bucket.
+     *
+     * @param folderName  the folder within the bucket
+     * @param fileName    the name of the file to upload
+     * @param inputStream the content of the file
+     */
+    public static void uploadFile(String folderName, String fileName,
+                                  InputStream inputStream) throws IOException, S3Exception {
+        try (S3Client client = getS3Client(); inputStream) {
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(folderName + "/" + fileName)
+                    .acl(ObjectCannedACL.PUBLIC_READ)
+                    .build();
+
+            client.putObject(request, RequestBody.fromInputStream(inputStream,
+                                                                  inputStream.available()
+            ));
+        }
+    }
+
+    /**
+     * Uploads files in parallel to a specified directory on S3 to improve
+     * performance.
+     *
+     * @param extrasFolderName the directory name on S3
+     * @param files            list of files to upload
+     */
+    public static void uploadFiles(String extrasFolderName,
+                                   List<MultipartFile> files) throws IOException, S3Exception {
+        List<CompletableFuture<Void>> futures = files.stream()
+                .filter(file -> !file.isEmpty())
+                .map(file -> CompletableFuture.runAsync(() -> {
+                    try {
+                        String fileName = file.getOriginalFilename();
+                        InputStream inputStream = file.getInputStream();
+                        uploadFile(extrasFolderName, fileName, inputStream);
+                    } catch (IOException | S3Exception e) {
+                        log.error("Failed to upload file: {}",
+                                  file.getOriginalFilename(), e
+                        );
+                        throw new RuntimeException(e);
+                    }
+                }, executor))
+                .toList();
+
+        // Wait for all to complete
+        CompletableFuture.allOf(
+                futures.toArray(new CompletableFuture[0])).join();
+    }
+
+    /**
+     * Deletes a file from the S3 bucket.
+     *
+     * @param fileName the key of the file to delete
+     */
+    public static void deleteFile(String fileName) throws S3Exception {
+        try (S3Client client = getS3Client()) {
+            deleteS3Object(client, fileName);
+        }
+    }
+
+    /**
+     * Removes a folder and its contents from the S3 bucket.
+     *
+     * @param folderName the folder to remove
+     */
+    public static void removeFolder(String folderName) throws S3Exception {
+        try (S3Client client = getS3Client()) {
+            ListObjectsRequest request = ListObjectsRequest.builder()
+                    .bucket(bucketName)
+                    .prefix(folderName)
+                    .build();
+
+            ListObjectsResponse response = client.listObjects(request);
+            response.contents().forEach(
+                    s3Object -> deleteS3Object(client, s3Object.key()));
+        }
+    }
+
+    /**
+     * Helper method to delete an S3 object.
+     *
+     * @param client the S3 client
+     * @param key    the key of the object to delete
+     */
+    private static void deleteS3Object(S3Client client, String key) throws S3Exception {
+        DeleteObjectRequest request = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        client.deleteObject(request);
+    }
+
+    /**
+     * Deletes a list of files from the specified S3 bucket in a batch operation
+     * using a consumer builder for enhanced readability and fluency in creating
+     * request objects.
+     *
+     * @param filesToDelete The list of keys (S3 object paths) to be deleted.
+     */
+    public static void deleteFiles(List<String> filesToDelete) throws S3Exception {
+        if (filesToDelete == null || filesToDelete.isEmpty()) {
+            log.warn("No files specified for deletion.");
+            return;
+        }
+
+        try (S3Client client = getS3Client()) {
+            // Transform the list of file keys into a list of ObjectIdentifier
+            List<ObjectIdentifier> identifiers = filesToDelete.stream()
+                    .map(key -> ObjectIdentifier.builder().key(key).build())
+                    .toList();
+
+            // Execute the batch delete operation using consumer builder
+            client.deleteObjects(builder -> builder.bucket(bucketName)
+                    .delete(delBuilder -> delBuilder.objects(identifiers)));
+
+            log.info("Successfully deleted {} files from bucket '{}'.",
+                     filesToDelete.size(), bucketName
+            );
+        }
+    }
+
+    /**
+     * Checks if a file exists in the specified folder within the S3 bucket.
+     *
+     * @param folderName the name of the folder
+     * @param fileName   the name of the file
+     * @return true if the file exists, false otherwise
+     * @throws S3Exception if an error occurs while checking the file existence
+     */
+    public static boolean checkFileExistsInS3(String folderName,
+                                              String fileName) throws S3Exception {
+        try (S3Client s3 = getS3Client()) {
+            // Build the request to head the object
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(folderName + "/" + fileName)
+                    .build();
+
+            // Issue the head request. If the object exists, this will succeed.
+            s3.headObject(headObjectRequest);
+            return true; // Object exists
+        } catch (NoSuchKeyException e) {
+            // Object does not exist
+            return false;
+        }
+    }
+
+    /**
+     * Creates and configures an S3 client with a region and credentials.
+     *
+     * @return configured S3Client
+     */
+    private static S3Client createS3Client() {
+        return S3Client.builder()
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .region(Region.of(region))
+                .build();
+    }
+
+
+}

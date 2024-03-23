@@ -19,5 +19,20 @@
 		<java.version>17</java.version>
 	</properties>
 
+	<dependencies>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.25.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.adobe.testing</groupId>
+			<artifactId>s3mock-junit5</artifactId>
+			<version>3.9.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 
 </project>
