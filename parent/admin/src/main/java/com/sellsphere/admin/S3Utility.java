@@ -1,6 +1,5 @@
 package com.sellsphere.admin;
 
-import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
@@ -34,15 +33,14 @@ public class S3Utility {
     private static String bucketName;
 
     @Setter
-    private static String region;
-
-    @Setter
-    @Getter
     private static S3Client s3Client;
+
+    private static final String REGION;
+
 
     static {
         bucketName = System.getenv("AWS_BUCKET_NAME");
-        region = System.getenv("AWS_REGION");
+        REGION = System.getenv("AWS_REGION");
         s3Client = createS3Client();
     }
 
@@ -53,18 +51,16 @@ public class S3Utility {
      * @return a list of keys (file paths) within the folder
      */
     public static List<String> listFolder(String folderName) throws S3Exception {
-        try (S3Client client = getS3Client()) {
-            ListObjectsRequest listRequest = ListObjectsRequest.builder()
-                    .bucket(bucketName)
-                    .prefix(folderName)
-                    .build();
+        ListObjectsRequest listRequest = ListObjectsRequest.builder()
+                .bucket(bucketName)
+                .prefix(folderName)
+                .build();
 
-            ListObjectsResponse response = client.listObjects(listRequest);
-            return response.contents()
-                    .stream()
-                    .map(S3Object::key)
-                    .toList();
-        }
+        ListObjectsResponse response = s3Client.listObjects(listRequest);
+        return response.contents()
+                .stream()
+                .map(S3Object::key)
+                .toList();
     }
 
     /**
@@ -76,17 +72,15 @@ public class S3Utility {
      */
     public static void uploadFile(String folderName, String fileName,
                                   InputStream inputStream) throws IOException, S3Exception {
-        try (S3Client client = getS3Client(); inputStream) {
-            PutObjectRequest request = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(folderName + "/" + fileName)
-                    .acl(ObjectCannedACL.PUBLIC_READ)
-                    .build();
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(folderName + "/" + fileName)
+                .acl(ObjectCannedACL.PUBLIC_READ)
+                .build();
 
-            client.putObject(request, RequestBody.fromInputStream(inputStream,
-                                                                  inputStream.available()
-            ));
-        }
+        s3Client.putObject(request, RequestBody.fromInputStream(inputStream,
+                                                                inputStream.available()
+        ));
     }
 
     /**
@@ -119,16 +113,6 @@ public class S3Utility {
                 futures.toArray(new CompletableFuture[0])).join();
     }
 
-    /**
-     * Deletes a file from the S3 bucket.
-     *
-     * @param fileName the key of the file to delete
-     */
-    public static void deleteFile(String fileName) throws S3Exception {
-        try (S3Client client = getS3Client()) {
-            deleteS3Object(client, fileName);
-        }
-    }
 
     /**
      * Removes a folder and its contents from the S3 bucket.
@@ -136,31 +120,28 @@ public class S3Utility {
      * @param folderName the folder to remove
      */
     public static void removeFolder(String folderName) throws S3Exception {
-        try (S3Client client = getS3Client()) {
-            ListObjectsRequest request = ListObjectsRequest.builder()
-                    .bucket(bucketName)
-                    .prefix(folderName)
-                    .build();
+        ListObjectsRequest request = ListObjectsRequest.builder()
+                .bucket(bucketName)
+                .prefix(folderName)
+                .build();
 
-            ListObjectsResponse response = client.listObjects(request);
-            response.contents().forEach(
-                    s3Object -> deleteS3Object(client, s3Object.key()));
-        }
+        ListObjectsResponse response = s3Client.listObjects(request);
+        response.contents().forEach(
+                s3Object -> deleteS3Object(s3Object.key()));
     }
 
     /**
-     * Helper method to delete an S3 object.
+     * Removes object from S3 bucket.
      *
-     * @param client the S3 client
-     * @param key    the key of the object to delete
+     * @param object the object to remove
      */
-    private static void deleteS3Object(S3Client client, String key) throws S3Exception {
+    public static void deleteS3Object(String object) throws S3Exception {
         DeleteObjectRequest request = DeleteObjectRequest.builder()
                 .bucket(bucketName)
-                .key(key)
+                .key(object)
                 .build();
 
-        client.deleteObject(request);
+        s3Client.deleteObject(request);
     }
 
     /**
@@ -176,20 +157,18 @@ public class S3Utility {
             return;
         }
 
-        try (S3Client client = getS3Client()) {
-            // Transform the list of file keys into a list of ObjectIdentifier
-            List<ObjectIdentifier> identifiers = filesToDelete.stream()
-                    .map(key -> ObjectIdentifier.builder().key(key).build())
-                    .toList();
+        // Transform the list of file keys into a list of ObjectIdentifier
+        List<ObjectIdentifier> identifiers = filesToDelete.stream()
+                .map(key -> ObjectIdentifier.builder().key(key).build())
+                .toList();
 
-            // Execute the batch delete operation using consumer builder
-            client.deleteObjects(builder -> builder.bucket(bucketName)
-                    .delete(delBuilder -> delBuilder.objects(identifiers)));
+        // Execute the batch delete operation using consumer builder
+        s3Client.deleteObjects(builder -> builder.bucket(bucketName)
+                .delete(delBuilder -> delBuilder.objects(identifiers)));
 
-            log.info("Successfully deleted {} files from bucket '{}'.",
-                     filesToDelete.size(), bucketName
-            );
-        }
+        log.info("Successfully deleted {} files from bucket '{}'.",
+                 filesToDelete.size(), bucketName
+        );
     }
 
     /**
@@ -202,7 +181,7 @@ public class S3Utility {
      */
     public static boolean checkFileExistsInS3(String folderName,
                                               String fileName) throws S3Exception {
-        try (S3Client s3 = getS3Client()) {
+        try {
             // Build the request to head the object
             HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
                     .bucket(bucketName)
@@ -210,7 +189,7 @@ public class S3Utility {
                     .build();
 
             // Issue the head request. If the object exists, this will succeed.
-            s3.headObject(headObjectRequest);
+            s3Client.headObject(headObjectRequest);
             return true; // Object exists
         } catch (NoSuchKeyException e) {
             // Object does not exist
@@ -223,12 +202,11 @@ public class S3Utility {
      *
      * @return configured S3Client
      */
-    private static S3Client createS3Client() {
+    public static S3Client createS3Client() {
         return S3Client.builder()
                 .credentialsProvider(DefaultCredentialsProvider.create())
-                .region(Region.of(region))
+                .region(Region.of(REGION))
                 .build();
     }
-
 
 }

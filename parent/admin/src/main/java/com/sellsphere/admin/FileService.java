@@ -65,7 +65,7 @@ public class FileService {
     }
 
     public void removeFile(String object) {
-        S3Utility.deleteFile(object);
+        S3Utility.deleteS3Object(object);
     }
 
 }
