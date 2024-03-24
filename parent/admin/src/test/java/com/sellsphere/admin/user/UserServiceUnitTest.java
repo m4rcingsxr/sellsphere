@@ -21,8 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -48,6 +47,28 @@ class UserServiceUnitTest {
     @InjectMocks
     private UserService userService;
 
+    @Test
+    void givenExistingUserId_whenGetUser_thenReturnUser() throws UserNotFoundException {
+        Integer userId = 1;
+        User user = new User();
+        user.setId(userId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        User foundUser = userService.get(userId);
+
+        assertNotNull(foundUser);
+        assertEquals(userId, foundUser.getId());
+    }
+
+    @Test
+    void givenNonExistingUserId_whenGetUser_thenShouldThrowUserNotFoundException() {
+        Integer userId = -1;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.get(userId));
+    }
 
     @Test
     void whenListPage_thenReturnPageOfUsers() {

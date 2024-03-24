@@ -11,14 +11,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 import util.PagingTestHelper;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -32,13 +36,35 @@ class UserServiceIntegrationTest {
 
     private final PasswordEncoder passwordEncoder;
 
-
     @Autowired
     public UserServiceIntegrationTest(UserService userService, EntityManager entityManager,
                                       PasswordEncoder passwordEncoder) {
         this.testUserHelper = new TestUserHelper(entityManager);
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    @Test
+    void givenExistingUserId_whenGetUser_thenReturnUser() throws UserNotFoundException {
+        // given
+        Integer userId = 1;
+
+        // when
+        User foundUser = userService.get(userId);
+
+        // then
+        assertNotNull(foundUser);
+        assertEquals(userId, foundUser.getId());
+    }
+
+    @Test
+    void givenNonExistingUserId_whenGetUser_thenShouldThrowUserNotFoundException() {
+
+        // given
+        Integer userId = -1;
+
+        // when, then
+        assertThrows(UserNotFoundException.class, () -> userService.get(userId));
     }
 
     @Test

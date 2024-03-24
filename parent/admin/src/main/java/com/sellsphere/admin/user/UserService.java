@@ -2,6 +2,8 @@ package com.sellsphere.admin.user;
 
 import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.PagingHelper;
+import com.sellsphere.common.entity.Constants;
+import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -12,16 +14,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final FileService fileService;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final FileService fileService;
+    private static final String S3_FOLDER_NAME = "user-photos/";
     public static final int USERS_PER_PAGE = 10;
+
+    public User get(Integer id) throws UserNotFoundException {
+        return userRepository.findById(id)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
+    public List<Role> listAllRoles() {
+        return roleRepository.findAll(PagingHelper.getSort("name", Constants.SORT_ASCENDING));
+    }
 
     public Page<User> listPage(Integer pageNum, String sortField, String sortDirection) {
         PageRequest pageRequest = PagingHelper.getPageRequest(pageNum, USERS_PER_PAGE, sortField,
@@ -38,7 +51,7 @@ public class UserService {
             user.setMainImage(fileName);
             User savedUser = save(user);
 
-            String folderName = "user-photos/" + savedUser.getId();
+            String folderName = S3_FOLDER_NAME + savedUser.getId();
 
             fileService.saveSingleFile(file, folderName, fileName);
 

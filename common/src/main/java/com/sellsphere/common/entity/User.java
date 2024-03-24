@@ -1,10 +1,7 @@
 package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,12 +34,10 @@ public class User extends IdentifiedEntity {
     @Column(name = "last_name", length = 45, nullable = false)
     private String lastName;
 
-    @NotNull(message = "Password is required.")
-    @Size(min = 8, max = 64, message = "Password must be between 8 and 64 characters.")
     @Column(name = "user_password", length = 64, nullable = false)
     private String password;
 
-    @Column(name = "main_image", length = 256, nullable = true)
+    @Column(name = "main_image", length = 256, nullable = false)
     private String mainImage;
 
     @Column(name = "enabled", nullable = false, columnDefinition = "TINYINT")

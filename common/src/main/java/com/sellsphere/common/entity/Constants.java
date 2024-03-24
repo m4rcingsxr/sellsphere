@@ -9,6 +9,7 @@ public class Constants {
     public static final String SORT_DESCENDING = "desc";
 
     public static final String S3_BASE_URI;
+    public static final String SUCCESS_MESSAGE = "successMessage";
 
     static {
         String bucketName = System.getenv("AWS_BUCKET_NAME");

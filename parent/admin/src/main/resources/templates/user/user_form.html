@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{form_fragments :: head(${pageTitle})}"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main>
+    <div class="container mt-4">
+        <h1 class="text-center" th:text="${pageTitle}"></h1>
+        <form id="mainForm" th:action="@{/users/save}" method="POST"
+              th:object="${user}" enctype="multipart/form-data">
+
+            <div class="mx-auto mt-5">
+                <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                    <input th:replace="~{form_fragments :: hidden_input('id')}"/>
+                    <th:block th:replace="~{form_fragments :: text_input('Email address', 'email', false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: text_input('First name', 'firstName', false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: text_input('Last name', 'lastName', false)}"></th:block>
+
+                    <th:block th:replace="~{form_fragments :: password_input(${user.id})}"></th:block>
+
+                    <label class="col-sm-4 col-form-label">Roles</label>
+                    <div class="col-sm-8">
+                        <th:block th:each="role : ${roleList}">
+                            <div th:replace="~{form_fragments :: checkbox_list_input(${role.simpleName}, 'roles', ${role.id}, ${user.roles.contains(role)}, false)}"></div>
+                        </th:block>
+                    </div>
+
+                    <th:block
+                            th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${user.enabled}, false)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: image_input(${user.mainImagePath}, 'mainImage')}"></th:block>
+
+                </div>
+
+                <div th:replace="~{form_fragments :: form_buttons(${user})}"></div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<script type="text/javascript">
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const MODULE_URL = "[[@{/}]]";
+
+    const validationRules = {
+        firstName: {
+            required: true,
+            maxlength: 45,
+
+        },
+        lastName: {
+            required: true,
+            maxlength: 45,
+        },
+        password: {
+            passwordRequired: true,
+            maxlength: 72,
+            mypassword: true,
+        },
+        email: {
+            required: true,
+            email: true,
+            remote: {
+                url: `${MODULE_URL}users/check_uniqueness`,
+                type: "post",
+                data: {
+                    email: function () {
+                        return $('input[name="email"]').val();
+                    },
+                    _csrf: function () {
+                        return $('input[name="_csrf"]').val();
+                    },
+                    id: function () {
+                        return $('input[name="id"]').val();
+                    }
+                }
+            }
+        },
+        roles: {
+            oneChecked: true
+        },
+        newImage: {
+            imageRequired: ["mainImage"],
+            maxImageSize: true
+        }
+    };
+
+    const validationMessages = {
+        firstName: {
+            required: "Please enter your first name.",
+            maxlength: "Your first name cannot exceed 45 characters. Please shorten it.",
+        },
+        lastName: {
+            required: "Please enter your last name.",
+            maxlength: "Your last name cannot exceed 45 characters. Please shorten it.",
+        },
+        password: {
+            passwordRequired: "A password is required to secure your account.",
+            minlength: "Your password must be at least 8 characters long to meet our security requirements.",
+            maxlength: "Your password cannot exceed 72 characters. Please choose a shorter password.",
+        },
+        email: {
+            required: "An email address is required for account creation and recovery.",
+            email: "The email address entered doesn't look right. Please check it for typos.",
+            remote: "The email address you entered is already associated with an account. If it belongs to you, please log in."
+        },
+        roles: "Please select at least one role to define the user's access permissions.",
+        newImage: {
+            required: "An image is required to represent the user. Please upload one.",
+            maxImageSize: `The image size cannot exceed ${formatBytes(MAX_FILE_SIZE)}. Please choose a smaller image.`
+        }
+    };
+
+    const dynamicRules = [];
+</script>
+</body>
+</html>

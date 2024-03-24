@@ -1,5 +1,5 @@
 <!-- COMMON LIST HEAD -->
-<head th:fragment="common_head(title)">
+<head th:fragment="head(title)">
     <th:block th:replace="~{common :: head_all(${title})}"></th:block>
     <link rel="stylesheet" th:href="@{/css/list.css}">
 </head>
@@ -7,9 +7,11 @@
 <!-- COLUMN SORT LINK -->
 <th th:fragment="column_link(endpoint, currentPage, newSortFieldName, sortField, reversedSortDir, sortDir, keyword, columnLabel)">
     <a th:href="@{|${endpoint}/${currentPage}?sortField=${newSortFieldName}&sortDir=${sortField != newSortFieldName ? 'asc' : reversedSortDir}&keyword=${keyword != null ? keyword : ''}|}"
-       class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" th:text="${columnLabel}">
+       class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+       th:text="${columnLabel}">
     </a>
-    <span th:if="${sortField == newSortFieldName}" th:class="${sortDir == 'asc' ? 'fas fa-sort-up fa-2xs' : 'fas fa-sort-down fa-2xs'}"></span>
+    <span th:if="${sortField == newSortFieldName}"
+          th:class="${sortDir == 'asc' ? 'fas fa-sort-up fa-2xs' : 'fas fa-sort-down fa-2xs'}"></span>
 </th>
 
 <!-- PAGINATION -->
@@ -46,18 +48,25 @@
 </a>
 
 <!-- SEARCH BAR -->
-<form th:fragment="search_bar(action, placeholder, defaultSortField, keyword, totalItems, categoryId)" method="GET" th:action="@{${action}}" class="input-group mb-3">
+<form th:fragment="search_bar(action, placeholder, defaultSortField, keyword, totalItems, categoryId)" method="GET"
+      th:action="@{${action}}" class="mb-3">
     <input type="hidden" name="sortField" th:value="${defaultSortField}"/>
     <input type="hidden" name="sortDir" value="asc"/>
     <input th:if="${categoryId != null}" type="hidden" name="category" th:value="${categoryId}"/>
-    <input type="text" name="keyword" class="form-control" th:placeholder="${placeholder}" th:value="${keyword}" aria-label="Recipient's username" aria-describedby="button-addon2"/>
-    <button class="btn btn-outline-secondary" type="submit" id="button-addon2"><i class="fa-solid fa-magnifying-glass"></i></button>
+    <div class="input-group">
+        <input type="text" name="keyword" class="form-control" th:placeholder="${placeholder}" th:value="${keyword}"
+               aria-label="Recipient's username" aria-describedby="button-addon2"/>
+        <button class="btn btn-outline-secondary" type="submit" id="button-addon2"><i
+                class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
 
-    <p th:if="${keyword != null && keyword.length() > 0 && totalItems > 0}" class="mt-2 text-dark-emphasis text-center">
-        <span th:text="'Search for ''' + ${keyword} + ''' was successful. Found ''' + ${totalItems} + ''' records.'"></span>
+    <p th:if="${keyword != null and keyword.length() > 0 and totalItems > 0}"
+       class="mt-2 text-dark-emphasis text-center">
+        <span th:text="'Search for ' + ${keyword} + ' was successful. Found ' + ${totalItems} + ' records.'"></span>
     </p>
-    <p th:if="${keyword != null && keyword.length() > 0 && totalItems == 0}" class="mt-2 text-dark-emphasis text-center">
-        <span th:text="'No record found for ''' + ${keyword} + ''''"></span>
+    <p th:if="${keyword != null and keyword.length() > 0 and totalItems == 0}"
+       class="mt-2 text-dark-emphasis text-center">
+        <span th:text="'No record found for ' + keyword"></span>
     </p>
 </form>
 

@@ -1,0 +1,104 @@
+<head th:fragment="form_head(title)">
+    <th:block th:replace="~{common :: head_all(${title})}"></th:block>
+
+    <script type="text/javascript" th:src="@{/node_modules/jquery-validation/dist/jquery.validate.js}"></script>
+
+    <script type="text/javascript" th:src="@{/js/ajax_util.js}"></script>
+    <script type="text/javascript" th:src="@{/js/common_form.js}"></script>
+    <script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
+</head>
+
+<!-- HIDDEN INPUT -->
+<input th:fragment="hidden_input(fieldName)" th:field="*{__${fieldName}__}" type="hidden"/>
+
+<!-- TEXT INPUT -->
+<th:block th:fragment="text_input(label, fieldName, readonly)">
+    <label class="col-sm-4 col-form-label" th:text="${label}"></label>
+    <div class="col-sm-8">
+        <input th:field="*{__${fieldName}__}" type="text" class="form-control"
+               th:attr="readonly=${readonly}? 'readonly' : null"/>
+        <span th:replace="~{:: field_error(${fieldName})}"></span>
+    </div>
+</th:block>
+
+<!-- PASSWORD INPUT -->
+<th:block th:fragment="password_input(id)">
+    <label class="col-sm-4 col-form-label">Password</label>
+    <div class="col-sm-8">
+        <input th:field="*{password}" type="password" class="form-control"
+               th:placeholder="${id != null ? 'Leave the field blank to keep the old password' : ''}"/>
+        <span th:replace="~{:: field_error('password')}"></span>
+    </div>
+</th:block>
+
+<!-- NUMBER INPUT -->
+<th:block th:fragment="number_input(label, fieldName, step, readonly)">
+    <label class="col-sm-4 col-form-label" th:text="${label}"></label>
+    <div class="col-sm-8">
+        <input th:field="*{__${fieldName}__}" type="number" class="form-control" th:step="${step}"
+               th:attr="readonly=${readonly}? 'readonly' : null"/>
+        <span th:replace="~{:: field_error(${fieldName})}"></span>
+    </div>
+</th:block>
+
+<!-- CHECKBOX INPUT -->
+<th:block th:fragment="checkbox_input(label, fieldName, checked, disabled)" class="form-check">
+    <div class="col-sm-8 offset-sm-4">
+        <input class="form-check-input" type="checkbox" th:field="*{__${fieldName}__}" th:checked="${checked}"
+               th:disabled="${disabled}">
+        <label class="form-check-label" th:text="${label}"></label>
+        <span th:replace="~{:: field_error(${fieldName})}"></span>
+    </div>
+</th:block>
+
+<!-- CHECKBOX LIST INPUT -->
+<div th:fragment="checkbox_list_input(label, fieldName, value, checked, disabled)" class="form-check">
+    <input type="checkbox" th:name="${fieldName}" th:value="${value}"
+           th:checked="${checked}" th:disabled="${disabled}" class="form-check-input"/>
+    <label th:text="${label}" class="form-check-label"></label>
+
+    <input type="hidden" th:name="${fieldName}" th:value="${value}" th:if="${checked and disabled}"/>
+</div>
+
+
+<!-- IMAGE INPUT -->
+<th:block th:fragment="image_input(imageURL, fieldName)">
+    <input type="hidden" th:field="*{__${fieldName}__}"/>
+
+    <div class="col-sm-4">
+        <img id="previewImage" class="entity-image border border-1 rounded-1" th:src="${imageURL}"/>
+    </div>
+
+    <div class="col-sm-8">
+        <input type="file" name="newImage" accept="image/png, image/jpeg, image/gif" class="form-control"/>
+        <span th:replace="~{:: field_error(${fieldName})}"></span>
+    </div>
+</th:block>
+
+<!-- SELECT INPUT -->
+<th:block th:fragment="select_input(label, entityList, entityField, disabled)">
+    <label class="col-sm-4 col-form-label" th:text="${label}"></label>
+    <div class="col-sm-8">
+        <select class="form-select" th:field="*{__${entityField}__}" th:disabled="${disabled}">
+            <option value="">---</option>
+            <option th:each="entity : ${entityList}" th:value="${entity.id}" th:text="${entity.name}"></option>
+        </select>
+        <span th:replace="~{:: field_error(${entityField})}"></span>
+        <input type="hidden" th:if="${disabled}" th:name="${entityField}" th:value="*{__${entityField}__.id}"/>
+    </div>
+</th:block>
+
+
+<!-- FORM BUTTONS -->
+<div th:fragment="form_buttons(entity)" class="d-flex justify-content-center gap-3 mt-3">
+    <input id="saveInput" type="submit" th:value="${entity != null and entity.id != null ? 'Update' : 'Save'}"
+           class="btn btn-primary rounded-4 save"/>
+    <input type="button" value="Cancel" class="btn btn-secondary rounded-4 cancel" onclick="goToListPage()"/>
+</div>
+
+<!-- ERROR INFO FIELD -->
+<span th:fragment="field_error(fieldName)" th:if="${#fields.hasErrors(fieldName)}"
+      th:errors="*{__${fieldName}__}"
+      class="text-danger p-1">
+</span>
+

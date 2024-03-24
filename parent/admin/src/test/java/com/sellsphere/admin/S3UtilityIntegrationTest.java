@@ -20,7 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(S3MockExtension.class)
-class S3UtilityTest {
+class S3UtilityIntegrationTest {
 
     private static final String BUCKET_NAME = "my-demo-test-bucket";
     private static final String UPLOAD_FILE_NAME = "src/test/resources/sampleFile.txt";
