@@ -14,7 +14,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 import util.PagingTestHelper;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,36 +27,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserRepositoryTest {
 
     private final UserRepository userRepository;
+    private final TestUserHelper testUserHelper;
 
-    private final EntityManager entityManager;
-    private final Map<String, Role> roles = new HashMap<>();
 
     @Autowired
     public UserRepositoryTest(EntityManager entityManager, UserRepository userRepository) {
+        this.testUserHelper = new TestUserHelper(entityManager);
         this.userRepository = userRepository;
-        this.entityManager = entityManager;
-        initializeRoles();
     }
 
-    public Role getRole(String name) {
-        return this.roles.get(name);
-    }
 
-    public Set<Role> getRoles(String... names) {
-        Set<Role> roles = new HashSet<>();
-        for (String name : names) {
-            roles.add(this.roles.get(name));
-        }
-
-        return roles;
-    }
 
     @Test
     void whenFindUserByEmail_thenReturnUser() {
 
         // Given
         String expectedEmail = "john.doe@example.com";
-        Set<Role> expectedRoles = getRoles("ROLE_ADMIN", "ROLE_SALESPERSON");
+        Set<Role> expectedRoles = testUserHelper.getRoles("ROLE_ADMIN", "ROLE_SALESPERSON");
 
         // When
         Optional<User> user = userRepository.findByEmail(expectedEmail);
@@ -86,7 +75,7 @@ class UserRepositoryTest {
         // Given
         Integer userId = 6;
         String expectedEmail = "diana.miller@example.com";
-        Set<Role> expectedRoles = getRoles("ROLE_ADMIN", "ROLE_SHIPPER");
+        Set<Role> expectedRoles = testUserHelper.getRoles("ROLE_ADMIN", "ROLE_SHIPPER");
 
         // When
         Optional<User> foundUser = userRepository.findById(userId);
@@ -130,7 +119,7 @@ class UserRepositoryTest {
         // Given
         int expectedId = 11;
         String expectedEmail = "JohnDoe@example.com";
-        Role admin = getRole("ROLE_ADMIN");
+        Role admin = testUserHelper.getRole("ROLE_ADMIN");
 
         User newUser = new User();
         newUser.setEmail(expectedEmail);
@@ -206,16 +195,6 @@ class UserRepositoryTest {
 
         // Then
         PagingTestHelper.assertPagingResults(users, expectedContentSize, expectedPages, expectedTotalElements, sortField, true);
-    }
-
-
-
-    private void initializeRoles() {
-        List<Role> roles = entityManager
-                .createQuery("SELECT r FROM Role r", Role.class)
-                .getResultList();
-
-        roles.forEach(role -> this.roles.put(role.getName(), role));
     }
 
 
