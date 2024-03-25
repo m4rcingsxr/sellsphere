@@ -135,4 +135,40 @@ class UserServiceIntegrationTest {
         assertThrows(UserNotFoundException.class, () -> userService.save(userWithNonExistentId));
     }
 
+    @Test
+    void givenExistingEmail_whenCheckEmailUniqueness_thenEmailIsNotUnique() {
+        // Given
+        String existingEmail = "john.doe@example.com";
+
+        // When
+        boolean isUnique = userService.isEmailUnique(null, existingEmail);
+
+        // Then
+        assertFalse(isUnique, "Expected email to be not unique");
+    }
+
+    @Test
+    void givenNewEmail_whenCheckEmailUniqueness_thenEmailIsUnique() {
+        // Given
+        String newEmail = "unique@example.com";
+
+        // When
+        boolean isUnique = userService.isEmailUnique(null, newEmail);
+
+        // Then
+        assertTrue(isUnique, "Expected email to be unique");
+    }
+
+    @Test
+    void givenExistingUserEmailWithCorrectId_whenCheckEmailUniqueness_thenEmailIsUnique() {
+        // Given
+        String newEmail = "john.doe@example.com";
+
+        // When
+        boolean isUnique = userService.isEmailUnique(1, newEmail);
+
+        // Then
+        assertTrue(isUnique, "Expected email to be unique");
+    }
+
 }

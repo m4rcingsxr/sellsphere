@@ -89,4 +89,9 @@ public class UserService {
     }
 
 
+    public boolean isEmailUnique(Integer userId, String email) {
+        return userRepository.findByEmail(email)
+                .map(user -> user.getId().equals(userId))
+                .orElse(true);
+    }
 }

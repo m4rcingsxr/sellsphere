@@ -20,7 +20,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.util.List;
 
-//TODO: 2) rest api call to check email uniqueness, 1) search functionality
 @RequiredArgsConstructor
 @Controller
 public class UserController {
