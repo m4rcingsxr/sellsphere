@@ -12,6 +12,7 @@ public class TestUserHelper {
 
     public TestUserHelper(EntityManager entityManager) {
         this.entityManager = entityManager;
+        initializeRoles();
     }
 
     private void initializeRoles() {

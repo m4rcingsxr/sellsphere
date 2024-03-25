@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.util.List;
 
+//TODO: 2) rest api call to check email uniqueness, 1) search functionality
 @RequiredArgsConstructor
 @Controller
 public class UserController {
@@ -48,7 +49,7 @@ public class UserController {
             @PathVariable("pageNum") Integer pageNum,
             @RequestParam(value = "keyword", required = false) String keyword,
             Model model) {
-        Page<User> userPage = userService.listPage(pageNum, sortField, sortDir);
+        Page<User> userPage = userService.listPage(pageNum, sortField, sortDir, keyword);
 
         model.addAttribute("userList", userPage.getContent());
         model.addAttribute("currentPage", pageNum);

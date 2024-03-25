@@ -7,6 +7,8 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static util.PagingTestHelper.*;
 
 @DataJpaTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -35,7 +38,6 @@ class UserRepositoryTest {
         this.testUserHelper = new TestUserHelper(entityManager);
         this.userRepository = userRepository;
     }
-
 
 
     @Test
@@ -126,6 +128,7 @@ class UserRepositoryTest {
         newUser.setFirstName("John");
         newUser.setLastName("Doe");
         newUser.setPassword("password");
+        newUser.setMainImage("image.jpg");
         newUser.addRole(admin);
 
         // When
@@ -185,7 +188,9 @@ class UserRepositoryTest {
 
         // Given
         String sortField = "firstName";
-        PageRequest pageRequest = PagingTestHelper.createPageRequest(0, 5, sortField, Constants.SORT_ASCENDING);
+        PageRequest pageRequest = createPageRequest(0, 5, sortField,
+                                                    Constants.SORT_ASCENDING
+        );
         int expectedTotalElements = 10;
         int expectedPages = 2;
         int expectedContentSize = 5;
@@ -194,7 +199,35 @@ class UserRepositoryTest {
         Page<User> users = userRepository.findAll(pageRequest);
 
         // Then
-        PagingTestHelper.assertPagingResults(users, expectedContentSize, expectedPages, expectedTotalElements, sortField, true);
+        assertPagingResults(users, expectedContentSize, expectedPages,
+                            expectedTotalElements, sortField, true
+        );
+    }
+
+    @ParameterizedTest(name = "Keyword: {0}, Expected Total: {1}, Expected Pages: {2}, Expected " +
+            "Content Size: {3}")
+    @CsvSource({
+            "@example, 10, 2, 5",
+            "john, 1, 1, 1",
+            "ALICE.JONES@EXAMPLE.COM, 1, 1, 1",
+            "HANNAH, 1, 1, 1",
+            "notExisting, 0, 0, 0"
+    })
+    void whenFindAllByKeyword_thenReturnMatchingUsers(String keyword, int expectedTotalElements,
+                                                      int expectedPages, int expectedContentSize) {
+        // given
+        String sortField = "firstName";
+        PageRequest pageRequest = createPageRequest(0, 5, sortField,
+                                                    Constants.SORT_ASCENDING
+        );
+
+        // when
+        Page<User> result = userRepository.findAll(keyword, pageRequest);
+
+        // then
+        assertPagingResults(result, expectedContentSize, expectedPages, expectedTotalElements,
+                            sortField, true
+        );
     }
 
 

@@ -11,18 +11,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 import util.PagingTestHelper;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -68,7 +64,7 @@ class UserServiceIntegrationTest {
     }
 
     @Test
-    void whenListPage_thenReturnPageOfUsers() {
+    void whenListPageWithoutKeyword_thenReturnPageOfAllUsers() {
 
         // Given
         int expectedTotalElements = 10;
@@ -76,7 +72,25 @@ class UserServiceIntegrationTest {
         int expectedContentSize = 10;
 
         // When
-        Page<User> users = userService.listPage(0, "firstName", Constants.SORT_ASCENDING);
+        Page<User> users = userService.listPage(0, "firstName", Constants.SORT_ASCENDING, null);
+
+        // Then
+        PagingTestHelper.assertPagingResults(users, expectedContentSize, expectedPages,
+                                             expectedTotalElements, "firstName", true
+        );
+    }
+
+    @Test
+    void whenListPageWithKeyword_thenReturnPageWithSpecificUsers() {
+
+        // Given
+        String keyword = "HANNAH";
+        int expectedTotalElements = 1;
+        int expectedPages = 1;
+        int expectedContentSize = 1;
+
+        // When
+        Page<User> users = userService.listPage(0, "firstName", Constants.SORT_ASCENDING, keyword);
 
         // Then
         PagingTestHelper.assertPagingResults(users, expectedContentSize, expectedPages,
@@ -95,6 +109,7 @@ class UserServiceIntegrationTest {
         newUser.setEmail("newusernofile@example.com");
         newUser.setFirstName("NoFile");
         newUser.setLastName("User");
+        newUser.setMainImage("image.jpg");
         newUser.setPassword(expectedRawPassword);
         newUser.setRoles(expectedRoles);
 

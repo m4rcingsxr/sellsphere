@@ -1,6 +1,7 @@
 package com.sellsphere.admin.user;
 
 import com.sellsphere.admin.FileService;
+import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -25,8 +26,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static util.PagingTestHelper.assertPagingResults;
+import static util.PagingTestHelper.createPageRequest;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -71,12 +74,17 @@ class UserServiceUnitTest {
     }
 
     @Test
-    void whenListPage_thenReturnPageOfUsers() {
+    void whenListPageWithoutKeyword_thenReturnPageOfAllUsers() {
 
         // Given
         int pageNum = 0;
         String sortField = "firstName";
         String sortDirection = "ASC";
+        int usersPerPage = 10;
+        PageRequest pageRequest = createPageRequest(0, usersPerPage, sortField,
+                                                    Constants.SORT_ASCENDING
+        );
+
 
         User user1 = new User();
         user1.setFirstName("Alice");
@@ -90,18 +98,48 @@ class UserServiceUnitTest {
         user5.setFirstName("Eve");
 
         List<User> users = Arrays.asList(user1, user2, user3, user4, user5);
-        Page<User> userPage = new PageImpl<>(users,
-                                             PageRequest.of(pageNum, UserService.USERS_PER_PAGE),
-                                             users.size()
-        );
+        Page<User> userPage = new PageImpl<>(users, pageRequest, users.size());
         when(userRepository.findAll(any(PageRequest.class))).thenReturn(userPage);
 
         // When
-        Page<User> result = userService.listPage(pageNum, sortField, sortDirection);
+        Page<User> result = userService.listPage(pageNum, sortField, sortDirection, null);
 
         // Then
+        verify(userRepository).findAll(pageRequest);
         assertPagingResults(result, users.size(), 1, users.size(), sortField, true);
     }
+
+    @Test
+    void whenListPageWithKeyword_thenReturnPageOfSpecificUsers() {
+
+        // Given
+        int pageNum = 0;
+        int usersPerPage = 10;
+        String sortField = "firstName";
+        String keyword = "Doe";
+        PageRequest pageRequest = createPageRequest(0, usersPerPage, sortField,
+                                                    Constants.SORT_ASCENDING
+        );
+
+        User user1 = new User();
+        user1.setFirstName("Alice");
+        user1.setLastName("Doe");
+        User user2 = new User();
+        user2.setFirstName("Eve");
+        user2.setLastName("Doe");
+
+        List<User> users = Arrays.asList(user1, user2);
+        Page<User> userPage = new PageImpl<>(users,pageRequest, users.size());
+        when(userRepository.findAll(anyString(), any(PageRequest.class))).thenReturn(userPage);
+
+        // When
+        Page<User> result = userService.listPage(pageNum, sortField, Constants.SORT_ASCENDING, keyword);
+
+        // Then
+        verify(userRepository).findAll(keyword, pageRequest);
+        assertPagingResults(result, users.size(), 1, users.size(), sortField, true);
+    }
+
 
     @Test
     void saveNewUserWithFile_ExpectFileSaved() throws IOException, UserNotFoundException {

@@ -25,7 +25,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
     private static final String S3_FOLDER_NAME = "user-photos/";
-    public static final int USERS_PER_PAGE = 10;
+    private static final int USERS_PER_PAGE = 10;
 
     public User get(Integer id) throws UserNotFoundException {
         return userRepository.findById(id)
@@ -36,12 +36,20 @@ public class UserService {
         return roleRepository.findAll(PagingHelper.getSort("name", Constants.SORT_ASCENDING));
     }
 
-    public Page<User> listPage(Integer pageNum, String sortField, String sortDirection) {
+    public Page<User> listPage(Integer pageNum, String sortField, String sortDirection,
+                               String keyword) {
         PageRequest pageRequest = PagingHelper.getPageRequest(pageNum, USERS_PER_PAGE, sortField,
                                                               sortDirection
         );
 
-        return userRepository.findAll(pageRequest);
+
+        if (keyword != null) {
+            return userRepository.findAll(keyword, pageRequest);
+        } else {
+            return userRepository.findAll(pageRequest);
+
+        }
+
     }
 
     public User save(User user, MultipartFile file) throws IOException, UserNotFoundException {
