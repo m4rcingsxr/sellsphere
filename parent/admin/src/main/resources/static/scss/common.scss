@@ -34,3 +34,9 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.fixed-top-alert {
+  position: fixed !important;
+  top: 70px;
+  z-index: 1050; /* Ensure it appears above other elements */
+}

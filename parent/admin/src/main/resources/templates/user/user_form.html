@@ -4,7 +4,7 @@
 <body>
 <header th:replace="~{navigations :: header()}"></header>
 
-<main>
+<main class="content">
     <div class="container mt-4">
         <h1 class="text-center" th:text="${pageTitle}"></h1>
         <form id="mainForm" th:action="@{/users/save}" method="POST"

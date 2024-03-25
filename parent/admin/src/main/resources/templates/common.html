@@ -25,3 +25,21 @@
     <script type="text/javascript" th:src="@{/js/common.js}"></script>
 </th:block>
 
+<div th:fragment="alerts()" class="d-flex justify-content-center">
+
+    <div th:if="${errorMessage != null}"
+         class="alert alert-warning alert-dismissible fade show fixed-bottom-alert" role="alert">
+        <i class="fa-solid fa-circle-exclamation pe-2"></i>
+        <strong>Warning!</strong> <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${successMessage != null}"
+         class="alert alert-success alert-dismissible fade show fixed-top-alert" role="alert">
+        <i class="fa-solid fa-thumbs-up pe-2"></i>
+        <strong>Success!</strong> <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+</div>
+

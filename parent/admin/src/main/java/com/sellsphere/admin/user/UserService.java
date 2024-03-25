@@ -94,4 +94,17 @@ public class UserService {
                 .map(user -> user.getId().equals(userId))
                 .orElse(true);
     }
+
+    public void delete(Integer id) throws UserNotFoundException {
+        User user = get(id);
+        userRepository.delete(user);
+    }
+
+    public void updateUserEnabledStatus(Integer id, boolean enabled)
+            throws UserNotFoundException {
+        User user = userRepository.findById(id).orElseThrow(
+                UserNotFoundException::new);
+        user.setEnabled(enabled);
+        userRepository.save(user);
+    }
 }

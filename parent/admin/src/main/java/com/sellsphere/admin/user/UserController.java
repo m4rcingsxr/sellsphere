@@ -98,7 +98,7 @@ public class UserController {
                            @RequestParam(value = "newImage", required = false) MultipartFile file)
             throws IOException, UserNotFoundException {
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.user");
-        validationHelper.validateMultipartFile(file, "mainImage", "An image file is required.");
+        validationHelper.validateMultipartFile(file, user.getId(), "mainImage", "An image file is required.");
         validationHelper.validatePassword(user.getPassword(), user.getId());
 
         if (!validationHelper.validate()) {
@@ -119,6 +119,31 @@ public class UserController {
         // Constructs a URL for redirection after a user is modified
         String initialEmailPart = user.getEmail().split("@")[0];
         return DEFAULT_REDIRECT_URL + "&keyword=" + initialEmailPart;
+    }
+
+    @GetMapping("/users/delete/{id}")
+    public String deleteUser(@PathVariable(name = "id") Integer id,
+                             RedirectAttributes redirectAttributes)
+            throws UserNotFoundException {
+        userService.delete(id);
+        redirectAttributes.addFlashAttribute(
+                Constants.SUCCESS_MESSAGE, "The user [ID: "
+                        + id + "] has been deleted successfully");
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
+    @GetMapping("/users/{id}/enabled/{status}")
+    public String updateUserEnabledStatus(@PathVariable Integer id,
+                                          @PathVariable boolean status,
+                                          RedirectAttributes ra)
+            throws UserNotFoundException {
+        userService.updateUserEnabledStatus(id, status);
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                             "The user [ID: " + id + "] has been "
+                                     + (status ? "enabled" : "disabled"));
+
+        return DEFAULT_REDIRECT_URL;
     }
 
 }

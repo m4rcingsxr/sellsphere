@@ -8,6 +8,8 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -244,6 +246,83 @@ class UserServiceUnitTest {
         assertEquals("encrypted_newPassword", updatedUser.getPassword(),
                      "New password should be encrypted and updated"
         );
+    }
+
+    @Test
+    void deleteExistingUser_ShouldCallRepositoryDelete()
+            throws UserNotFoundException {
+        // Given
+        Integer userId = 1;
+        User existingUser = new User();
+        existingUser.setId(userId);
+        given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
+
+        // When
+        userService.delete(userId);
+
+        // Then
+        then(userRepository).should().findById(userId);
+        then(userRepository).should().delete(existingUser);
+    }
+
+    @Test
+    void deleteNonExistingUser_ShouldThrowUserNotFoundException() {
+        // Given
+        Integer nonExistingUserId = -1;
+        given(userRepository.findById(nonExistingUserId)).willReturn(Optional.empty());
+
+        // When
+        Executable thrown = () -> userService.delete(nonExistingUserId);
+
+        // Then
+        assertThrows(UserNotFoundException.class, thrown);
+        then(userRepository).should().findById(nonExistingUserId);
+        then(userRepository).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    void updateUserEnabledStatus_WhenUserExists_ShouldUpdateStatus()
+            throws UserNotFoundException {
+
+        // Given
+        Integer userId = 1;
+        boolean newStatus = true;
+        User user = new User();
+        user.setId(userId);
+        user.setEnabled(!newStatus);
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+
+        // When
+        userService.updateUserEnabledStatus(userId, newStatus);
+
+        // Then
+        then(userRepository).should().findById(userId);
+        then(userRepository).should().save(userCaptor.capture());
+
+        // Assert that the captured User object has the correct enabled status
+        User capturedUser = userCaptor.getValue();
+        assertEquals(newStatus, capturedUser.isEnabled(),
+                     "The enabled status of the user should be updated."
+        );
+    }
+
+    @Test
+    void updateUserEnabledStatus_WhenUserDoesNotExist_ShouldThrowException() {
+        // Given
+        Integer nonExistingUserId = 99;
+        given(userRepository.findById(nonExistingUserId)).willReturn(
+                Optional.empty());
+
+        // When
+        Executable thrown = () -> userService.updateUserEnabledStatus(
+                nonExistingUserId, true);
+
+        // Then
+        assertThrows(UserNotFoundException.class, thrown);
+        then(userRepository).should().findById(nonExistingUserId);
+        then(userRepository).shouldHaveNoMoreInteractions();
     }
 
 }

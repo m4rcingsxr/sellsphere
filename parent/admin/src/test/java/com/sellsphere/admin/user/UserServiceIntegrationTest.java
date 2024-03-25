@@ -4,6 +4,7 @@ import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -32,12 +33,15 @@ class UserServiceIntegrationTest {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final EntityManager entityManager;
+
     @Autowired
     public UserServiceIntegrationTest(UserService userService, EntityManager entityManager,
                                       PasswordEncoder passwordEncoder) {
         this.testUserHelper = new TestUserHelper(entityManager);
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.entityManager = entityManager;
     }
 
     @Test
@@ -169,6 +173,42 @@ class UserServiceIntegrationTest {
 
         // Then
         assertTrue(isUnique, "Expected email to be unique");
+    }
+
+    @Test
+    void givenUserId_whenDeleteUser_thenUserIsDeletedSuccessfully() {
+
+        // Given
+        Integer userId = 2; // Assume this user exists in your database
+
+        // Ensure user exists before delete
+        assertNotNull(entityManager.find(User.class, userId), "User should exist before deletion");
+
+        // When
+        assertDoesNotThrow(() -> userService.delete(userId), "Expected delete not to throw");
+
+        // Then
+        assertNull(entityManager.find(User.class, userId), "Expected user to be deleted");
+    }
+
+    @Test
+    void givenUserIdAndStatusTrue_whenUpdateUserEnabledStatus_thenStatusIsUpdatedToTrue() {
+
+        // Given
+        Integer userId = 3;
+
+        // Ensure user has enabled status false before update
+        User userBeforeUpdate = entityManager.find(User.class, userId);
+        assertNotNull(userBeforeUpdate);
+        assertFalse(userBeforeUpdate.isEnabled(), "User should be disabled before update");
+
+        // When
+        assertDoesNotThrow(() -> userService.updateUserEnabledStatus(userId, true), "Expected update not to throw");
+
+        // Then
+        User userAfterUpdate = entityManager.find(User.class, userId);
+        assertNotNull(userAfterUpdate);
+        assertTrue(userAfterUpdate.isEnabled(), "Expected user's enabled status to be updated to true");
     }
 
 }

@@ -75,3 +75,17 @@
     <img th:data-src="${src}" alt="Entity image" class="entity-image lazy">
     <div class="spinner"></div>
 </div>
+
+<!-- ENTITY ACTIONS -->
+<!-- DELETE ENTITY -->
+<a th:fragment="delete_entity(entityDeleteUrl)" th:href="@{${entityDeleteUrl}}"
+   class="fa-solid fa-trash-can link-delete fa-lg" id="deleteEntity"></a>
+
+<!-- EDIT ENTITY -->
+<a th:fragment="edit_entity(entityEditUrl)" th:href="@{${entityEditUrl}}" class="fa-solid fa-pen-to-square fa-lg"></a>
+
+<!-- ENTITY STATUS -->
+<a th:fragment="status(status, changeStatusURL)" th:href="@{${changeStatusURL}}" id="statusEntity">
+    <i th:class="${status} ? 'toggle-icon fa-solid fa-toggle-on' : 'toggle-icon fa-solid fa-toggle-off'"></i>
+</a>
+
