@@ -3,7 +3,6 @@
 
     <script type="text/javascript" th:src="@{/node_modules/jquery-validation/dist/jquery.validate.js}"></script>
 
-    <script type="text/javascript" th:src="@{/js/ajax_util.js}"></script>
     <script type="text/javascript" th:src="@{/js/common_form.js}"></script>
     <script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
 </head>
@@ -62,11 +61,13 @@
 
 
 <!-- IMAGE INPUT -->
-<th:block th:fragment="image_input(imageURL, fieldName)">
+<th:block th:fragment="image_input(imageURL, fieldName, width, height)">
     <input type="hidden" th:field="*{__${fieldName}__}"/>
 
     <div class="col-sm-4">
-        <img id="previewImage" class="entity-image border border-1 rounded-1" th:src="${imageURL}"/>
+        <div class="entity-image-container" th:style="${'width:' + width + 'px; height:' + height + 'px'}">
+            <img id="previewImage" class="entity-image border border-1 rounded-1" th:src="${imageURL}"/>
+        </div>
     </div>
 
     <div class="col-sm-8">

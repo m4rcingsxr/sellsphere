@@ -1,48 +1,73 @@
-"use strict";
-
-$(function() {
-    initializeChangeFileInputListener();
-});
-
 /**
- * Initializes the change event listener for the file input element.
- * This listener checks the selected file, validates it, and if it's an image,
- * previews it in the specified image element.
+ * Script responsible for compressing images and loading the preview.
+ * This script requires the following elements and variables:
  *
- * Requirements:
- * 1. A file input element with the name attribute set to "newImage".
- *    Example: <input type="file" name="newImage" />
- * 2. An image element with the id attribute set to "previewImage" where the selected image will be previewed.
- *    Example: <img id="previewImage" src="" alt="Image preview" />
- * 3. A constant MAX_FILE_SIZE that defines the maximum allowed file size.
- *    Example: const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+ * - An input element with the name attribute set to "newImage".
+ *   Example: <input type="file" name="newImage" />
+ * - An image element with the id attribute set to "previewImage" where the selected image will be previewed.
+ *   Example: <img id="previewImage" src="" alt="Image preview" class="entity-image" />
+ * - A constant MAX_FILE_SIZE that defines the maximum allowed file size.
+ *   Example: const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+ * - Constants for WIDTH, HEIGHT, and QUALITY to specify the dimensions and quality of the compressed image.
+ *   Example: const WIDTH = 800; const HEIGHT = 800; const QUALITY = 0.8;
  */
-function initializeChangeFileInputListener() {
-    const fileInput = $('input[name="newImage"]');
-    fileInput.on("change", function() {
-        const file = this.files[0];
-        const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+$(function () {
+    const form = document.getElementById("mainForm");
+    if (!form) {
+        console.error("mainForm not found.");
+        return;
+    }
 
-        if(file) {
-            if (file.size > MAX_FILE_SIZE) {
-                console.warn("The selected file is too large.");
-                return;
-            }
+    const fileInput = form.querySelector('input[name="newImage"]');
+    const previewImage = document.getElementById("previewImage");
+    if (!fileInput || !previewImage) {
+        console.error("Required elements (fileInput or previewImage) not found.");
+        return;
+    }
 
-            if (allowedImageTypes.includes(file.type)) {
-                const reader = new FileReader();
+    fileInput.addEventListener("change", async function () {
+        const file = fileInput.files[0];
+        if (file && file.size <= MAX_FILE_SIZE) {
+            try {
+                // Show spinner
+                const spinner = document.createElement("div");
+                spinner.classList.add("spinner");
+                previewImage.parentNode.appendChild(spinner);
 
-                reader.onload = function(e) {
-                    $("#previewImage").attr("src", e.target.result);
+                const data = {
+                    file: file,
+                    width: WIDTH,
+                    height: HEIGHT,
+                    quality: QUALITY
                 };
+                const compressedImageBlob = await ajaxUtil.postBlob(`${MODULE_URL}upload`, data);
 
-                reader.readAsDataURL(file);
-            } else {
-                console.warn("Selected file is not an image.");
+                const compressedFile = new File([compressedImageBlob], file.name, {
+                    type: "image/jpeg",
+                });
+
+                // Update the file input with the compressed image
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(compressedFile);
+                fileInput.files = dataTransfer.files;
+
+                // Preview the compressed image
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    previewImage.classList.add("loaded");
+                };
+                reader.readAsDataURL(compressedFile);
+            } catch (error) {
+                console.error("Error during image compression:", error);
+            } finally {
+                const spinner = document.querySelector(".spinner");
+                if (spinner) {
+                    spinner.remove();
+                }
             }
         } else {
-            console.warn("No file has been selected.");
+            alert(`File is too large. Maximum allowed size is ${formatBytes(MAX_FILE_SIZE)}.`);
         }
     });
-}
-
+});

@@ -29,7 +29,7 @@
                     <th:block
                             th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${user.enabled}, false)}"></th:block>
                     <th:block
-                            th:replace="~{form_fragments :: image_input(${user.mainImagePath}, 'mainImage')}"></th:block>
+                            th:replace="~{form_fragments :: image_input(${user.mainImagePath}, 'mainImage', 150, 150)}"></th:block>
 
                 </div>
 
@@ -42,8 +42,11 @@
 <footer th:replace="~{navigations :: footer()}"></footer>
 
 <script type="text/javascript">
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const MODULE_URL = "[[@{/}]]";
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    const WIDTH = 150; // Image width
+    const HEIGHT = 150; // Image height
+    const QUALITY = 0.8; // Image quality (0.0 to 1.0)
 
     const validationRules = {
         firstName: {
@@ -115,6 +118,7 @@
     };
 
     const dynamicRules = [];
+
 </script>
 </body>
 </html>
