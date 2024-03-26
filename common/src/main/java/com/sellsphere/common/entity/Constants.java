@@ -10,6 +10,7 @@ public class Constants {
 
     public static final String S3_BASE_URI;
     public static final String SUCCESS_MESSAGE = "successMessage";
+    public static final String ERROR_MESSAGE = "errorMessage";
 
     static {
         String bucketName = System.getenv("AWS_BUCKET_NAME");

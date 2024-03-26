@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="common :: head_all('500')"></th:block>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/error.css}"/>
+</head>
+<body class="error-body">
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="error-container">
+        <h1 class="error-code">
+            500
+        </h1>
+        <h2 class="error-heading">OOPS! INTERNAL SERVER ERROR</h2>
+        <p class="error-message">We are sorry, but an internal server error occurred. Please try again later.</p>
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+</body>
+</html>

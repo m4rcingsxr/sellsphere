@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="common :: head_all('404')"></th:block>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/error.css}"/>
+
+</head>
+<body class="error-body">
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="error-container">
+        <h1 class="error-code">
+            404
+        </h1>
+        <h2 class="error-heading">OOPS! PAGE NOT FOUND</h2>
+        <p class="error-message">We are sorry, but the page you requested was not found</p>
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+</body>
+</html>

@@ -24,9 +24,9 @@ import java.util.List;
 @Controller
 public class UserController {
 
-    public static final String USER_FORM = "user/user_form";
     public static final String DEFAULT_REDIRECT_URL =
             "redirect:/users/page/0?sortField=firstName&sortDir=asc";
+    private static final String USER_FORM = "user/user_form";
 
     private final UserService userService;
 

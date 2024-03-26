@@ -1,0 +1,28 @@
+.error-body {
+  margin: 0;
+  padding: 0;
+  background-color: #f2f2f2;
+}
+
+.error-container {
+  text-align: center;
+}
+
+.error-code {
+  font-size: 10em;
+  margin: 0;
+  font-weight: bold;
+  color: #333;
+  position: relative;
+}
+
+.error-heading {
+  font-size: 2em;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.error-message {
+  font-size: 1.2em;
+  color: #999;
+}
