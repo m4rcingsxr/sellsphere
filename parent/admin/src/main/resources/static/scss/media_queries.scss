@@ -1,0 +1,55 @@
+.small {
+  display: none;
+}
+
+// Large
+@media (min-width: 993px) { // 993 and above
+  .hideable-md {
+  }
+}
+
+// Medium
+@media (max-width: 992px) { // 992 and below
+  .hideable-md {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) { // 769 and above
+  .small {
+    display: none;
+  }
+  .large {
+
+  }
+}
+
+// Small
+@media (max-width: 768px) { // 768 and below
+  .small {
+    display: block;
+  }
+  .large {
+    display: none;
+  }
+}
+
+@media (min-width: 576px) { // 576 and above
+  .small {
+    display: block;
+  }
+  .x-small {
+    display: none;
+  }
+}
+
+// Extra small
+@media (max-width: 575px) { // 575 and below
+  .x-small {
+    display: block;
+  }
+  .small {
+    display: none;
+  }
+}
+

@@ -1,0 +1,38 @@
+.small {
+  display: none;
+}
+
+@media (max-width: 992px) {
+  .hideable-md {
+    display: none;
+  }
+}
+@media (min-width: 769px) {
+  .small {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .small {
+    display: block;
+  }
+  .large {
+    display: none;
+  }
+}
+@media (min-width: 576px) {
+  .small {
+    display: block;
+  }
+  .x-small {
+    display: none;
+  }
+}
+@media (max-width: 575px) {
+  .x-small {
+    display: block;
+  }
+  .small {
+    display: none;
+  }
+}

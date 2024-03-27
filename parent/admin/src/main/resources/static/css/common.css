@@ -1,6 +1,4 @@
 .entity-image-container {
-  height: 150px;
-  width: 150px;
   overflow: hidden; /* Ensures any overflow is hidden */
   display: flex; /* Centers the image horizontally and vertically */
   align-items: center;
@@ -10,8 +8,8 @@
 }
 
 .entity-image {
-  max-height: 100%;
   max-width: 100%;
+  height: auto;
   object-fit: contain; /* Ensures the image fits within the container without being cropped */
   overflow: hidden;
 }

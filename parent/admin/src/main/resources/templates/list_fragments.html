@@ -19,7 +19,7 @@
 <!-- PAGINATION -->
 <nav th:if="${totalPages > 1}"
      th:fragment="large_pagination(endpoint, currentPage, totalPages, sortField, sortDir, keyword, currentCategory)"
-     class="mt-4 big-pagination large" id="pagination">
+     class="mt-4 big-pagination" id="pagination">
     <ul class="pagination d-flex justify-content-center">
         <li class="page-item">
             <a th:replace="~{:: page_link(${endpoint}, 0, 'angles-left', null, ${sortField}, ${sortDir}, ${keyword}, ${currentCategory})}"></a>
@@ -73,7 +73,8 @@
 </form>
 
 <!-- ENTITY IMAGE -->
-<div th:fragment="entity_image(src)" class="entity-image-container">
+<div th:fragment="entity_image(src, width, height)" class="entity-image-container"
+     th:style="${'width:' + width + 'px; height:' + height + 'px'}">
     <img th:data-src="${src}" alt="Entity image" class="entity-image lazy">
     <div class="spinner"></div>
 </div>
@@ -81,13 +82,13 @@
 <!-- ENTITY ACTIONS -->
 <!-- DELETE ENTITY -->
 <a th:fragment="delete_entity(entityDeleteUrl)" th:href="@{${entityDeleteUrl}}"
-   class="fa-solid fa-trash-can link-delete fa-lg" id="deleteEntity"></a>
+   class="fa-solid fa-trash-can link-delete fa-xl" id="deleteEntity"></a>
 
 <!-- EDIT ENTITY -->
-<a th:fragment="edit_entity(entityEditUrl)" th:href="@{${entityEditUrl}}" class="fa-solid fa-pen-to-square fa-lg"></a>
+<a th:fragment="edit_entity(entityEditUrl)" th:href="@{${entityEditUrl}}" class="fa-solid fa-pen-to-square fa-xl"></a>
 
 <!-- ENTITY STATUS -->
 <a th:fragment="status(status, changeStatusURL)" th:href="@{${changeStatusURL}}" id="statusEntity">
-    <i th:class="${status} ? 'toggle-icon fa-solid fa-toggle-on' : 'toggle-icon fa-solid fa-toggle-off'"></i>
+    <i th:class="${status} ? 'toggle-icon fa-solid fa-toggle-on fa-xl' : 'toggle-icon fa-solid fa-toggle-off fa-xl'"></i>
 </a>
 
