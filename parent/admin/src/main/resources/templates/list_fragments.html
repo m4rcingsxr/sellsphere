@@ -1,6 +1,8 @@
 <!-- COMMON LIST HEAD -->
 <head th:fragment="head(title)">
     <th:block th:replace="~{common :: head_all(${title})}"></th:block>
+
+    <script type="text/javascript" th:src="@{/js/common_list.js}"></script>
     <link rel="stylesheet" th:href="@{/css/list.css}">
 </head>
 

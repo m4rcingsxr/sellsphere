@@ -8,7 +8,7 @@ const ajaxUtil = {
      *
      * @returns {string|null} The CSRF token if found, otherwise null.
      */
-    getCSRFToken: function() {
+    getCSRFToken: function () {
         const csrfInput = document.querySelector('input[name="_csrf"]');
         return csrfInput ? csrfInput.value : null;
     },
@@ -21,23 +21,22 @@ const ajaxUtil = {
      * @throws {Error} If the GET request fails.
      */
     async get(url) {
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`GET request failed: ${response.statusText}`);
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
             }
+        });
 
-            return await response.json();
-        } catch (error) {
-            console.error(error);
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const error = new Error(`GET request failed: ${response.statusText}`);
+            error.response = errorResponse;
             throw error;
         }
+
+        return await response.json();
+
     },
 
     /**
@@ -49,31 +48,30 @@ const ajaxUtil = {
      * @throws {Error} If the POST request fails.
      */
     async post(url, data) {
-        try {
-            const csrfToken = this.getCSRFToken();
-            const headers = {
-                'Content-Type': 'application/json'
-            };
+        const csrfToken = this.getCSRFToken();
+        const headers = {
+            'Content-Type': 'application/json'
+        };
 
-            if (csrfToken) {
-                headers['X-CSRF-TOKEN'] = csrfToken;
-            }
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken;
+        }
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(data)
-            });
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(data)
+        });
 
-            if (!response.ok) {
-                throw new Error(`POST request failed: ${response.statusText}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error(error);
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const error = new Error(`POST request failed: ${response.statusText}`);
+            error.response = errorResponse;
             throw error;
         }
+
+        return await response.json();
+
     },
 
     /**
@@ -86,34 +84,33 @@ const ajaxUtil = {
      * @throws {Error} If the POST request fails.
      */
     async postBlob(url, data) {
-        try {
-            const csrfToken = this.getCSRFToken();
-            const headers = {
-                'X-CSRF-TOKEN': csrfToken,
-            };
+        const csrfToken = this.getCSRFToken();
+        const headers = {
+            'X-CSRF-TOKEN': csrfToken,
+        };
 
-            // Construct FormData to handle file upload and other parameters
-            const formData = new FormData();
-            for (const key in data) {
-                if (data.hasOwnProperty(key)) {
-                    formData.append(key, data[key]);
-                }
+        // Construct FormData to handle file upload and other parameters
+        const formData = new FormData();
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                formData.append(key, data[key]);
             }
+        }
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: headers,
-                body: formData
-            });
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: formData
+        });
 
-            if (!response.ok) {
-                throw new Error(`POST request failed: ${response.statusText}`);
-            }
-
-            return await response.blob(); // Assuming the response is an image
-        } catch (error) {
-            console.error(error);
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const error = new Error(`POST request failed: ${response.statusText}`);
+            error.response = errorResponse;
             throw error;
         }
+
+        return await response.blob(); // Assuming the response is an image
     }
 };
+

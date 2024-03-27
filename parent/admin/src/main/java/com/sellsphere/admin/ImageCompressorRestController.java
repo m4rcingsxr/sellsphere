@@ -1,9 +1,11 @@
 package com.sellsphere.admin;
 
+import com.sellsphere.common.entity.ErrorResponse;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,40 +22,61 @@ public class ImageCompressorRestController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("width") int width,
             @RequestParam("height") int height,
-            @RequestParam("quality") float quality) {
+            @RequestParam("quality") float quality) throws IOException {
 
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(null);
+            throw new IllegalArgumentException("File is empty");
         }
 
         if (file.getSize() > 5 * 1024 * 1024) { // Check if file is larger than 5MB
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(null);
+            throw new IllegalArgumentException("File size exceeds the maximum limit of 5MB");
         }
 
         if (quality < 0.0f || quality > 1.0f) { // Check if quality is within the valid range
-            return ResponseEntity.badRequest().body(null);
+            throw new IllegalArgumentException("Quality must be between 0.0 and 1.0");
         }
 
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-            // Resize and compress the image to the provided width, height, and quality
-            Thumbnails.of(file.getInputStream())
-                    .size(width, height)
-                    .outputFormat("jpg")
-                    .outputQuality(quality) // Adjust the output quality as provided
-                    .toOutputStream(byteArrayOutputStream);
+        // Resize and compress the image to the provided width, height, and quality
+        Thumbnails.of(file.getInputStream())
+                .size(width, height)
+                .outputFormat("jpg")
+                .outputQuality(quality) // Adjust the output quality as provided
+                .toOutputStream(byteArrayOutputStream);
 
-            byte[] compressedImage = byteArrayOutputStream.toByteArray();
+        byte[] compressedImage = byteArrayOutputStream.toByteArray();
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=compressed_image.jpg");
-            headers.add(HttpHeaders.CONTENT_TYPE, "image/jpeg");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=compressed_image.jpg");
+        headers.add(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 
-            return new ResponseEntity<>(compressedImage, headers, HttpStatus.OK);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+        return new ResponseEntity<>(compressedImage, headers, HttpStatus.OK);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException e) {
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),
+                                                        HttpStatus.BAD_REQUEST.value()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ErrorResponse> handleIOException(IOException e) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                "Internal server error occurred while processing the image.",
+                HttpStatus.INTERNAL_SERVER_ERROR.value()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        ErrorResponse errorResponse = new ErrorResponse("An unexpected error occurred.",
+                                                        HttpStatus.INTERNAL_SERVER_ERROR.value()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

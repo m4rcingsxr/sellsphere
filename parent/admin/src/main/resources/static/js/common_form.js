@@ -11,7 +11,7 @@
  * - Constants for WIDTH, HEIGHT, and QUALITY to specify the dimensions and quality of the compressed image.
  *   Example: const WIDTH = 800; const HEIGHT = 800; const QUALITY = 0.8;
  */
-$(function () {
+$(document).ready(() => {
     const form = document.getElementById("mainForm");
     if (!form) {
         console.error("mainForm not found.");
@@ -25,49 +25,81 @@ $(function () {
         return;
     }
 
-    fileInput.addEventListener("change", async function () {
-        const file = fileInput.files[0];
-        if (file && file.size <= MAX_FILE_SIZE) {
-            try {
-                // Show spinner
-                const spinner = document.createElement("div");
-                spinner.classList.add("spinner");
-                previewImage.parentNode.appendChild(spinner);
-
-                const data = {
-                    file: file,
-                    width: WIDTH,
-                    height: HEIGHT,
-                    quality: QUALITY
-                };
-                const compressedImageBlob = await ajaxUtil.postBlob(`${MODULE_URL}upload`, data);
-
-                const compressedFile = new File([compressedImageBlob], file.name, {
-                    type: "image/jpeg",
-                });
-
-                // Update the file input with the compressed image
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(compressedFile);
-                fileInput.files = dataTransfer.files;
-
-                // Preview the compressed image
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    previewImage.src = e.target.result;
-                    previewImage.classList.add("loaded");
-                };
-                reader.readAsDataURL(compressedFile);
-            } catch (error) {
-                console.error("Error during image compression:", error);
-            } finally {
-                const spinner = document.querySelector(".spinner");
-                if (spinner) {
-                    spinner.remove();
-                }
-            }
-        } else {
-            alert(`File is too large. Maximum allowed size is ${formatBytes(MAX_FILE_SIZE)}.`);
-        }
-    });
+    fileInput.addEventListener("change", handleFileChange);
 });
+
+/**
+ * Handles the file input change event.
+ */
+const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file && file.size <= MAX_FILE_SIZE) {
+        try {
+            showSpinner();
+
+            const data = {
+                file: file,
+                width: WIDTH,
+                height: HEIGHT,
+                quality: QUALITY
+            };
+            const compressedImageBlob = await ajaxUtil.postBlob(`${MODULE_URL}upload`, data);
+            const compressedFile = new File([compressedImageBlob], file.name, {type: "image/jpeg"});
+
+            updateFileInput(compressedFile);
+            previewCompressedImage(compressedFile);
+        } catch (error) {
+            console.error("Error during image compression:", error.response);
+            showErrorModal(error.response);
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    // else - handled by validation
+};
+
+/**
+ * Shows a spinner while processing.
+ */
+const showSpinner = () => {
+    const spinner = document.createElement("div");
+    spinner.classList.add("spinner");
+    document.getElementById("previewImage").parentNode.appendChild(spinner);
+};
+
+/**
+ * Hides the spinner after processing.
+ */
+const hideSpinner = () => {
+    const spinner = document.querySelector(".spinner");
+    if (spinner) {
+        spinner.remove();
+    }
+};
+
+/**
+ * Updates the file input with the compressed image.
+ *
+ * @param {File} compressedFile - The compressed file.
+ */
+const updateFileInput = (compressedFile) => {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(compressedFile);
+    document.querySelector('input[name="newImage"]').files = dataTransfer.files;
+};
+
+/**
+ * Previews the compressed image.
+ *
+ * @param {File} compressedFile - The compressed file.
+ */
+const previewCompressedImage = (compressedFile) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const previewImage = document.getElementById("previewImage");
+        previewImage.src = e.target.result;
+        previewImage.classList.add("loaded");
+    };
+    reader.readAsDataURL(compressedFile);
+};

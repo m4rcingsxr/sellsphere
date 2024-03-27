@@ -41,12 +41,13 @@
 
 <footer th:replace="~{navigations :: footer()}"></footer>
 
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     const WIDTH = 150; // Image width
     const HEIGHT = 150; // Image height
-    const QUALITY = 0.8; // Image quality (0.0 to 1.0)
+    const QUALITY = 1; // Image quality (0.0 to 1.0)
 
     const validationRules = {
         firstName: {
@@ -118,7 +119,6 @@
     };
 
     const dynamicRules = [];
-
 </script>
 </body>
 </html>
