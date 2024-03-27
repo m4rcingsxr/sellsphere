@@ -1,82 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head th:replace="form_fragments :: form_head('SellSphere - Login')"></head>
-<body>
-<div class="login-background">
-    <div class="container">
+<head>
+    <th:block th:replace="~{common :: head_all('Login')}"></th:block>
 
-        <form action="#" method="POST" th:action="@{/authenticateTheUser}" novalidate>
+    <script type="text/javascript" th:src="@{/node_modules/jquery-validation/dist/jquery.validate.js}"></script>
+    <script type="text/javascript" th:src="@{/js/common_form.js}"></script>
+    <script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
 
-            <div class="ms-auto me-auto w-lg-60 mt-4 ">
-                <div th:if="${param.error}" class="alert alert-danger text-center">
-                    The email and/or password
-                    you entered isn't working
-                </div>
-                <div th:if="${param.logout}" class="alert alert-info text-center">
-                    User logged out successfully
-                </div>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body class="d-flex align-items-center py-4 bg-body-tertiary">
+<main class="form-signin w-100 m-auto">
+    <form method="POST" th:action="@{/authenticateTheUser}">
+        <img class="mb-4" src="/docs/5.3/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
+        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
+        <div class="form-floating">
+            <input type="email" class="form-control" name="username" id="floatingInput" placeholder="name@example.com">
+            <label for="floatingInput">Email address</label>
+        </div>
+        <div class="form-floating">
+            <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
+            <label for="floatingPassword">Password</label>
+        </div>
 
-                <div class="border border-1 rounded-3 bg-white p-4 shadow-sm vstack gap-4">
-                    <div class="form-group row d-flex align-items-center">
-                        <label th:for="email" class="col-sm-4  col-form-label">Email Address</label>
-                        <div class="col-sm-8">
-                            <input id="email" name="username" type="email" class="form-control"/>
-                        </div>
-                    </div>
+        <div th:if="${param.error}" class="alert alert-danger text-center">
+            The email and/or password
+            you entered isn't working
+        </div>
+        <div th:if="${param.logout}" class="alert alert-info text-center">
+            User logged out successfully
+        </div>
 
-                    <div class="form-group row d-flex align-items-center">
-                        <label for="password" class="col-sm-4  col-form-label">Password</label>
-                        <div class="col-sm-8">
-                            <input id="password" type="password" class="form-control mt-2" name="password"/>
-                        </div>
-                    </div>
-
-                    <div class="form-check">
-                        <input id="remember" name="remember-me" class="form-check-input" type="checkbox">
-                        <label for="remember" class="form-check-label">
-                            Remember Me
-                        </label>
-                    </div>
-
-                    <div class="d-flex justify-content-center gap-3 mt-6">
-                        <input type="submit" value="Login" class="btn btn-primary w-50"/>
-                    </div>
-                </div>
-            </div>
-
-        </form>
-    </div>
-</div>
-
-<script defer type="text/javascript" th:src="@{/js/common_form.js}"></script>
-<script type="text/javascript">
-    const rules = {
-        email: {
-            required: true,
-            email: true,
-        },
-        password: {
-            required: true,
-            minlength: 8,
-            maxlength: 72,
-        },
-    }
-
-    const messages = {
-        password: {
-            required: "Please provide a password",
-            minlength: "Your password must be at least 8 characters long",
-            maxlength: "Your password cant exceed 72 characters",
-            mypassword: 'Password must contain at least one numeric and one uppercase character.',
-        },
-        email: "Please enter a valid email address",
-    }
-
-    function handleSubmit(form) {
-        form.submit();
-    }
-</script>
+        <div class="form-check text-start my-3">
+            <input class="form-check-input" type="checkbox" name="remember-me" value="remember-me" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+                Remember me
+            </label>
+        </div>
+        <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+        <p class="mt-5 mb-3 text-body-secondary">© 2017–2024</p>
+    </form>
+</main>
 
 </body>
 </html>
