@@ -4,7 +4,6 @@ import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;

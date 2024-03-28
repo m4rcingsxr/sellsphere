@@ -1,7 +1,13 @@
-.small {
+.small,
+.x-small {
   display: none;
 }
 
+@media (min-width: 993px) {
+  .hideable-md {
+    display: table-cell; /* or appropriate display type for table cells */
+  }
+}
 @media (max-width: 992px) {
   .hideable-md {
     display: none;
@@ -10,6 +16,9 @@
 @media (min-width: 769px) {
   .small {
     display: none;
+  }
+  .large {
+    display: table; /* or appropriate display type */
   }
 }
 @media (max-width: 768px) {
@@ -20,7 +29,7 @@
     display: none;
   }
 }
-@media (min-width: 576px) {
+@media (min-width: 576px) and (max-width: 768px) {
   .small {
     display: block;
   }

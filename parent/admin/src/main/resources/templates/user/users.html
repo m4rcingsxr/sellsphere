@@ -23,11 +23,10 @@
                 <th th:include="~{list_fragments :: column_link('/users/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'ID')}"
                     th:classappend="'hideable-md'"></th>
                 <th></th>
-                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'email', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Email')}"></th>
-                <th th:include="~{list_fragments :: column_link('/users/page', ${currentPage}, 'firstName', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'First Name')}"
-                    th:classappend="'hideable-md'"></th>
+                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'email', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Email')}" th:classappend="'hideable-md'"></th>
+                <th th:include="~{list_fragments :: column_link('/users/page', ${currentPage}, 'firstName', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'First Name')}"></th>
                 <th th:include="~{list_fragments :: column_link('/users/page', ${currentPage}, 'lastName', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Last Name')}"
-                    th:classappend="'hideable-md'"></th>
+                    ></th>
                 <th>Roles</th>
                 <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'enabled', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Enabled')}"></th>
                 <th></th>
@@ -40,9 +39,9 @@
                 <td>
                     <div th:replace="~{list_fragments :: entity_image(${user.mainImagePath}, 150, 150)}"></div>
                 </td>
-                <td th:text="${user.email}"></td>
-                <td th:text="${user.firstName}" class="hideable-md"></td>
-                <td th:text="${user.lastName}" class="hideable-md"></td>
+                <td th:text="${user.email}" class="hideable-md"></td>
+                <td th:text="${user.firstName}"></td>
+                <td th:text="${user.lastName}"></td>
                 <td th:text="${user.roleNames}"></td>
                 <td>
                     <a th:replace="~{list_fragments :: status(${user.enabled}, |/users/${user.id}/enabled/${!user.enabled}|)}"></a>
@@ -55,31 +54,8 @@
             </tbody>
         </table>
 
-        <div class="x-small fs-6">
-            <ul class="list-group list-group-flush">
-                <li th:each="user : ${userList}" class="list-group-item p-4">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="d-flex flex-column gap-2 align-items-center">
-                            <div th:replace="~{list_fragments :: entity_image(${user.mainImagePath}, 100, 100)}"></div>
-                            <div class="d-flex gap-3 align-items-center">
-                                <a th:replace="~{list_fragments :: status(${user.enabled}, |/users/${user.id}/enabled/${!user.enabled}|)}"></a>
-                                <a th:replace="~{list_fragments :: delete_entity(|/users/delete/${user.id}|)}"></a>
-                                <a th:replace="~{list_fragments :: edit_entity(|/users/edit/${user.id}|)}"></a>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="fw-light">First name</div>
-                            <div th:text="${user.firstName}"></div>
-                            <div class="fw-light">Last name</div>
-                            <div th:text="${user.lastName}"></div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <div class="small fs-6">
+        <!-- Small -->
+        <div class="small">
             <ul class="list-group list-group-flush">
                 <li th:each="user : ${userList}" class="list-group-item p-4">
                     <div class="d-flex align-items-start gap-4">
@@ -116,6 +92,30 @@
             </ul>
         </div>
 
+        <!-- Tiny -->
+        <div class="x-small">
+            <ul class="list-group list-group-flush">
+                <li th:each="user : ${userList}" class="list-group-item p-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="d-flex flex-column gap-2 align-items-center">
+                            <div th:replace="~{list_fragments :: entity_image(${user.mainImagePath}, 100, 100)}"></div>
+                            <div class="d-flex gap-3 align-items-center">
+                                <a th:replace="~{list_fragments :: status(${user.enabled}, |/users/${user.id}/enabled/${!user.enabled}|)}"></a>
+                                <a th:replace="~{list_fragments :: delete_entity(|/users/delete/${user.id}|)}"></a>
+                                <a th:replace="~{list_fragments :: edit_entity(|/users/edit/${user.id}|)}"></a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="fw-light">First name</div>
+                            <div th:text="${user.firstName}"></div>
+                            <div class="fw-light">Last name</div>
+                            <div th:text="${user.lastName}"></div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
 
     </div>
 

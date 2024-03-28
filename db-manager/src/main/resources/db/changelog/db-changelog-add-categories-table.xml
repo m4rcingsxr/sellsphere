@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1718189212339-1" author="m4rcingsxr">
+        <createTable tableName="categories">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_categories"/>
+            </column>
+            <column name="name" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enabled" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="all_parent_ids" type="VARCHAR(255)"/>
+            <column name="parent_id" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1718189212339-2" author="m4rcingsxr">
+        <createTable tableName="category_icons">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_category_icons"/>
+            </column>
+            <column name="icon_path" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category_id" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1718189212339-3" author="m4rcingsxr">
+        <addUniqueConstraint columnNames="alias" constraintName="uc_categories_alias" tableName="categories"/>
+    </changeSet>
+    <changeSet id="1718189212339-4" author="m4rcingsxr">
+        <addUniqueConstraint columnNames="name" constraintName="uc_categories_name" tableName="categories"/>
+    </changeSet>
+    <changeSet id="1718189212339-5" author="m4rcingsxr">
+        <addUniqueConstraint columnNames="category_id" constraintName="uc_category_icons_category"
+                             tableName="category_icons"/>
+    </changeSet>
+    <changeSet id="1718189212339-6" author="m4rcingsxr">
+        <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="categories"
+                                 constraintName="FK_CATEGORIES_ON_PARENT" referencedColumnNames="id"
+                                 referencedTableName="categories"/>
+    </changeSet>
+    <changeSet id="1718189212339-7" author="m4rcingsxr">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="category_icons"
+                                 constraintName="FK_CATEGORY_ICONS_ON_CATEGORY" referencedColumnNames="id"
+                                 referencedTableName="categories"/>
+    </changeSet>
+
+</databaseChangeLog>

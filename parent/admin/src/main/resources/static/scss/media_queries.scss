@@ -1,31 +1,30 @@
-.small {
+.small,
+.x-small {
   display: none;
 }
 
-// Large
-@media (min-width: 993px) { // 993 and above
+@media (min-width: 993px) {
   .hideable-md {
+    display: table-cell; /* or appropriate display type for table cells */
   }
 }
 
-// Medium
-@media (max-width: 992px) { // 992 and below
+@media (max-width: 992px) {
   .hideable-md {
     display: none;
   }
 }
 
-@media (min-width: 769px) { // 769 and above
+@media (min-width: 769px) {
   .small {
     display: none;
   }
   .large {
-
+    display: table; /* or appropriate display type */
   }
 }
 
-// Small
-@media (max-width: 768px) { // 768 and below
+@media (max-width: 768px) {
   .small {
     display: block;
   }
@@ -34,7 +33,7 @@
   }
 }
 
-@media (min-width: 576px) { // 576 and above
+@media (min-width: 576px) and (max-width: 768px) {
   .small {
     display: block;
   }
@@ -43,8 +42,7 @@
   }
 }
 
-// Extra small
-@media (max-width: 575px) { // 575 and below
+@media (max-width: 575px) {
   .x-small {
     display: block;
   }
@@ -52,4 +50,3 @@
     display: none;
   }
 }
-
