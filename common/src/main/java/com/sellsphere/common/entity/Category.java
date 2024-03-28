@@ -1,5 +1,6 @@
 package com.sellsphere.common.entity;
 
+import com.sellsphere.common.entity.constraints.RootCategoryIconRequired;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@RootCategoryIconRequired
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -42,7 +44,7 @@ public class Category extends IdentifiedEntity {
     @Column(name = "all_parent_ids", length = 255, nullable = true)
     private String allParentIDs;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "parent_id")
     private Category parent;
 
@@ -58,6 +60,11 @@ public class Category extends IdentifiedEntity {
     public String getCategoryImagePath() {
         return Constants.S3_BASE_URI + (id == null || image == null ? "/default.png" : "/category" +
                 "-photos/" + this.id + "/" + image);
+    }
+
+    public void setCategoryIcon(CategoryIcon categoryIcon) {
+        categoryIcon.setCategory(this);
+        this.categoryIcon = categoryIcon;
     }
 
     public void addChild(Category child) {

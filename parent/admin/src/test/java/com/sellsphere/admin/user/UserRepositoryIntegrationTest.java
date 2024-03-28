@@ -27,14 +27,14 @@ import static util.PagingTestHelper.createPageRequest;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @Sql(scripts = {"classpath:sql/roles.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(scripts = {"classpath:sql/users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-class UserRepositoryTest {
+class UserRepositoryIntegrationTest {
 
     private final UserRepository userRepository;
     private final TestUserHelper testUserHelper;
 
 
     @Autowired
-    public UserRepositoryTest(EntityManager entityManager, UserRepository userRepository) {
+    public UserRepositoryIntegrationTest(EntityManager entityManager, UserRepository userRepository) {
         this.testUserHelper = new TestUserHelper(entityManager);
         this.userRepository = userRepository;
     }
