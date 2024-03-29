@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{list_fragments :: head('Manage Categories')}"></head>
+<body>
+
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="mt-4 content">
+    <div class="container mt-7">
+        <h1 class="subheading text-center">Manage Categories</h1>
+
+        <!-- Alerts -->
+        <div th:replace="~{common :: alerts()}"></div>
+
+        <!-- Search Bar -->
+        <form th:replace="~{list_fragments :: search_bar('/categories/page/0', 'Search for the category', 'name', ${keyword}, ${totalItems}, null)}"></form>
+
+        <table class="table table-hover mt-4 large">
+            <thead class="table-dark">
+            <tr>
+                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                <th></th>
+                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'name', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Category Name')}"></th>
+                <th>Alias</th>
+                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'enabled', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Enabled')}"></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="category : ${categoryList}"
+                th:classappend="${category.parent == null} ? 'table-active' : ''">
+                <td th:text="${category.id}"></td>
+                <td>
+                    <div th:replace="~{list_fragments :: entity_image(${category.mainImagePath}, 150, 150)}"></div>
+                </td>
+                <td th:text="${category.name}"></td>
+                <td th:text="${category.alias}"></td>
+                <td>
+
+                    <a th:replace="~{list_fragments :: status(${category.enabled}, |/categories/${category.id}/enabled/${!category.enabled}|)}"></a>
+                </td>
+                <td>
+                    <a th:replace="~{list_fragments :: delete_entity(|/categories/delete/${category.id}|)}"></a>
+                    <a th:replace="~{list_fragments :: edit_entity(|/categories/edit/${category.id}|)}"></a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav th:replace="~{list_fragments :: large_pagination('/categories/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+         class="mt-4"></nav>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+</body>
+</html>

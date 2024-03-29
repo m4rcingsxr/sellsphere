@@ -34,6 +34,16 @@ public class WebSecurityConfig {
         return http.build();
     }
 
+    private void configureAuthorizations(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/css/**", "/node_modules/**",
+                                 "/js/**", "/images/**"
+                ).permitAll()
+                .requestMatchers("/users/**").hasRole(ADMIN)
+                .requestMatchers("/categories/**").hasAnyRole(ADMIN, EDITOR)
+                .anyRequest().authenticated());
+    }
+
     private void configureCors(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults());
     }
@@ -65,15 +75,6 @@ public class WebSecurityConfig {
                 .tokenValiditySeconds(365 * 24 * 60 * 60)
                 .key(REMEMBER_ME_KEY)
         );
-    }
-
-    private void configureAuthorizations(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/css/**", "/node_modules/**",
-                                 "/js/**", "/images/**"
-                ).permitAll()
-                .requestMatchers("/users/**").hasRole(ADMIN)
-                .anyRequest().authenticated());
     }
 
     @Bean

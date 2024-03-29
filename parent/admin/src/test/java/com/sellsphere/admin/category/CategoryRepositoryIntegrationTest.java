@@ -128,7 +128,7 @@ class CategoryRepositoryTest {
         child.setName(expectedName);
         categoryRepository.save(parentCategory);
 
-        // Then: Fetch updated categories and verify the changes
+        // Then: Fetch updated category and verify the changes
         Category updatedParentCategory = categoryRepository.findById(parentCategory.getId()).orElseThrow();
         Category updatedChildCategory = updatedParentCategory.getChildren().iterator().next();
         assertEquals(expectedName, updatedChildCategory.getName(), "Child category name should be updated");

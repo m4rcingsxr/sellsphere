@@ -57,9 +57,21 @@ public class Category extends IdentifiedEntity {
     private CategoryIcon categoryIcon;
 
     @Transient
-    public String getCategoryImagePath() {
-        return Constants.S3_BASE_URI + (id == null || image == null ? "/default.png" : "/category" +
-                "-photos/" + this.id + "/" + image);
+    public String getMainImagePath() {
+        return Constants.S3_BASE_URI + (id == null || image == null ? "/default.png" : "/category"
+                + "-photos/" + this.id + "/" + image);
+    }
+
+    public Category(Category other) {
+        this.id = other.id;
+        this.name = other.name;
+        this.alias = other.alias;
+        this.image = other.image;
+        this.enabled = other.enabled;
+        this.allParentIDs = other.allParentIDs;
+        this.parent = other.parent;
+        this.children = other.children;
+        this.categoryIcon = other.categoryIcon;
     }
 
     public void setCategoryIcon(CategoryIcon categoryIcon) {
