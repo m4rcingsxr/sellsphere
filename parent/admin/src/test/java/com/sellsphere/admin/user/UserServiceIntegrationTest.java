@@ -1,6 +1,5 @@
 package com.sellsphere.admin.user;
 
-import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
@@ -10,10 +9,8 @@ import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
-import util.PagingTestHelper;
 
 import java.io.IOException;
 import java.util.Set;
@@ -64,41 +61,6 @@ class UserServiceIntegrationTest {
 
         // when, then
         assertThrows(UserNotFoundException.class, () -> userService.get(userId));
-    }
-
-    @Test
-    void whenListPageWithoutKeyword_thenReturnPageOfAllUsers() {
-
-        // Given
-        int expectedTotalElements = 10;
-        int expectedPages = 1;
-        int expectedContentSize = 10;
-
-        // When
-        Page<User> users = userService.listPage(0, "firstName", Constants.SORT_ASCENDING, null);
-
-        // Then
-        PagingTestHelper.assertPagingResults(users, expectedContentSize, expectedPages,
-                                             expectedTotalElements, "firstName", true
-        );
-    }
-
-    @Test
-    void whenListPageWithKeyword_thenReturnPageWithSpecificUsers() {
-
-        // Given
-        String keyword = "HANNAH";
-        int expectedTotalElements = 1;
-        int expectedPages = 1;
-        int expectedContentSize = 1;
-
-        // When
-        Page<User> users = userService.listPage(0, "firstName", Constants.SORT_ASCENDING, keyword);
-
-        // Then
-        PagingTestHelper.assertPagingResults(users, expectedContentSize, expectedPages,
-                                             expectedTotalElements, "firstName", true
-        );
     }
 
     @Test

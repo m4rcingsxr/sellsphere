@@ -2,13 +2,12 @@ package com.sellsphere.admin.user;
 
 import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.PagingHelper;
+import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,20 +35,8 @@ public class UserService {
         return roleRepository.findAll(PagingHelper.getSort("name", Constants.SORT_ASCENDING));
     }
 
-    public Page<User> listPage(Integer pageNum, String sortField, String sortDirection,
-                               String keyword) {
-        PageRequest pageRequest = PagingHelper.getPageRequest(pageNum, USERS_PER_PAGE, sortField,
-                                                              sortDirection
-        );
-
-
-        if (keyword != null) {
-            return userRepository.findAll(keyword, pageRequest);
-        } else {
-            return userRepository.findAll(pageRequest);
-
-        }
-
+    public void listPage(Integer pageNum, PagingAndSortingHelper helper) {
+        helper.listEntities(pageNum, USERS_PER_PAGE, userRepository);
     }
 
     public User save(User user, MultipartFile file) throws IOException, UserNotFoundException {

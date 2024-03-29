@@ -1,7 +1,7 @@
 package com.sellsphere.admin.user;
 
 import com.sellsphere.admin.FileService;
-import com.sellsphere.common.entity.Constants;
+import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -12,26 +12,25 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
+import util.PagingTestHelper;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static util.PagingTestHelper.assertPagingResults;
-import static util.PagingTestHelper.createPageRequest;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -48,6 +47,9 @@ class UserServiceUnitTest {
 
     @Mock
     private MultipartFile file;
+
+    @Mock
+    private PagingAndSortingHelper pagingAndSortingHelper;
 
     @InjectMocks
     private UserService userService;
@@ -73,73 +75,6 @@ class UserServiceUnitTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.get(userId));
-    }
-
-    @Test
-    void whenListPageWithoutKeyword_thenReturnPageOfAllUsers() {
-
-        // Given
-        int pageNum = 0;
-        String sortField = "firstName";
-        String sortDirection = "ASC";
-        int usersPerPage = 10;
-        PageRequest pageRequest = createPageRequest(0, usersPerPage, sortField,
-                                                    Constants.SORT_ASCENDING
-        );
-
-
-        User user1 = new User();
-        user1.setFirstName("Alice");
-        User user2 = new User();
-        user2.setFirstName("Bob");
-        User user3 = new User();
-        user3.setFirstName("Charlie");
-        User user4 = new User();
-        user4.setFirstName("David");
-        User user5 = new User();
-        user5.setFirstName("Eve");
-
-        List<User> users = Arrays.asList(user1, user2, user3, user4, user5);
-        Page<User> userPage = new PageImpl<>(users, pageRequest, users.size());
-        when(userRepository.findAll(any(PageRequest.class))).thenReturn(userPage);
-
-        // When
-        Page<User> result = userService.listPage(pageNum, sortField, sortDirection, null);
-
-        // Then
-        verify(userRepository).findAll(pageRequest);
-        assertPagingResults(result, users.size(), 1, users.size(), sortField, true);
-    }
-
-    @Test
-    void whenListPageWithKeyword_thenReturnPageOfSpecificUsers() {
-
-        // Given
-        int pageNum = 0;
-        int usersPerPage = 10;
-        String sortField = "firstName";
-        String keyword = "Doe";
-        PageRequest pageRequest = createPageRequest(0, usersPerPage, sortField,
-                                                    Constants.SORT_ASCENDING
-        );
-
-        User user1 = new User();
-        user1.setFirstName("Alice");
-        user1.setLastName("Doe");
-        User user2 = new User();
-        user2.setFirstName("Eve");
-        user2.setLastName("Doe");
-
-        List<User> users = Arrays.asList(user1, user2);
-        Page<User> userPage = new PageImpl<>(users,pageRequest, users.size());
-        when(userRepository.findAll(anyString(), any(PageRequest.class))).thenReturn(userPage);
-
-        // When
-        Page<User> result = userService.listPage(pageNum, sortField, Constants.SORT_ASCENDING, keyword);
-
-        // Then
-        verify(userRepository).findAll(keyword, pageRequest);
-        assertPagingResults(result, users.size(), 1, users.size(), sortField, true);
     }
 
 

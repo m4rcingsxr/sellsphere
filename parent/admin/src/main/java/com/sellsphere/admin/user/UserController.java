@@ -1,6 +1,8 @@
 package com.sellsphere.admin.user;
 
 import com.sellsphere.admin.ValidationHelper;
+import com.sellsphere.admin.page.PagingAndSortingHelper;
+import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
@@ -43,22 +45,10 @@ public class UserController {
 
     @GetMapping("/users/page/{pageNum}")
     public String listPage(
-            @RequestParam("sortField") String sortField,
-            @RequestParam("sortDir") String sortDir,
-            @PathVariable("pageNum") Integer pageNum,
-            @RequestParam(value = "keyword", required = false) String keyword,
-            Model model) {
-        Page<User> userPage = userService.listPage(pageNum, sortField, sortDir, keyword);
-
-        model.addAttribute("userList", userPage.getContent());
-        model.addAttribute("currentPage", pageNum);
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
-        model.addAttribute("totalPages", userPage.getTotalPages());
-        model.addAttribute("totalItems", userPage.getTotalElements());
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("reversedSortDir", sortDir.equals(
-                Constants.SORT_ASCENDING) ? Constants.SORT_DESCENDING : Constants.SORT_ASCENDING);
+            @PagingAndSortingParam(listName = "userList", moduleURL = "/users"
+            ) PagingAndSortingHelper helper,
+            @PathVariable("pageNum") Integer pageNum) {
+        userService.listPage(pageNum, helper);
 
         return "user/users";
     }

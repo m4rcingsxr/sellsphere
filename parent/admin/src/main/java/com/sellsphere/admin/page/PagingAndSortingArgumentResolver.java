@@ -42,14 +42,12 @@ public class PagingAndSortingArgumentResolver implements
      * @param binderFactory a factory for creating {@link WebDataBinder} instances
      * @return an instance of {@link PagingAndSortingHelper} populated with the resolved paging and sorting
      *         parameters
-     * @throws Exception if an error occurs during argument resolution
      */
     @Override
     public Object resolveArgument(MethodParameter parameter,
                                   ModelAndViewContainer model,
                                   NativeWebRequest request,
-                                  WebDataBinderFactory binderFactory)
-            throws Exception {
+                                  WebDataBinderFactory binderFactory) {
         PagingAndSortingParam annotation = parameter.getParameterAnnotation(PagingAndSortingParam.class);
 
         String sortDir = request.getParameter("sortDir");
