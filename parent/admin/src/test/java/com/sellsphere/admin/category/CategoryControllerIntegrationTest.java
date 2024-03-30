@@ -1,5 +1,6 @@
 package com.sellsphere.admin.category;
 
+import com.sellsphere.common.entity.Constants;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -7,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -82,4 +86,26 @@ class CategoryControllerIntegrationTest {
         ));
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void saveCategory_WithNewData_ShouldRedirectWithSuccessMessage() throws Exception {
+        MockMultipartFile newImage = new MockMultipartFile(
+                "newImage", // the name of the request parameter
+                "test-image.jpg",
+                "image/jpeg",
+                "Sample image content".getBytes()
+        );
+
+        mockMvc.perform(multipart(HttpMethod.POST, "/categories/save")
+                                .file(newImage)
+                                .param("name", "New Category")
+                                .param("alias", "new_category")
+                                .param("categoryIcon.iconPath", "<i>icon</i>")
+                                .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(EXPECTED_DEFAULT_REDIRECT_URL))
+                .andExpect(flash().attribute(Constants.SUCCESS_MESSAGE,
+                                             containsString("successfully")
+                ));
+    }
 }

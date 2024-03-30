@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.function.BooleanSupplier;
+
 @RequiredArgsConstructor
 public class ValidationHelper {
 
@@ -44,6 +46,12 @@ public class ValidationHelper {
                                                   "and one digit."
                 );
             }
+        }
+    }
+
+    public void validateWithBooleanSupplier(BooleanSupplier isValid, String fieldName, String message) {
+        if(!isValid.getAsBoolean()) {
+            bindingResult.rejectValue(fieldName, this.errorCode, message);
         }
     }
 

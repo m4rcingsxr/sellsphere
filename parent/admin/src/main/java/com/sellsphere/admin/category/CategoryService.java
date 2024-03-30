@@ -1,8 +1,11 @@
 package com.sellsphere.admin.category;
 
+import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryIcon;
+import com.sellsphere.common.entity.CategoryIllegalStateException;
 import com.sellsphere.common.entity.CategoryNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -22,6 +27,7 @@ public class CategoryService {
     public static final int CATEGORY_PER_PAGE = 5;
 
     private final CategoryRepository categoryRepository;
+    private final FileService fileService;
 
     public Category get(Integer id) throws CategoryNotFoundException {
         return categoryRepository.findById(id).orElseThrow(CategoryNotFoundException::new);
@@ -82,6 +88,58 @@ public class CategoryService {
         // Prefixes the category's name with dashes ("-") corresponding to
         // its depth level in the hierarchy.
         return "-".repeat(level) + name;
+    }
+
+    public Category save(Category category, MultipartFile file)
+            throws CategoryIllegalStateException, IOException {
+        CategoryIcon categoryIcon = category.getCategoryIcon();
+
+        if(categoryIcon.getIconPath() == null) {
+            category.setCategoryIcon(null);
+        } else {
+            categoryIcon.setCategory(category);
+            category.setCategoryIcon(categoryIcon);
+        }
+
+        if (file != null && !file.isEmpty()) {
+            String fileName = file.getOriginalFilename();
+
+            category.setImage(fileName);
+            Category savedCategory = save(category);
+
+            String folderName = "category-photos/" + savedCategory.getId();
+
+            fileService.saveSingleFile(file, folderName, fileName);
+
+            return savedCategory;
+        } else {
+            return save(category);
+        }
+    }
+
+    public Category save(Category category) throws CategoryIllegalStateException {
+        if (category.getParent() != null && (category.getId() != null && category.getId().equals(
+                category.getParent().getId()))) throw new CategoryIllegalStateException(
+                "Could not update Category. Category cannot reference itself as parent");
+
+        updateHierarchyPath(category);
+
+        return categoryRepository.save(category);
+    }
+
+    private void updateHierarchyPath(Category category) {
+        if (category.getParent() != null) {
+
+            // Obtains the hierarchy path from the parent, or starts with a
+            // dash if no path exists.
+            String parentHierarchyPath = category.getParent().getAllParentIDs();
+            parentHierarchyPath = parentHierarchyPath == null ? "-" : parentHierarchyPath;
+
+            // Appends the current category's parent ID to the parent's path,
+            // followed by a dash, to update the hierarchy path.
+            String updatedPath = parentHierarchyPath.concat(category.getParent().getId() + "-");
+            category.setAllParentIDs(updatedPath);
+        }
     }
 
 }

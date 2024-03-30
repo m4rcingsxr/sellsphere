@@ -64,13 +64,26 @@ public class TestCategoryHelper {
         return null;
     }
 
-    public List<Category> generateRootCategories() {
+    public static List<Category> generateRootCategories() {
+        return List.of(generateComputersCategory(), generateTabletsCategory());
+    }
+
+    public static Category generateTabletsCategory() {
+        Category tablets = new Category();
+        tablets.setId(5);
+        tablets.setName("Tablets");
+        tablets.setAlias("tablets");
+        tablets.setImage("tablets.png");
+
+        return tablets;
+    }
+
+    public static Category generateComputersCategory() {
         Category computers = new Category();
         computers.setId(1);
         computers.setName("Computers");
         computers.setAlias("computers");
         computers.setImage("computers.png");
-
 
         Category computerComponents = new Category();
         computerComponents.setId(2);
@@ -95,12 +108,6 @@ public class TestCategoryHelper {
 
         computers.addChild(computerComponents);
 
-        Category tablets = new Category();
-        tablets.setId(5);
-        tablets.setName("Tablets");
-        tablets.setAlias("tablets");
-        tablets.setImage("tablets.png");
-
-        return List.of(computers, tablets);
+        return computers;
     }
 }

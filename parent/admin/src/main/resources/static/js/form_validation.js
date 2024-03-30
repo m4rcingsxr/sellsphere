@@ -28,7 +28,7 @@ function initializeValidators() {
 function addCategoryIconValidator() {
     $.validator.addMethod('categoryIcon', function(value, element) {
         const categoryId = Number($("#parent").val());
-        const categoryIcon = $("#categoryIcon").val();
+        const categoryIcon = $("#categoryIcon\\.iconPath").val();
 
         console.log(categoryIcon, categoryId);
 

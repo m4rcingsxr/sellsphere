@@ -14,7 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.jdbc.Sql;
-import util.PagingTestHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +81,7 @@ class CategoryRepositoryIntegrationTest {
         rootCategory.setName("New Category");
         rootCategory.setAlias("new_category");
         rootCategory.setImage("category.img");
-        rootCategory.setCategoryIcon(categoryIcon);
+        rootCategory.addCategoryIcon(categoryIcon);
 
         // When
         Category savedRootCategory = categoryRepository.save(rootCategory);
@@ -104,7 +103,7 @@ class CategoryRepositoryIntegrationTest {
         parentCategory.setName("Parent Category");
         parentCategory.setAlias("parent_category");
         parentCategory.setImage("parent_image.png");
-        parentCategory.setCategoryIcon(categoryIcon);
+        parentCategory.addCategoryIcon(categoryIcon);
 
         Category childCategory = new Category();
         childCategory.setName("Child Category");

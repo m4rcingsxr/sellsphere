@@ -53,7 +53,6 @@ public class Category extends IdentifiedEntity {
     @OrderBy("name asc")
     private Set<Category> children = new HashSet<>();
 
-
     @OneToOne(mappedBy = "category", cascade = CascadeType.ALL)
     private CategoryIcon categoryIcon;
 
@@ -75,7 +74,7 @@ public class Category extends IdentifiedEntity {
         this.categoryIcon = other.categoryIcon;
     }
 
-    public void setCategoryIcon(CategoryIcon categoryIcon) {
+    public void addCategoryIcon(CategoryIcon categoryIcon) {
         categoryIcon.setCategory(this);
         this.categoryIcon = categoryIcon;
     }

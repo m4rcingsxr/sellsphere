@@ -23,8 +23,11 @@
 
                     <label class="col-sm-4 col-form-label icon">Category icon</label>
                     <div class="col-sm-8 icon">
-                        <input th:field="*{categoryIcon}" type="text" class="form-control"/>
-                        <span th:replace="~{form_fragments :: field_error('categoryIcon')}"></span>
+                        <input th:replace="~{form_fragments :: hidden_input('categoryIcon.id')}"/>
+                        <input th:replace="~{form_fragments :: hidden_input('categoryIcon.category')}"/>
+
+                        <input th:field="*{categoryIcon.iconPath}" type="text" class="form-control"/>
+                        <span th:replace="~{form_fragments :: field_error('categoryIcon.iconPath')}"></span>
                     </div>
 
                     <label class="col-form-label col-sm-4 icon">Select category icon</label>
@@ -122,7 +125,7 @@
             imageRequired: ["image"],
             maxImageSize: true
         },
-        categoryIcon: {
+        'categoryIcon.iconPath': {
             categoryIcon: true,
         }
     };

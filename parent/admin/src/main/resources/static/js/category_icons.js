@@ -18,13 +18,13 @@ function initListeners() {
 function handleIconClick(event) {
     const iconHtml = $(this)[0].outerHTML;
     $('#iconSize').val('');
-    $("#categoryIcon").val(iconHtml);
+    $("#categoryIcon\\.iconPath").val(iconHtml);
 }
 
 function handleIconSizeChange() {
-    const $currentIconEl = $($("#categoryIcon").val());
+    const $currentIconEl = $("#categoryIcon\\.iconPath").val();
     $currentIconEl.removeClass("fa-2xs fa-xs fa-sm fa-lg fa-xl fa-2xl").addClass(this.value);
-    $("#categoryIcon").val($currentIconEl.prop('outerHTML'));
+    $("#categoryIcon\\.iconPath").val($currentIconEl.prop('outerHTML'));
 }
 
 async function fetchIcons(query) {
@@ -205,6 +205,7 @@ function handleIconDisplay(categoryId) {
     if(Number(categoryId) === -1) {
         iconContainers.removeClass("d-none");
     } else {
+        $("#categoryIcon\\.iconPath").val("");
         iconContainers.addClass("d-none");
     }
 

@@ -1,36 +1,54 @@
 package com.sellsphere.admin.category;
 
+import com.adobe.testing.s3mock.junit5.S3MockExtension;
+import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Category;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import software.amazon.awssdk.services.s3.S3Client;
+import util.S3TestUtils;
 
 import java.util.List;
 
-import static com.sellsphere.admin.category.TestCategoryHelper.assertHierarchy;
-import static com.sellsphere.admin.category.TestCategoryHelper.assertRootCategoriesSortedByName;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.sellsphere.admin.category.TestCategoryHelper.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
 @SpringBootTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @Sql(scripts = {
         "classpath:sql/categories.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@ExtendWith(S3MockExtension.class)
 class CategoryServiceIntegrationTest {
+
+    private static final String BUCKET_NAME = "my-demo-test-bucket";
+    private static S3Client s3Client;
 
     @Autowired
     private CategoryService categoryService;
 
     @Autowired
     private EntityManager entityManager;
+
+    @BeforeAll
+    static void setUpClient(final S3Client client) {
+        s3Client = client;
+        S3Utility.setBucketName(BUCKET_NAME);
+        S3Utility.setS3Client(s3Client);
+
+        S3TestUtils.createBucket(s3Client, BUCKET_NAME);
+    }
 
     @Test
     void whenListAllRootCategoriesSorted_thenSortedCategoriesInHierarchicalOrderReturned() {
@@ -90,5 +108,32 @@ class CategoryServiceIntegrationTest {
         categories.forEach(category -> assertHierarchy(category, rootCategories));
     }
 
+    @Test
+    void givenCategoryAndFile_whenSaving_thenShouldSaveFileAndCategory() throws Exception {
 
+        // Given
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "Sample image content".getBytes()
+        );
+        Category category = generateComputersCategory();
+
+        // When
+        Category savedCategory = categoryService.save(category, file);
+
+        // Then
+        assertNotNull(savedCategory.getId());
+        assertEquals("test-image.jpg", savedCategory.getImage());
+
+        // Verify file is saved in S3
+        S3TestUtils.verifyFileContent(s3Client, BUCKET_NAME, "category-photos/" + savedCategory.getId() + "/test-image.jpg", file.getInputStream());
+
+        // Verify category is saved in the repository
+        Category fetchedCategory = entityManager.find(Category.class, savedCategory.getId());
+
+        assertNotNull(fetchedCategory);
+        assertEquals("test-image.jpg", fetchedCategory.getImage());
+    }
 }

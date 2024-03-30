@@ -1,23 +1,22 @@
 package com.sellsphere.admin;
 
 import com.adobe.testing.s3mock.junit5.S3MockExtension;
-import com.adobe.testing.s3mock.util.DigestUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.mock.web.MockMultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import util.S3TestUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(S3MockExtension.class)
 class S3UtilityIntegrationTest {
@@ -32,32 +31,21 @@ class S3UtilityIntegrationTest {
         S3Utility.setBucketName(BUCKET_NAME);
         S3Utility.setS3Client(s3Client);
 
-        s3Client.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
+        S3TestUtils.createBucket(s3Client, BUCKET_NAME);
     }
 
     @Test
     void shouldUploadAndDownloadObject() throws Exception {
-        // given
+        // Given
         String folderName = "folder";
         String fileName = "abc.txt";
-        File uploadFile = new File(UPLOAD_FILE_NAME);
+        Path uploadFilePath = Path.of(UPLOAD_FILE_NAME);
 
-        // when
-        S3Utility.uploadFile(folderName, fileName, new FileInputStream(uploadFile));
+        // When
+        S3Utility.uploadFile(folderName, fileName, S3TestUtils.getFileInputStream(uploadFilePath));
 
-        // then
-        var response = s3Client.getObject(
-                GetObjectRequest.builder().bucket(BUCKET_NAME).key(folderName + "/" + fileName).build());
-
-        InputStream uploadFileInputStream = Files.newInputStream(uploadFile.toPath());
-        String uploadDigest = DigestUtil.hexDigest(uploadFileInputStream);
-        String downloadedDigest = DigestUtil.hexDigest(response);
-
-        // cleanup
-        uploadFileInputStream.close();
-        response.close();
-
-        assertEquals(uploadDigest, downloadedDigest);
+        // Then
+        S3TestUtils.verifyFileContent(s3Client, BUCKET_NAME, folderName + "/" + fileName, S3TestUtils.getFileInputStream(uploadFilePath));
     }
 
     @Test
