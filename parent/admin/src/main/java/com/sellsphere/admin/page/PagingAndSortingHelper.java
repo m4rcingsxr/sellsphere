@@ -2,6 +2,7 @@ package com.sellsphere.admin.page;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,8 @@ import java.util.List;
  * It wraps common functionality needed across different views and controllers to apply consistent
  * pagination and sorting based on user input.
  */
+@Getter
+@Setter
 @AllArgsConstructor
 public class PagingAndSortingHelper {
 
@@ -22,10 +25,8 @@ public class PagingAndSortingHelper {
 
     private String listName;
 
-    @Getter
     private String sortField;
 
-    @Getter
     private String sortDir;
 
     private String keyword;

@@ -15,5 +15,8 @@ VALUES ('Computers', 'computers', 'computers.png', 1, 1, '-1-'),
        ('Motherboard', 'computer_motherboard', 'motherboards.png', 1, 3, '-1-2-3-'),
        ('Network Cards', 'computer_network_cards', 'network cards.png', 1, 3, '-1-2-3-');
 
+INSERT INTO categories (NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
+VALUES ('Vacuum cleaners', 'vacuum_cleaners', 'vacuum_cleaners.png', 1, NULL, NULL);
+
 INSERT INTO category_icons (icon_path, category_id)
 VALUES ('<i>icon</i>', 1);

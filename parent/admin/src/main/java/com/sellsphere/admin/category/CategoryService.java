@@ -1,10 +1,14 @@
 package com.sellsphere.admin.category;
 
+import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,11 +16,23 @@ import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class CategoryService {
+
+    public static final int CATEGORY_PER_PAGE = 5;
 
     private final CategoryRepository categoryRepository;
 
-    public static final int CATEGORY_PER_PAGE = 5;
+    public Category get(Integer id) throws CategoryNotFoundException {
+        return categoryRepository.findById(id).orElseThrow(CategoryNotFoundException::new);
+    }
+
+    public List<Category> listAllRootCategoriesSorted(String sortField, String sortDir) {
+        Sort sort = PagingHelper.getSort(sortField, sortDir);
+        List<Category> parents = categoryRepository.findAllByParentIsNull(sort);
+
+        return createHierarchy(parents);
+    }
 
     public void listPage(Integer pageNum, PagingAndSortingHelper helper) {
         Pageable pageable = helper.createPageable(CATEGORY_PER_PAGE, pageNum);
@@ -37,17 +53,14 @@ public class CategoryService {
         // including all descendants.
         List<Category> hierarchicalCategories = createHierarchy(page.getContent());
 
-        helper.updateModelAttributes(pageNum, page.getTotalPages(),
-                                     page.getTotalElements(),
+        helper.updateModelAttributes(pageNum, page.getTotalPages(), page.getTotalElements(),
                                      hierarchicalCategories
         );
     }
 
     private List<Category> createHierarchy(List<Category> categoryList) {
-        return categoryList.stream()
-                .filter(category -> category.getParent() == null)
-                .flatMap(category -> expandHierarchy(category, 0))
-                .toList();
+        return categoryList.stream().filter(category -> category.getParent() == null).flatMap(
+                category -> expandHierarchy(category, 0)).toList();
     }
 
     private Stream<Category> expandHierarchy(Category category, int level) {
@@ -60,10 +73,8 @@ public class CategoryService {
 
         // Recursively processes children, incrementing the level to adjust
         // their names accordingly.
-        return Stream.concat(Stream.of(categoryCopy),
-                             categoryCopy.getChildren().stream().flatMap(
-                                     child -> expandHierarchy(child, level + 1))
-        );
+        return Stream.concat(Stream.of(categoryCopy), categoryCopy.getChildren().stream().flatMap(
+                child -> expandHierarchy(child, level + 1)));
     }
 
     private String prefixedName(String name, int level) {
@@ -72,4 +83,5 @@ public class CategoryService {
         // its depth level in the hierarchy.
         return "-".repeat(level) + name;
     }
+
 }

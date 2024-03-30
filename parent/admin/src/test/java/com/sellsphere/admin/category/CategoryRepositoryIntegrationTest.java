@@ -2,6 +2,7 @@ package com.sellsphere.admin.category;
 
 import com.sellsphere.common.entity.Category;
 import com.sellsphere.common.entity.CategoryIcon;
+import com.sellsphere.common.entity.Constants;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -9,17 +10,24 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.jdbc.Sql;
+import util.PagingTestHelper;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static util.PagingTestHelper.*;
 
 @DataJpaTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @Sql(scripts = {
         "classpath:sql/categories.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-class CategoryRepositoryTest {
+class CategoryRepositoryIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -138,15 +146,16 @@ class CategoryRepositoryTest {
     void whenDeleteRootCategory_thenCategoryChildrenAndRelatedIconIsRemoved() { // cascade delete
         // Given
         int rootId = 1;
+        long expectedCount = 1;
+        long expectedIconCount = 0;
 
         // When
         categoryRepository.deleteById(rootId);
 
         // Then
         assertFalse(categoryRepository.existsById(rootId), "Root category should be deleted");
-        long expectedCount = 0;
         assertEquals(expectedCount, categoryRepository.count(), "Expected count should be " + expectedCount);
-        assertEquals(expectedCount, categoryIconRepository.count(), "Expected count should be " + expectedCount);
+        assertEquals(expectedIconCount, categoryIconRepository.count(), "Expected count should be " + expectedCount);
     }
 
     @Test
@@ -192,13 +201,58 @@ class CategoryRepositoryTest {
     @Test
     void whenCount_thenShouldReturnExpectedCount() {
         // Given
-        long expectedCount = 13;
+        long expectedCount = 14;
 
         // When
         long count = categoryRepository.count();
 
         // Then
         assertEquals(expectedCount, count, "Category count should match with expectedCount");
+    }
+
+    @Test
+    void whenFindAllByParentIsNull_withPaging_thenReturnPagedResults() {
+        // Given
+        int page = 0;
+        int size = 5;
+        String sortField = "name";
+        String sortDirection = "ASC";
+        PageRequest pageRequest = createPageRequest(page, size, sortField, sortDirection);
+
+        int expectedContentSize = 2;
+        int expectedPages = 1;
+        int expectedTotalElements = 2;
+
+        // When
+        Page<Category> resultPage = categoryRepository.findAllByParentIsNull(pageRequest);
+
+        // Then
+        assertPagingResults(resultPage, expectedContentSize, expectedPages, expectedTotalElements, sortField, true);
+    }
+
+    @Test
+    void whenFindAllByParentIsNull_withSorting_thenReturnSortedResults() {
+
+        // Given
+        String sortField = "name";
+        Sort sort = createSort(sortField, Constants.SORT_ASCENDING);
+
+        // When
+        List<Category> sortedCategories = categoryRepository.findAllByParentIsNull(sort);
+
+        // Then
+        assertNotNull(sortedCategories, "Sorted categories should not be null");
+        assertFalse(sortedCategories.isEmpty(), "Sorted categories should not be empty");
+
+        // Verify sorting
+        boolean isSorted = IntStream.range(0, sortedCategories.size() - 1)
+                .allMatch(i -> {
+                    Category first = sortedCategories.get(i);
+                    Category second = sortedCategories.get(i + 1);
+                    return first.getName().compareTo(second.getName()) <= 0;
+                });
+
+        assertTrue(isSorted, "Categories should be sorted by name in ascending order");
     }
 
 }

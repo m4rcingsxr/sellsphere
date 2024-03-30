@@ -22,6 +22,18 @@ function initializeValidators() {
     addPasswordValidators();
     addBasicValidators();
     addFileValidators();
+    addCategoryIconValidator();
+}
+
+function addCategoryIconValidator() {
+    $.validator.addMethod('categoryIcon', function(value, element) {
+        const categoryId = Number($("#parent").val());
+        const categoryIcon = $("#categoryIcon").val();
+
+        console.log(categoryIcon, categoryId);
+
+        return categoryId !== -1 || categoryId === -1 && categoryIcon;
+    }, 'Category icon must be presented for root categories.')
 }
 
 /**

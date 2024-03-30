@@ -50,6 +50,7 @@ public class Category extends IdentifiedEntity {
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL,
             orphanRemoval = true)
+    @OrderBy("name asc")
     private Set<Category> children = new HashSet<>();
 
 

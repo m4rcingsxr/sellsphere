@@ -44,24 +44,20 @@ public class PagingTestHelper {
         );
 
         // Assert sorting
-        List<Comparable> sortProperties = page.getContent().stream()
-                .map(entity -> {
-                    try {
-                        Method getter = entity.getClass().getMethod(
-                                "get" + capitalize(sortProperty));
-                        return (Comparable) getter.invoke(entity);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to access sort property", e);
-                    }
-                })
-                .toList();
+        List<Comparable> sortProperties = page.getContent().stream().map(entity -> {
+            try {
+                Method getter = entity.getClass().getMethod("get" + capitalize(sortProperty));
+                return (Comparable) getter.invoke(entity);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to access sort property", e);
+            }
+        }).toList();
 
-        boolean isSorted = IntStream.range(0, sortProperties.size() - 1)
-                .allMatch(i -> {
-                    Comparable first = sortProperties.get(i);
-                    Comparable second = sortProperties.get(i + 1);
-                    return ascending ? first.compareTo(second) <= 0 : first.compareTo(second) >= 0;
-                });
+        boolean isSorted = IntStream.range(0, sortProperties.size() - 1).allMatch(i -> {
+            Comparable first = sortProperties.get(i);
+            Comparable second = sortProperties.get(i + 1);
+            return ascending ? first.compareTo(second) <= 0 : first.compareTo(second) >= 0;
+        });
 
         assertTrue(isSorted,
                    "Entities should be sorted by " + sortProperty + " in " + (ascending ?
@@ -72,16 +68,21 @@ public class PagingTestHelper {
     /**
      * Creates a PageRequest object for pagination and sorting.
      *
-     * @param page       the page number (zero-based)
-     * @param size       the size of the page
-     * @param sortField  the field to sort by
+     * @param page          the page number (zero-based)
+     * @param size          the size of the page
+     * @param sortField     the field to sort by
      * @param sortDirection the direction of the sort ("ASC" or "DESC")
      * @return the PageRequest object
      */
     public static PageRequest createPageRequest(int page, int size, String sortField,
                                                 String sortDirection) {
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortField);
+        Sort sort = createSort(sortField, sortDirection);
         return PageRequest.of(page, size, sort);
+    }
+
+
+    public static Sort createSort(String sortField, String sortDirection) {
+        return Sort.by(Sort.Direction.fromString(sortDirection), sortField);
     }
 
     private static String capitalize(String str) {

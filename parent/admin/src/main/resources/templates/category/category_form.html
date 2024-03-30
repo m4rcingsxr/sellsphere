@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{form_fragments :: head(${pageTitle})}"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="container mt-4">
+        <h1 class="text-center" th:text="${pageTitle}"></h1>
+        <form id="mainForm" th:object="${category}" th:action="@{'/categories/save'}" method="POST"
+              enctype="multipart/form-data">
+
+            <div class="mx-auto mt-5">
+
+                <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                    <input th:replace="~{form_fragments :: hidden_input('id')}"/>
+                    <th:block th:replace="~{form_fragments :: text_input('Category name', 'name', false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: text_input('Alias', 'alias', false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: select_input('Parent Category', ${categoryList}, 'parent', false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${category.enabled}, false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: image_input(${category.mainImagePath}, 'image', 150, 150)}"></th:block>
+
+
+                    <label class="col-sm-4 col-form-label icon">Category icon</label>
+                    <div class="col-sm-8 icon">
+                        <input th:field="*{categoryIcon}" type="text" class="form-control"/>
+                        <span th:replace="~{form_fragments :: field_error('categoryIcon')}"></span>
+                    </div>
+
+                    <label class="col-form-label col-sm-4 icon">Select category icon</label>
+                    <div class="col-sm-8 position-relative icon">
+                        <div class="d-flex gap-2">
+
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="search" placeholder="Search for icons">
+                                <button type="button" class="btn btn-primary" onclick="searchIcons()">Search</button>
+                            </div>
+
+                            <select id="iconSize" class="form-control">
+                                <option value="fa-2xs">2xs</option>
+                                <option value="xs">xs</option>
+                                <option value="fa-sm">Small</option>
+                                <option value="" selected>Regular</option>
+                                <option value="fa-lg">Large</option>
+                                <option value="fa-xl">xl</option>
+                                <option value="fa-2xl">2xl</option>
+                            </select>
+                        </div>
+
+                        <div class="p-4 border border-2 rounded-2 mt-3" id="results"></div>
+
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center" id="pagination"></ul>
+                        </nav>
+
+                        <div class="position-absolute bottom-0 end-0">
+                            <a href="https://fontawesome.com/search?o=r&m=free">Powered by FontAwesome <i class="fab fa-font-awesome"></i></a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div th:replace="~{form_fragments :: form_buttons(${category})}"></div>
+            </div>
+        </form>
+    </div>
+
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<script type="text/javascript" th:src="@{/js/category_icons.js}"></script>
+
+<script type="text/javascript">
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    const WIDTH = 300; // Image width
+    const HEIGHT = 300; // Image height
+    const QUALITY = 1; // Image quality (0.0 to 1.0)
+
+    const MODULE_URL = "[[@{/}]]";
+
+    const validationRules = {
+        name: {
+            required: true,
+            maxlength: 128,
+            remote: {
+                url: `${MODULE_URL}categories/check_name_uniqueness`,
+                type: "post",
+                data: {
+                    name: function () {
+                        return $('input[name="name"]').val();
+                    },
+                    _csrf: function () {
+                        return $('input[name="_csrf"]').val();
+                    },
+                    id: function () {
+                        return $('input[name="id"]').val();
+                    }
+                }
+            }
+        },
+        alias: {
+            required: true,
+            maxlength: 64,
+            remote: {
+                url: `${MODULE_URL}categories/check_alias_uniqueness`,
+                type: "post",
+                data: {
+                    alias: function () {
+                        return $('input[name="alias"]').val();
+                    },
+                    _csrf: function () {
+                        return $('input[name="_csrf"]').val();
+                    },
+                    id: function () {
+                        return $('input[name="id"]').val();
+                    }
+                }
+            }
+        },
+        newImage: {
+            imageRequired: ["image"],
+            maxImageSize: true
+        },
+        categoryIcon: {
+            categoryIcon: true,
+        }
+    };
+
+    const validationMessages = {
+        name: {
+            required: "Please enter category name",
+            maxlength: "Category name cannot exceed 128 characters. Please shorten it.",
+            remote: "This name you entered is already associated with an category."
+        },
+        alias: {
+            required: "Please enter category alias",
+            maxlength: "Category alias cannot exceed 64 characters. Please shorten it.",
+            remote: "This alias you entered is already associated with an category."
+        },
+        newImage: {
+            required: "An image is required to represent the user. Please upload one.",
+            maxImageSize: `The image size cannot exceed ${formatBytes(MAX_FILE_SIZE)}. Please choose a smaller image.`
+        }
+    };
+
+    const dynamicRules = [];
+</script>
+</body>
+</html>

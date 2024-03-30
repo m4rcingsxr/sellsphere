@@ -11,8 +11,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +31,8 @@ class CategoryControllerIntegrationTest {
 
     private static final String EXPECTED_DEFAULT_REDIRECT_URL = "/categories/page/0?sortField" +
             "=name&sortDir=asc";
+
+    private static final String EXPECTED_FORM_PATH = "category/category_form";
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -55,6 +57,29 @@ class CategoryControllerIntegrationTest {
                 model().attribute("totalItems", is(1L))).andExpect(
                 model().attribute("totalPages", is(1))).andExpect(
                 view().name("category/categories"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void showCategoryForm_WhenNewCategory_ShouldDisplayForm() throws Exception {
+        mockMvc.perform(
+                get("/categories/new").with(csrf())).andExpect(
+                status().isOk()).andExpect(view().name(EXPECTED_FORM_PATH)).andExpect(
+                model().attributeExists("category")).andExpect(
+                model().attribute("pageTitle", "Create new category"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void showCategoryForm_WhenExistingCategory_ShouldDisplayFormWithCategoryDetails()
+            throws Exception {
+        int existingCategoryId = 1;  // Assuming there's a category with ID 1
+        mockMvc.perform(get("/categories/edit/{id}", existingCategoryId)).andExpect(
+                status().isOk()).andExpect(view().name(EXPECTED_FORM_PATH)).andExpect(
+                model().attributeExists("category")).andExpect(model().attribute("pageTitle",
+                                                                                 containsString(
+                                                                                         "Edit Category [ID: " + existingCategoryId + "]")
+        ));
     }
 
 }

@@ -26,11 +26,8 @@
                         </th:block>
                     </div>
 
-                    <th:block
-                            th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${user.enabled}, false)}"></th:block>
-                    <th:block
-                            th:replace="~{form_fragments :: image_input(${user.mainImagePath}, 'mainImage', 150, 150)}"></th:block>
-
+                    <th:block th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${user.enabled}, false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: image_input(${user.mainImagePath}, 'mainImage', 150, 150)}"></th:block>
                 </div>
 
                 <div th:replace="~{form_fragments :: form_buttons(${user})}"></div>
@@ -43,11 +40,12 @@
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 <script type="text/javascript">
-    const MODULE_URL = "[[@{/}]]";
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     const WIDTH = 150; // Image width
     const HEIGHT = 150; // Image height
     const QUALITY = 1; // Image quality (0.0 to 1.0)
+
+    const MODULE_URL = "[[@{/}]]";
 
     const validationRules = {
         firstName: {

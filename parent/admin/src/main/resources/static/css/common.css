@@ -41,3 +41,15 @@
   top: 70px;
   z-index: 1050; /* Ensure it appears above other elements */
 }
+
+.icon-preview {
+  margin: 10px;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.3s, opacity 0.3s; /* Smooth transition */
+}
+
+.icon-preview:hover {
+  color: rgba(0, 0, 0, 0.7); /* Change to a lighter color */
+  opacity: 0.7; /* Alternatively, reduce opacity */
+}

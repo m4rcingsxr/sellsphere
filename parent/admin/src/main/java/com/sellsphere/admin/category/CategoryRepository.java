@@ -4,9 +4,12 @@ import com.sellsphere.admin.page.SearchRepository;
 import com.sellsphere.common.entity.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface CategoryRepository extends SearchRepository<Category, Integer> {
@@ -18,4 +21,6 @@ public interface CategoryRepository extends SearchRepository<Category, Integer> 
     Page<Category> findAll(@Param("keyword") String keyword, Pageable pageRequest);
 
     Page<Category> findAllByParentIsNull(Pageable pageable);
+
+    List<Category> findAllByParentIsNull(Sort sort);
 }
