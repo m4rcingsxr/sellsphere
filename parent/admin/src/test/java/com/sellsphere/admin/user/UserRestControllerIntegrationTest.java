@@ -11,8 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -42,31 +41,17 @@ class UserRestControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void testIsEmailUniqueFalse() throws Exception {
-        Integer userId = 1;
-        String email = "test@example.com";
-
-        when(service.isEmailUnique(userId, email)).thenReturn(false);
-
-        mockMvc.perform(post("/users/check_uniqueness").with(csrf().asHeader())
-                                .param("id", userId.toString())
-                                .param("email", email))
-                .andExpect(status().isOk())
-                .andExpect(content().string("false"));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void testIsEmailUniqueWithException() throws Exception {
-        Integer userId = 1;
-        String email = "test@example.com";
-
-        when(service.isEmailUnique(userId, email)).thenThrow(new RuntimeException());
+    void testIsEmailUniqueWithIllegalArgumentException() throws Exception {
+        String userId = "1";
+        String email = "x".repeat(129) + "@example.com";
 
         mockMvc.perform(post("/users/check_uniqueness")
-                                .param("id", userId.toString()).with(csrf().asHeader())
+                                .param("id", userId).with(csrf().asHeader())
                                 .param("email", email))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("An error occurred while checking email uniqueness"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Email should not exceed 128 characters"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
+
 }

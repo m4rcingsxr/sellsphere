@@ -106,11 +106,13 @@ public class CategoryService {
             throws CategoryIllegalStateException, IOException {
         CategoryIcon categoryIcon = category.getCategoryIcon();
 
-        if(categoryIcon.getIconPath() == null) {
-            category.setCategoryIcon(null);
-        } else {
-            categoryIcon.setCategory(category);
-            category.setCategoryIcon(categoryIcon);
+        if(categoryIcon != null) {
+            if (categoryIcon.getIconPath() == null) {
+                category.setCategoryIcon(null);
+            } else {
+                categoryIcon.setCategory(category);
+                category.setCategoryIcon(categoryIcon);
+            }
         }
 
         if (file != null && !file.isEmpty()) {

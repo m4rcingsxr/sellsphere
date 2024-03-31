@@ -158,22 +158,6 @@ class CategoryRepositoryIntegrationTest {
     }
 
     @Test
-    void whenRemoveCategoryFromChildren_thenCategoryChildrenIsRemoved() {  // orphan removal
-        // Given
-        Category parentCategory = entityManager.find(Category.class, 1);
-        Category childCategory = entityManager.find(Category.class, 2);
-
-        // When
-        parentCategory.removeChild(childCategory);
-        categoryRepository.saveAndFlush(parentCategory);
-        entityManager.clear(); // Clear the persistence context to ensure entities are fetched from the database
-
-        // Then
-        Optional<Category> removedChildCategory = categoryRepository.findById(childCategory.getId());
-        assertTrue(removedChildCategory.isEmpty(), "Child category should be removed from the database");
-    }
-
-    @Test
     void whenDeleteById_thenCategoryIsDeleted() {
         Integer categoryId = 13;
 

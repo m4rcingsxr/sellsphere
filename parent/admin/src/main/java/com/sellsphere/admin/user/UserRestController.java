@@ -19,6 +19,10 @@ public class UserRestController {
     public ResponseEntity<Boolean> isEmailUnique(
             @RequestParam(value = "id", required = false) Integer userId,
             @RequestParam("email") String email) {
+        if(email.length() > 128) {
+            throw new IllegalArgumentException("Email should not exceed 128 characters");
+        }
+
         boolean isUnique = service.isEmailUnique(userId, email);
         return ResponseEntity.ok(isUnique);
     }

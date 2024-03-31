@@ -4,6 +4,7 @@ package com.sellsphere.admin.category;
 import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryIcon;
 import com.sellsphere.common.entity.CategoryIllegalStateException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -98,6 +99,9 @@ class CategoryServiceUnitTest {
             throws CategoryIllegalStateException, IOException {
         // Given
         Category newCategory = new Category();
+        CategoryIcon categoryIcon = new CategoryIcon();
+        categoryIcon.setIconPath("<i>icon</i>");
+        newCategory.setCategoryIcon(categoryIcon);
 
         when(categoryRepository.save(any(Category.class))).thenAnswer(
                 invocation -> invocation.getArgument(0));
@@ -145,6 +149,8 @@ class CategoryServiceUnitTest {
         Category category = new Category();
         category.setId(2);
         category.setParent(parentCategory);
+
+
 
         MultipartFile file = mock(MultipartFile.class);
         when(file.isEmpty()).thenReturn(false);

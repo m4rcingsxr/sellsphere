@@ -88,8 +88,10 @@ public class CategoryController {
                                                "An image file is required."
         );
         validationHelper.validateWithBooleanSupplier(
-                () -> category.getParent() == null && category.getCategoryIcon().getIconPath() != null,
-                "categoryIcon.iconPath", "When category is root then icon must be defined.");
+                () -> category.getParent() != null || (category.getParent() == null && category.getCategoryIcon() != null && category.getCategoryIcon().getIconPath() != null),
+                "categoryIcon.iconPath",
+                "When category is root then icon must be defined."
+        );
 
         if (!validationHelper.validate()) {
             return CATEGORY_FORM;
