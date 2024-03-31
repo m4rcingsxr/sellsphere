@@ -1,6 +1,7 @@
 package com.sellsphere.admin.category;
 
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryIcon;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
@@ -79,11 +80,19 @@ public class TestCategoryHelper {
     }
 
     public static Category generateComputersCategory() {
+
+
         Category computers = new Category();
         computers.setId(1);
         computers.setName("Computers");
         computers.setAlias("computers");
         computers.setImage("computers.png");
+
+        CategoryIcon categoryIcon = new CategoryIcon();
+        categoryIcon.setIconPath("<i>icon</i>");
+        categoryIcon.setCategory(computers);
+
+        computers.setCategoryIcon(categoryIcon);
 
         Category computerComponents = new Category();
         computerComponents.setId(2);
@@ -101,6 +110,41 @@ public class TestCategoryHelper {
         memory.setId(4);
         memory.setName("Memory");
         memory.setAlias("memory");
+        memory.setImage("memory.png");
+
+        computerComponents.addChild(hardDrives);
+        computerComponents.addChild(memory);
+
+        computers.addChild(computerComponents);
+
+        return computers;
+    }
+
+    public static Category generateComputersCategoryWithoutId() {
+        Category computers = new Category();
+        computers.setName("Computers unique");
+        computers.setAlias("computers_unique");
+        computers.setImage("computers.png");
+
+        CategoryIcon categoryIcon = new CategoryIcon();
+        categoryIcon.setIconPath("<i>icon</i>");
+        categoryIcon.setCategory(computers);
+
+        computers.setCategoryIcon(categoryIcon);
+
+        Category computerComponents = new Category();
+        computerComponents.setName("Computer Components unique");
+        computerComponents.setAlias("computer_components_unique");
+        computerComponents.setImage("computer_components.png");
+
+        Category hardDrives = new Category();
+        hardDrives.setName("Hard Drives");
+        hardDrives.setAlias("hard_drives");
+        hardDrives.setImage("hard_drives.png");
+
+        Category memory = new Category();
+        memory.setName("Memory unique");
+        memory.setAlias("memory_unique");
         memory.setImage("memory.png");
 
         computerComponents.addChild(hardDrives);

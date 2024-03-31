@@ -109,8 +109,8 @@ class CategoryServiceIntegrationTest {
     }
 
     @Test
+    @Transactional
     void givenCategoryAndFile_whenSaving_thenShouldSaveFileAndCategory() throws Exception {
-
         // Given
         MockMultipartFile file = new MockMultipartFile(
                 "file",
@@ -118,7 +118,7 @@ class CategoryServiceIntegrationTest {
                 "image/jpeg",
                 "Sample image content".getBytes()
         );
-        Category category = generateComputersCategory();
+        Category category = generateComputersCategoryWithoutId(); // Generate category without manually setting ID
 
         // When
         Category savedCategory = categoryService.save(category, file);
@@ -135,5 +135,72 @@ class CategoryServiceIntegrationTest {
 
         assertNotNull(fetchedCategory);
         assertEquals("test-image.jpg", fetchedCategory.getImage());
+    }
+
+    @Test
+    void whenNameNotExists_thenReturnTrue() {
+        // When
+        boolean result = categoryService.isNameUnique(null, "uniqueName");
+
+        // Then
+        assertTrue(result);
+    }
+
+    @Test
+    void whenNameExistsWithSameId_thenReturnTrue() {
+        // Given
+        Integer existingCategoryId = 1; // ID of the "Electronics" category
+
+        // When
+        boolean result = categoryService.isNameUnique(existingCategoryId, "Electronics");
+
+        // Then
+        assertTrue(result);
+    }
+
+
+    @Test
+    void whenNameExistsWithDifferentId_thenReturnFalse() {
+        // Given
+        Integer differentId = 2; // ID of the "Electronics" category
+
+        // When
+        boolean result = categoryService.isNameUnique(differentId, "Electronics"); // Different ID but same name
+
+        // Then
+        assertFalse(result);
+    }
+
+    @Test
+    void whenAliasNotExists_thenReturnTrue() {
+        // When
+        boolean result = categoryService.isAliasUnique(null, "uniqueAlias");
+
+        // Then
+        assertTrue(result);
+    }
+
+    @Test
+    void whenAliasExistsWithSameId_thenReturnTrue() {
+        // Given
+        Integer existingCategoryId = 1; // ID of the "Electronics" category
+
+        // When
+        boolean result = categoryService.isAliasUnique(existingCategoryId, "electronics");
+
+        // Then
+        assertTrue(result);
+    }
+
+    @Test
+    void whenAliasExistsWithDifferentId_thenReturnFalse() {
+        // Given
+        Integer differentId = 2;
+
+        // When
+        boolean result = categoryService.isAliasUnique(differentId, "electronics"); // Different ID but same alias
+
+        // Then
+        assertFalse(result);
     }
 }

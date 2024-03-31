@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends SearchRepository<Category, Integer> {
@@ -23,4 +24,8 @@ public interface CategoryRepository extends SearchRepository<Category, Integer> 
     Page<Category> findAllByParentIsNull(Pageable pageable);
 
     List<Category> findAllByParentIsNull(Sort sort);
+
+    Optional<Category> findByName(String name);
+
+    Optional<Category> findByAlias(String alias);
 }

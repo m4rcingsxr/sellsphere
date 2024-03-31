@@ -183,3 +183,9 @@ function applyDynamicValidationRules() {
         });
     });
 }
+
+function handleRemoteValidationError(jqXHR) {
+    const errorResponse = jqXHR.responseJSON;
+    console.error("Error during uniqueness check")
+    showErrorModal(errorResponse);
+}

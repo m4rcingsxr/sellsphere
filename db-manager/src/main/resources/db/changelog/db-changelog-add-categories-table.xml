@@ -43,10 +43,6 @@
     <changeSet id="1718189212339-4" author="m4rcingsxr">
         <addUniqueConstraint columnNames="name" constraintName="uc_categories_name" tableName="categories"/>
     </changeSet>
-    <changeSet id="1718189212339-5" author="m4rcingsxr">
-        <addUniqueConstraint columnNames="category_id" constraintName="uc_category_icons_category"
-                             tableName="category_icons"/>
-    </changeSet>
     <changeSet id="1718189212339-6" author="m4rcingsxr">
         <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="categories"
                                  constraintName="FK_CATEGORIES_ON_PARENT" referencedColumnNames="id"

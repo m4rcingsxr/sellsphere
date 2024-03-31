@@ -62,7 +62,7 @@ const showErrorModal = (errorResponse) => {
     const date = parseTimestampToDate(errorResponse.timestamp);
     $("#errorModal .modal-footer").text(date);
 
-    const userFriendlyMessage = handleErrorResponse(errorResponse.status);
+    const userFriendlyMessage = handleErrorResponse(errorResponse.status, errorResponse.message);
     showModalDialog('errorModal', '⚠ Error occurred', userFriendlyMessage, 'text');
 };
 
@@ -73,13 +73,13 @@ const showErrorModal = (errorResponse) => {
  * @param {number} status - The HTTP status code.
  * @returns {string} The user-friendly error message.
  */
-const handleErrorResponse = (status) => {
+const handleErrorResponse = (status, message) => {
     let userFriendlyMessage;
 
     switch (Number(status)) {
         case 400:
-            userFriendlyMessage = "Bad Request: The server could not understand the request.";
-            break;
+            userFriendlyMessage = `Bad Request: ${message || 'The server could not understand the request.'}`;
+            return userFriendlyMessage;
         case 401:
             userFriendlyMessage = "Unauthorized: You are not authorized to access this resource.";
             break;

@@ -40,6 +40,18 @@ public class CategoryService {
         return createHierarchy(parents);
     }
 
+    public boolean isNameUnique(Integer id, String name) {
+        return categoryRepository.findByName(name)
+                .map(category -> category.getId().equals(id))
+                .orElse(true);
+    }
+
+    public boolean isAliasUnique(Integer id, String alias) {
+        return categoryRepository.findByAlias(alias)
+                .map(category -> category.getId().equals(id))
+                .orElse(true);
+    }
+
     public void listPage(Integer pageNum, PagingAndSortingHelper helper) {
         Pageable pageable = helper.createPageable(CATEGORY_PER_PAGE, pageNum);
         String searchKeyword = helper.getKeyword();

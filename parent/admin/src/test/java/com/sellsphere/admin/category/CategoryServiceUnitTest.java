@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static com.sellsphere.admin.category.TestCategoryHelper.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -175,6 +176,86 @@ class CategoryServiceUnitTest {
 
         // Verify that the repository save method was never called
         verify(categoryRepository, never()).save(any(Category.class));
+    }
+
+    @Test
+    void whenNameNotExists_thenReturnTrue() {
+        // Arrange
+        when(categoryRepository.findByName("uniqueName")).thenReturn(Optional.empty());
+
+        // Act
+        boolean result = categoryService.isNameUnique(null, "uniqueName");
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void whenNameExistsWithSameId_thenReturnTrue() {
+        // Arrange
+        Category existingCategory = new Category();
+        existingCategory.setId(1);
+        when(categoryRepository.findByName("existingName")).thenReturn(Optional.of(existingCategory));
+
+        // Act
+        boolean result = categoryService.isNameUnique(1, "existingName");
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void whenNameExistsWithDifferentId_thenReturnFalse() {
+        // Arrange
+        Category existingCategory = new Category();
+        existingCategory.setId(2);
+        when(categoryRepository.findByName("existingName")).thenReturn(Optional.of(existingCategory));
+
+        // Act
+        boolean result = categoryService.isNameUnique(1, "existingName");
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void whenAliasNotExists_thenReturnTrue() {
+        // Arrange
+        when(categoryRepository.findByAlias("uniqueAlias")).thenReturn(Optional.empty());
+
+        // Act
+        boolean result = categoryService.isAliasUnique(null, "uniqueAlias");
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void whenAliasExistsWithSameId_thenReturnTrue() {
+        // Arrange
+        Category existingCategory = new Category();
+        existingCategory.setId(1);
+        when(categoryRepository.findByAlias("existingAlias")).thenReturn(Optional.of(existingCategory));
+
+        // Act
+        boolean result = categoryService.isAliasUnique(1, "existingAlias");
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void whenAliasExistsWithDifferentId_thenReturnFalse() {
+        // Arrange
+        Category existingCategory = new Category();
+        existingCategory.setId(2);
+        when(categoryRepository.findByAlias("existingAlias")).thenReturn(Optional.of(existingCategory));
+
+        // Act
+        boolean result = categoryService.isAliasUnique(1, "existingAlias");
+
+        // Assert
+        assertFalse(result);
     }
 
 }

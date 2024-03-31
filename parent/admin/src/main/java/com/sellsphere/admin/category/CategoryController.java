@@ -79,10 +79,21 @@ public class CategoryController {
     }
 
     @PostMapping("/categories/save")
-    public String saveCategory(@ModelAttribute("category") Category category,
+    public String saveCategory(@Valid @ModelAttribute("category") Category category,
                                BindingResult bindingResult, RedirectAttributes ra,
                                @RequestParam(value = "newImage", required = false) MultipartFile file)
             throws IOException, CategoryIllegalStateException {
+        ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.category");
+        validationHelper.validateMultipartFile(file, category.getId(), "image",
+                                               "An image file is required."
+        );
+        validationHelper.validateWithBooleanSupplier(
+                () -> category.getParent() == null && category.getCategoryIcon().getIconPath() != null,
+                "categoryIcon.iconPath", "When category is root then icon must be defined.");
+
+        if (!validationHelper.validate()) {
+            return CATEGORY_FORM;
+        }
 
         String successMessage =
                 "Category " + category.getName() + " successfully " + (category.getId() != null ?
