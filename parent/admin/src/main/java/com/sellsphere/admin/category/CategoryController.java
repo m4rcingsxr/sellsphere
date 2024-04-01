@@ -88,7 +88,7 @@ public class CategoryController {
                                                "An image file is required."
         );
         validationHelper.validateWithBooleanSupplier(
-                () -> category.getParent() != null || (category.getParent() == null && category.getCategoryIcon() != null && category.getCategoryIcon().getIconPath() != null),
+                () -> category.getParent() != null || category.getCategoryIcon() != null && category.getCategoryIcon().getIconPath() != null,
                 "categoryIcon.iconPath",
                 "When category is root then icon must be defined."
         );
@@ -106,5 +106,46 @@ public class CategoryController {
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
         return DEFAULT_REDIRECT_URL;
     }
+
+    @GetMapping("/categories/delete/{id}")
+    public String deleteCategory(@PathVariable("id") Integer id,
+                                 RedirectAttributes redirectAttributes)
+            throws CategoryIllegalStateException, CategoryNotFoundException {
+        categoryService.delete(id);
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                                             "The category [ID: " + id + "] " + "has " + "been deleted successfully"
+        );
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
+    @GetMapping("/categories/delete_branch/{id}")
+    public String deleteCategoryBranch(@PathVariable("id") Integer id,
+                                       RedirectAttributes ra)
+            throws CategoryNotFoundException {
+        categoryService.deleteCategoryBranch(id);
+
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                             "The branch of category [ID: " + id + "] has " + "been deleted successfully"
+        );
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
+    @GetMapping("/categories/{id}/enabled/{status}")
+    public String updateCategoryEnabledStatus(@PathVariable("id") int id,
+                                              @PathVariable("status") boolean status,
+                                              RedirectAttributes ra)
+            throws CategoryNotFoundException {
+        categoryService.toggleCategoryEnabledStatus(id, status);
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                             "The category ID " + id + " has been "
+                                     + (status ? "enabled" : "disabled")
+        );
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
+
 
 }

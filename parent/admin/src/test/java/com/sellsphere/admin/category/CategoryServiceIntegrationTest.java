@@ -4,6 +4,8 @@ import com.adobe.testing.s3mock.junit5.S3MockExtension;
 import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryIllegalStateException;
+import com.sellsphere.common.entity.CategoryNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,6 +39,9 @@ class CategoryServiceIntegrationTest {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -203,4 +208,83 @@ class CategoryServiceIntegrationTest {
         // Then
         assertFalse(result);
     }
+
+    @Test
+    void givenCategoryWithNoChildren_whenDelete_thenCategoryDeleted() throws CategoryNotFoundException,
+            CategoryIllegalStateException {
+        // Given
+        Category categoryWithNoChildren = categoryRepository.findByAlias("vacuum_cleaners").orElseThrow(CategoryNotFoundException::new);
+
+        // When
+        categoryService.delete(categoryWithNoChildren.getId());
+
+        // Then
+        assertFalse(categoryRepository.existsById(categoryWithNoChildren.getId()), "Category should be deleted");
+    }
+
+    @Test
+    void givenCategoryWithChildren_whenDelete_thenThrowException()
+            throws CategoryNotFoundException {
+        // Given
+        Category categoryWithChildren = categoryRepository.findByAlias("computers").orElseThrow(CategoryNotFoundException::new);
+
+        // When & Then
+        assertThrows(CategoryIllegalStateException.class, () -> categoryService.delete(categoryWithChildren.getId()));
+    }
+
+    @Test
+    void givenNonExistentCategory_whenDelete_thenThrowException() {
+        // Given
+        int nonExistentCategoryId = 999;
+
+        // When & Then
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.delete(nonExistentCategoryId));
+    }
+
+    @Test
+    void givenCategoryWithChildren_whenDeleteCategoryBranch_thenCategoryAndChildrenDeleted() throws CategoryNotFoundException {
+        // Given
+        Category categoryWithChildren = categoryRepository.findByAlias("computers").orElseThrow(CategoryNotFoundException::new);
+
+        // When
+        categoryService.deleteCategoryBranch(categoryWithChildren.getId());
+
+        // Then
+        TestCategoryHelper.assertCategoryBranchDeleted(categoryRepository, categoryWithChildren);
+    }
+
+    @Test
+    void givenNonExistentCategory_whenDeleteCategoryBranch_thenThrowException() {
+        // Given
+        int nonExistentCategoryId = 999;
+
+        // When & Then
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.deleteCategoryBranch(nonExistentCategoryId));
+    }
+
+    @Test
+    void givenCategory_whenToggleEnabledStatus_thenStatusToggled() throws CategoryNotFoundException {
+        // Given
+        Category category = categoryRepository.findByAlias("computers").orElseThrow(CategoryNotFoundException::new);
+        boolean initialStatus = category.isEnabled();
+
+        // When
+        categoryService.toggleCategoryEnabledStatus(category.getId(), !initialStatus);
+
+        // Then
+        Category updatedCategory = categoryRepository.findById(category.getId()).orElseThrow(CategoryNotFoundException::new);
+        assertEquals(!initialStatus, updatedCategory.isEnabled(), "Category enabled status should be toggled");
+        TestCategoryHelper.assertCategoryEnabledStatus(updatedCategory, !initialStatus);
+    }
+
+    @Test
+    void givenNonExistentCategory_whenToggleEnabledStatus_thenThrowException() {
+        // Given
+        int nonExistentCategoryId = 999;
+
+        // When & Then
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.toggleCategoryEnabledStatus(nonExistentCategoryId, true));
+    }
+
+
 }

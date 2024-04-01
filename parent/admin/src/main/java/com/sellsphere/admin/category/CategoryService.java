@@ -76,6 +76,18 @@ public class CategoryService {
         );
     }
 
+    public void deleteCategoryBranch(Integer categoryId)
+            throws CategoryNotFoundException {
+        Category root = categoryRepository.findById(categoryId)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        List<Integer> categoryList = expandHierarchy(root, 0)
+                .map(Category::getId)
+                .toList();
+
+        categoryRepository.deleteAllById(categoryList);
+    }
+
     private List<Category> createHierarchy(List<Category> categoryList) {
         return categoryList.stream().filter(category -> category.getParent() == null).flatMap(
                 category -> expandHierarchy(category, 0)).toList();
@@ -154,6 +166,45 @@ public class CategoryService {
             String updatedPath = parentHierarchyPath.concat(category.getParent().getId() + "-");
             category.setAllParentIDs(updatedPath);
         }
+    }
+
+    public void delete(Integer id)
+            throws CategoryNotFoundException, CategoryIllegalStateException {
+        Category category = get(id);
+
+        if (!category.getChildren().isEmpty()) {
+            List<String> childrenNames = category.getChildren().stream()
+                    .map(Category::getName)
+                    .toList();
+
+            throw new CategoryIllegalStateException(
+                    "Category " + category.getName() + " cannot be removed. " +
+                            "First delete all referenced children:" + childrenNames);
+        }
+
+        categoryRepository.deleteById(id);
+    }
+
+    public void toggleCategoryEnabledStatus(Integer id, boolean enabled)
+            throws CategoryNotFoundException {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        updateEnabledStatusRecursively(category, enabled);
+        categoryRepository.save(category);
+    }
+
+    private void updateEnabledStatusRecursively(Category category,
+                                                boolean enabled) {
+
+        // Sets the enabled status for the current category and recursively
+        // updates all children to match.
+        category.setEnabled(enabled);
+
+        // Iterates through each child, applying the same enabled status down
+        // the hierarchy.
+        category.getChildren().forEach(
+                child -> updateEnabledStatusRecursively(child, enabled));
     }
 
 }

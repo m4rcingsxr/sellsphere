@@ -41,6 +41,7 @@
                 </td>
                 <td>
                     <a th:replace="~{list_fragments :: delete_entity(|/categories/delete/${category.id}|)}"></a>
+                    <a th:href="@{|/categories/delete_branch/${category.id}|}" id="deleteBranch"><i class="fa-solid fa-eraser fa-xl"></i></a>
                     <a th:replace="~{list_fragments :: edit_entity(|/categories/edit/${category.id}|)}"></a>
                 </td>
             </tr>
@@ -53,5 +54,9 @@
 </main>
 
 <footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
+<div th:replace="~{modal_fragments :: confirm_close_modal('statusModal', 'Confirm')}"></div>
+<script type="text/javascript" th:src="@{/js/categories.js}"></script>
 </body>
 </html>
