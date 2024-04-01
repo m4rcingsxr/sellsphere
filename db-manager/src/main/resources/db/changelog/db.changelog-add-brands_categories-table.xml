@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+
+    <changeSet id="1718363846085-1" author="m4rcingsxr">
+        <createTable tableName="brands_categories">
+            <column name="brand_id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_brands_categories"/>
+            </column>
+            <column name="category_id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_brands_categories"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="brand_id" baseTableName="brands_categories" constraintName="fk_bracat_on_brand" referencedColumnNames="id" referencedTableName="brands"/>
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="brands_categories" constraintName="fk_bracat_on_category" referencedColumnNames="id" referencedTableName="categories"/>
+    </changeSet>
+</databaseChangeLog>

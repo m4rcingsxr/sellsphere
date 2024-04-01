@@ -54,4 +54,7 @@
                                  referencedTableName="categories"/>
     </changeSet>
 
+
+
+
 </databaseChangeLog>

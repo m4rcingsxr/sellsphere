@@ -9,4 +9,6 @@
     <include file="db/changelog/db.changelog-add-roles-table.xml"/>
     <include file="db/changelog/db.changelog-add-users-table.xml"/>
     <include file="db/changelog/db-changelog-add-categories-table.xml"/>
+    <include file="db/changelog/db.changelog-add-brands-table.xml"/>
+    <include file="db/changelog/db.changelog-add-brands_categories-table.xml"/>
 </databaseChangeLog>

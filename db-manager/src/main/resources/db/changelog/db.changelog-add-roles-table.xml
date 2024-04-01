@@ -23,5 +23,4 @@
     <changeSet id="1717789194016-4" author="Marcin Seweryn">
         <addUniqueConstraint columnNames="name" constraintName="uc_roles_name" tableName="roles"/>
     </changeSet>
-
 </databaseChangeLog>

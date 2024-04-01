@@ -52,6 +52,9 @@ public class Category extends IdentifiedEntity {
     @OrderBy("name asc")
     private Set<Category> children = new HashSet<>();
 
+    @ManyToMany(mappedBy = "categories")
+    private Set<Brand> brands = new HashSet<>();
+
     @OneToOne(mappedBy = "category", cascade = CascadeType.ALL)
     private CategoryIcon categoryIcon;
 
