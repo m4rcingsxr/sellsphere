@@ -5,7 +5,7 @@ $(function () {
 })
 
 function initializeDeleteEntityListener() {
-    $("tbody").on('click', '#deleteEntity', function (event) {
+    $(".content").on('click', '#deleteEntity', function (event) {
         event.preventDefault();
         const deleteEntityURL = $(this).attr("href");
 

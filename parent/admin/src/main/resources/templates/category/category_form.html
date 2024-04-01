@@ -16,9 +16,12 @@
                     <input th:replace="~{form_fragments :: hidden_input('id')}"/>
                     <th:block th:replace="~{form_fragments :: text_input('Category name', 'name', false)}"></th:block>
                     <th:block th:replace="~{form_fragments :: text_input('Alias', 'alias', false)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: select_input('Parent Category', ${categoryList}, 'parent', false)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${category.enabled}, false)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: image_input(${category.mainImagePath}, 'image', 150, 150)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: select_input('Parent Category', ${categoryList}, 'parent', false)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${category.enabled}, false)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: image_input(${category.mainImagePath}, 'image', 150, 150)}"></th:block>
 
 
                     <label class="col-sm-4 col-form-label icon">Category icon</label>
@@ -32,22 +35,27 @@
 
                     <label class="col-form-label col-sm-4 icon">Select category icon</label>
                     <div class="col-sm-8 position-relative icon">
-                        <div class="d-flex gap-2">
+                        <div class="row g-2">
 
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="search" placeholder="Search for icons">
-                                <button type="button" class="btn btn-primary" onclick="searchIcons()">Search</button>
+                            <div class="col-sm-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="search" placeholder="Search for icons">
+                                    <button type="button" class="btn btn-primary" onclick="searchIcons()">Search
+                                    </button>
+                                </div>
                             </div>
 
-                            <select id="iconSize" class="form-control">
-                                <option value="fa-2xs">2xs</option>
-                                <option value="xs">xs</option>
-                                <option value="fa-sm">Small</option>
-                                <option value="" selected>Regular</option>
-                                <option value="fa-lg">Large</option>
-                                <option value="fa-xl">xl</option>
-                                <option value="fa-2xl">2xl</option>
-                            </select>
+                            <div class="col-sm-6">
+                                <select id="iconSize" class="form-control">
+                                    <option value="fa-2xs">2xs</option>
+                                    <option value="xs">xs</option>
+                                    <option value="fa-sm">Small</option>
+                                    <option value="" selected>Regular</option>
+                                    <option value="fa-lg">Large</option>
+                                    <option value="fa-xl">xl</option>
+                                    <option value="fa-2xl">2xl</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="p-4 border border-2 rounded-2 mt-3" id="results"></div>
@@ -55,10 +63,6 @@
                         <nav aria-label="Page navigation" class="mt-4">
                             <ul class="pagination justify-content-center" id="pagination"></ul>
                         </nav>
-
-                        <div class="position-absolute bottom-0 end-0">
-                            <a href="https://fontawesome.com/search?o=r&m=free">Powered by FontAwesome <i class="fab fa-font-awesome"></i></a>
-                        </div>
                     </div>
 
                 </div>

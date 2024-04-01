@@ -1,18 +1,33 @@
 $(document).ready(function () {
+    setItemsPerPage();
     handleIconDisplay($("#parent").val());
     listAllIcons();
     initListeners();
+    $(window).resize(setItemsPerPage); // Adjust items per page on window resize
 });
 
 let currentPage = 1;
-const itemsPerPage = 100;
+let itemsPerPage = 50;
 let currentIcons = [];
 
+function setItemsPerPage() {
+    const width = $(window).width();
+    if (width <= 575) {
+        itemsPerPage = 20; // For x-small screens
+    } else if (width <= 768) {
+        itemsPerPage = 30; // For small screens
+    } else if (width <= 992) {
+        itemsPerPage = 40; // For medium screens
+    } else {
+        itemsPerPage = 50; // For large screens
+    }
+    displayIcons(currentIcons, currentPage);
+}
 
 function initListeners() {
     $("#results").on("click", "i", handleIconClick);
     $("#iconSize").on("change", handleIconSizeChange);
-    $("#parent").on("change", event => handleIconDisplay(event.target.value))
+    $("#parent").on("change", event => handleIconDisplay(event.target.value));
 }
 
 function handleIconClick(event) {
@@ -107,8 +122,8 @@ function setupPagination(totalItems, currentPage) {
             paginationContainer.appendChild(createDotsItem());
         }
 
-        const start = Math.max(2, currentPage - 2);
-        const end = Math.min(totalPages - 1, currentPage + 2);
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
 
         for (let i = start; i <= end; i++) {
             if (i === 1 || i === totalPages) continue; // Skip first and last page if already included

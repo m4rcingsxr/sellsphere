@@ -3,8 +3,8 @@ $(function () {
 });
 
 function initializeEventListeners() {
-    $("tbody").on('click', '#statusEntity', handleStatusEntityClick);
-    $("tbody").on('click', '#deleteBranch', handleDeleteBranchClick);
+    $(".content").on('click', '#statusEntity', handleStatusEntityClick);
+    $(".content").on('click', '#deleteBranch', handleDeleteBranchClick);
 }
 
 function handleStatusEntityClick(event) {
