@@ -11,8 +11,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -22,6 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @Sql(scripts = {"classpath:sql/brands.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class BrandControllerIntegrationTest {
+
+    private static final String BRAND_FORM_PATH = "brand/brand_form";
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,7 +39,7 @@ class BrandControllerIntegrationTest {
     @WithMockUser(roles = "ADMIN")
     void listPageWithoutKeyword_ShouldReturnCorrectPage() throws Exception {
         int testPageNum = 0;
-        int expectedSize = 10; // Adjust expectedSize based on your test data
+        int expectedSize = 10;
 
         mockMvc.perform(get("/brands/page/{pageNum}", testPageNum)
                                 .param("sortField", "name")
@@ -48,6 +49,28 @@ class BrandControllerIntegrationTest {
                 .andExpect(model().attributeDoesNotExist("keyword"))
                 .andExpect(model().attribute("brandList", hasSize(expectedSize)))
                 .andExpect(view().name("brand/brands"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void showBrandForm_WhenNewBrand_ShouldDisplayFormWithDefaultBrand() throws Exception {
+        mockMvc.perform(get("/brands/new"))
+                .andExpect(status().isOk())
+                .andExpect(view().name(BRAND_FORM_PATH))
+                .andExpect(model().attributeExists("brand", "categoryList", "pageTitle"))
+                .andExpect(model().attribute("pageTitle", "Create New Brand"))
+                .andExpect(model().attribute("brand", hasProperty("name", isEmptyOrNullString())));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void showBrandForm_WhenExistingBrand_ShouldDisplayFormWithBrandData() throws Exception {
+        int existingBrandId = 1;
+        mockMvc.perform(get("/brands/edit/{id}", existingBrandId))
+                .andExpect(status().isOk())
+                .andExpect(view().name(BRAND_FORM_PATH))
+                .andExpect(model().attributeExists("brand", "categoryList", "pageTitle"))
+                .andExpect(model().attribute("pageTitle", containsString("Edit Brand")));
     }
 
 }

@@ -84,23 +84,8 @@ function addFileValidators() {
     }, `File must be less than ${MAX_FILE_SIZE} bytes.`);
 }
 
-/**
- * Configures form validation settings and rules.
- *
- * Requirements:
- * 1. A form with the id "mainForm" for validation.
- *    Example: <form id="mainForm">...</form>
- * 2. (Optional) A form with the id "brandForm" for additional validation.
- *    Example: <form id="brandForm">...</form>
- * 3. `validationRules`, `validationMessages`, and optional `dynamicRules` must be defined in the scope.
- */
 function configureFormValidation() {
     validateForm("#mainForm");
-
-    const brandForm = $("#brandForm");
-    if (brandForm.length > 0) {
-        validateForm("#brandForm", brandSubmitHandler);
-    }
 
     // Apply dynamic rules if they exist
     if (Array.isArray(dynamicRules) && dynamicRules.length > 0) {

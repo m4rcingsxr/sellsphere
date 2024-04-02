@@ -88,6 +88,15 @@
     </div>
 </th:block>
 
+<!-- MULTI SELECT INPUT -->
+<th:block th:fragment="multi_select(label, entityList, entityField)">
+    <label class="col-sm-4 col-form-label" th:text="${label}">Label</label>
+    <div class="col-sm-8">
+        <select class="form-select" th:field="*{__${entityField}__}" multiple size="15">
+            <option th:each="entity : ${entityList}" th:value="${entity.id}">[[${entity.name}]]</option>
+        </select>
+    </div>
+</th:block>
 
 <!-- FORM BUTTONS -->
 <div th:fragment="form_buttons(entity)" class="d-flex justify-content-center gap-3 mt-3">

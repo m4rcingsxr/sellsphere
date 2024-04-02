@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{form_fragments :: head(${pageTitle})}"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="container mt-4">
+        <h1 class="text-center" th:text="${pageTitle}"></h1>
+        <form id="mainForm" method="POST" th:action="@{/brands/save}" th:object="${brand}"
+              enctype="multipart/form-data">
+            <div class="mx-auto mt-5">
+
+                <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                    <input th:replace="~{form_fragments :: hidden_input('id')}"/>
+                    <th:block th:replace="~{form_fragments :: text_input('Brand name', 'name', false)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: image_input(${brand.logoImagePath}, 'logo', 150, 150)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: multi_select('Select categories', ${categoryList}, 'categories')}"></th:block>
+
+                    <label class="col-sm-4">Selected categories</label>
+                    <div id="badges" class="col-sm-8 d-flex flex-wrap gap-2"></div>
+                </div>
+
+                <div th:replace="~{form_fragments :: form_buttons(${brand})}"></div>
+            </div>
+        </form>
+    </div>
+
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+<script type="text/javascript" th:src="@{/js/brand_form.js}"></script>
+<script type="text/javascript">
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const WIDTH = 150;
+    const HEIGHT = 150;
+    const QUALITY = 1;
+
+    const MODULE_URL = "[[@{/}]]";
+
+    const validationRules = {
+        name: {
+            required: true,
+            maxlength: 45,
+            alphanumeric: true,
+            remote: {
+                url: `${MODULE_URL}brands/check_uniqueness`,
+                type: "post",
+                data: {
+                    name: function () {
+                        return $('input[name="name"]').val();
+                    },
+                    _csrf: function () {
+                        return $('input[name="_csrf"]').val();
+                    },
+                    id: function () {
+                        return $('input[name="id"]').val();
+                    }
+                },
+                error: function (jqXHR) {
+                    handleRemoteValidationError(jqXHR);
+                }
+            }
+        },
+        newImage: {
+            imageRequired: ["logo"],
+            maxImageSize: true
+        }
+    };
+
+    const validationMessages = {
+        name: {
+            required: "Brand name is required.",
+            maxlength: "Brand name must not exceed 45 characters.",
+            alphanumeric: 'Please use only alphanumeric characters (letters and numbers).',
+            remote: 'This brand name is already in use. Please choose a unique name.'
+        },
+        newImage: {
+            imageRequired: "A brand logo is required.",
+            maxImageSize: `The brand logo must be smaller than ${formatBytes(MAX_FILE_SIZE)}. Please choose a smaller image.`,
+        }
+    };
+
+    const dynamicRules = [];
+</script>
+</body>
+</html>

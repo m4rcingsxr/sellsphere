@@ -1,6 +1,8 @@
 package com.sellsphere.admin.brand;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
+import com.sellsphere.common.entity.Brand;
+import com.sellsphere.common.entity.BrandNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,4 +18,8 @@ public class BrandService {
         helper.listEntities(pageNum, BRANDS_PER_PAGE, brandRepository);
     }
 
+    public Brand get(Integer id) throws BrandNotFoundException {
+        return brandRepository.findById(id).orElseThrow(
+                BrandNotFoundException::new);
+    }
 }
