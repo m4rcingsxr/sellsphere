@@ -37,4 +37,8 @@ public class Brand extends IdentifiedEntity{
                 "-photos/" + this.id + "/" + logo);
     }
 
+    public void addCategory(Category category) {
+        this.categories.add(category);
+    }
+
 }
