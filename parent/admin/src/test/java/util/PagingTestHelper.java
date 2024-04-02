@@ -1,5 +1,6 @@
 package util;
 
+import com.sellsphere.admin.page.PagingAndSortingHelper;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +17,26 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @UtilityClass
 public class PagingTestHelper {
+
+    public static <T> void assertPagingResults(PagingAndSortingHelper helper, int expectedPages,
+                                               int expectedTotalItems, int expectedContentSize,
+                                               String sortProperty, boolean ascending) {
+        String listName = helper.getListName();
+        List<T> entities = (List<T>) helper.getModel().getModel().get(listName);
+
+        Integer totalPages = (Integer) helper.getModel().getModel().get("totalPages");
+        Long totalItems = (Long) helper.getModel().getModel().get("totalItems");
+
+        assertNotNull(entities, "Content should not be null");
+        assertEquals(expectedContentSize, entities.size(),
+                     "Page content should be size " + expectedContentSize
+        );
+        assertEquals(expectedPages, totalPages, "Total pages should be size " + expectedPages);
+        assertEquals(expectedTotalItems, totalItems,
+                     "Total elements should be " + expectedTotalItems
+        );
+        assertSorting(entities, sortProperty, ascending);
+    }
 
     /**
      * Asserts the paging results for a given page.
@@ -43,8 +64,11 @@ public class PagingTestHelper {
                      "Total elements should be " + expectedTotalElements
         );
 
-        // Assert sorting
-        List<Comparable> sortProperties = page.getContent().stream().map(entity -> {
+        assertSorting(page.getContent(), sortProperty, ascending);
+    }
+
+    public static <T> void assertSorting(List<T> entities, String sortProperty, boolean ascending) {
+        List<Comparable> sortProperties = entities.stream().map(entity -> {
             try {
                 Method getter = entity.getClass().getMethod("get" + capitalize(sortProperty));
                 return (Comparable) getter.invoke(entity);
@@ -53,16 +77,13 @@ public class PagingTestHelper {
             }
         }).toList();
 
-        boolean isSorted = IntStream.range(0, sortProperties.size() - 1).allMatch(i -> {
+        boolean isSortedCorrectly = IntStream.range(0, sortProperties.size() - 1).allMatch(i -> {
             Comparable first = sortProperties.get(i);
             Comparable second = sortProperties.get(i + 1);
             return ascending ? first.compareTo(second) <= 0 : first.compareTo(second) >= 0;
         });
 
-        assertTrue(isSorted,
-                   "Entities should be sorted by " + sortProperty + " in " + (ascending ?
-                           "ascending" : "descending") + " order"
-        );
+        assertTrue(isSortedCorrectly);
     }
 
     /**

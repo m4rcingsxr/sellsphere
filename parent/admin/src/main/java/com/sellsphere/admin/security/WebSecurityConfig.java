@@ -41,6 +41,7 @@ public class WebSecurityConfig {
                 ).permitAll()
                 .requestMatchers("/users/**").hasRole(ADMIN)
                 .requestMatchers("/categories/**").hasAnyRole(ADMIN, EDITOR)
+                .requestMatchers("/brands/**").hasAnyRole(ADMIN, EDITOR)
                 .anyRequest().authenticated());
     }
 
