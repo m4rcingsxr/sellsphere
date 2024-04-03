@@ -4,6 +4,7 @@ import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
+import com.sellsphere.common.entity.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,8 +49,12 @@ public class BrandService {
 
     // Removes leading dashes(hierarchy) from category names associated with the brand.
     private void removeLeadingDashFromCategories(Brand brand) {
-        brand.getCategories().forEach(
-                category -> category.setName(category.getName().replace("-", "")));
+        brand.getCategories().forEach(this::removeCategoryDashes);
+    }
+
+    private void removeCategoryDashes(Category category) {
+        category.setName(category.getName().replace("-", ""));
+        category.getChildren().forEach(this::removeCategoryDashes);
     }
 
 }

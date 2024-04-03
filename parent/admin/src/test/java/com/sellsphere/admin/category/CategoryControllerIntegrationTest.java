@@ -32,9 +32,6 @@ class CategoryControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private EntityManager entityManager;
-
     private static final String EXPECTED_DEFAULT_REDIRECT_URL = "/categories/page/0?sortField" +
             "=name&sortDir=asc";
 

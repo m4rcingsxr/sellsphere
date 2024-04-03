@@ -4,6 +4,7 @@ import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
+import com.sellsphere.common.entity.Category;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,7 +14,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -139,6 +142,32 @@ class BrandServiceUnitTest {
         assertNull(result.getLogo());
         verify(fileService, never()).saveSingleFile(any(), anyString(), anyString());
         verify(brandRepository).save(brand);
+    }
+
+    @Test
+    void givenBrandWithCategories_whenRemoveLeadingDashFromCategories_thenDashesAreRemoved()
+            throws IOException {
+        // given
+        Brand brand = new Brand();
+        Category category = new Category();
+        category.setName("Category");
+        Category category1 = new Category();
+        category1.setName("-Category1");
+        Category category2 = new Category();
+        category2.setName("--Category2");
+
+        category.addChild(category1);
+        category1.addChild(category2);
+
+        brand.addCategory(category);
+
+        // when
+        brandService.save(brand, null);
+
+        // then
+        assertEquals("Category", category.getName());
+        assertEquals("Category1", category1.getName());
+        assertEquals("Category2", category2.getName());
     }
 
 }

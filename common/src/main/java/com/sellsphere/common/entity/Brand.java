@@ -17,12 +17,11 @@ import java.util.Set;
 @Table(name = "brands")
 public class Brand extends IdentifiedEntity{
 
-    @NotNull
+    @NotNull(message = "Brand name is required")
     @Size(min = 1, max = 45, message = "brand name must be between 1 and 45 characters")
     @Column(name = "name", length = 45, nullable = false, unique = true)
     private String name;
 
-    @NotNull
     @Size(min = 1, max = 45, message = "logo name must be between 1 and 45 characters")
     @Column(name = "logo", length = 45, nullable = false)
     private String logo;
