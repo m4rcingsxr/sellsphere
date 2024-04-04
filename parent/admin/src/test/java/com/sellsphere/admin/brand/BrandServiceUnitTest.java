@@ -170,4 +170,51 @@ class BrandServiceUnitTest {
         assertEquals("Category2", category2.getName());
     }
 
+    @Test
+    void isNameUnique_WithNonExistingName_ShouldReturnTrue() {
+        // Given
+        String nonExistingName = "NonExistingBrand";
+        given(brandRepository.findByName(nonExistingName)).willReturn(Optional.empty());
+
+        // When
+        boolean result = brandService.isNameUnique(null, nonExistingName);
+
+        // Then
+        assertTrue(result);
+    }
+
+    @Test
+    void isNameUnique_WithExistingNameAndSameId_ShouldReturnTrue() {
+        // Given
+        String existingName = "ExistingBrand";
+        Integer existingId = 1;
+        Brand existingBrand = new Brand();
+        existingBrand.setId(existingId);
+        existingBrand.setName(existingName);
+        given(brandRepository.findByName(existingName)).willReturn(Optional.of(existingBrand));
+
+        // When
+        boolean result = brandService.isNameUnique(existingId, existingName);
+
+        // Then
+        assertTrue(result);
+    }
+
+    @Test
+    void isNameUnique_WithExistingNameAndDifferentId_ShouldReturnFalse() {
+        // Given
+        String existingName = "ExistingBrand";
+        Integer differentId = 2;
+        Brand existingBrand = new Brand();
+        existingBrand.setId(1);
+        existingBrand.setName(existingName);
+        given(brandRepository.findByName(existingName)).willReturn(Optional.of(existingBrand));
+
+        // When
+        boolean result = brandService.isNameUnique(differentId, existingName);
+
+        // Then
+        assertFalse(result);
+    }
+
 }

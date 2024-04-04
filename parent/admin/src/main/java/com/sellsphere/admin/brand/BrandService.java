@@ -57,4 +57,11 @@ public class BrandService {
         category.getChildren().forEach(this::removeCategoryDashes);
     }
 
+    public boolean isNameUnique(Integer id, String name) {
+        return brandRepository.findByName(name)
+                .map(existingBrand -> existingBrand.getId().equals(id))
+                .orElse(true);
+    }
+
+
 }
