@@ -1,6 +1,8 @@
 package com.sellsphere.admin.brand;
 
+import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.Constants;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -14,7 +16,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -30,6 +34,9 @@ class BrandControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -113,6 +120,21 @@ class BrandControllerIntegrationTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(BrandController.DEFAULT_REDIRECT_URL.replace("redirect:", "")))
                 .andExpect(flash().attributeExists(Constants.SUCCESS_MESSAGE));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void deleteBrand_ShouldRedirectWithSuccessMessage() throws Exception {
+        Integer brandId = 1; // Assuming this brand exists
+
+        mockMvc.perform(get("/brands/delete/{id}", brandId))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(BrandController.DEFAULT_REDIRECT_URL.replace("redirect:", "")))
+                .andExpect(flash().attributeExists(Constants.SUCCESS_MESSAGE));
+
+        // Additional verification to ensure the brand was actually deleted could be added here
+        Brand brand = entityManager.find(Brand.class, 1);
+        assertNull(brand);
     }
 
 }

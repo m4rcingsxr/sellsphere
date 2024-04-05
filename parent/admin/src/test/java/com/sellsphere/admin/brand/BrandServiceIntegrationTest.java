@@ -7,6 +7,7 @@ import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.Constants;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -42,6 +43,9 @@ class BrandServiceIntegrationTest {
 
     @Autowired
     private BrandRepository brandRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @BeforeAll
     static void setUpClient(final S3Client client) {
@@ -145,5 +149,17 @@ class BrandServiceIntegrationTest {
 
         // When & Then
         assertThrows(BrandNotFoundException.class, () -> brandService.get(brandId));
+    }
+
+    @Test
+    void givenBrandId_whenDeleteBrand_thenBrandIsDeletedSuccessfully() {
+        // Given
+        Integer brandId = 2; // Assume this brand exists in your database
+
+        // When
+        assertDoesNotThrow(() -> brandService.delete(brandId), "Expected delete not to throw");
+
+        // Then
+        assertNull(entityManager.find(Brand.class, brandId), "Expected brand to be deleted");
     }
 }

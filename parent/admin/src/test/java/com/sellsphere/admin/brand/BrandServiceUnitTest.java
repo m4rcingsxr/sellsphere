@@ -217,4 +217,30 @@ class BrandServiceUnitTest {
         assertFalse(result);
     }
 
+    @Test
+    void whenDeleteExistingBrand_ShouldCallRepositoryDelete() throws BrandNotFoundException {
+        // Given
+        Integer brandId = 1;
+        Brand existingBrand = new Brand();
+        existingBrand.setId(brandId);
+        given(brandRepository.findById(brandId)).willReturn(Optional.of(existingBrand));
+
+        // When
+        brandService.delete(brandId);
+
+        // Then
+        then(brandRepository).should().delete(existingBrand);
+    }
+
+    @Test
+    void whenDeleteNotExistingBrand_ShouldThrowBrandNotFoundException() {
+        // Given
+        Integer brandId = -1;
+        given(brandRepository.findById(brandId)).willReturn(Optional.empty());
+
+        // When
+        // Then
+        assertThrows(BrandNotFoundException.class, () -> brandService.delete(brandId));
+    }
+
 }

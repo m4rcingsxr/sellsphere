@@ -64,4 +64,9 @@ public class BrandService {
     }
 
 
+    public void delete(Integer id) throws BrandNotFoundException {
+        Brand brand = get(id);
+        brandRepository.delete(brand);
+    }
+
 }

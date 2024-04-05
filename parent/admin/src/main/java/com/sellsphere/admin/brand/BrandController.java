@@ -114,5 +114,18 @@ public class BrandController {
 
     }
 
+    @GetMapping("/brands/delete/{id}")
+    public String deleteBrand(@PathVariable("id") Integer id,
+                              RedirectAttributes redirectAttributes)
+            throws BrandNotFoundException {
+        brandService.delete(id);
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                                             "The Brand [ID: " + id + "] has been deleted " +
+                                                     "successfully"
+        );
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
 
 }
