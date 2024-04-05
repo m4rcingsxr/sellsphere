@@ -25,16 +25,15 @@ import java.util.List;
 @Controller
 public class UserController {
 
-    public static final String DEFAULT_REDIRECT_URL =
-            "redirect:/users/page/0?sortField=firstName&sortDir=asc";
+    public static final String DEFAULT_REDIRECT_URL = "redirect:/users/page/0?sortField=firstName" +
+            "&sortDir=asc";
     private static final String USER_FORM = "user/user_form";
 
     private final UserService userService;
 
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
-        dataBinder.registerCustomEditor(String.class, new StringTrimmerEditor(true)
-        );
+        dataBinder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
     @GetMapping("/users")
@@ -44,8 +43,7 @@ public class UserController {
 
     @GetMapping("/users/page/{pageNum}")
     public String listPage(
-            @PagingAndSortingParam(listName = "userList", moduleURL = "/users"
-            ) PagingAndSortingHelper helper,
+            @PagingAndSortingParam(listName = "userList", moduleURL = "/users") PagingAndSortingHelper helper,
             @PathVariable("pageNum") Integer pageNum) {
         userService.listPage(pageNum, helper);
 
@@ -53,8 +51,8 @@ public class UserController {
     }
 
     @GetMapping({"/users/new", "/users/edit/{id}"})
-    public String showUserForm(@PathVariable(required = false, name = "id") Integer id,
-                               Model model) throws UserNotFoundException {
+    public String showUserForm(@PathVariable(required = false, name = "id") Integer id, Model model)
+            throws UserNotFoundException {
         User user;
         String pageTitle;
 
@@ -81,21 +79,22 @@ public class UserController {
 
 
     @PostMapping("/users/save")
-    public String saveUser(@Valid @ModelAttribute("user") User user,
-                           BindingResult bindingResult,
+    public String saveUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult,
                            RedirectAttributes ra,
                            @RequestParam(value = "newImage", required = false) MultipartFile file)
             throws IOException, UserNotFoundException {
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.user");
-        validationHelper.validateMultipartFile(file, user.getId(), "mainImage", "An image file is required.");
+        validationHelper.validateMultipartFile(file, user.getId(), "mainImage",
+                                               "An image file is required."
+        );
         validationHelper.validatePassword(user.getPassword(), user.getId());
 
         if (!validationHelper.validate()) {
             return USER_FORM;
         }
 
-        String successMessage = "The user has been " + (user.getId() != null
-                ? "updated" : "saved") + " successfully.";
+        String successMessage = "The user has been " + (user.getId() != null ? "updated" : "saved"
+        ) + " successfully.";
 
         userService.save(user, file);
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
@@ -112,25 +111,24 @@ public class UserController {
 
     @GetMapping("/users/delete/{id}")
     public String deleteUser(@PathVariable(name = "id") Integer id,
-                             RedirectAttributes redirectAttributes)
-            throws UserNotFoundException {
+                             RedirectAttributes redirectAttributes) throws UserNotFoundException {
         userService.delete(id);
-        redirectAttributes.addFlashAttribute(
-                Constants.SUCCESS_MESSAGE, "The user [ID: "
-                        + id + "] has been deleted successfully");
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                                             "The user [ID: " + id + "] has been deleted " +
+                                                     "successfully"
+        );
 
         return DEFAULT_REDIRECT_URL;
     }
 
     @GetMapping("/users/{id}/enabled/{status}")
-    public String updateUserEnabledStatus(@PathVariable Integer id,
-                                          @PathVariable boolean status,
-                                          RedirectAttributes ra)
-            throws UserNotFoundException {
+    public String updateUserEnabledStatus(@PathVariable Integer id, @PathVariable boolean status,
+                                          RedirectAttributes ra) throws UserNotFoundException {
         userService.updateUserEnabledStatus(id, status);
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE,
-                             "The user [ID: " + id + "] has been "
-                                     + (status ? "enabled" : "disabled"));
+                             "The user [ID: " + id + "] has been " + (status ? "enabled" :
+                                     "disabled")
+        );
 
         return DEFAULT_REDIRECT_URL;
     }

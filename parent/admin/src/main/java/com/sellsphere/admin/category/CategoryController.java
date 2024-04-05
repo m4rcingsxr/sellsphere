@@ -57,23 +57,16 @@ public class CategoryController {
             throws CategoryNotFoundException {
 
         Category category;
-        String pageTitle;
 
         if (id != null) {
             category = categoryService.get(id);
-            pageTitle = "Edit Category [ID: " + id + "]";
         } else {
             category = new Category();
-            pageTitle = "Create new category";
         }
 
-        List<Category> categoryList = categoryService.listAllRootCategoriesSorted("name",
-                                                                                  Constants.SORT_ASCENDING
-        );
-
-        model.addAttribute("categoryList", categoryList);
         model.addAttribute("category", category);
-        model.addAttribute("pageTitle", pageTitle);
+
+        prepareModelForCategoryForm(model, id);
 
         return CATEGORY_FORM;
     }
@@ -81,8 +74,9 @@ public class CategoryController {
     @PostMapping("/categories/save")
     public String saveCategory(@Valid @ModelAttribute("category") Category category,
                                BindingResult bindingResult, RedirectAttributes ra,
-                               @RequestParam(value = "newImage", required = false) MultipartFile file)
-            throws IOException, CategoryIllegalStateException {
+                               @RequestParam(value = "newImage", required = false) MultipartFile file,
+                               Model model)
+            throws IOException, CategoryIllegalStateException{
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.category");
         validationHelper.validateMultipartFile(file, category.getId(), "image",
                                                "An image file is required."
@@ -94,6 +88,7 @@ public class CategoryController {
         );
 
         if (!validationHelper.validate()) {
+            prepareModelForCategoryForm(model, category.getId());
             return CATEGORY_FORM;
         }
 
@@ -105,6 +100,21 @@ public class CategoryController {
 
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
         return DEFAULT_REDIRECT_URL;
+    }
+
+    private void prepareModelForCategoryForm(Model model, Integer id) {
+        String pageTitle;
+
+        if (id != null) {
+            pageTitle = "Edit Category [ID: " + id + "]";
+        } else {
+            pageTitle = "Create new category";
+        }
+
+        List<Category> categoryList = categoryService.listAllRootCategoriesSorted("name", Constants.SORT_ASCENDING);
+
+        model.addAttribute("categoryList", categoryList);
+        model.addAttribute("pageTitle", pageTitle);
     }
 
     @GetMapping("/categories/delete/{id}")
@@ -145,7 +155,6 @@ public class CategoryController {
 
         return DEFAULT_REDIRECT_URL;
     }
-
 
 
 }

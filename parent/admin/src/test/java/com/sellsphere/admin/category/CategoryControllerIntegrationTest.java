@@ -87,7 +87,7 @@ class CategoryControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void saveCategory_WithNewData_ShouldRedirectWithSuccessMessage() throws Exception {
+    void saveCategory_WithNewValidData_ShouldRedirectWithSuccessMessage() throws Exception {
         MockMultipartFile newImage = new MockMultipartFile(
                 "newImage", // the name of the request parameter
                 "test-image.jpg",
@@ -106,5 +106,25 @@ class CategoryControllerIntegrationTest {
                 .andExpect(flash().attribute(Constants.SUCCESS_MESSAGE,
                                              containsString("successfully")
                 ));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void saveCategory_WhenInvalidData_ShouldReturnFormWithErrors() throws Exception {
+        // Given
+        MockMultipartFile file = new MockMultipartFile("newImage", "", "image/jpeg", new byte[]{});
+
+        // When & Then
+        mockMvc.perform(multipart("/categories/save")
+                                .file(file)
+                                .param("name", "") // Invalid name (empty)
+                                .param("alias", "") // Invalid alias (empty)
+                                .param("categoryIcon.iconPath", "") // Invalid icon path (empty)
+                                .with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name(CategoryController.CATEGORY_FORM))
+                .andExpect(model().attributeHasFieldErrors("category", "name", "alias", "image", "categoryIcon.iconPath"))
+                .andExpect(model().attributeExists("categoryList", "pageTitle"));
     }
 }

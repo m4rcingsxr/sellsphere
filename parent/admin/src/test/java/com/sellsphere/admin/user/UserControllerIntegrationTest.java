@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,7 +19,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -29,14 +32,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class UserControllerIntegrationTest {
 
+    private static final String EXPECTED_REDIRECT_URL = "/users/page/0?sortField=firstName" +
+            "&sortDir=asc";
+
+    private static final String USER_FORM = "user/user_form";
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private EntityManager entityManager;
 
-    private static final String EXPECTED_REDIRECT_URL = "/users/page/0?sortField=firstName" +
-            "&sortDir=asc";
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -121,6 +127,55 @@ class UserControllerIntegrationTest {
         assertEquals(newStatus, userAfterUpdate.isEnabled(),
                      "User's enabled status should be updated."
         );
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void saveBrand_WhenInvalidData_ShouldReturnFormWithErrors() throws Exception {
+        // Given
+        MockMultipartFile file = new MockMultipartFile("newImage", "test.jpg", "image/jpeg",
+                                                       "".getBytes()
+        );
+
+        // When & Then
+        mockMvc.perform(
+                multipart("/users/save").file(file).with(csrf()).param("email", "")
+                        .param("firstName", "")
+                        .param("lastName", "")
+                        .param("password", "")
+                        .param("mainImage", "")
+                        .param("enabled", "false").param("roles", "")
+        ).andExpect(status().isOk()).andExpect(
+                model().attributeHasFieldErrors("user", "email")).andExpect(
+                model().attributeHasFieldErrors("user", "firstName")).andExpect(
+                model().attributeHasFieldErrors("user", "lastName")).andExpect(
+                model().attributeHasFieldErrors("user", "password")).andExpect(
+                model().attributeHasFieldErrors("user", "mainImage")).andExpect(
+                model().attributeHasFieldErrors("user", "roles")).andExpect(
+                view().name(USER_FORM)).andExpect(model().hasErrors());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void saveUser_WhenValidData_ShouldSaveSuccessfully() throws Exception {
+        // Given
+        MockMultipartFile file = new MockMultipartFile("newImage", "", "image/jpeg", "test".getBytes());
+
+        // When & Then
+        mockMvc.perform(multipart("/users/save")
+                                .file(file)
+                                .with(csrf())
+                                .param("email", "test@example.com") // Valid email
+                                .param("firstName", "John") // Valid first name
+                                .param("lastName", "Doe") // Valid last name
+                                .param("password", "Password123") // Valid password
+                                .param("enabled", "true") // Enabled
+                                .param("roles", "1")
+
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(EXPECTED_REDIRECT_URL.concat("&keyword=test")))
+                .andExpect(flash().attributeExists(Constants.SUCCESS_MESSAGE));
     }
 
 }
