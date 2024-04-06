@@ -1,15 +1,18 @@
 package com.sellsphere.admin.brand;
 
 import com.sellsphere.admin.FileService;
+import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.Category;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +26,11 @@ public class BrandService {
 
     public void listPage(Integer pageNum, PagingAndSortingHelper helper) {
         helper.listEntities(pageNum, BRANDS_PER_PAGE, brandRepository);
+    }
+
+    public List<Brand> listAll(String sortField, String sortDirection) {
+        Sort sort = PagingHelper.getSort(sortField, sortDirection);
+        return brandRepository.findAll(sort);
     }
 
     public Brand get(Integer id) throws BrandNotFoundException {
@@ -62,7 +70,6 @@ public class BrandService {
                 .map(existingBrand -> existingBrand.getId().equals(id))
                 .orElse(true);
     }
-
 
     public void delete(Integer id) throws BrandNotFoundException {
         Brand brand = get(id);

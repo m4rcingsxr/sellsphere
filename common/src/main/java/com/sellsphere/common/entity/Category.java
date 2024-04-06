@@ -111,4 +111,6 @@ public class Category extends IdentifiedEntity {
         return this instanceof HibernateProxy ?
                 ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
+
+
 }

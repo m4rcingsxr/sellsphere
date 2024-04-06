@@ -1,12 +1,14 @@
 package com.sellsphere.admin.category;
 
 import com.sellsphere.admin.ValidationHelper;
+import com.sellsphere.admin.export.ExportUtil;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.common.entity.Category;
 import com.sellsphere.common.entity.CategoryIllegalStateException;
 import com.sellsphere.common.entity.CategoryNotFoundException;
 import com.sellsphere.common.entity.Constants;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 
 @RequiredArgsConstructor
 @Controller
@@ -75,16 +78,14 @@ public class CategoryController {
     public String saveCategory(@Valid @ModelAttribute("category") Category category,
                                BindingResult bindingResult, RedirectAttributes ra,
                                @RequestParam(value = "newImage", required = false) MultipartFile file,
-                               Model model)
-            throws IOException, CategoryIllegalStateException{
+                               Model model) throws IOException, CategoryIllegalStateException {
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.category");
         validationHelper.validateMultipartFile(file, category.getId(), "image",
                                                "An image file is required."
         );
         validationHelper.validateWithBooleanSupplier(
                 () -> category.getParent() != null || category.getCategoryIcon() != null && category.getCategoryIcon().getIconPath() != null,
-                "categoryIcon.iconPath",
-                "When category is root then icon must be defined."
+                "categoryIcon.iconPath", "When category is root then icon must be defined."
         );
 
         if (!validationHelper.validate()) {
@@ -111,7 +112,9 @@ public class CategoryController {
             pageTitle = "Create new category";
         }
 
-        List<Category> categoryList = categoryService.listAllRootCategoriesSorted("name", Constants.SORT_ASCENDING);
+        List<Category> categoryList = categoryService.listAllRootCategoriesSorted("name",
+                                                                                  Constants.SORT_ASCENDING
+        );
 
         model.addAttribute("categoryList", categoryList);
         model.addAttribute("pageTitle", pageTitle);
@@ -123,20 +126,20 @@ public class CategoryController {
             throws CategoryIllegalStateException, CategoryNotFoundException {
         categoryService.delete(id);
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
-                                             "The category [ID: " + id + "] " + "has " + "been deleted successfully"
+                                             "The category [ID: " + id + "] " + "has " + "been " + "deleted successfully"
         );
 
         return DEFAULT_REDIRECT_URL;
     }
 
     @GetMapping("/categories/delete_branch/{id}")
-    public String deleteCategoryBranch(@PathVariable("id") Integer id,
-                                       RedirectAttributes ra)
+    public String deleteCategoryBranch(@PathVariable("id") Integer id, RedirectAttributes ra)
             throws CategoryNotFoundException {
         categoryService.deleteCategoryBranch(id);
 
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE,
-                             "The branch of category [ID: " + id + "] has " + "been deleted successfully"
+                             "The branch of category [ID: " + id + "] has " + "been deleted " +
+                                     "successfully"
         );
 
         return DEFAULT_REDIRECT_URL;
@@ -149,12 +152,28 @@ public class CategoryController {
             throws CategoryNotFoundException {
         categoryService.toggleCategoryEnabledStatus(id, status);
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE,
-                             "The category ID " + id + " has been "
-                                     + (status ? "enabled" : "disabled")
+                             "The category ID " + id + " has been " + (status ? "enabled" :
+                                     "disabled")
         );
 
         return DEFAULT_REDIRECT_URL;
     }
 
+    @GetMapping("/categories/export/{format}")
+    public void exportEntities(@PathVariable String format, HttpServletResponse response)
+            throws IOException {
+        String[] headers = {"Id", "Name", "Alias", "Parent id", "Enabled"};
+
+        Function<Category, String[]> extractor = category -> new String[]{
+                String.valueOf(category.getId()), category.getName(), category.getAlias(),
+                category.getAllParentIDs() == null ? "-" : category.getAllParentIDs(),
+                String.valueOf(category.isEnabled())};
+
+        ExportUtil.export(format, this::listAll, headers, extractor, response);
+    }
+
+    private List<Category> listAll() {
+        return categoryService.listAllRootCategoriesSorted("name", Constants.SORT_ASCENDING);
+    }
 
 }

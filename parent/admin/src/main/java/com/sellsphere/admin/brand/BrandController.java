@@ -2,12 +2,14 @@ package com.sellsphere.admin.brand;
 
 import com.sellsphere.admin.ValidationHelper;
 import com.sellsphere.admin.category.CategoryService;
+import com.sellsphere.admin.export.ExportUtil;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.Category;
 import com.sellsphere.common.entity.Constants;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -21,6 +23,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Controller
@@ -72,8 +76,7 @@ public class BrandController {
     @PostMapping("/brands/save")
     public String saveBrand(@Valid @ModelAttribute("brand") Brand brand,
                             BindingResult bindingResult, RedirectAttributes redirectAttributes,
-                            Model model,
-                            @RequestParam(value = "newImage") MultipartFile file)
+                            Model model, @RequestParam(value = "newImage") MultipartFile file)
             throws IOException {
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.brand");
         validationHelper.validateMultipartFile(file, brand.getId(), "logo",
@@ -115,8 +118,7 @@ public class BrandController {
     }
 
     @GetMapping("/brands/delete/{id}")
-    public String deleteBrand(@PathVariable("id") Integer id,
-                              RedirectAttributes redirectAttributes)
+    public String deleteBrand(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes)
             throws BrandNotFoundException {
         brandService.delete(id);
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
@@ -127,5 +129,24 @@ public class BrandController {
         return DEFAULT_REDIRECT_URL;
     }
 
+    @GetMapping("/brands/export/{format}")
+    public void exportEntities(@PathVariable String format, HttpServletResponse response)
+            throws IOException {
+        String[] headers = {"Id", "Name", "Categories"};
+
+        Function<Brand, String[]> extractor = brand -> new String[]{String.valueOf(brand.getId()),
+                                                                    brand.getName(),
+                                                                    brand.getCategories().stream().map(
+                                                                            Category::getName).collect(
+                                                                            Collectors.joining(",",
+                                                                                               "\"",
+                                                                                               "\""
+                                                                            ))};
+        ExportUtil.export(format, this::listAll, headers, extractor, response);
+    }
+
+    private List<Brand> listAll() {
+        return brandService.listAll("name", Constants.SORT_ASCENDING);
+    }
 
 }

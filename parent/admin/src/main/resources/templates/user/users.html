@@ -13,6 +13,9 @@
         <!-- Alerts -->
         <div th:replace="~{common :: alerts()}"></div>
 
+        <!-- Export       -->
+        <ul th:replace="~{navigations :: export_nav('users', true)}"></ul>
+
         <!-- Search Bar -->
         <form th:replace="~{list_fragments :: search_bar('/users/page/0', 'Search for the user', 'firstName', ${keyword}, ${totalItems}, null)}"></form>
 
@@ -23,10 +26,11 @@
                 <th th:include="~{list_fragments :: column_link('/users/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'ID')}"
                     th:classappend="'hideable-md'"></th>
                 <th></th>
-                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'email', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Email')}" th:classappend="'hideable-md'"></th>
+                <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'email', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Email')}"
+                    th:classappend="'hideable-md'"></th>
                 <th th:include="~{list_fragments :: column_link('/users/page', ${currentPage}, 'firstName', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'First Name')}"></th>
                 <th th:include="~{list_fragments :: column_link('/users/page', ${currentPage}, 'lastName', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Last Name')}"
-                    ></th>
+                ></th>
                 <th>Roles</th>
                 <th th:replace="~{list_fragments :: column_link('/users/page', ${currentPage}, 'enabled', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Enabled')}"></th>
                 <th></th>

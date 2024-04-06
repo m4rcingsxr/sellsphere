@@ -13,6 +13,9 @@
         <!-- Alerts -->
         <div th:replace="~{common :: alerts()}"></div>
 
+        <!-- Export       -->
+        <ul th:replace="~{navigations :: export_nav('brands', true)}"></ul>
+
         <!-- Search Bar -->
         <form th:replace="~{list_fragments :: search_bar('/brands/page/0', 'Search for the brand', 'name', ${keyword}, ${totalItems}, null)}"></form>
 

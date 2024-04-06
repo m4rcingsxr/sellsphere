@@ -1,12 +1,14 @@
 package com.sellsphere.admin.user;
 
 import com.sellsphere.admin.ValidationHelper;
+import com.sellsphere.admin.export.ExportUtil;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -20,13 +22,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Controller
 public class UserController {
 
-    public static final String DEFAULT_REDIRECT_URL = "redirect:/users/page/0?sortField=firstName" +
-            "&sortDir=asc";
+    public static final String DEFAULT_REDIRECT_URL = "redirect:/users/page/0?sortField=firstName"
+            + "&sortDir=asc";
     private static final String USER_FORM = "user/user_form";
 
     private final UserService userService;
@@ -131,6 +135,30 @@ public class UserController {
         );
 
         return DEFAULT_REDIRECT_URL;
+    }
+
+    @GetMapping("/users/export/{format}")
+    public void exportEntities(@PathVariable String format, HttpServletResponse response)
+            throws IOException {
+        String[] headers = {"Id", "E-mail", "First Name", "Last Name", "Roles", "Enabled"};
+
+        Function<User, String[]> extractor = user -> new String[]{String.valueOf(user.getId()),
+                                                                  user.getEmail(),
+                                                                  user.getFirstName(),
+                                                                  user.getLastName(),
+                                                                  user.getRoles().stream().map(
+                                                                          Role::getSimpleName).collect(
+                                                                          Collectors.joining(",",
+                                                                                             "\"",
+                                                                                             "\""
+                                                                          )),
+                                                                  String.valueOf(user.isEnabled())};
+
+        ExportUtil.export(format, this::listAll, headers, extractor, response);
+    }
+
+    private List<User> listAll() {
+        return userService.listAll("id", Constants.SORT_ASCENDING);
     }
 
 }

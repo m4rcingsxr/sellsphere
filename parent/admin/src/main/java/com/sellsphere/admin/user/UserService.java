@@ -8,6 +8,7 @@ import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +34,11 @@ public class UserService {
 
     public List<Role> listAllRoles() {
         return roleRepository.findAll(PagingHelper.getSort("name", Constants.SORT_ASCENDING));
+    }
+
+    public List<User> listAll(String sortField, String sortDirection) {
+        Sort sort = PagingHelper.getSort(sortField, sortDirection);
+        return userRepository.findAll(sort);
     }
 
     public void listPage(Integer pageNum, PagingAndSortingHelper helper) {
