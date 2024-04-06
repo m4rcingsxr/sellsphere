@@ -14,9 +14,22 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+/**
+ * REST controller for handling image upload and compression.
+ */
 @RestController
 public class ImageCompressorRestController {
 
+    /**
+     * Handles file upload, compresses the image, and returns the compressed image as a response.
+     *
+     * @param file the image file to be uploaded
+     * @param width the target width of the compressed image
+     * @param height the target height of the compressed image
+     * @param quality the quality of the compressed image (between 0.0 and 1.0)
+     * @return ResponseEntity containing the compressed image
+     * @throws IOException if an I/O error occurs during image processing
+     */
     @PostMapping("/upload")
     public ResponseEntity<byte[]> handleFileUpload(
             @RequestParam("file") MultipartFile file,
@@ -55,11 +68,8 @@ public class ImageCompressorRestController {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-            IllegalArgumentException e) {
-        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),
-                                                        HttpStatus.BAD_REQUEST.value()
-        );
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 

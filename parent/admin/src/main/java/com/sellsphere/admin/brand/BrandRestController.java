@@ -9,12 +9,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller for managing Brand-related operations.
+ */
 @RequiredArgsConstructor
 @RestController
 public class BrandRestController {
 
     private final BrandService service;
 
+    /**
+     * Checks the uniqueness of a brand alias.
+     *
+     * @param brandId the brand ID (optional)
+     * @param alias the brand alias
+     * @return ResponseEntity with a Boolean indicating uniqueness
+     */
     @PostMapping("/brands/check_uniqueness")
     public ResponseEntity<Boolean> isAliasUnique(
             @RequestParam(value = "id", required = false) Integer brandId,

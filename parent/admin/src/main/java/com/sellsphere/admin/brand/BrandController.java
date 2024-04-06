@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Controller class for managing Brand-related operations.
+ */
 @RequiredArgsConstructor
 @Controller
 public class BrandController {
@@ -37,16 +40,24 @@ public class BrandController {
     private final BrandService brandService;
     private final CategoryService categoryService;
 
-    @InitBinder
-    public void initBinder(WebDataBinder dataBinder) {
-        dataBinder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-    }
-
+    /**
+     * Redirects to the first page of the brand list.
+     *
+     * @return the redirect URL for the first page
+     */
     @GetMapping("/brands")
     public String listFirstPage() {
         return DEFAULT_REDIRECT_URL;
     }
 
+
+    /**
+     * Lists brands by page.
+     *
+     * @param helper the PagingAndSortingHelper
+     * @param pageNum the page number
+     * @return the view name for the brand list
+     */
     @GetMapping("/brands/page/{pageNum}")
     public String listPage(
             @PagingAndSortingParam(listName = "brandList", moduleURL = "/brand") PagingAndSortingHelper helper,
@@ -56,6 +67,14 @@ public class BrandController {
         return "brand/brands";
     }
 
+    /**
+     * Shows the form for creating or editing a brand.
+     *
+     * @param id the brand ID (optional)
+     * @param model the model
+     * @return the view name for the brand form
+     * @throws BrandNotFoundException if the brand is not found
+     */
     @GetMapping({"/brands/new", "/brands/edit/{id}"})
     public String showBrandForm(@PathVariable(required = false) Integer id, Model model)
             throws BrandNotFoundException {
@@ -73,6 +92,17 @@ public class BrandController {
         return BRAND_FORM;
     }
 
+    /**
+     * Saves a brand.
+     *
+     * @param brand the brand
+     * @param bindingResult the binding result
+     * @param redirectAttributes the redirect attributes
+     * @param model the model
+     * @param file the brand logo file
+     * @return the redirect URL after saving
+     * @throws IOException if an I/O error occurs
+     */
     @PostMapping("/brands/save")
     public String saveBrand(@Valid @ModelAttribute("brand") Brand brand,
                             BindingResult bindingResult, RedirectAttributes redirectAttributes,
@@ -99,6 +129,13 @@ public class BrandController {
         return DEFAULT_REDIRECT_URL;
     }
 
+
+    /**
+     * Prepares model attributes for the brand form.
+     *
+     * @param id the brand ID
+     * @param model the model
+     */
     private void prepareModelFormAttributes(Integer id, Model model) {
         String pageTitle;
 
@@ -117,6 +154,14 @@ public class BrandController {
 
     }
 
+    /**
+     * Deletes a brand.
+     *
+     * @param id the brand ID
+     * @param redirectAttributes the redirect attributes
+     * @return the redirect URL after deletion
+     * @throws BrandNotFoundException if the brand is not found
+     */
     @GetMapping("/brands/delete/{id}")
     public String deleteBrand(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes)
             throws BrandNotFoundException {
@@ -129,6 +174,13 @@ public class BrandController {
         return DEFAULT_REDIRECT_URL;
     }
 
+    /**
+     * Exports brand entities.
+     *
+     * @param format the export format
+     * @param response the HTTP response
+     * @throws IOException if an I/O error occurs
+     */
     @GetMapping("/brands/export/{format}")
     public void exportEntities(@PathVariable String format, HttpServletResponse response)
             throws IOException {
