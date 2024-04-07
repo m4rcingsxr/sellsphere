@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="1718575263546-1" author="Marcin Seweryn">
+        <createTable tableName="products">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_products"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="short_description" type="VARCHAR(2048)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="full_description" type="CLOB">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_time" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_time" type="DATETIME"/>
+            <column name="enabled" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="in_stock" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cost" type="DECIMAL(12, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL(12, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_percent" type="DECIMAL(4, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="length" type="DECIMAL(12, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="width" type="DECIMAL(12, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="height" type="DECIMAL(12, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="weight" type="DECIMAL(12, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="main_image" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="brand_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint columnNames="alias" constraintName="uc_products_alias" tableName="products"/>
+        <addUniqueConstraint columnNames="name" constraintName="uc_products_name" tableName="products"/>
+        <addForeignKeyConstraint baseColumnNames="brand_id" baseTableName="products" constraintName="FK_PRODUCTS_ON_BRAND" referencedColumnNames="id" referencedTableName="brands"/>
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="products" constraintName="FK_PRODUCTS_ON_CATEGORY" referencedColumnNames="id" referencedTableName="categories"/>
+    </changeSet>
+
+</databaseChangeLog>

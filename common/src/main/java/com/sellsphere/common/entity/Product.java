@@ -42,13 +42,14 @@ public class Product extends IdentifiedEntity {
     @Column(name = "full_description", columnDefinition = "CLOB", nullable = false)
     private String fullDescription;
 
+    @NotNull(message = "Created time is required")
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime;
 
-    @Column(name = "updated_time")
-    private LocalDateTime updatedTime;
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ProductUpdate productUpdate;
 
-    @Column(name = "enabled", nullable = false)
+    @Column(name = "enabled", nullable = false, columnDefinition = "TINYINT")
     private boolean enabled = true;
 
     @Column(name = "in_stock", nullable = false)
@@ -57,44 +58,44 @@ public class Product extends IdentifiedEntity {
     @NotNull(message = "Cost is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Cost must be greater than zero")
     @Digits(integer = 10, fraction = 2, message = "Cost must be a valid amount with up to 2 decimal places")
-    @Column(name = "cost", nullable = false)
+    @Column(name = "cost", nullable = false, precision = 12, scale = 2)
     private BigDecimal cost;
 
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero")
     @Digits(integer = 10, fraction = 2, message = "Price must be a valid amount with up to 2 decimal places")
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 
     @NotNull(message = "Discount percent is required")
     @DecimalMin(value = "0.0", message = "Discount percent must be greater than or equal to zero")
-    @DecimalMax(value = "100.0", message = "Discount percent must be less than or equal to 100")
-    @Digits(integer = 3, fraction = 2, message = "Discount percent must be a valid percentage with up to 2 decimal places")
-    @Column(name = "discount_percent", nullable = false)
+    @DecimalMax(value = "100.00", message = "Discount percent must be less than or equal to 100.00")
+    @Digits(integer = 4, fraction = 2, message = "Discount percent must be a valid percentage with up to 2 decimal places")
+    @Column(name = "discount_percent", nullable = false, precision = 4, scale = 2)
     private BigDecimal discountPercent;
 
     @NotNull(message = "Length is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Length must be greater than zero")
     @Digits(integer = 10, fraction = 2, message = "Length must be a valid amount with up to 2 decimal places")
-    @Column(name = "length", nullable = false)
+    @Column(name = "length", nullable = false, precision = 12, scale = 2)
     private BigDecimal length;
 
     @NotNull(message = "Width is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Width must be greater than zero")
     @Digits(integer = 10, fraction = 2, message = "Width must be a valid amount with up to 2 decimal places")
-    @Column(name = "width", nullable = false)
+    @Column(name = "width", nullable = false, precision = 12, scale = 2)
     private BigDecimal width;
 
     @NotNull(message = "Height is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Height must be greater than zero")
     @Digits(integer = 10, fraction = 2, message = "Height must be a valid amount with up to 2 decimal places")
-    @Column(name = "height", nullable = false)
+    @Column(name = "height", nullable = false, precision = 12, scale = 2)
     private BigDecimal height;
 
     @NotNull(message = "Weight is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Weight must be greater than zero")
     @Digits(integer = 10, fraction = 2, message = "Weight must be a valid amount with up to 2 decimal places")
-    @Column(name = "weight", nullable = false)
+    @Column(name = "weight", nullable = false, precision = 12, scale = 2)
     private BigDecimal weight;
 
     @NotBlank(message = "Main image is required")
@@ -133,6 +134,14 @@ public class Product extends IdentifiedEntity {
     public void addProductImage(ProductImage productImage) {
         productImage.setProduct(this);
         images.add(productImage);
+    }
+
+    public void updateProductTimestamp() {
+        ProductUpdate newProductUpdate = new ProductUpdate();
+        newProductUpdate.setProduct(this);
+        newProductUpdate.setUpdatedTime(LocalDateTime.now());
+
+        this.productUpdate = newProductUpdate;
     }
 
     @Override

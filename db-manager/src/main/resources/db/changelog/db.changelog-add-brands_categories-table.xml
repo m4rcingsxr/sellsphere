@@ -5,7 +5,7 @@
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
 
-    <changeSet id="1718363846085-1" author="m4rcingsxr">
+    <changeSet id="1718363846085-1" author="Marcin Seweryn">
         <createTable tableName="brands_categories">
             <column name="brand_id" type="INT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_brands_categories"/>

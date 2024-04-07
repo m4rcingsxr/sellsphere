@@ -5,18 +5,19 @@
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
 
-    <changeSet id="1718363773724-1" author="Marcin Seweryn">
-        <createTable tableName="brands">
+    <changeSet id="1718574311546-1" author="Marcin Seweryn">
+        <createTable tableName="product_images">
             <column autoIncrement="true" name="id" type="INT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_brands"/>
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_product_images"/>
             </column>
-            <column name="name" type="VARCHAR(45)">
+            <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="logo" type="VARCHAR(45)">
+            <column name="product_id" type="INT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addUniqueConstraint columnNames="name" constraintName="uc_brands_name" tableName="brands"/>
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="product_images" constraintName="FK_PRODUCT_IMAGES_ON_PRODUCT" referencedColumnNames="id" referencedTableName="products"/>
     </changeSet>
+
 </databaseChangeLog>

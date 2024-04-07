@@ -11,4 +11,7 @@
     <include file="db/changelog/db-changelog-add-categories-table.xml"/>
     <include file="db/changelog/db.changelog-add-brands-table.xml"/>
     <include file="db/changelog/db.changelog-add-brands_categories-table.xml"/>
+    <include file="db/changelog/db.changelog-add-products-table.xml"/>
+    <include file="db/changelog/db.changelog-add-products-images-table.xml"/>
+    <include file="db/changelog/db.changelog-add-products-details-table.xml"/>
 </databaseChangeLog>
