@@ -1,9 +1,9 @@
 package com.sellsphere.admin;
 
+import com.sellsphere.admin.brand.BrandController;
+import com.sellsphere.admin.category.CategoryController;
 import com.sellsphere.admin.user.UserController;
-import com.sellsphere.common.entity.Constants;
-import com.sellsphere.common.entity.ForbiddenException;
-import com.sellsphere.common.entity.UserNotFoundException;
+import com.sellsphere.common.entity.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,9 +22,31 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public String handleUserNotFoundException(UserNotFoundException ex,
                                               RedirectAttributes ra) {
+        log.warn(ex.getMessage(), ex);
+
         ra.addFlashAttribute(Constants.ERROR_MESSAGE, ex.getMessage());
         return UserController.DEFAULT_REDIRECT_URL;
     }
+
+    @ExceptionHandler({CategoryNotFoundException.class, CategoryIllegalStateException.class})
+    public String handleCategoryRelatedExceptions(Exception ex,
+                                              RedirectAttributes ra) {
+        log.warn(ex.getMessage(), ex);
+
+        ra.addFlashAttribute(Constants.ERROR_MESSAGE, ex.getMessage());
+        return CategoryController.DEFAULT_REDIRECT_URL;
+    }
+
+    @ExceptionHandler(BrandNotFoundException.class)
+    public String handleBrandNotFoundException(BrandNotFoundException ex,
+                                                  RedirectAttributes ra) {
+        log.warn(ex.getMessage(), ex);
+
+        ra.addFlashAttribute(Constants.ERROR_MESSAGE, ex.getMessage());
+        return BrandController.DEFAULT_REDIRECT_URL;
+    }
+
+
 
     @ExceptionHandler(NoResourceFoundException.class)
     public String handleForbiddenException(NoResourceFoundException ex) {

@@ -42,7 +42,7 @@ public class PagingAndSortingHelper {
     public void listEntities(int pageNum, int pageSize,
                              SearchRepository<?, Integer> repo) {
         Pageable pageable = createPageable(pageSize, pageNum);
-        Page<?> page = null;
+        Page<?> page;
 
         if (keyword != null && !keyword.isEmpty()) {
             page = repo.findAll(keyword, pageable);
