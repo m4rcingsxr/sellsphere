@@ -92,3 +92,7 @@
     <i th:class="${status} ? 'toggle-icon fa-solid fa-toggle-on fa-xl' : 'toggle-icon fa-solid fa-toggle-off fa-xl'"></i>
 </a>
 
+<!-- ENTITY DETAILS -->
+<a th:fragment="detail_entity(detailURL)" th:href="@{${detailURL}}" class="link-primary" id="detailEntity">
+    <i class="fa-solid fa-eye fa-xl"></i>
+</a>

@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -31,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class BrandControllerIntegrationTest {
 
     private static final String BRAND_FORM_PATH = "brand/brand_form";
+    private static final String EXPECTED_REDIRECT_URL = "/brands/page/0?sortField=name" +
+            "&sortDir=asc";
 
     @Autowired
     private MockMvc mockMvc;
@@ -41,9 +42,8 @@ class BrandControllerIntegrationTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void listFirstPage_ShouldRedirectToDefaultUrl() throws Exception {
-        mockMvc.perform(get("/brands"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(BrandController.DEFAULT_REDIRECT_URL.replace("redirect:", "")));
+        mockMvc.perform(get("/brands")).andExpect(status().is3xxRedirection()).andExpect(
+                redirectedUrl(EXPECTED_REDIRECT_URL));
     }
 
     @Test
@@ -52,36 +52,33 @@ class BrandControllerIntegrationTest {
         int testPageNum = 0;
         int expectedSize = 10;
 
-        mockMvc.perform(get("/brands/page/{pageNum}", testPageNum)
-                                .param("sortField", "name")
-                                .param("sortDir", "asc"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists("brandList", "totalPages", "totalItems", "sortDir", "sortField"))
-                .andExpect(model().attributeDoesNotExist("keyword"))
-                .andExpect(model().attribute("brandList", hasSize(expectedSize)))
-                .andExpect(view().name("brand/brands"));
+        mockMvc.perform(get("/brands/page/{pageNum}", testPageNum).param("sortField", "name").param(
+                "sortDir", "asc")).andExpect(status().isOk()).andExpect(
+                model().attributeExists("brandList", "totalPages", "totalItems", "sortDir",
+                                        "sortField"
+                )).andExpect(model().attributeDoesNotExist("keyword")).andExpect(
+                model().attribute("brandList", hasSize(expectedSize))).andExpect(
+                view().name("brand/brands"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void showBrandForm_WhenNewBrand_ShouldDisplayFormWithDefaultBrand() throws Exception {
-        mockMvc.perform(get("/brands/new"))
-                .andExpect(status().isOk())
-                .andExpect(view().name(BRAND_FORM_PATH))
-                .andExpect(model().attributeExists("brand", "categoryList", "pageTitle"))
-                .andExpect(model().attribute("pageTitle", "Create New Brand"))
-                .andExpect(model().attribute("brand", hasProperty("name", isEmptyOrNullString())));
+        mockMvc.perform(get("/brands/new")).andExpect(status().isOk()).andExpect(
+                view().name(BRAND_FORM_PATH)).andExpect(
+                model().attributeExists("brand", "categoryList", "pageTitle")).andExpect(
+                model().attribute("pageTitle", "Create New Brand")).andExpect(
+                model().attribute("brand", hasProperty("name", isEmptyOrNullString())));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void showBrandForm_WhenExistingBrand_ShouldDisplayFormWithBrandData() throws Exception {
         int existingBrandId = 1;
-        mockMvc.perform(get("/brands/edit/{id}", existingBrandId))
-                .andExpect(status().isOk())
-                .andExpect(view().name(BRAND_FORM_PATH))
-                .andExpect(model().attributeExists("brand", "categoryList", "pageTitle"))
-                .andExpect(model().attribute("pageTitle", containsString("Edit Brand")));
+        mockMvc.perform(get("/brands/edit/{id}", existingBrandId)).andExpect(
+                status().isOk()).andExpect(view().name(BRAND_FORM_PATH)).andExpect(
+                model().attributeExists("brand", "categoryList", "pageTitle")).andExpect(
+                model().attribute("pageTitle", containsString("Edit Brand")));
     }
 
     @Test
@@ -91,35 +88,31 @@ class BrandControllerIntegrationTest {
         MockMultipartFile file = new MockMultipartFile("newImage", "", "image/jpeg", new byte[]{});
 
         // When & Then
-        mockMvc.perform(multipart("/brands/save")
-                                .file(file)
-                                .param("name", "") // Invalid name (empty)
-                                .param("logo", "") // Invalid logo (empty)
-                                .with(csrf())
+        mockMvc.perform(
+                multipart("/brands/save").file(file).param("name", "") // Invalid name (empty)
+                        .param("logo", "") // Invalid logo (empty)
+                        .with(csrf())
 
-                )
-                .andExpect(status().isOk())
-                .andExpect(view().name(BRAND_FORM_PATH))
-                .andExpect(model().attributeHasFieldErrors("brand", "name", "logo"))
-                .andExpect(model().attributeExists("categoryList", "pageTitle"));
+        ).andExpect(status().isOk()).andExpect(view().name(BRAND_FORM_PATH)).andExpect(
+                model().attributeHasFieldErrors("brand", "name", "logo")).andExpect(
+                model().attributeExists("categoryList", "pageTitle"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void saveBrand_WhenValidData_ShouldRedirectToDefaultUrl() throws Exception {
         // Given
-        MockMultipartFile file = new MockMultipartFile("newImage", "logo.png", "image/png", "test image".getBytes());
+        MockMultipartFile file = new MockMultipartFile("newImage", "logo.png", "image/png",
+                                                       "test image".getBytes()
+        );
 
         // When & Then
-        mockMvc.perform(multipart("/brands/save")
-                                .file(file)
-                                .param("name", "Valid Brand Name")
-                                .param("logo", "logo.png")
-                                .with(csrf())
-                )
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(BrandController.DEFAULT_REDIRECT_URL.replace("redirect:", "")))
-                .andExpect(flash().attributeExists(Constants.SUCCESS_MESSAGE));
+        mockMvc.perform(
+                multipart("/brands/save").file(file).param("name", "Valid Brand Name").param("logo",
+                                                                                             "logo.png"
+                ).with(csrf())).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl(
+                BrandController.DEFAULT_REDIRECT_URL.replace("redirect:", ""))).andExpect(
+                flash().attributeExists(Constants.SUCCESS_MESSAGE));
     }
 
     @Test
@@ -127,10 +120,10 @@ class BrandControllerIntegrationTest {
     void deleteBrand_ShouldRedirectWithSuccessMessage() throws Exception {
         Integer brandId = 1; // Assuming this brand exists
 
-        mockMvc.perform(get("/brands/delete/{id}", brandId))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(BrandController.DEFAULT_REDIRECT_URL.replace("redirect:", "")))
-                .andExpect(flash().attributeExists(Constants.SUCCESS_MESSAGE));
+        mockMvc.perform(get("/brands/delete/{id}", brandId)).andExpect(
+                status().is3xxRedirection()).andExpect(redirectedUrl(
+                BrandController.DEFAULT_REDIRECT_URL.replace("redirect:", ""))).andExpect(
+                flash().attributeExists(Constants.SUCCESS_MESSAGE));
 
         // Additional verification to ensure the brand was actually deleted could be added here
         Brand brand = entityManager.find(Brand.class, 1);

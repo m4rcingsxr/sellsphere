@@ -12,11 +12,9 @@ import com.sellsphere.common.entity.Constants;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -54,7 +52,7 @@ public class BrandController {
     /**
      * Lists brands by page.
      *
-     * @param helper the PagingAndSortingHelper
+     * @param helper  the PagingAndSortingHelper
      * @param pageNum the page number
      * @return the view name for the brand list
      */
@@ -70,7 +68,7 @@ public class BrandController {
     /**
      * Shows the form for creating or editing a brand.
      *
-     * @param id the brand ID (optional)
+     * @param id    the brand ID (optional)
      * @param model the model
      * @return the view name for the brand form
      * @throws BrandNotFoundException if the brand is not found
@@ -95,11 +93,11 @@ public class BrandController {
     /**
      * Saves a brand.
      *
-     * @param brand the brand
-     * @param bindingResult the binding result
+     * @param brand              the brand
+     * @param bindingResult      the binding result
      * @param redirectAttributes the redirect attributes
-     * @param model the model
-     * @param file the brand logo file
+     * @param model              the model
+     * @param file               the brand logo file
      * @return the redirect URL after saving
      * @throws IOException if an I/O error occurs
      */
@@ -133,7 +131,7 @@ public class BrandController {
     /**
      * Prepares model attributes for the brand form.
      *
-     * @param id the brand ID
+     * @param id    the brand ID
      * @param model the model
      */
     private void prepareModelFormAttributes(Integer id, Model model) {
@@ -157,7 +155,7 @@ public class BrandController {
     /**
      * Deletes a brand.
      *
-     * @param id the brand ID
+     * @param id                 the brand ID
      * @param redirectAttributes the redirect attributes
      * @return the redirect URL after deletion
      * @throws BrandNotFoundException if the brand is not found
@@ -177,7 +175,7 @@ public class BrandController {
     /**
      * Exports brand entities.
      *
-     * @param format the export format
+     * @param format   the export format
      * @param response the HTTP response
      * @throws IOException if an I/O error occurs
      */

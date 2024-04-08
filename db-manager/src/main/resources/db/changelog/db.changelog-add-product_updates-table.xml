@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+
+    <changeSet id="1718627492270-1" author="Marcin Seweryn">
+        <createTable tableName="product_updates">
+            <column name="product_id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_product_updates"/>
+            </column>
+            <column name="updated_time" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="product_updates" constraintName="FK_PRODUCT_UPDATES_ON_PRODUCT" referencedColumnNames="id" referencedTableName="products"/>
+    </changeSet>
+
+</databaseChangeLog>

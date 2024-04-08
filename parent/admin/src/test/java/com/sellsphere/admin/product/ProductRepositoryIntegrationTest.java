@@ -60,10 +60,10 @@ class ProductRepositoryIntegrationTest {
         product.setCategory(new Category(2));
         product.setBrand(new Brand(1));
 
-        // _When
+        // When
         Product savedProduct = productRepository.save(product);
 
-        // _Then
+        // Then
         assertNotNull(savedProduct);
         assertNotNull(savedProduct.getId());
         assertEquals("Test Product", savedProduct.getName());
@@ -74,10 +74,10 @@ class ProductRepositoryIntegrationTest {
         // Given
         Integer productId = 1; // Assume this product ID exists in the database
 
-        // _When
+        // When
         Optional<Product> optionalProduct = productRepository.findById(productId);
 
-        // _Then
+        // Then
         assertTrue(optionalProduct.isPresent());
         Product product = optionalProduct.get();
         assertEquals(productId, product.getId());
@@ -88,10 +88,10 @@ class ProductRepositoryIntegrationTest {
         // Given
         Integer productId = 999; // Assume this product ID does not exist in the database
 
-        // _When
+        // When
         Optional<Product> optionalProduct = productRepository.findById(productId);
 
-        // _Then
+        // Then
         assertFalse(optionalProduct.isPresent());
     }
 
@@ -100,11 +100,11 @@ class ProductRepositoryIntegrationTest {
         // Given
         Integer productId = 1; // Assume this product ID exists in the database
 
-        // _When
+        // When
         productRepository.deleteById(productId);
         Optional<Product> optionalProduct = productRepository.findById(productId);
 
-        // _Then
+        // Then
         assertFalse(optionalProduct.isPresent());
     }
 
@@ -119,10 +119,10 @@ class ProductRepositoryIntegrationTest {
         int size = 5;
         PageRequest pageRequest = PagingTestHelper.createPageRequest(page, size, sortField, sortDirection);
 
-        // _When
+        // When
         Page<Product> productPage = productRepository.findAll(pageRequest);
 
-        // _Then
+        // Then
         PagingTestHelper.assertPagingResults(productPage, size, 2, 10, sortField, sortDirection.equalsIgnoreCase("ASC"));
     }
 
@@ -139,10 +139,10 @@ class ProductRepositoryIntegrationTest {
         product.setPrice(BigDecimal.valueOf(200));
         product.updateProductTimestamp();
 
-        // _When
+        // When
         Product updatedProduct = productRepository.save(product);
 
-        // _Then
+        // Then
         assertNotNull(updatedProduct);
         assertEquals("Updated Product", updatedProduct.getName());
         assertEquals(BigDecimal.valueOf(200), updatedProduct.getPrice());
@@ -182,12 +182,12 @@ class ProductRepositoryIntegrationTest {
         product.addProductDetail(detail);
         product.addProductImage(image);
 
-        // _When
+        // When
         Product savedProduct = productRepository.save(product);
         entityManager.flush();
         entityManager.clear();
 
-        // _Then
+        // Then
         Product foundProduct = entityManager.find(Product.class, savedProduct.getId());
         assertNotNull(foundProduct);
         assertEquals(1, foundProduct.getDetails().size());
@@ -202,14 +202,14 @@ class ProductRepositoryIntegrationTest {
         assertTrue(optionalProduct.isPresent());
         Product product = optionalProduct.get();
 
-        // _When
+        // When
         product.getDetails().clear();
         product.getImages().clear();
         productRepository.save(product);
         entityManager.flush();
         entityManager.clear();
 
-        // _Then
+        // Then
         Product foundProduct = entityManager.find(Product.class, productId);
         assertNotNull(foundProduct);
         assertTrue(foundProduct.getDetails().isEmpty());

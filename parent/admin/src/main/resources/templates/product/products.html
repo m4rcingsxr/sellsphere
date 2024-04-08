@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-sc">
+<head th:replace="~{list_fragments :: head('Manage Products')}"></head>
+<body>
+
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="mt-4 content">
+    <h1 class="text-center">Manage Products</h1>
+
+    <div class="container-md mt-5">
+
+        <!-- Alerts -->
+        <div th:replace="~{common :: alerts()}"></div>
+
+        <!-- Export       -->
+        <ul th:replace="~{navigations :: export_nav('products', true)}"></ul>
+
+        <!-- Search Bar -->
+        <form th:replace="~{list_fragments :: search_bar('/products/page/0', 'Search for the product', 'firstName', ${keyword}, ${totalItems}, null)}"></form>
+
+        <table class="table table-hover mt-4">
+            <thead class="table-dark">
+            <tr>
+                <th th:replace="~{list_fragments :: column_link('/products/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                <th>Main Image</th>
+                <th th:replace="~{list_fragments :: column_link('/products/page', ${currentPage}, 'name', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Product Name')}"></th>
+                <th>Brand</th>
+                <th>Category</th>
+                <th sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR')">Enabled</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="product : ${productList}">
+                <td th:text="${product.id}"></td>
+                <td>
+                    <div th:replace="~{list_fragments :: entity_image(${product.mainImagePath}, 150, 150)}"></div>
+                </td>
+                <td th:text="${product.name}"></td>
+                <td th:text="${product.brand != null ? product.brand.name : ''}"></td>
+                <td th:text="${product.category != null ? product.category.name : ''}"></td>
+                <td sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR')">
+                    <a th:replace="~{list_fragments :: status(${product.enabled}, |/products/${product.id}/enabled/${!product.enabled}|)}"></a>
+                </td>
+                <td>
+                    <div class="d-flex flex-column gap-3 align-items-center">
+                        <a th:replace="~{list_fragments :: detail_entity(|/products/details/${product.id}|)}"></a>
+                        <a th:insert="~{list_fragments :: delete_entity(|/products/delete/${product.id}|)}"
+                           sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR') or hasRole('ROLE_SALESPERSON')"></a>
+                        <a th:insert="~{list_fragments :: edit_entity(|/products/edit/${product.id}|)}"
+                           sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR')"></a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav th:replace="~{list_fragments :: large_pagination('/products/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+         class="mt-4"></nav>
+
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
+</body>
+</html>
+
+
