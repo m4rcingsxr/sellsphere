@@ -31,6 +31,10 @@ public class Brand extends IdentifiedEntity{
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
 
+    public Brand(Integer id) {
+        this.id = id;
+    }
+
     public String getLogoImagePath() {
         return Constants.S3_BASE_URI + (id == null || logo == null ? "/default.png" : "/brand" +
                 "-photos/" + this.id + "/" + logo);

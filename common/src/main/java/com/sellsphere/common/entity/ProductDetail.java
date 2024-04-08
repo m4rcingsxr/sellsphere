@@ -26,7 +26,7 @@ public class ProductDetail extends IdentifiedEntity{
 
     @NotNull(message = "Value is required")
     @Size(min = 1, max = 255, message = "Value must be between 1 and 255 characters")
-    @Column(name = "value", nullable = false, length = 255)
+    @Column(name = "detail_value", nullable = false, length = 255)
     private String value;
 
     @ManyToOne

@@ -21,6 +21,10 @@ public class ProductUpdate implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @Column(name = "product_id")
+    private Integer productId;
+
     @Column(name = "updated_time", nullable = false)
     private LocalDateTime updatedTime;
 

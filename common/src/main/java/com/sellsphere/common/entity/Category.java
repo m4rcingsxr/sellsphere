@@ -76,6 +76,10 @@ public class Category extends IdentifiedEntity {
         this.categoryIcon = other.categoryIcon;
     }
 
+    public Category(Integer id) {
+        this.id = id;
+    }
+
     public void addCategoryIcon(CategoryIcon categoryIcon) {
         categoryIcon.setCategory(this);
         this.categoryIcon = categoryIcon;
