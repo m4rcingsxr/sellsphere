@@ -11,7 +11,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -27,6 +28,7 @@ class ProductControllerIntegrationTest {
 
     private static final String EXPECTED_REDIRECT_URL = "/products/page/0?sortField=name" +
             "&sortDir=asc";
+    private static final String PRODUCT_FORM = "product/product_form";
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,6 +53,25 @@ class ProductControllerIntegrationTest {
                 )).andExpect(model().attributeDoesNotExist("keyword")).andExpect(
                 model().attribute("productList", hasSize(expectedSize))).andExpect(
                 view().name("product/products"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void showProductForm_WhenNewProduct_ShouldDisplayFormWithDefaultProduct() throws Exception {
+        mockMvc.perform(get("/products/new")).andExpect(status().isOk()).andExpect(
+                view().name(PRODUCT_FORM)).andExpect(
+                model().attributeExists("product", "brandList", "pageTitle")).andExpect(
+                model().attribute("pageTitle", "Create New Product"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void showProductForm_WhenExistingProduct_ShouldDisplayFormWithProductData() throws Exception {
+        int existingBrandId = 1;
+        mockMvc.perform(get("/products/edit/{id}", existingBrandId)).andExpect(
+                status().isOk()).andExpect(view().name(PRODUCT_FORM)).andExpect(
+                model().attributeExists("product", "brandList", "pageTitle")).andExpect(
+                model().attribute("pageTitle", containsString("Edit Product")));
     }
 
 }
