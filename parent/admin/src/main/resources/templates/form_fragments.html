@@ -1,10 +1,19 @@
 <head th:fragment="head(title)">
+    <th:block th:replace="~{:: common_form_head(title)}"></th:block>
+</head>
+
+<head th:fragment="head_with_editor(title)">
+    <th:block th:replace="~{:: common_head(title)}"></th:block>
+    <script type="text/javascript" th:src="@{/node_modules/tinymce/tinymce.js}"></script>
+</head>
+
+<th:block th:fragment="common_head(title)">
     <th:block th:replace="~{common :: head_all(${title})}"></th:block>
 
     <script type="text/javascript" th:src="@{/node_modules/jquery-validation/dist/jquery.validate.js}"></script>
     <script type="text/javascript" th:src="@{/js/common_form.js}"></script>
     <script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
-</head>
+</th:block>
 
 <!-- HIDDEN INPUT -->
 <input th:fragment="hidden_input(fieldName)" th:field="*{__${fieldName}__}" type="hidden"/>
@@ -36,6 +45,16 @@
         <input th:field="*{__${fieldName}__}" type="number" class="form-control" th:step="${step}"
                th:attr="readonly=${readonly}? 'readonly' : null"/>
         <span th:replace="~{:: field_error(${fieldName})}"></span>
+    </div>
+</th:block>
+
+<!-- NUMBER WITH UNIT -->
+<th:block th:fragment="number_input_unit(label, fieldName, step, readonly, unit)">
+    <label class="col-sm-4 col-form-label" th:text="${label}"></label>
+    <div class="input-group mb-3 col-sm-8">
+        <span class="input-group-text">$</span>
+        <input th:field="*{__${fieldName}__}" type="number" class="form-control" th:step="${step}"
+               th:attr="readonly=${readonly}? 'readonly' : null"/>
     </div>
 </th:block>
 

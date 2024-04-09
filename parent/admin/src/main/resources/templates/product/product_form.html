@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-sc">
+<head th:replace="~{form_fragments :: head_with_editor(${pageTitle})}"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="container mt-4">
+        <h1 class="text-center" th:text="${pageTitle}"></h1>
+
+        <form id="mainForm" class="mt-4" enctype="multipart/form-data" method="POST" th:object="${product}" th:action="@{/products/save}">
+            <input type="hidden" class="form-control" th:field="*{id}">
+            <input type="hidden" class="form-control" th:field="*{createdTime}">
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Overview</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="description-tab" data-bs-toggle="tab" data-bs-target="#description-tab-pane" type="button" role="tab" aria-controls="description-tab-pane" aria-selected="false">Description</button>
+                </li>
+
+            </ul>
+
+            <div class="tab-content" id="myTabContent">
+                <div th:insert="~{product/product_overview.html :: overview()}" class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0"></div>
+                <div th:insert="~{product/product_description :: description()}" class="tab-pane fade" id="description-tab-pane" role="tabpanel" aria-labelledby="description-tab" tabindex="0"></div>
+
+            </div>
+
+            <div th:replace="~{form_fragments :: form_buttons(${product})}"></div>
+        </form>
+
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<script type="text/javascript" th:src="@{/js/product_description.js}"></script>
+<script type="text/javascript">
+    const MODULE_URL = "[[@{/}]]";
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+    const validationRules = {
+        name: {
+            required: true,
+            maxlength: 255,
+            remote: {
+                url: `${MODULE_URL}products/check_uniqueness`,
+                type: "post",
+                data: {
+                    name: function () {
+                        return $('input[name="name"]').val();
+                    },
+                    _csrf: function () {
+                        return $('input[name="_csrf"]').val();
+                    },
+                    id: function () {
+                        return $('input[name="id"]').val();
+                    }
+                }
+            }
+        },
+        shortDescription: {
+            required: true,
+            maxlength: 2048,
+        },
+        fullDescription: {
+            required: true,
+            maxlength: 4096,
+        },
+        newImage: {
+            imageRequired: ["mainImage"],
+            maxImageSize: true,
+        },
+        extraImages: {
+            maxImageSize: true,
+        },
+        brand: {
+            required: true
+        },
+        category: {
+            required: true
+        },
+        length: {
+            notZero: true
+        },
+        width: {
+            notZero: true
+        },
+        height: {
+            notZero: true
+        },
+        weight: {
+            notZero: true
+        },
+        price: {
+            notZero: true
+        },
+    };
+
+    const validationMessages = {
+        name: {
+            required: "Please enter product name",
+            maxlength: "Product Name can not exceed 255 characters",
+            remote: 'This product name is already in use. Please choose a unique name.'
+        },
+        shortDescription : {
+            required: "Short description is required",
+            maxlength: "Short description is too long(description includes html tags, so it does not reflect content that you can see)",
+        },
+        fullDescription : {
+            required: "Full description is required",
+            maxlength: "Full description is too long(description includes html tags, so it does not reflect content that you can see)",
+        },
+        newImage: {
+            imageRequired : "Main product image is required",
+            maxImageSize : `Max size of image cannot exceed ${MAX_FILE_SIZE} bytes`,
+        },
+        brand: {
+            required: "Brand is required"
+        },
+        category: {
+            required: "Category is required"
+        }
+
+    };
+
+    const dynamicRules = [
+        {
+            selector: "input[name^='details'][name$='.name']",
+            rules: {
+                required: true,
+                maxlength: 255,
+                messages: {
+                    required: "Detail name is required",
+                    maxlength: "Detail name cannot exceed 255 characters"
+                }
+            }
+        },
+        {
+            selector: "input[name^='details'][name$='.value']",
+            rules: {
+                required: true,
+                maxlength: 255,
+                messages: {
+                    required: "Detail value is required",
+                    maxlength: "Detail value cannot exceed 255 characters"
+                }
+            }
+        }
+    ];
+
+</script>
+
+</body>
+</html>

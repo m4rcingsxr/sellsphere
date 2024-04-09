@@ -17,4 +17,9 @@
         <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="product_updates" constraintName="FK_PRODUCT_UPDATES_ON_PRODUCT" referencedColumnNames="id" referencedTableName="products"/>
     </changeSet>
 
+    <changeSet id="1718712614986-1" author="m4rcingsxr">
+        <renameColumn columnDataType="VARCHAR(255)" tableName="product_details" oldColumnName="value" newColumnName="detail_value"/>
+    </changeSet>
+
+
 </databaseChangeLog>
