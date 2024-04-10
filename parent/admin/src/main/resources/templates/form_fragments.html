@@ -96,11 +96,11 @@
 </th:block>
 
 <!-- SELECT INPUT -->
-<th:block th:fragment="select_input(label, entityList, entityField, disabled)">
+<th:block th:fragment="select_input(label, entityList, entityField, disabled, dashOption)">
     <label class="col-sm-4 col-form-label" th:text="${label}"></label>
     <div class="col-sm-8">
         <select class="form-select" th:field="*{__${entityField}__}" th:disabled="${disabled}">
-            <option value="-1">---</option>
+            <option th:if="${dashOption}" value="-1">---</option>
             <option th:each="entity : ${entityList}" th:value="${entity.id}" th:text="${entity.name}"></option>
         </select>
         <span th:replace="~{:: field_error(${entityField})}"></span>

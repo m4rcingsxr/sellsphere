@@ -29,6 +29,7 @@ public class Brand extends IdentifiedEntity{
     @ManyToMany
     @JoinTable(name = "brands_categories", joinColumns = @JoinColumn(name = "brand_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @OrderBy("name asc")
     private Set<Category> categories = new HashSet<>();
 
     public Brand(Integer id) {

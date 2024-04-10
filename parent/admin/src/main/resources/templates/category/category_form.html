@@ -17,7 +17,7 @@
                     <th:block th:replace="~{form_fragments :: text_input('Category name', 'name', false)}"></th:block>
                     <th:block th:replace="~{form_fragments :: text_input('Alias', 'alias', false)}"></th:block>
                     <th:block
-                            th:replace="~{form_fragments :: select_input('Parent Category', ${categoryList}, 'parent', false)}"></th:block>
+                            th:replace="~{form_fragments :: select_input('Parent Category', ${categoryList}, 'parent', false, true)}"></th:block>
                     <th:block
                             th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${category.enabled}, false)}"></th:block>
                     <th:block

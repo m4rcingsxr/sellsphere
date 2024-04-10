@@ -18,3 +18,4 @@ INSERT INTO brands(name, logo)
 VALUES ('SanDisk4', 'SanDisk.png');
 INSERT INTO brands(name, logo)
 VALUES ('SanDisk5', 'SanDisk.png');
+

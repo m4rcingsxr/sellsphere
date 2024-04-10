@@ -44,6 +44,9 @@
 
 <footer th:replace="~{navigations :: footer()}"></footer>
 
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+<script type="text/javascript" th:src="@{/js/product_overview.js}"></script>
 <script type="text/javascript" th:src="@{/js/product_description.js}"></script>
 <script type="text/javascript" th:src="@{/js/product_images.js}"></script>
 <script type="text/javascript" th:src="@{/js/product_details.js}"></script>

@@ -123,3 +123,22 @@ const parseTimestampToDate = (timestamp) => {
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
+
+
+const showFullScreenSpinner = () => {
+    const spinnerOverlay = document.createElement('div');
+    spinnerOverlay.id = 'spinner-overlay';
+    spinnerOverlay.innerHTML = `
+        <div class="spinner-container">
+            <div class="spinner"></div>
+        </div>
+    `;
+    document.body.appendChild(spinnerOverlay);
+}
+
+const hideFullScreenSpinner = () => {
+    const spinnerOverlay = document.getElementById('spinner-overlay');
+    if (spinnerOverlay) {
+        document.body.removeChild(spinnerOverlay);
+    }
+}

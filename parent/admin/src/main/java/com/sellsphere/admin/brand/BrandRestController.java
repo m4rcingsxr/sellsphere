@@ -1,13 +1,17 @@
 package com.sellsphere.admin.brand;
 
+import com.sellsphere.admin.category.CategoryService;
+import com.sellsphere.common.entity.Brand;
+import com.sellsphere.common.entity.BrandNotFoundException;
+import com.sellsphere.common.entity.Category;
 import com.sellsphere.common.entity.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * REST controller for managing Brand-related operations.
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BrandRestController {
 
     private final BrandService service;
+    private final CategoryService categoryService;
 
     /**
      * Checks the uniqueness of a brand alias.
@@ -37,12 +42,31 @@ public class BrandRestController {
         return ResponseEntity.ok(isUnique);
     }
 
+    @GetMapping("/brands/{id}/categories")
+    public ResponseEntity<List<CategoryDTO>> listCategoriesForBrand(@PathVariable Integer id)
+            throws BrandNotFoundException {
+        Brand brand = service.get(id);
+        List<Category> brandCategories = brand.getCategories().stream().toList();
+        List<Category> hierarchy = categoryService.createHierarchy(brandCategories);
+        List<CategoryDTO> hierarchyDTO = hierarchy.stream().map(CategoryDTO::new).toList();
+
+        return ResponseEntity.ok(hierarchyDTO);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException e) {
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BrandNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBrandNotFoundException(
+            BrandNotFoundException e) {
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)

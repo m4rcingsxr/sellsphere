@@ -139,7 +139,7 @@ public class CategoryService {
      * @param categoryList the list of categories
      * @return the hierarchical list of categories
      */
-    private List<Category> createHierarchy(List<Category> categoryList) {
+    public List<Category> createHierarchy(List<Category> categoryList) {
         return categoryList.stream().filter(category -> category.getParent() == null).flatMap(
                 category -> expandHierarchy(category, 0)).toList();
     }
