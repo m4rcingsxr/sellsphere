@@ -52,10 +52,12 @@
 <!-- NUMBER WITH UNIT -->
 <th:block th:fragment="number_input_unit(label, fieldName, step, readonly, unit)">
     <label class="col-sm-4 col-form-label" th:text="${label}"></label>
-    <div class="input-group mb-3 col-sm-8">
-        <span class="input-group-text">$</span>
-        <input th:field="*{__${fieldName}__}" type="number" class="form-control" th:step="${step}"
-               th:attr="readonly=${readonly}? 'readonly' : null"/>
+    <div class="mb-3 col-sm-8">
+        <div class="input-group">
+            <span class="input-group-text" th:text="${unit}"></span>
+            <input th:field="*{__${fieldName}__}" type="number" class="form-control" th:step="${step}"
+                   th:attr="readonly=${readonly}? 'readonly' : null"/>
+        </div>
     </div>
 </th:block>
 
