@@ -1,5 +1,5 @@
 <head th:fragment="head(title)">
-    <th:block th:replace="~{:: common_form_head(title)}"></th:block>
+    <th:block th:replace="~{:: common_head(title)}"></th:block>
 </head>
 
 <head th:fragment="head_with_editor(title)">
@@ -11,6 +11,7 @@
     <th:block th:replace="~{common :: head_all(${title})}"></th:block>
 
     <script type="text/javascript" th:src="@{/node_modules/jquery-validation/dist/jquery.validate.js}"></script>
+    <script type="text/javascript" th:src="@{/js/image_compression.js}"></script>
     <script type="text/javascript" th:src="@{/js/common_form.js}"></script>
     <script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
 </th:block>

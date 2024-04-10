@@ -1,0 +1,35 @@
+<div th:fragment="images()">
+    <div id="imageContainer" class="row g-3 p-4">
+
+        <div class="col-sm-4">
+            <input type="hidden" th:field="*{mainImage}"/>
+            <input name="newImage" type="file" class="form-control mb-2"/>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Main image</h5>
+                </div>
+                <img id="previewImage" th:src="*{mainImagePath}" class="card-img-bottom p-2 entity-image">
+            </div>
+        </div>
+
+        <div th:each="image, imageStat : *{images}" class="col-sm-4 position-relative">
+            <input type="hidden" th:field="*{images[__${imageStat.index}__].id}"/>
+            <input type="hidden" th:field="*{images[__${imageStat.index}__].name}"/>
+            <input type="hidden" th:field="*{images[__${imageStat.index}__].product}"/>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${'Extra image'}"></h5>
+                </div>
+
+                <img th:src="${image.extraImagePath}" class="card-img-bottom p-2 entity-image">
+            </div>
+            <a href="#" class="link-primary position-absolute top-0 end-0 p-3"><i class="fa-solid fa-xmark"></i></a>
+        </div>
+
+        <div class="col-sm-4">
+            <a id="newFileInput" class="link-primary"><i class="fa-solid fa-plus fa-2xl"></i></a>
+        </div>
+
+    </div>
+</div>
+

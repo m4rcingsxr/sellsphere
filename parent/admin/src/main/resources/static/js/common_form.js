@@ -1,16 +1,3 @@
-/**
- * Script responsible for compressing images and loading the preview.
- * This script requires the following elements and variables:
- *
- * - An input element with the name attribute set to "newImage".
- *   Example: <input type="file" name="newImage" />
- * - An image element with the id attribute set to "previewImage" where the selected image will be previewed.
- *   Example: <img id="previewImage" src="" alt="Image preview" class="entity-image" />
- * - A constant MAX_FILE_SIZE that defines the maximum allowed file size.
- *   Example: const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
- * - Constants for WIDTH, HEIGHT, and QUALITY to specify the dimensions and quality of the compressed image.
- *   Example: const WIDTH = 800; const HEIGHT = 800; const QUALITY = 0.8;
- */
 $(document).ready(() => {
     const form = document.getElementById("mainForm");
     if (!form) {
@@ -30,22 +17,14 @@ $(document).ready(() => {
 
 /**
  * Handles the file input change event.
+ * @param {Event} event - The file input change event.
  */
 const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (file && file.size <= MAX_FILE_SIZE) {
         try {
             showSpinner();
-
-            const data = {
-                file: file,
-                width: WIDTH,
-                height: HEIGHT,
-                quality: QUALITY
-            };
-            const compressedImageBlob = await ajaxUtil.postBlob(`${MODULE_URL}upload`, data);
-            const compressedFile = new File([compressedImageBlob], file.name, {type: "image/jpeg"});
-
+            const compressedFile = await compressImage(file, WIDTH, HEIGHT, QUALITY);
             updateFileInput(compressedFile);
             previewCompressedImage(compressedFile);
         } catch (error) {
@@ -55,8 +34,6 @@ const handleFileChange = async (event) => {
             hideSpinner();
         }
     }
-
-    // else - handled by validation
 };
 
 /**
@@ -80,7 +57,6 @@ const hideSpinner = () => {
 
 /**
  * Updates the file input with the compressed image.
- *
  * @param {File} compressedFile - The compressed file.
  */
 const updateFileInput = (compressedFile) => {
@@ -91,7 +67,6 @@ const updateFileInput = (compressedFile) => {
 
 /**
  * Previews the compressed image.
- *
  * @param {File} compressedFile - The compressed file.
  */
 const previewCompressedImage = (compressedFile) => {

@@ -49,23 +49,38 @@ public class ImageCompressorRestController {
             throw new IllegalArgumentException("Quality must be between 0.0 and 1.0");
         }
 
+        // Check if the file is an image
+        String contentType = file.getContentType();
+        if (contentType == null || (!contentType.startsWith("image/"))) {
+            throw new IllegalArgumentException("Unsupported file type. Please upload an image.");
+        }
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        // Resize and compress the image to the provided width, height, and quality
-        Thumbnails.of(file.getInputStream())
-                .size(width, height)
-                .outputFormat("jpg")
-                .outputQuality(quality) // Adjust the output quality as provided
-                .toOutputStream(byteArrayOutputStream);
+        try {
+            // Resize and compress the image to the provided width, height, and quality
+            Thumbnails.of(file.getInputStream())
+                    .size(width, height)
+                    .outputFormat("jpg") // Output format will be JPG for consistency
+                    .outputQuality(quality) // Adjust the output quality as provided
+                    .toOutputStream(byteArrayOutputStream);
+        } catch (IOException e) {
+            throw new IOException("Failed to process the image file.", e);
+        }
 
         byte[] compressedImage = byteArrayOutputStream.toByteArray();
 
+        // Extract the original filename and change its extension to .jpg
+        String originalFilename = file.getOriginalFilename();
+        String newFilename = originalFilename != null ? originalFilename.replaceAll("\\.[^.]+$", ".jpg") : "compressed_image.jpg";
+
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=compressed_image.jpg");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + newFilename + "\"");
         headers.add(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 
         return new ResponseEntity<>(compressedImage, headers, HttpStatus.OK);
     }
+
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
