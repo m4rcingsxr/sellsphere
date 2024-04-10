@@ -22,6 +22,10 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image-tab-pane" type="button" role="tab" aria-controls="image-tab-pane" aria-selected="false">Images</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail-tab-pane" type="button" role="tab" aria-controls="detail-tab-pane" aria-selected="false" >Details</button>
+                </li>
+
 
             </ul>
 
@@ -29,6 +33,7 @@
                 <div th:insert="~{product/product_overview.html :: overview()}" class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0"></div>
                 <div th:insert="~{product/product_description :: description()}" class="tab-pane fade" id="description-tab-pane" role="tabpanel" aria-labelledby="description-tab" tabindex="0"></div>
                 <div th:insert="~{product/product_images :: images()}" class="tab-pane fade" id="image-tab-pane" role="tabpanel" aria-labelledby="image-tab" tabindex="0"></div>
+                <div th:insert="~{product/product_details :: details()}" class="tab-pane fade" id="detail-tab-pane" role="tabpanel" aria-labelledby="detail-tab" tabindex="0"></div>
             </div>
 
             <div th:replace="~{form_fragments :: form_buttons(${product})}"></div>
@@ -41,6 +46,7 @@
 
 <script type="text/javascript" th:src="@{/js/product_description.js}"></script>
 <script type="text/javascript" th:src="@{/js/product_images.js}"></script>
+<script type="text/javascript" th:src="@{/js/product_details.js}"></script>
 
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
@@ -48,7 +54,7 @@
 
     const WIDTH = 700; // Image width
     const HEIGHT = 700; // Image height
-    const QUALITY = 1; // Image quality (0.0 to 1.0)
+    const QUALITY = 1.0; // Image quality (0.0 to 1.0)
 
     const validationRules = {
         name: {

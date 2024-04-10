@@ -44,7 +44,8 @@ async function extraImageHandler(event) {
             const reader = new FileReader();
             reader.onload = e => {
                 const html = getImageSectionHtml(compressedFile.name, e.target.result, imageCurrentIndex);
-                container.after(html).hide();
+                container.find(".card").remove();
+                container.append(html);
                 imageCurrentIndex++;
             };
             reader.readAsDataURL(compressedFile);
@@ -67,16 +68,16 @@ async function extraImageHandler(event) {
  */
 function getImageSectionHtml(fileName, src, index) {
     return `
-        <div class="col-sm-4 position-relative">
             <input type="hidden" id="images${index}.name" name="images[${index}].name" value="${fileName}">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm position-relative">
                 <div class="card-body">
                     <h5 class="card-title">Extra image</h5>
                 </div>
-                <img src="${src}" class="card-img-bottom p-2 entity-image">
-            </div>
+                <div class="entity-image-container" style="width: 100%; height: 300px">
+                    <img id="previewImage${index}" src="${src}" class="p-2 entity-image" style="object-fit: cover;">
+                </div>
             <a href="#" class="link-primary position-absolute top-0 end-0 p-3"><i class="fa-solid fa-xmark"></i></a>
-        </div>
+            </div>
     `;
 }
 
@@ -86,7 +87,7 @@ function getImageSectionHtml(fileName, src, index) {
 function handleNewFileInputClick() {
     const html = `
         <div class="col-sm-4 position-relative">
-            <input name="extraImages" type="file" class="form-control"/>
+            <input name="extraImages" type="file" class="form-control mb-2"/>
         </div>
     `;
     $(this).parent().before(html);
@@ -100,7 +101,7 @@ function handleNewFileInputClick() {
 function handleExtraImageRemoval(event) {
     const $target = $(event.currentTarget);
     if ($target.find('i.fa-xmark').length > 0) {
-        $target.parent().remove();
+        $target.parent().parent().remove();
         imageCurrentIndex--;
         refreshImageIndexes();
     }
@@ -138,6 +139,13 @@ function refreshImageInputs(attributeType) {
 const showSpinnerForExtraImage = (container) => {
     const spinner = document.createElement("div");
     spinner.classList.add("spinner");
+
+    // Set position style to ensure spinner displays correctly
+    spinner.style.position = "absolute";
+    spinner.style.top = "50%";
+    spinner.style.left = "50%";
+    spinner.style.transform = "translate(-50%, -50%)";
+
     container.append(spinner);
 };
 
