@@ -5,7 +5,7 @@
             <input type="hidden" th:field="*{mainImage}"/>
             <input name="newImage" type="file" class="form-control mb-2"/>
             <span th:replace="form_fragments :: field_error('mainImage')"></span>
-            <div th:replace="~{ ::img_card('Main image', ${product.mainImagePath}, 'previewImage')}"></div>
+            <div th:replace="~{ ::img_card('Main image', ${product.mainImagePath}, 'previewImage', true)}"></div>
         </div>
 
         <div th:each="image, imageStat : *{images}" class="col-sm-4 position-relative d-flex">
@@ -13,17 +13,28 @@
             <input type="hidden" th:field="*{images[__${imageStat.index}__].name}"/>
             <input type="hidden" th:field="*{images[__${imageStat.index}__].product}"/>
 
-            <div th:replace="~{ ::img_card('Extra image', ${image.extraImagePath}, |previewImage${imageStat.index}|)}"></div>
+            <div th:replace="~{ ::img_card('Extra image', ${image.extraImagePath}, |previewImage${imageStat.index}|, true)}"></div>
         </div>
 
         <div class="col-sm-4">
             <a id="newFileInput" class="link-primary"><i class="fa-solid fa-plus fa-2xl"></i></a>
         </div>
-
     </div>
 </div>
 
-<div th:fragment="img_card(title, imagePath, id)" class="card shadow-sm position-relative mt-auto">
+<div th:fragment="images_readonly()">
+    <div class="row g-5 p-4">
+        <div class="col-sm-4">
+            <div th:replace="~{ ::img_card('Main image', ${product.mainImagePath}, 'previewImage', false)}"></div>
+        </div>
+
+        <div th:each="image, imageStat : *{images}" class="col-sm-4 position-relative d-flex">
+            <div th:replace="~{ ::img_card('Extra image', ${image.extraImagePath}, |previewImage${imageStat.index}|, false)}"></div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="img_card(title, imagePath, id, removeable)" class="card shadow-sm position-relative mt-auto">
     <div class="card-body mt-auto">
         <h5 class="card-title" th:text="${title}"></h5>
     </div>
@@ -31,6 +42,6 @@
         <img th:id="${id}" th:src="${imagePath}" class="p-2 entity-image"
              style="object-fit: cover;">
     </div>
-    <a href="#" class="link-primary position-absolute top-0 end-0 p-3"><i class="fa-solid fa-xmark"></i></a>
+    <a th:if="${removeable}" href="#" class="link-primary position-absolute top-0 end-0 p-3"><i class="fa-solid fa-xmark"></i></a>
 </div>
 

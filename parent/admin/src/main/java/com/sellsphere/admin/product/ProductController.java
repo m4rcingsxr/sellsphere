@@ -84,6 +84,15 @@ public class ProductController {
         return DEFAULT_REDIRECT_URL;
     }
 
+    @GetMapping("/products/details/{id}")
+    public String viewProductDetails(@PathVariable("id") Integer id, Model model)
+            throws ProductNotFoundException {
+        Product product = productService.get(id);
+        prepareModelForProductForm(product, model);
+
+        return "product/product_detail_modal";
+    }
+
     private void prepareModelForProductForm(Product product, Model model) {
         String pageTitle = (product.getId() != null) ? "Edit Product [ID: " + product.getId() +
                 "]" : "Create New Product";

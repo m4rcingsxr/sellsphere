@@ -19,7 +19,7 @@
 <!-- HIDDEN INPUT -->
 <input th:fragment="hidden_input(fieldName)" th:field="*{__${fieldName}__}" type="hidden"/>
 
-<!-- TEXT INPUT -->
+<!-- TEXT INPUT - FIELD -->
 <th:block th:fragment="text_input(label, fieldName, readonly)">
     <label class="col-sm-4 col-form-label" th:text="${label}"></label>
     <div class="col-sm-8">
@@ -36,6 +36,12 @@
         <input th:field="*{__${fieldName}__}" type="text" class="form-control" th:placeholder="${placeholder}"/>
         <span th:replace="~{:: field_error(${fieldName})}"></span>
     </div>
+</th:block>
+
+<!-- TEXT INPUT -->
+<th:block th:fragment="text_input_value(label, name, value, readonly)">
+    <input th:name="${name}" th:value="${value}" type="text" class="form-control"
+           th:attr="readonly=${readonly}? 'readonly' : null"/>
 </th:block>
 
 <!-- PASSWORD INPUT -->

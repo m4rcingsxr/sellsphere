@@ -39,6 +39,24 @@ const ajaxUtil = {
 
     },
 
+    async getText(url) {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'text/html'
+            }
+        });
+
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const error = new Error(`GET request failed: ${response.statusText}`);
+            error.response = errorResponse;
+            throw error;
+        }
+
+        return await response.text();
+    },
+
     /**
      * Performs a POST request to the specified URL with the provided data.
      *

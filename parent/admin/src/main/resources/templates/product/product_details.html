@@ -1,34 +1,59 @@
 <div th:fragment="details()">
     <div class="row p-4">
-        <table class="table" id="details">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Value</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="detail, detailStat : *{details}">
-                <th th:text="${detailStat.index}"></th>
-                <th>
-                    <input class="form-control" type="text" name="names" th:value="${detail.name}"/>
-                </th>
-                <th>
-                    <input class="form-control" type="text" name="values" th:value="${detail.value}"/>
-                </th>
-                <th>
-                    <a href="#" class="link-primary"><i class="fa-solid fa-xmark fa-xl"></i></a>
-                </th>
-            </tr>
-            </tbody>
-        </table>
+        <div class="col-sm-8 offset-sm-2">
+            <table class="table" id="details">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Names</th>
+                    <th>Values</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="detail, detailStat : *{details}">
+                    <th th:text="${detailStat.index}"></th>
+                    <th>
+                        <input th:replace="~{form_fragments :: text_input_value('Name', 'names', ${detail.name}, false)}"/>
+                    </th>
+                    <th>
+                        <input th:replace="~{form_fragments :: text_input_value('Value', 'values', ${detail.value}, false)}"/>
+                    </th>
+                    <th>
+                        <a href="#" class="link-primary"><i class="fa-solid fa-xmark fa-xl"></i></a>
+                    </th>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-        <div class="col-sm-12 mt-4">
+        <div class="col-sm-8 offset-sm-2 mt-4">
             <a id="newDetailInput" class="link-primary"><i class="fa-solid fa-plus fa-2xl"></i></a>
         </div>
 
     </div>
+</div>
+
+<div th:fragment="details_readonly()" class="p-5">
+    <table class="table table-borderless">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="detail, detailStat : *{details}">
+            <th th:text="${detailStat.index}"></th>
+            <th>
+                <input th:replace="~{form_fragments :: text_input_value(label, 'names', ${detail.name}, true)}"/>
+            </th>
+            <th>
+                <input th:replace="~{form_fragments :: text_input_value(label, 'values', ${detail.value}, true)}"/>
+            </th>
+        </tr>
+        </tbody>
+    </table>
 </div>
 

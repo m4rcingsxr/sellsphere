@@ -42,6 +42,8 @@ public class WebSecurityConfig {
                 .requestMatchers("/users/**").hasRole(ADMIN)
                 .requestMatchers("/categories/**").hasAnyRole(ADMIN, EDITOR)
                 .requestMatchers("/brands/**").hasAnyRole(ADMIN, EDITOR)
+                .requestMatchers("/products/**").hasAnyRole(ADMIN, SALESPERSON)
+                .requestMatchers("/products/page/**", "/products/details/**").hasRole(SHIPPER)
                 .anyRequest().authenticated());
     }
 

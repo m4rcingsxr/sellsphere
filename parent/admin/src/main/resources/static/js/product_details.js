@@ -29,9 +29,7 @@ function getDetailSectionHtml(index) {
                     <input class="form-control" type="text" name="values">
                 </th>
                 <th>
-                    <div class="d-flex justify-content-end">
-                        <a href="#" class="link-primary"><i class="fa-solid fa-xmark fa-xl"></i></a>
-                    </div>
+                     <a href="#" class="link-primary"><i class="fa-solid fa-xmark fa-xl"></i></a>
                 </th>
             </tr>
         `;

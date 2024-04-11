@@ -6,7 +6,7 @@
 
 <main class="content">
     <div class="container mt-4">
-        <h1 class="text-center" th:text="${pageTitle}"></h1>
+        <h2 class="text-center mt-4" th:text="${pageTitle}"></h2>
 
         <form id="mainForm" class="mt-4" enctype="multipart/form-data" method="POST" th:object="${product}" th:action="@{/products/save}">
             <input type="hidden" class="form-control" th:field="*{id}">

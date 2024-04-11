@@ -2,6 +2,7 @@
 
 $(function () {
     initializeDeleteEntityListener();
+    initializeDetailEntityListener();
 })
 
 function initializeDeleteEntityListener() {
@@ -16,11 +17,26 @@ function initializeDeleteEntityListener() {
     });
 }
 
+function initializeDetailEntityListener() {
+    $(".content").on('click', '#detailEntity', function (event) {
+        event.preventDefault();
+        const detailURL = $(this).attr("href");
+
+        handleDetailShow(detailURL);
+    });
+}
 
 function showDeleteEntityModal(message, deleteURL) {
     showModalDialog('deleteModal', "Delete confirmation", message, 'text' ,deleteURL);
 }
 
-
-
+async function handleDetailShow(detailURL) {
+    try {
+        const responseHtml = await ajaxUtil.getText(detailURL);
+        showModalDialog('detailModal', 'Details', responseHtml, 'html');
+    } catch(error) {
+        console.error("Error during image compression:", error.response);
+        showErrorModal(error.response);
+    }
+}
 

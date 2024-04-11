@@ -1,27 +1,59 @@
 <div th:fragment="shipping()" class="p-4">
-    <div class="alert alert-primary d-flex align-items-center mx-auto p-3 alert-dismissible fade show"
-         role="alert">
-        <div class="lh-lg">
-            The following information is important for calculating the shipping cost of the product. The dimensions (L x
-            W x H) refer to the box used for packaging the product, not the product's dimensions.
+    <div class="row g-3">
+        <div class="col-sm-8 offset-sm-2">
+            <div class="alert alert-primary d-flex align-items-center mx-auto p-3 alert-dismissible fade show"
+                 role="alert">
+                <div class="lh-lg w-90">
+                    The following information is important for calculating the shipping cost of the product. The dimensions (L x
+                    W x H) refer to the box used for packaging the product, not the product's dimensions.
+                </div>
+                <div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
         </div>
-        <div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+        <div class="row col-sm-8 offset-sm-2 mt-3">
+            <th:block
+                    th:replace="~{form_fragments :: number_input_unit('Length', 'length', 0.01, false, 'inch')}"></th:block>
+
+            <th:block
+                    th:replace="~{form_fragments :: number_input_unit('Width', 'width', 0.01, false, 'inch')}"></th:block>
+
+            <th:block
+                    th:replace="~{form_fragments :: number_input_unit('Height', 'height', 0.01, false, 'inch')}"></th:block>
+
+            <th:block
+                    th:replace="~{form_fragments :: number_input_unit('Weight', 'weight', 0.01, false, 'pound')}"></th:block>
         </div>
-    </div>
-
-    <div class="row g-3 mt-3">
-        <th:block
-                th:replace="~{form_fragments :: number_input_unit('Length', 'length', 0.01, false, 'inch')}"></th:block>
-
-        <th:block
-                th:replace="~{form_fragments :: number_input_unit('Width', 'width', 0.01, false, 'inch')}"></th:block>
-
-        <th:block
-                th:replace="~{form_fragments :: number_input_unit('Height', 'height', 0.01, false, 'inch')}"></th:block>
-
-        <th:block
-                th:replace="~{form_fragments :: number_input_unit('Weight', 'weight', 0.01, false, 'pound')}"></th:block>
 
     </div>
+</div>
+
+<div th:fragment="shipping_readonly()" class="p-4">
+    <div class="row g-3">
+            <div class="alert alert-primary d-flex align-items-center mx-auto p-3 alert-dismissible fade show"
+                 role="alert">
+                <div class="lh-lg w-90">
+                    The following information is important for calculating the shipping cost of the product. The dimensions (L x
+                    W x H) refer to the box used for packaging the product, not the product's dimensions.
+                </div>
+                <div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <th:block
+                    th:replace="~{form_fragments :: number_input_unit('Length', 'length', 0.01, true, 'inch')}"></th:block>
+
+            <th:block
+                    th:replace="~{form_fragments :: number_input_unit('Width', 'width', 0.01, true, 'inch')}"></th:block>
+
+            <th:block
+                    th:replace="~{form_fragments :: number_input_unit('Height', 'height', 0.01, true, 'inch')}"></th:block>
+
+            <th:block
+                    th:replace="~{form_fragments :: number_input_unit('Weight', 'weight', 0.01, true, 'pound')}"></th:block>
+        </div>
+
 </div>
