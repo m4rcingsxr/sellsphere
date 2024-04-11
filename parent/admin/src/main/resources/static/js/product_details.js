@@ -15,6 +15,7 @@ function addDetailInput(event) {
     $("#details tbody").append(detailSectionHtml);
     detailCurrentIndex++;
     refreshIndexes();
+    applyDynamicValidationRules();
 }
 
 function getDetailSectionHtml(index) {

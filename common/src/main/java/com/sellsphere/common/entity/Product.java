@@ -72,7 +72,7 @@ public class Product extends IdentifiedEntity {
     @DecimalMax(value = "100.00", message = "Discount percent must be less than or equal to 100.00")
     @Digits(integer = 4, fraction = 2, message = "Discount percent must be a valid percentage with up to 2 decimal places")
     @Column(name = "discount_percent", nullable = false, precision = 4, scale = 2)
-    private BigDecimal discountPercent;
+    private BigDecimal discountPercent = BigDecimal.ZERO;
 
     @NotNull(message = "Length is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Length must be greater than zero")

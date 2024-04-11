@@ -1,30 +1,29 @@
 <div th:fragment="overview()">
     <div class="row g-4 p-4">
         <th:block
-                th:replace="form_fragments :: text_input('Product Name', 'name', ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})"></th:block>
+                th:replace="~{form_fragments :: text_input('Product Name', 'name', ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
+
+        <th:block th:replace="~{form_fragments :: text_input_placeholder('Alias', 'alias', 'Leaving it empty will replace product name whitespaces with underscores.')}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: text_input('Alias', 'alias', ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})"></th:block>
+                th:replace="~{form_fragments :: select_input('Brand', ${brandList}, 'brand',  ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')}, false)}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: select_input('Brand', ${brandList}, 'brand',  ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')}, false)"></th:block>
+                th:replace="~{form_fragments :: select_input('Category', ${null}, 'category',  ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')}, false)}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: select_input('Category', ${null}, 'category',  ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')}, false)"></th:block>
+                th:replace="~{form_fragments :: checkbox_input('Enabled', 'enabled' , ${product.enabled}, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: checkbox_input('Enabled', 'enabled' , ${product.enabled}, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})"></th:block>
+                th:replace="~{form_fragments :: checkbox_input('In stock', 'inStock' , ${product.inStock}, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: checkbox_input('In stock', 'inStock' , ${product.inStock}, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})"></th:block>
+                th:replace="~{form_fragments :: number_input('Cost', 'cost',0.01, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: number_input('Cost', 'cost',0.01, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})"></th:block>
+                th:replace="~{form_fragments :: number_input('Price', 'price',0.01, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: number_input('Price', 'price',0.01, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})"></th:block>
-
-        <th:block
-                th:replace="form_fragments :: number_input('Discount percent', 'discountPercent',0.1, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})"></th:block>
+                th:replace="~{form_fragments :: number_input('Discount percent', 'discountPercent',0.1, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
     </div>
 </div>

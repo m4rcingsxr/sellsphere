@@ -29,6 +29,15 @@
     </div>
 </th:block>
 
+<!-- TEXT INPUT WITH PLACEHOLDER -->
+<th:block th:fragment="text_input_placeholder(label, fieldName, placeholder)">
+    <label class="col-sm-4 col-form-label" th:text="${label}"></label>
+    <div class="col-sm-8">
+        <input th:field="*{__${fieldName}__}" type="text" class="form-control" th:placeholder="${placeholder}"/>
+        <span th:replace="~{:: field_error(${fieldName})}"></span>
+    </div>
+</th:block>
+
 <!-- PASSWORD INPUT -->
 <th:block th:fragment="password_input(id)">
     <label class="col-sm-4 col-form-label">Password</label>
@@ -54,9 +63,9 @@
     <label class="col-sm-4 col-form-label" th:text="${label}"></label>
     <div class="mb-3 col-sm-8">
         <div class="input-group">
-            <span class="input-group-text" th:text="${unit}"></span>
             <input th:field="*{__${fieldName}__}" type="number" class="form-control" th:step="${step}"
                    th:attr="readonly=${readonly}? 'readonly' : null"/>
+            <span class="input-group-text" th:text="${unit}"></span>
         </div>
     </div>
 </th:block>
