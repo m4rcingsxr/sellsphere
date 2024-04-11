@@ -16,4 +16,5 @@
     <include file="db/changelog/db.changelog-add-products-details-table.xml"/>
     <include file="db/changelog/db.changelog-add-product_updates-table.xml"/>
     <include file="db/changelog/db.changelog-update-products-table.xml"/>
+    <include file="db/changelog/db.changelog-update-products_updates-table.xml"/>
 </databaseChangeLog>

@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface ProductRepository extends SearchRepository<Product, Integer> {
 
     @Override
@@ -14,4 +16,5 @@ public interface ProductRepository extends SearchRepository<Product, Integer> {
             ".shortDescription, ' ', p.fullDescription, ' ', " + "p.brand.name, ' ', p.category" + ".name)) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Product> findAll(@Param("keyword") String keyword, Pageable pageRequest);
 
+    Optional<Product> findByName(String name);
 }

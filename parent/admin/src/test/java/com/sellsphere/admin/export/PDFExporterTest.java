@@ -2,15 +2,12 @@ package com.sellsphere.admin.export;
 
 import com.sellsphere.admin.category.TestCategoryHelper;
 import com.sellsphere.common.entity.Category;
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.math3.analysis.function.Exp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

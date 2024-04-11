@@ -1,10 +1,6 @@
 package com.sellsphere.admin.product;
 
-import com.sellsphere.common.entity.Brand;
-import com.sellsphere.common.entity.Category;
-import com.sellsphere.common.entity.Product;
-import com.sellsphere.common.entity.ProductDetail;
-import com.sellsphere.common.entity.ProductImage;
+import com.sellsphere.common.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -215,4 +211,16 @@ class ProductRepositoryIntegrationTest {
         assertTrue(foundProduct.getDetails().isEmpty());
         assertTrue(foundProduct.getImages().isEmpty());
     }
+
+    @Test
+    void whenFindByName_thenProductIsFound() {
+        // When
+        Optional<Product> product = productRepository.findByName("Product 1");
+
+        // Then
+        assertTrue(product.isPresent(), "Product with name 'Example Product' should be found");
+        assertNotNull(product.get().getBrand());
+        assertNotNull(product.get().getCategory());
+    }
+
 }

@@ -1,7 +1,6 @@
 package com.sellsphere.admin.category;
 
 import com.sellsphere.common.entity.Constants;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;

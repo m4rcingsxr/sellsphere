@@ -1,7 +1,6 @@
 package com.sellsphere.admin.brand;
 
 import com.adobe.testing.s3mock.junit5.S3MockExtension;
-import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Brand;
@@ -24,7 +23,6 @@ import util.PagingTestHelper;
 import util.S3TestUtils;
 
 import java.io.IOException;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 

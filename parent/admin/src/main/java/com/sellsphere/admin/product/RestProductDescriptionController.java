@@ -19,8 +19,6 @@ public class RestProductDescriptionController {
 
     private static final String IMAGE_PATH = "description/images";
 
-    private final FileService fileService;
-
     @PostMapping("/descriptions/upload")
     public ResponseEntity<Map<String, String>> uploadProductDescriptionImage(
             @RequestParam("file") MultipartFile image)
@@ -31,7 +29,7 @@ public class RestProductDescriptionController {
         }
         String fileName = image.getOriginalFilename();
 
-        fileService.saveFile(image, IMAGE_PATH, fileName);
+        FileService.saveFile(image, IMAGE_PATH, fileName);
 
         Map<String, String> map = new HashMap<>();
         map.put("location", Constants.S3_BASE_URI + "/" + IMAGE_PATH + "/" + fileName);
@@ -49,7 +47,7 @@ public class RestProductDescriptionController {
         }
 
         String s3Object = IMAGE_PATH + "/" + fileName;
-        fileService.removeFile(s3Object);
+        FileService.removeFile(s3Object);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

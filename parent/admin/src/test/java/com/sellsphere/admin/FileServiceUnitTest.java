@@ -1,6 +1,5 @@
 package com.sellsphere.admin;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
@@ -13,13 +12,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceUnitTest {
-    private FileService fileService;
-
-    @BeforeEach
-    void setUp() {
-        fileService = new FileService();
-    }
-
 
     @Test
     void removeNotMatchingFiles_ShouldDeleteNotMatchingFiles() {
@@ -32,11 +24,10 @@ class FileServiceUnitTest {
             when(S3Utility.listFolder(extrasFolderName)).thenReturn(existingFiles);
 
             // When
-            fileService.removeNotMatchingFiles(extrasFolderName, newFiles);
+            FileService.removeNotMatchingFiles(extrasFolderName, newFiles);
 
             // Then
             s3UtilityMockedStatic.verify(() -> S3Utility.deleteFiles(List.of("test-folder/file3.txt")));
         }
     }
-
 }

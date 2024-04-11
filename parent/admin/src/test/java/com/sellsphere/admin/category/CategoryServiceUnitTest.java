@@ -1,6 +1,5 @@
 package com.sellsphere.admin.category;
 
-
 import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Category;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,17 +37,12 @@ class CategoryServiceUnitTest {
     private CategoryRepository categoryRepository;
 
     @Mock
-    private FileService fileService;
-
-    @Mock
     private PagingAndSortingHelper helper;
 
     private final List<Category> rootCategories = generateRootCategories();
 
-
     @Test
     void whenListAllRootCategoriesSorted_thenSortedCategoriesInHierarchicalOrderReturned() {
-
         // Given
         when(categoryRepository.findAllByParentIsNull(any(Sort.class))).thenReturn(rootCategories);
 
@@ -59,10 +54,8 @@ class CategoryServiceUnitTest {
         categoryList.forEach(category -> assertHierarchy(category, rootCategories));
     }
 
-
     @Test
     void givenKeyword_whenPageCategories_thenUseSearchRepository() {
-
         // Given
         Integer pageNum = 0;
         String keyword = "TestKeyword";
@@ -79,7 +72,6 @@ class CategoryServiceUnitTest {
 
     @Test
     void givenNoKeyword_whenListingCategories_thenListRootCategories() {
-
         // Given
         int pageNum = 1;
         Page<Category> mockPage = Page.empty();
@@ -119,7 +111,6 @@ class CategoryServiceUnitTest {
     @Test
     void givenCategoryWithParent_whenSaving_thenHierarchyPathShouldUpdateCorrectly()
             throws CategoryIllegalStateException {
-
         // Given
         Category parentCategory = new Category();
         parentCategory.setId(1);
@@ -130,7 +121,6 @@ class CategoryServiceUnitTest {
 
         when(categoryRepository.save(any(Category.class))).thenAnswer(
                 invocation -> invocation.getArgument(0));
-
 
         // When
         Category savedCategory = categoryService.save(category);
@@ -151,7 +141,6 @@ class CategoryServiceUnitTest {
         category.setId(2);
         category.setParent(parentCategory);
 
-
         MultipartFile file = mock(MultipartFile.class);
         when(file.isEmpty()).thenReturn(false);
         when(file.getOriginalFilename()).thenReturn("test.jpg");
@@ -160,12 +149,14 @@ class CategoryServiceUnitTest {
         when(categoryRepository.save(any(Category.class))).thenAnswer(
                 invocation -> invocation.getArgument(0));
 
-        // When
-        Category savedCategory = categoryService.save(category, file);
+        try (MockedStatic<FileService> fileServiceMockedStatic = mockStatic(FileService.class)) {
+            // When
+            Category savedCategory = categoryService.save(category, file);
 
-        // Verify the file saving
-        verify(fileService, times(1)).saveSingleFile(file, "category-photos/2", "test.jpg");
-        verify(categoryRepository, times(1)).save(category);
+            // Verify the file saving
+            fileServiceMockedStatic.verify(() -> FileService.saveSingleFile(file, "category-photos/2", "test.jpg"));
+            verify(categoryRepository, times(1)).save(category);
+        }
     }
 
     @Test

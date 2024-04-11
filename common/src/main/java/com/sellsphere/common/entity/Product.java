@@ -27,7 +27,6 @@ public class Product extends IdentifiedEntity {
     @Column(name = "name", unique = true, length = 255, nullable = false)
     private String name;
 
-    @NotBlank(message = "Alias is required")
     @Size(max = 255, message = "Alias must be up to 255 characters")
     @Column(name = "alias", unique = true, length = 255, nullable = false)
     private String alias;
@@ -42,7 +41,6 @@ public class Product extends IdentifiedEntity {
     @Column(name = "full_description", columnDefinition = "CLOB", nullable = false)
     private String fullDescription;
 
-    @NotNull(message = "Created time is required")
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime;
 
@@ -98,7 +96,6 @@ public class Product extends IdentifiedEntity {
     @Column(name = "weight", nullable = false, precision = 12, scale = 2)
     private BigDecimal weight;
 
-    @NotBlank(message = "Main image is required")
     @Column(name = "main_image", nullable = false)
     private String mainImage;
 
@@ -137,11 +134,15 @@ public class Product extends IdentifiedEntity {
     }
 
     public void updateProductTimestamp() {
-        ProductUpdate newProductUpdate = new ProductUpdate();
-        newProductUpdate.setProduct(this);
-        newProductUpdate.setUpdatedTime(LocalDateTime.now());
+        if(this.productUpdate == null) {
+            ProductUpdate newProductUpdate = new ProductUpdate();
+            newProductUpdate.setProduct(this);
+            newProductUpdate.setUpdatedTime(LocalDateTime.now());
 
-        this.productUpdate = newProductUpdate;
+            this.productUpdate = newProductUpdate;
+        } else {
+            this.productUpdate.setUpdatedTime(LocalDateTime.now());
+        }
     }
 
     @Override

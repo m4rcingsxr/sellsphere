@@ -18,10 +18,12 @@
             <div class="tab-pane fade show active p-3" id="full-description-tab-pane" role="tabpanel" aria-labelledby="full-description-tab"
                  tabindex="0">
                 <textarea th:field="*{shortDescription}"></textarea>
+                <span th:replace="form_fragments :: field_error('shortDescription')"></span>
             </div>
 
             <div class="tab-pane fade p-3" id="short-description-tab-pane" role="tabpanel" aria-labelledby="short-description-tab" tabindex="0">
                 <textarea th:field="*{fullDescription}"></textarea>
+                <span th:replace="form_fragments :: field_error('fullDescription')"></span>
             </div>
 
         </div>

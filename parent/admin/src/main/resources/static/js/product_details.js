@@ -23,10 +23,10 @@ function getDetailSectionHtml(index) {
             <tr>
                 <th>${index}</th>
                 <th>
-                    <input class="form-control" type="text" id="details${index}.name" name="details[${index}].name">
+                    <input class="form-control" type="text" name="names">
                 </th>
                 <th>
-                    <input class="form-control" type="text" id="details${index}.value" name="details[${index}].value">
+                    <input class="form-control" type="text" name="values">
                 </th>
                 <th>
                     <div class="d-flex justify-content-end">
@@ -49,16 +49,5 @@ function refreshIndexes() {
     $("#details tbody tr").each((index, element) => {
         $(element).find("th").first().text(index);
     });
-
-    ['id', 'name', 'value', 'product'].forEach(refreshInputs);
 }
 
-function refreshInputs(attributeType) {
-    $("input").filter((_, element) => new RegExp(`^details\\[\\d+\\]\\.${attributeType}$`).test(element.name))
-        .each((index, element) => {
-            $(element).attr({
-                "id": `details${index}.${attributeType}`,
-                "name": `details[${index}].${attributeType}`
-            });
-        });
-}

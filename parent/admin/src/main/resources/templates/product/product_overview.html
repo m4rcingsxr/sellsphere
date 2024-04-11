@@ -24,6 +24,6 @@
                 th:replace="~{form_fragments :: number_input('Price', 'price',0.01, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
 
         <th:block
-                th:replace="~{form_fragments :: number_input('Discount percent', 'discountPercent',0.1, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
+                th:replace="~{form_fragments :: number_input('Discount percent', 'discountPercent',0.01, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
     </div>
 </div>

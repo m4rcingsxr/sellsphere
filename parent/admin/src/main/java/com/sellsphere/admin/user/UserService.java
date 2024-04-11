@@ -23,12 +23,13 @@ import java.util.List;
 @Service
 public class UserService {
 
+    private static final String S3_FOLDER_NAME = "user-photos/";
+    private static final int USERS_PER_PAGE = 10;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final FileService fileService;
-    private static final String S3_FOLDER_NAME = "user-photos/";
-    private static final int USERS_PER_PAGE = 10;
+
 
     /**
      * Gets a user by its ID.
@@ -91,7 +92,7 @@ public class UserService {
 
             String folderName = S3_FOLDER_NAME + savedUser.getId();
 
-            fileService.saveSingleFile(file, folderName, fileName);
+            FileService.saveSingleFile(file, folderName, fileName);
 
             return savedUser;
         } else {

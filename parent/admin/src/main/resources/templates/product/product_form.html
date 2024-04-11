@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-sc">
+<html lang="en">
 <head th:replace="~{form_fragments :: head_with_editor(${pageTitle})}"></head>
 <body>
 <header th:replace="~{navigations :: header()}"></header>
@@ -28,8 +28,6 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" data-bs-target="#shipping-tab-pane" type="button" role="tab" aria-controls="shipping-tab-pane" aria-selected="false" >Shipping</button>
                 </li>
-
-
             </ul>
 
             <div class="tab-content" id="myTabContent">
@@ -80,6 +78,9 @@
                     id: function () {
                         return $('input[name="id"]').val();
                     }
+                },
+                error: function (jqXHR) {
+                    handleRemoteValidationError(jqXHR);
                 }
             }
         },
@@ -123,15 +124,19 @@
             min: 0
         },
         length: {
+            required: true,
             notZero: true
         },
         width: {
+            required: true,
             notZero: true
         },
         height: {
+            required: true,
             notZero: true
         },
         weight: {
+            required: true,
             notZero: true
         },
     };

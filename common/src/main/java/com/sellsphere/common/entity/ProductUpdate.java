@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
@@ -16,21 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "product_updates")
-public class ProductUpdate implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @Column(name = "product_id")
-    private Integer productId;
+public class ProductUpdate extends IdentifiedEntity {
 
     @Column(name = "updated_time", nullable = false)
     private LocalDateTime updatedTime;
 
     @OneToOne
-    @MapsId // product id is both foreign and primary key
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
 }

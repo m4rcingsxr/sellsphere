@@ -115,19 +115,39 @@ public class S3Utility {
 
 
     /**
-     * Removes a folder and its contents from the S3 bucket.
+     * Removes files from a folder in the S3 bucket.
      *
-     * @param folderName the folder to remove
+     * @param folderName the folder from which to remove files
+     * @throws S3Exception if an error occurs while communicating with S3
      */
-    public static void removeFolder(String folderName) throws S3Exception {
+    public static void removeFilesInFolder(String folderName) throws S3Exception {
+        String dirName = folderName.endsWith("/") ? folderName : folderName + "/";
+
         ListObjectsRequest request = ListObjectsRequest.builder()
                 .bucket(bucketName)
-                .prefix(folderName)
+                .prefix(dirName)
                 .build();
 
+
+
         ListObjectsResponse response = s3Client.listObjects(request);
-        response.contents().forEach(
-                s3Object -> deleteS3Object(s3Object.key()));
+        response.contents().forEach(s3Object -> {
+            if (isFileInFolder(dirName, s3Object.key())) {
+                deleteS3Object(s3Object.key());
+            }
+        });
+    }
+
+    /**
+     * Checks if the given key belongs to a file in the specified folder.
+     *
+     * @param folderName the folder name
+     * @param key        the S3 object key
+     * @return true if the key is a file in the folder, false otherwise
+     */
+    private static boolean isFileInFolder(String folderName, String key) {
+        String relativePath = key.substring(folderName.length());
+        return !relativePath.contains("/");
     }
 
     /**

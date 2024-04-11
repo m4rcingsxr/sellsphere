@@ -9,14 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -35,9 +34,6 @@ class BrandServiceUnitTest {
 
     @Mock
     private PagingAndSortingHelper pagingAndSortingHelper;
-
-    @Mock
-    private FileService fileService;
 
     @InjectMocks
     private BrandService brandService;
@@ -87,7 +83,9 @@ class BrandServiceUnitTest {
     void givenValidBrandAndFile_whenSave_thenBrandIsSavedWithLogo() throws IOException {
         // given
         Brand brand = new Brand();
-        MultipartFile file = new MockMultipartFile("file", "logo.png", "image/png", new byte[]{1, 2, 3, 4});
+        MultipartFile file = new MockMultipartFile("file", "logo.png", "image/png",
+                                                   new byte[]{1, 2, 3, 4}
+        );
 
         Brand savedBrand = new Brand();
         savedBrand.setId(1);
@@ -97,13 +95,18 @@ class BrandServiceUnitTest {
             return arg;
         });
 
-        // when
-        Brand result = brandService.save(brand, file);
+        try (MockedStatic<FileService> fileServiceMockedStatic = mockStatic(FileService.class)) {
+            // when
+            Brand result = brandService.save(brand, file);
 
-        // then
-        assertEquals("logo.png", result.getLogo());
-        verify(fileService).saveSingleFile(file, BRAND_PHOTOS_DIR + savedBrand.getId(), "logo.png");
-        verify(brandRepository).save(any(Brand.class));
+            // then
+            assertEquals("logo.png", result.getLogo());
+            fileServiceMockedStatic.verify(
+                    () -> FileService.saveSingleFile(file, BRAND_PHOTOS_DIR + savedBrand.getId(),
+                                                     "logo.png"
+                    ));
+            verify(brandRepository).save(any(Brand.class));
+        }
     }
 
     @Test
@@ -121,7 +124,10 @@ class BrandServiceUnitTest {
 
         // then
         assertNull(result.getLogo());
-        verify(fileService, never()).saveSingleFile(any(), anyString(), anyString());
+        try (MockedStatic<FileService> fileServiceMockedStatic = mockStatic(FileService.class)) {
+            fileServiceMockedStatic.verify(
+                    () -> FileService.saveSingleFile(any(), anyString(), anyString()), never());
+        }
         verify(brandRepository).save(brand);
     }
 
@@ -140,7 +146,10 @@ class BrandServiceUnitTest {
 
         // then
         assertNull(result.getLogo());
-        verify(fileService, never()).saveSingleFile(any(), anyString(), anyString());
+        try (MockedStatic<FileService> fileServiceMockedStatic = mockStatic(FileService.class)) {
+            fileServiceMockedStatic.verify(
+                    () -> FileService.saveSingleFile(any(), anyString(), anyString()), never());
+        }
         verify(brandRepository).save(brand);
     }
 
@@ -238,9 +247,7 @@ class BrandServiceUnitTest {
         Integer brandId = -1;
         given(brandRepository.findById(brandId)).willReturn(Optional.empty());
 
-        // When
-        // Then
+        // When, Then
         assertThrows(BrandNotFoundException.class, () -> brandService.delete(brandId));
     }
-
 }

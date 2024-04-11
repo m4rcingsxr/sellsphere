@@ -67,6 +67,7 @@
                    th:attr="readonly=${readonly}? 'readonly' : null"/>
             <span class="input-group-text" th:text="${unit}"></span>
         </div>
+        <span th:replace="~{:: field_error(${fieldName})}"></span>
     </div>
 </th:block>
 

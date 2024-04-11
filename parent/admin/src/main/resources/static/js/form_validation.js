@@ -152,7 +152,16 @@ function toggleValidationClasses(element, isInvalid) {
  * @param {jQuery} element - The jQuery form element.
  */
 function errorPlacementHandler(error, element) {
-    const placement = element.prop("type") === "checkbox" ? element.closest(".col-sm-8").children().last() : element;
+    let placement;
+
+    if (element.prop("type") === "checkbox") {
+        placement = element.closest(".col-sm-8").children().last();
+    } else if (element.parent().hasClass("input-group")) {
+        placement = element.parent();
+    } else {
+        placement = element;
+    }
+
     error.addClass("text-danger").insertAfter(placement);
 }
 

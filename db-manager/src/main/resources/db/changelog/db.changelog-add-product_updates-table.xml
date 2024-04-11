@@ -21,5 +21,4 @@
         <renameColumn columnDataType="VARCHAR(255)" tableName="product_details" oldColumnName="value" newColumnName="detail_value"/>
     </changeSet>
 
-
 </databaseChangeLog>

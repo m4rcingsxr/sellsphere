@@ -3,8 +3,13 @@ package com.sellsphere.admin.product;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -35,4 +40,45 @@ public class ProductService {
     public Product get(Integer id) throws ProductNotFoundException {
         return productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
     }
+
+    public boolean isNameUnique(Integer id, String name) {
+        return productRepository.findByName(name)
+                .map(existingProduct -> existingProduct.getId().equals(id))
+                .orElse(true);
+    }
+
+    @Transactional
+    public Product save(Product product, MultipartFile newPrimaryImage, MultipartFile[] extraImages)
+            throws IOException {
+        updateProductDates(product);
+        generateProductAlias(product);
+
+        ProductHelper.addProductImages(product, extraImages);
+
+        Product savedProduct = productRepository.save(product);
+
+        ProductHelper.saveExtraImages(savedProduct, extraImages);
+        ProductHelper.savePrimaryImage(savedProduct, newPrimaryImage);
+
+        return savedProduct;
+    }
+
+    private void updateProductDates(Product product) {
+        if (product.getId() == null) {
+            product.setCreatedTime(LocalDateTime.now());
+        }
+        product.updateProductTimestamp();
+    }
+
+    private void generateProductAlias(Product product) {
+        String alias;
+        if (product.getAlias() == null || product.getAlias().isEmpty()) {
+            alias = product.getName().replace(" ", "_");
+        } else {
+            alias = product.getAlias().replace(" ", "_");
+        }
+        product.setAlias(alias);
+
+    }
+
 }

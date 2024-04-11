@@ -11,15 +11,12 @@
             </thead>
             <tbody>
             <tr th:each="detail, detailStat : *{details}">
-                <input type="hidden" th:field="*{details[__${detailStat.index}__].id}"/>
-                <input type="hidden" th:field="*{details[__${detailStat.index}__].product}"/>
-
                 <th th:text="${detailStat.index}"></th>
                 <th>
-                    <input class="form-control" type="text" th:field="*{details[__${detailStat.index}__].name}"/>
+                    <input class="form-control" type="text" name="names" th:value="${detail.name}"/>
                 </th>
                 <th>
-                    <input class="form-control" type="text" th:field="*{details[__${detailStat.index}__].value}"/>
+                    <input class="form-control" type="text" name="values" th:value="${detail.value}"/>
                 </th>
                 <th>
                     <a href="#" class="link-primary"><i class="fa-solid fa-xmark fa-xl"></i></a>

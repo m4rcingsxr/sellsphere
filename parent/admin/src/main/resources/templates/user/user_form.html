@@ -78,9 +78,9 @@
                     id: function () {
                         return $('input[name="id"]').val();
                     },
-                    error: function (jqXHR) {
-                        handleRemoteValidationError(jqXHR);
-                    }
+                },
+                error: function (jqXHR) {
+                    handleRemoteValidationError(jqXHR);
                 }
             }
         },

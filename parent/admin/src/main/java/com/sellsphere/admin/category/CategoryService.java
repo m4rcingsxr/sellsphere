@@ -30,7 +30,6 @@ public class CategoryService {
     public static final int CATEGORY_PER_PAGE = 5;
 
     private final CategoryRepository categoryRepository;
-    private final FileService fileService;
 
     /**
      * Gets a category by its ID.
@@ -49,7 +48,7 @@ public class CategoryService {
      * @param sortField the sort field
      * @param sortDir the sort direction
      * @return the list of categories
-     */
+     */ 
     public List<Category> listAllRootCategoriesSorted(String sortField, String sortDir) {
         Sort sort = PagingHelper.getSort(sortField, sortDir);
         List<Category> parents = categoryRepository.findAllByParentIsNull(sort);
@@ -201,7 +200,7 @@ public class CategoryService {
             Category savedCategory = save(category);
 
             String folderName = "category-photos/" + savedCategory.getId();
-            fileService.saveSingleFile(file, folderName, fileName);
+            FileService.saveSingleFile(file, folderName, fileName);
 
             return savedCategory;
         } else {

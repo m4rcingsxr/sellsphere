@@ -123,7 +123,7 @@ class S3UtilityIntegrationTest {
         S3Utility.uploadFile(folderName, "file2.txt", new FileInputStream(uploadFile2));
 
         // when
-        S3Utility.removeFolder(folderName);
+        S3Utility.removeFilesInFolder(folderName);
 
         // then
         List<String> files = S3Utility.listFolder(folderName);

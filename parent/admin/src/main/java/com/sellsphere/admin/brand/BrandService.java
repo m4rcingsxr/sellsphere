@@ -25,7 +25,6 @@ public class BrandService {
     private static final String BRAND_PHOTOS_DIR = "brand-photos/";
 
     private final BrandRepository brandRepository;
-    private final FileService fileService;
 
     /**
      * Lists brands by page.
@@ -78,7 +77,7 @@ public class BrandService {
             Brand savedBrand = brandRepository.save(brand);
 
             String folderName = BRAND_PHOTOS_DIR + savedBrand.getId();
-            fileService.saveSingleFile(file, folderName, fileName);
+            FileService.saveSingleFile(file, folderName, fileName);
             return savedBrand;
 
         } else {

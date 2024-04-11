@@ -36,6 +36,8 @@ function initializeImageEventListeners() {
 async function extraImageHandler(event) {
     const file = event.target.files[0];
     const container = $(event.target).parent();
+    $(event.target).hide();
+    container.addClass("d-flex");
 
     if (file && file.size <= MAX_FILE_SIZE) {
         try {
@@ -46,6 +48,7 @@ async function extraImageHandler(event) {
                 const html = getImageSectionHtml(compressedFile.name, e.target.result, imageCurrentIndex);
                 container.find(".card").remove();
                 container.append(html);
+                updateFileInputWithCompressedFile(event.target, compressedFile);
                 imageCurrentIndex++;
             };
             reader.readAsDataURL(compressedFile);
@@ -68,17 +71,27 @@ async function extraImageHandler(event) {
  */
 function getImageSectionHtml(fileName, src, index) {
     return `
-            <input type="hidden" id="images${index}.name" name="images[${index}].name" value="${fileName}">
-            <div class="card shadow-sm position-relative">
-                <div class="card-body">
-                    <h5 class="card-title">Extra image</h5>
-                </div>
-                <div class="entity-image-container" style="width: 100%; height: 300px">
-                    <img id="previewImage${index}" src="${src}" class="p-2 entity-image" style="object-fit: cover;">
-                </div>
-            <a href="#" class="link-primary position-absolute top-0 end-0 p-3"><i class="fa-solid fa-xmark"></i></a>
+            <div class="card shadow-sm position-relative mt-auto">
+                    <div class="card-body">
+                        <h5 class="card-title">Extra image</h5>
+                    </div>
+                    <div class="entity-image-container" style="width: 100%; height: 300px">
+                        <img id="previewImage${index}" src="${src}" class="p-2 entity-image" style="object-fit: cover;">
+                    </div>
+                    <a href="#" class="link-primary position-absolute top-0 end-0 p-3"><i class="fa-solid fa-xmark"></i></a>
             </div>
     `;
+}
+
+/**
+ * Updates the file input field with the compressed file.
+ * @param {HTMLInputElement} input - The original file input element.
+ * @param {File} compressedFile - The compressed file.
+ */
+function updateFileInputWithCompressedFile(input, compressedFile) {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(compressedFile);
+    input.files = dataTransfer.files;
 }
 
 /**
@@ -107,30 +120,6 @@ function handleExtraImageRemoval(event) {
     }
 }
 
-/**
- * Refreshes the indices of all image-related input elements in the form to maintain
- * sequential order. This is called after adding or removing image inputs.
- */
-function refreshImageIndexes() {
-    ['id', 'name', 'product'].forEach(attribute => {
-        refreshImageInputs(attribute);
-    });
-}
-
-/**
- * Updates the IDs and names of image input elements based on their current index.
- * This ensures the backend receives the images in the correct order with matching indices.
- * @param {string} attributeType - The type of attribute to update (id, name, or product).
- */
-function refreshImageInputs(attributeType) {
-    const pattern = new RegExp(`^images\\[\\d+\\]\\.${attributeType}$`);
-    $('input').filter((_, element) => pattern.test($(element).attr('name')))
-        .each((index, element) => {
-            const id = `images${index}.${attributeType}`;
-            const name = `images[${index}].${attributeType}`;
-            $(element).attr({id, name});
-        });
-}
 
 /**
  * Shows a spinner while processing for an extra image.
@@ -159,3 +148,28 @@ const hideSpinnerForExtraImage = (container) => {
         spinner.remove();
     }
 };
+
+/**
+ * Refreshes the indices of all image-related input elements in the form to maintain
+ * sequential order. This is called after adding or removing image inputs.
+ */
+function refreshImageIndexes() {
+    ['id', 'name', 'product'].forEach(attribute => {
+        refreshImageInputs(attribute);
+    });
+}
+
+/**
+ * Updates the IDs and names of image input elements based on their current index.
+ * This ensures the backend receives the images in the correct order with matching indices.
+ * @param {string} attributeType - The type of attribute to update (id, name, or product).
+ */
+function refreshImageInputs(attributeType) {
+    const pattern = new RegExp(`^images\\[\\d+\\]\\.${attributeType}$`);
+    $('input').filter((_, element) => pattern.test($(element).attr('name')))
+        .each((index, element) => {
+            const id = `images${index}.${attributeType}`;
+            const name = `images[${index}].${attributeType}`;
+            $(element).attr({id, name});
+        });
+}

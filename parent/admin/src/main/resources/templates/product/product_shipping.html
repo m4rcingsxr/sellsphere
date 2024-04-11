@@ -12,16 +12,16 @@
 
     <div class="row g-3 mt-3">
         <th:block
-                th:replace="form_fragments :: number_input_unit('Length', 'length', 0.1, false, 'inch')"></th:block>
+                th:replace="~{form_fragments :: number_input_unit('Length', 'length', 0.01, false, 'inch')}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: number_input_unit('Width', 'width', 0.1, false, 'inch')"></th:block>
+                th:replace="~{form_fragments :: number_input_unit('Width', 'width', 0.01, false, 'inch')}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: number_input_unit('Height', 'height', 0.1, false, 'inch')"></th:block>
+                th:replace="~{form_fragments :: number_input_unit('Height', 'height', 0.01, false, 'inch')}"></th:block>
 
         <th:block
-                th:replace="form_fragments :: number_input_unit('Weight', 'weight', 0.1, false, 'pound')"></th:block>
+                th:replace="~{form_fragments :: number_input_unit('Weight', 'weight', 0.01, false, 'pound')}"></th:block>
 
     </div>
 </div>
