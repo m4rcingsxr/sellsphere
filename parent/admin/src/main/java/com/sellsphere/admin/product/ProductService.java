@@ -89,4 +89,12 @@ public class ProductService {
 
         productRepository.delete(product);
     }
+
+    public void updateProductEnabledStatus(Integer id, boolean status)
+            throws ProductNotFoundException {
+        Product product = productRepository.findById(id).orElseThrow(
+                ProductNotFoundException::new);
+        product.setEnabled(status);
+        productRepository.save(product);
+    }
 }

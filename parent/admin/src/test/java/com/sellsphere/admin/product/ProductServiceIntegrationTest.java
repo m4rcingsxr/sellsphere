@@ -212,5 +212,31 @@ class ProductServiceIntegrationTest {
         return product;
     }
 
+    @Test
+    @Transactional
+    void givenExistingProductId_whenUpdateProductEnabledStatus_thenStatusIsUpdated() throws Exception {
+        // Given
+        Product product = createProduct();
+        productRepository.save(product);
+
+        // When
+        productService.updateProductEnabledStatus(product.getId(), false);
+
+        // Then
+        Product updatedProduct = productRepository.findById(product.getId()).get();
+        assertFalse(updatedProduct.isEnabled());
+    }
+
+    @Test
+    void givenNonExistingProductId_whenUpdateProductEnabledStatus_thenThrowProductNotFoundException() {
+        // Given
+        Integer nonExistingProductId = 999;
+        boolean newStatus = false;
+
+        // When & Then
+        assertThrows(ProductNotFoundException.class, () -> {
+            productService.updateProductEnabledStatus(nonExistingProductId, newStatus);
+        });
+    }
 
 }

@@ -179,6 +179,40 @@ class ProductServiceUnitTest {
         assertThrows(ProductNotFoundException.class, () -> productService.deleteProduct(nonExistingProductId));
     }
 
+    @Test
+    void givenExistingProductId_whenUpdateProductEnabledStatus_thenStatusIsUpdated() throws ProductNotFoundException {
+        // Given
+        Integer existingProductId = 1;
+        boolean newStatus = false;
+        Product existingProduct = new Product();
+        existingProduct.setId(existingProductId);
+        existingProduct.setEnabled(true);
+
+        when(productRepository.findById(existingProductId)).thenReturn(Optional.of(existingProduct));
+        when(productRepository.save(existingProduct)).thenReturn(existingProduct);
+
+        // When
+        productService.updateProductEnabledStatus(existingProductId, newStatus);
+
+        // Then
+        assertEquals(newStatus, existingProduct.isEnabled());
+        verify(productRepository, times(1)).save(existingProduct);
+    }
+
+    @Test
+    void givenNonExistingProductId_whenUpdateProductEnabledStatus_thenThrowProductNotFoundException() {
+        // Given
+        Integer nonExistingProductId = 999;
+        boolean newStatus = false;
+
+        when(productRepository.findById(nonExistingProductId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(ProductNotFoundException.class, () -> {
+            productService.updateProductEnabledStatus(nonExistingProductId, newStatus);
+        });
+    }
+
 
 
 }

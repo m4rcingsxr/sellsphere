@@ -112,4 +112,20 @@ public class ProductController {
         return DEFAULT_REDIRECT_URL;
     }
 
+    @GetMapping("/products/{id}/enabled/{status}")
+    public String updateProductEnabledStatus(@PathVariable("id") Integer id,
+                                             @PathVariable("status") boolean enabled,
+                                             RedirectAttributes redirectAttributes)
+            throws ProductNotFoundException {
+        productService.updateProductEnabledStatus(id, enabled);
+        String message = "The product ID " + id + " has been " + (enabled ? "enabled" : "disabled") + ".";
+        addRedirectMessage(redirectAttributes, message);
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
+    private void addRedirectMessage(RedirectAttributes ra, String successMessage) {
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
+    }
+
 }
