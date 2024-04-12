@@ -24,7 +24,7 @@ import java.util.List;
 @Controller
 public class ProductController {
 
-    private static final String PRODUCT_FORM = "product/product_form";
+    public static final String PRODUCT_FORM = "product/product_form";
     public static final String DEFAULT_REDIRECT_URL =
             "redirect:/products/page/0?sortField=name" + "&sortDir=asc";
 
@@ -94,7 +94,7 @@ public class ProductController {
     }
 
     private void prepareModelForProductForm(Product product, Model model) {
-        String pageTitle = (product.getId() != null) ? "Edit Product [ID: " + product.getId() +
+        String pageTitle = (product != null && product.getId() != null) ? "Edit Product [ID: " + product.getId() +
                 "]" : "Create New Product";
 
         List<Brand> brandList = brandService.listAll("name", Constants.SORT_ASCENDING);
@@ -102,6 +102,14 @@ public class ProductController {
         model.addAttribute("brandList", brandList);
         model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("product", product);
+    }
+
+    @GetMapping("/products/delete/{id}")
+    public String deleteProduct(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) throws ProductNotFoundException {
+        productService.deleteProduct(id);
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, "The product has been deleted successfully.");
+
+        return DEFAULT_REDIRECT_URL;
     }
 
 }

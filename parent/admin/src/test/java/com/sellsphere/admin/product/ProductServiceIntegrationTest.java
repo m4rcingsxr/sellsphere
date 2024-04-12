@@ -23,8 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
 @SpringBootTest
@@ -102,6 +101,54 @@ class ProductServiceIntegrationTest {
 
         assertNotNull(fetchedProduct);
         assertEquals("test-primary-image.jpg", fetchedProduct.getMainImage());
+    }
+
+    @Test
+    @Transactional
+    void givenProductId_whenDeleteProduct_thenShouldRemoveProductAndFiles() throws Exception {
+        // Given
+        Product product = createProduct();
+        productRepository.save(product);
+
+        MockMultipartFile newPrimaryImage = new MockMultipartFile(
+                "file",
+                "test-primary-image.jpg",
+                "image/jpeg",
+                "Primary image content".getBytes()
+        );
+
+        MockMultipartFile extraImage1 = new MockMultipartFile(
+                "file",
+                "test-extra-image1.jpg",
+                "image/jpeg",
+                "Extra image content 1".getBytes()
+        );
+
+        MockMultipartFile extraImage2 = new MockMultipartFile(
+                "file",
+                "test-extra-image2.jpg",
+                "image/jpeg",
+                "Extra image content 2".getBytes()
+        );
+
+        MultipartFile[] extraImages = {extraImage1, extraImage2};
+
+        Product savedProduct = productService.save(product, newPrimaryImage, extraImages);
+
+        // Verify files are saved in S3
+        S3TestUtils.verifyFileContent(s3Client, BUCKET_NAME, "product-photos/" + savedProduct.getId() + "/test-primary-image.jpg", newPrimaryImage.getInputStream());
+        S3TestUtils.verifyFileContent(s3Client, BUCKET_NAME, "product-photos/" + savedProduct.getId() + "/extras/test-extra-image1.jpg", extraImage1.getInputStream());
+        S3TestUtils.verifyFileContent(s3Client, BUCKET_NAME, "product-photos/" + savedProduct.getId() + "/extras/test-extra-image2.jpg", extraImage2.getInputStream());
+
+        // When
+        productService.deleteProduct(savedProduct.getId());
+
+        // Then
+        assertFalse(productRepository.existsById(savedProduct.getId()), "Product should be deleted");
+
+        // Verify that the files were deleted from S3
+        List<String> keys = S3Utility.listFolder("product-photos/" + savedProduct.getId());
+        assertTrue(keys.isEmpty(), "S3 folder should be empty after deletion");
     }
 
     public Product createProduct() {

@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+
 @Sql(scripts = {"classpath:sql/brands.sql", "classpath:sql/categories.sql",
                 "classpath:sql/brands_categories.sql",
                 "classpath:sql/products.sql"}, executionPhase =

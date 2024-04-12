@@ -44,7 +44,7 @@
 
 <ul th:fragment="export_nav(entities, newEntity)" class="nav mb-3">
     <li th:if="${newEntity}" class="nav-item">
-        <a th:href="@{'/' + ${entities} + '/new'}" class="nav-link"><i th:class="${'fa-solid fa-plus fa-xl'}"></i></a>
+        <a th:href="@{'/' + ${entities} + '/new'}" class="nav-link"><i th:class="${'fa-solid fa-plus fa-2xl'}"></i></a>
     </li>
     <li class="nav-item">
         <a th:replace="~{ :: file_link('/' + ${entities} + '/export/', 'csv')}"></a>

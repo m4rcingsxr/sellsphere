@@ -129,7 +129,6 @@ public class S3Utility {
                 .build();
 
 
-
         ListObjectsResponse response = s3Client.listObjects(request);
         response.contents().forEach(s3Object -> {
             if (isFileInFolder(dirName, s3Object.key())) {
@@ -229,4 +228,37 @@ public class S3Utility {
                 .build();
     }
 
+    /**
+     * Removes a folder and its contents from the S3 bucket.
+     *
+     * @param dirName the directory name to remove
+     * @throws S3Exception if an error occurs while communicating with S3
+     */
+    public static void removeFolder(String dirName) throws S3Exception {
+        String folderPrefix = dirName.endsWith("/") ? dirName : dirName + "/";
+
+        ListObjectsRequest listRequest = ListObjectsRequest.builder()
+                .bucket(bucketName)
+                .prefix(folderPrefix)
+                .build();
+
+        ListObjectsResponse listResponse = s3Client.listObjects(listRequest);
+
+        // Collect all keys to delete
+        List<ObjectIdentifier> objectsToDelete = listResponse.contents().stream()
+                .map(s3Object -> ObjectIdentifier.builder().key(s3Object.key()).build())
+                .toList();
+
+        if (!objectsToDelete.isEmpty()) {
+            // Delete all objects in a single batch request
+            DeleteObjectsRequest deleteRequest = DeleteObjectsRequest.builder()
+                    .bucket(bucketName)
+                    .delete(Delete.builder().objects(objectsToDelete).build())
+                    .build();
+
+            s3Client.deleteObjects(deleteRequest);
+        }
+
+        log.info("Successfully deleted folder '{}' and its contents from bucket '{}'.", folderPrefix, bucketName);
+    }
 }

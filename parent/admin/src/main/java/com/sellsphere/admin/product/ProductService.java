@@ -1,5 +1,7 @@
 package com.sellsphere.admin.product;
 
+import com.sellsphere.admin.FileService;
+import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductNotFoundException;
@@ -81,4 +83,10 @@ public class ProductService {
 
     }
 
+    public void deleteProduct(Integer id) throws ProductNotFoundException {
+        Product product = get(id);
+        S3Utility.removeFolder("product-photos/" + product.getId());
+
+        productRepository.delete(product);
+    }
 }

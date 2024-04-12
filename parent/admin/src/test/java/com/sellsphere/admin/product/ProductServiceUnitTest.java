@@ -1,5 +1,6 @@
 package com.sellsphere.admin.product;
 
+import com.sellsphere.admin.S3Utility;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -142,6 +143,40 @@ class ProductServiceUnitTest {
 
         // Then
         assertTrue(result);
+    }
+
+    @Test
+    void givenExistingProductId_whenDeleteProduct_thenShouldRemoveProductAndFiles() throws ProductNotFoundException {
+
+        // Given
+        Integer productId = 1;
+        Product product = new Product();
+        product.setId(productId);
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+
+        try (MockedStatic<S3Utility> mockedS3Utility = mockStatic(S3Utility.class)) {
+            mockedS3Utility.when(() -> S3Utility.removeFolder("product-photos/" + productId))
+                    .then(invocation -> null);
+
+            // When
+            productService.deleteProduct(productId);
+
+            // Then
+            verify(productRepository, times(1)).delete(product);
+            mockedS3Utility.verify(() -> S3Utility.removeFolder("product-photos/" + productId), times(1));
+        }
+    }
+
+    @Test
+    void givenNonExistingProductId_whenDeleteProduct_thenThrowProductNotFoundException() {
+        // Given
+        Integer nonExistingProductId = 999;
+
+        when(productRepository.findById(nonExistingProductId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(ProductNotFoundException.class, () -> productService.deleteProduct(nonExistingProductId));
     }
 
 
