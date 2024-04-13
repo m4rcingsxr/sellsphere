@@ -1,6 +1,6 @@
 package com.sellsphere.admin.product;
 
-import com.sellsphere.admin.FileService;
+import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Product;
@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -20,6 +21,10 @@ public class ProductService {
     private static final int PRODUCTS_PER_PAGE = 12;
 
     private final ProductRepository productRepository;
+
+    public List<Product> listAll(String sortField, String sortDir) {
+        return productRepository.findAll(PagingHelper.getSort(sortField, sortDir));
+    }
 
     /**
      * Facilitates pagination for listing products
@@ -97,4 +102,6 @@ public class ProductService {
         product.setEnabled(status);
         productRepository.save(product);
     }
+
+
 }

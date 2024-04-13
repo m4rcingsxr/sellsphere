@@ -2,12 +2,14 @@ package com.sellsphere.admin.product;
 
 import com.sellsphere.admin.ValidationHelper;
 import com.sellsphere.admin.brand.BrandService;
+import com.sellsphere.admin.export.ExportUtil;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -19,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 
 @RequiredArgsConstructor
 @Controller
@@ -94,8 +97,8 @@ public class ProductController {
     }
 
     private void prepareModelForProductForm(Product product, Model model) {
-        String pageTitle = (product != null && product.getId() != null) ? "Edit Product [ID: " + product.getId() +
-                "]" : "Create New Product";
+        String pageTitle = (product != null && product.getId() != null) ?
+                "Edit Product [ID: " + product.getId() + "]" : "Create New Product";
 
         List<Brand> brandList = brandService.listAll("name", Constants.SORT_ASCENDING);
 
@@ -105,9 +108,13 @@ public class ProductController {
     }
 
     @GetMapping("/products/delete/{id}")
-    public String deleteProduct(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) throws ProductNotFoundException {
+    public String deleteProduct(@PathVariable("id") Integer id,
+                                RedirectAttributes redirectAttributes)
+            throws ProductNotFoundException {
         productService.deleteProduct(id);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, "The product has been deleted successfully.");
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                                             "The product has been deleted successfully."
+        );
 
         return DEFAULT_REDIRECT_URL;
     }
@@ -118,14 +125,31 @@ public class ProductController {
                                              RedirectAttributes redirectAttributes)
             throws ProductNotFoundException {
         productService.updateProductEnabledStatus(id, enabled);
-        String message = "The product ID " + id + " has been " + (enabled ? "enabled" : "disabled") + ".";
-        addRedirectMessage(redirectAttributes, message);
+        String message = "The product ID " + id + " has been " + (enabled ? "enabled" : "disabled"
+        ) + ".";
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, message);
 
         return DEFAULT_REDIRECT_URL;
     }
 
-    private void addRedirectMessage(RedirectAttributes ra, String successMessage) {
-        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
+    @GetMapping("/products/export/{format}")
+    public void exportEntities(@PathVariable String format, HttpServletResponse response)
+            throws IOException {
+        String[] headers = {"Id", "Name", "Alias", "Created time", "Enabled", "In stock", "Cost",
+                            "Price", "Discount percent", "Length", "Width", "Height", "Weight"};
+
+        Function<Product, String[]> extractor = product -> new String[]{
+                String.valueOf(product.getId()), product.getName(), product.getAlias(),
+                product.getCreatedTime().toString(), String.valueOf(product.isEnabled()),
+                String.valueOf(product.isInStock()), String.valueOf(product.getCost()),
+                String.valueOf(product.getPrice()), String.valueOf(product.getDiscountPercent()),
+                String.valueOf(product.getLength()), String.valueOf(product.getWidth()),
+                String.valueOf(product.getHeight()), String.valueOf(product.getWeight()),};
+
+
+        ExportUtil.export(format, () -> productService.listAll("id", Constants.SORT_ASCENDING),
+                          headers, extractor, response
+        );
     }
 
 }

@@ -2,8 +2,10 @@ package com.sellsphere.admin.product;
 
 import com.adobe.testing.s3mock.junit5.S3MockExtension;
 import com.sellsphere.admin.S3Utility;
+import com.sellsphere.admin.export.ExportUtil;
 import com.sellsphere.common.entity.*;
 import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -14,14 +16,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 import util.S3TestUtils;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -238,5 +244,4 @@ class ProductServiceIntegrationTest {
             productService.updateProductEnabledStatus(nonExistingProductId, newStatus);
         });
     }
-
 }
