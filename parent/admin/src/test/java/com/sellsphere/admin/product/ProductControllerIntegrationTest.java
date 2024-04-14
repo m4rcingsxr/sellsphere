@@ -1,6 +1,5 @@
 package com.sellsphere.admin.product;
 
-import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Product;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;

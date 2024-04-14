@@ -2,11 +2,13 @@ package com.sellsphere.admin.product;
 
 import com.sellsphere.admin.FileService;
 import com.sellsphere.common.entity.Constants;
-import com.sellsphere.common.entity.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -68,25 +70,6 @@ public class RestProductDescriptionController {
         FileService.removeFile(s3Object);
 
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-            IllegalArgumentException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(),
-                                                        HttpStatus.BAD_REQUEST.value()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(IOException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handleIOException(IOException ex) {
-        ErrorResponse errorResponse = new ErrorResponse("Internal server error: " + ex.getMessage(),
-                                                        HttpStatus.INTERNAL_SERVER_ERROR.value()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

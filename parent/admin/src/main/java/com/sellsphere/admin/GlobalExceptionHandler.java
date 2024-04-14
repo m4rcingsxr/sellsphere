@@ -6,6 +6,8 @@ import com.sellsphere.admin.product.ProductController;
 import com.sellsphere.admin.user.UserController;
 import com.sellsphere.common.entity.*;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -17,7 +19,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  * typically by logging the error and redirecting to a specific page with an error message.
  */
 @Log4j2
-@ControllerAdvice
+@ControllerAdvice(annotations = Controller.class)
+@Order(2)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
