@@ -1,6 +1,6 @@
 <div th:fragment="shipping()" class="p-4">
     <div class="row g-3">
-        <div class="col-sm-8 offset-sm-2">
+        <div class="col-lg-8 offset-lg-2">
             <div class="alert alert-primary d-flex align-items-center mx-auto p-3 alert-dismissible fade show"
                  role="alert">
                 <div class="lh-lg w-90">
@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <div class="row col-sm-8 offset-sm-2 mt-3">
+        <div class="row col-lg-8 offset-lg-2 mt-3">
             <th:block
                     th:replace="~{form_fragments :: number_input_unit('Length', 'length', 0.01, false, 'inch')}"></th:block>
 

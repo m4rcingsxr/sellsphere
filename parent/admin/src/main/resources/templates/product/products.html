@@ -19,12 +19,12 @@
         <!-- Search Bar -->
         <form th:replace="~{list_fragments :: search_bar('/products/page/0', 'Search for the product', 'firstName', ${keyword}, ${totalItems}, null)}"></form>
 
-        <table class="table table-hover mt-4">
+        <table class="table table-hover mt-4 large">
             <thead class="table-dark">
             <tr>
                 <th th:replace="~{list_fragments :: column_link('/products/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
                 <th>Main Image</th>
-                <th th:replace="~{list_fragments :: column_link('/products/page', ${currentPage}, 'name', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Product Name')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/products/page', ${currentPage}, 'name', ${sortField}, ${reversedSortDir}, ${sortDir}, ${keyword}, 'Product Name')}"></th>
                 <th>Brand</th>
                 <th>Category</th>
                 <th sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR')">Enabled</th>
@@ -38,7 +38,10 @@
                 <td>
                     <div th:replace="~{list_fragments :: entity_image(${product.mainImagePath}, 150, 150)}"></div>
                 </td>
-                <td th:text="${product.name}"></td>
+                <td>
+                    <a th:href="@{|/products/edit/${product.id}|}" th:text="${product.name}"
+                       class="link-primary link-underline-opacity-0 link-underline-opacity-50-hover text-ellipsis-col-3"></a>
+                </td>
                 <td th:text="${product.brand != null ? product.brand.name : ''}"></td>
                 <td th:text="${product.category != null ? product.category.name : ''}"></td>
                 <td sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR')">
@@ -56,6 +59,85 @@
             </tr>
             </tbody>
         </table>
+
+        <div class="small">
+            <ul class="list-group list-group-flush">
+                <li th:each="product : ${productList}" class="list-group-item">
+                    <div class="d-flex gap-3">
+                        <div class="d-flex flex-column gap-2 align-items-center">
+                            <div th:replace="~{list_fragments :: entity_image(${product.mainImagePath}, 150, 150)}"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="fw-light">Product name</div>
+                                <div>
+                                    <a th:href="@{|/products/edit/${product.id}|}" th:text="${product.name}"
+                                       class="link-primary link-underline-opacity-0 link-underline-opacity-50-hover text-ellipsis-col-2"></a>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">Product brand</div>
+                                <div th:text="${product.brand.name}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">Product category</div>
+                                <div th:text="${product.category.name}"></div>
+                            </div>
+                        </div>
+
+                        <div class="ms-auto d-flex flex-column align-items-center gap-3">
+                            <a th:replace="~{list_fragments :: status(${product.enabled}, |/products/${product.id}/enabled/${!product.enabled}|)}"
+                               sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR') or hasRole('ROLE_SALESPERSON')"></a>
+                            <a th:replace="~{list_fragments :: detail_entity(|/products/details/${product.id}|)}"></a>
+                            <a th:insert="~{list_fragments :: delete_entity(|/products/delete/${product.id}|)}"
+                               sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR') or hasRole('ROLE_SALESPERSON')"></a>
+                            <a th:insert="~{list_fragments :: edit_entity(|/products/edit/${product.id}|)}"
+                               sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR')"></a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="x-small">
+            <ul class="list-group list-group-flush">
+                <li th:each="product : ${productList}" class="list-group-item p-4">
+                    <div class="d-flex align-items-start gap-4">
+                        <div class="d-flex flex-column gap-2 align-items-center">
+                            <div th:replace="~{list_fragments :: entity_image(${product.mainImagePath}, 100, 100)}"></div>
+                            <div class="d-flex gap-1 align-items-center">
+                                <a th:replace="~{list_fragments :: status(${product.enabled}, |/products/${product.id}/enabled/${!product.enabled}|)}"
+                                   sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR') or hasRole('ROLE_SALESPERSON')"></a>
+                                <a th:insert="~{list_fragments :: delete_entity(|/products/delete/${product.id}|)}"
+                                   sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR') or hasRole('ROLE_SALESPERSON')"></a>
+                                <a th:insert="~{list_fragments :: edit_entity(|/products/edit/${product.id}|)}"
+                                   sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_EDITOR')"></a>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="fw-light">Product name</div>
+                                <div>
+                                    <a th:href="@{|/products/edit/${product.id}|}" th:text="${product.name}"
+                                       class="link-primary link-underline-opacity-0 link-underline-opacity-50-hover text-ellipsis-col-2"></a>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="fw-light">Brand</div>
+                                <div th:text="${product.brand.name}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">Category</div>
+                                <div th:text="${product.category.name}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
 
     <!-- Pagination -->

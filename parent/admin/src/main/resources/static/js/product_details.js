@@ -45,7 +45,7 @@ function addDetailInput(event) {
 function getDetailSectionHtml(index) {
     return `
             <tr>
-                <th>${index}</th>
+                <th class="hideable-md">${index}</th>
                 <th>
                     <input class="form-control" type="text" name="names">
                 </th>
