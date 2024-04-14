@@ -13,12 +13,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Utility class providing helper methods for managing product details and images.
+ */
 @UtilityClass
 public class ProductHelper {
 
     private static final String PRODUCT_PHOTOS_DIR = "product-photos/";
 
-
+    /**
+     * Adds product details to a given product.
+     *
+     * @param product      The product to which details are to be added.
+     * @param detailNames  An array of detail names.
+     * @param detailValues An array of detail values.
+     * @throws IllegalStateException If the lengths of detailNames and detailValues arrays do not match.
+     */
     public static void addProductDetails(Product product, String[] detailNames,
                                          String[] detailValues) {
         if (detailNames.length != detailValues.length) {
@@ -39,6 +49,12 @@ public class ProductHelper {
         }
     }
 
+    /**
+     * Adds product images to a given product.
+     *
+     * @param product     The product to which images are to be added.
+     * @param extraImages An array of multipart files representing the extra images.
+     */
     public static void addProductImages(Product product, MultipartFile[] extraImages) {
         if (extraImages != null) {
             for (MultipartFile extraImage : extraImages) {
@@ -50,6 +66,14 @@ public class ProductHelper {
         }
     }
 
+    /**
+     * Saves extra images of a product to the file system and updates S3 storage.
+     *
+     * @param savedProduct The product entity that has been saved.
+     * @param extraImages  An array of multipart files representing the extra images.
+     * @throws IOException           If an I/O error occurs while saving the images.
+     * @throws IllegalStateException If the saved product does not have an assigned ID.
+     */
     public static void saveExtraImages(Product savedProduct, MultipartFile[] extraImages)
             throws IOException {
         if (savedProduct.getId() == null) {
@@ -68,6 +92,13 @@ public class ProductHelper {
         FileService.uploadFiles(extraImages, extrasFolderName);
     }
 
+    /**
+     * Saves the primary image of a product to the file system.
+     *
+     * @param product      The product entity to which the primary image belongs.
+     * @param primaryImage A multipart file representing the primary image.
+     * @throws IOException If an I/O error occurs while saving the image.
+     */
     public static void savePrimaryImage(Product product, MultipartFile primaryImage)
             throws IOException {
         if (primaryImage == null || primaryImage.isEmpty()) return;

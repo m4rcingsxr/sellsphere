@@ -13,12 +13,23 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST controller for handling product description images.
+ */
 @RequiredArgsConstructor
 @RestController
 public class RestProductDescriptionController {
 
     private static final String IMAGE_PATH = "description/images";
 
+    /**
+     * Uploads a product description image.
+     *
+     * @param image The image file to be uploaded.
+     * @return A ResponseEntity containing the location of the uploaded image.
+     * @throws IOException             If an I/O error occurs during file upload.
+     * @throws IllegalArgumentException If the provided file is empty.
+     */
     @PostMapping("/descriptions/upload")
     public ResponseEntity<Map<String, String>> uploadProductDescriptionImage(
             @RequestParam("file") MultipartFile image)
@@ -37,6 +48,13 @@ public class RestProductDescriptionController {
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
+    /**
+     * Deletes a product description image.
+     *
+     * @param request A map containing the file name of the image to be deleted.
+     * @return A ResponseEntity indicating the status of the deletion.
+     * @throws IllegalArgumentException If the file name is empty.
+     */
     @PostMapping("/descriptions/delete")
     public ResponseEntity<Void> deleteProductDescriptionImage(@RequestBody Map<String, String> request)
             throws IllegalArgumentException {
