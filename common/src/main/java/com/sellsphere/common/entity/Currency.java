@@ -1,0 +1,52 @@
+package com.sellsphere.common.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+/**
+ * Represents a currency entity with name, symbol, and code.
+ * This entity is used to store currency information in the database.
+ */
+@NoArgsConstructor
+@Getter
+@Setter
+@Entity
+@Table(name = "currencies")
+public class Currency extends IdentifiedEntity {
+
+    /**
+     * The name of the currency.
+     * This field is mandatory and must not exceed 128 characters.
+     * Example: "US Dollar", "Euro"
+     */
+    @Column(name = "name", nullable = false, length = 128)
+    @NotNull(message = "Currency name is required")
+    @Size(max = 128, message = "Currency name must be less than or equal to 128 characters")
+    private String name;
+
+    /**
+     * The symbol of the currency.
+     * This field is mandatory and must not exceed 8 characters.
+     * Example: "$", "€"
+     */
+    @Column(name = "symbol", nullable = false, length = 8)
+    @NotNull(message = "Currency symbol is mandatory")
+    @Size(max = 8, message = "Currency symbol must be less than or equal to 8 characters")
+    private String symbol;
+
+    /**
+     * The code of the currency.
+     * This field is mandatory and follows the ISO 4217 standard.
+     * Example: "USD", "EUR"
+     */
+    @Column(name = "code", nullable = false)
+    @NotNull(message = "Currency code is mandatory")
+    private String code;
+
+}

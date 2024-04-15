@@ -5,7 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-
     <include file="db/changelog/db.changelog-add-roles-table.xml"/>
     <include file="db/changelog/db.changelog-add-users-table.xml"/>
     <include file="db/changelog/db-changelog-add-categories-table.xml"/>
@@ -17,4 +16,9 @@
     <include file="db/changelog/db.changelog-add-product_updates-table.xml"/>
     <include file="db/changelog/db.changelog-update-products-table.xml"/>
     <include file="db/changelog/db.changelog-update-products_updates-table.xml"/>
+    <include file="db/changelog/db.changelog-add-countries-table.xml"/>
+    <include file="db/changelog/db.changelog-add-states-table.xml"/>
+    <include file="db/changelog/db.changelog-add-currencies-table.xml"/>
+    <include file="db/changelog/db.changelog-add-settings-table.xml"/>
+
 </databaseChangeLog>

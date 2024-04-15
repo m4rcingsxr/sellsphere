@@ -6,10 +6,13 @@ import com.sellsphere.admin.product.ProductController;
 import com.sellsphere.admin.user.UserController;
 import com.sellsphere.common.entity.*;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -22,6 +25,11 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @ControllerAdvice(annotations = Controller.class)
 @Order(2)
 public class GlobalExceptionHandler {
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+    }
 
     @ExceptionHandler(UserNotFoundException.class)
     public String handleUserNotFoundException(UserNotFoundException ex,
