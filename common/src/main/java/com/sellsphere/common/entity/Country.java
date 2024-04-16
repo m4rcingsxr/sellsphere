@@ -46,7 +46,14 @@ public class Country extends IdentifiedEntity {
      * The states or regions within the country.
      * This field is lazily loaded and cascades remove operations.
      */
-    @OneToMany(mappedBy = "country", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("name asc")
     private Set<State> states = new HashSet<>();
+
+
+    public void addState(State state) {
+        state.setCountry(this);
+        this.states.add(state);
+    }
 
 }
