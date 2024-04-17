@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{form_fragments :: head_with_editor(${pageTitle})}"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="container-md mt-4">
+        <h2 class="text-center mt-4" th:text="${pageTitle}"></h2>
+
+        <form id="mainForm" class="mt-4" enctype="multipart/form-data" method="POST" th:action="@{/settings/save}">
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab"
+                            data-bs-target="#overview-tab-pane" type="button" role="tab"
+                            aria-controls="overview-tab-pane" aria-selected="true">General
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="myTabContent">
+                <div th:insert="~{setting/general_settings.html :: general()}" class="tab-pane fade show active"
+                     id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0"></div>
+            </div>
+
+
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <input type="submit" value="Update" class="btn btn-primary rounded-4 save"/>
+                <input type="button" value="Cancel" class="btn btn-secondary rounded-4 cancel"
+                       onclick="goToListPage()"/>
+            </div>
+        </form>
+
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+</body>
+</html>

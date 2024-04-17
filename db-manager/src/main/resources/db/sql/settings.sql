@@ -12,7 +12,7 @@ VALUES ('SITE_LOGO', '/site-logo/SellSphere.png', 'GENERAL');
 INSERT INTO settings (setting_key, value, category)
 VALUES ('SITE_NAME', 'SellSphere', 'GENERAL');
 INSERT INTO settings (setting_key, value, category)
-VALUES ('COPYRIGHT', 'Copyright (C) 2021 SellSphere Ltd.', 'GENERAL');
+VALUES ('COPYRIGHT', 'Copyright (C) 2023 SellSphere Ltd.', 'GENERAL');
 
 INSERT INTO settings (setting_key, value, category)
 VALUES ('CURRENCY_ID', '1', 'CURRENCY');

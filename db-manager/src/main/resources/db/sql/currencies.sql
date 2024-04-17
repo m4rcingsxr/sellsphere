@@ -1,4 +1,4 @@
-INSERT INTO CURRENCIES (NAME, SYMBOL, CODE)
+INSERT INTO currencies (NAME, SYMBOL, CODE)
 VALUES ('United States Dollar', '$', 'USD'),
        ('British Pound', '£', 'GBP'),
        ('Japanese Yen', '¥', 'JPY'),
