@@ -462,7 +462,6 @@ INSERT INTO states (name, country_id) VALUES ('Liepāja', (SELECT id FROM countr
 
 -- Lebanon states
 INSERT INTO states (name, country_id) VALUES ('Beirut', (SELECT id FROM countries WHERE code = 'LBN'));
-INSERT INTO states (name, country_id) VALUES ('Tripoli', (SELECT id FROM countries WHERE code = 'LBN'));
 INSERT INTO states (name, country_id) VALUES ('Sidon', (SELECT id FROM countries WHERE code = 'LBN'));
 
 -- Lesotho states
@@ -714,7 +713,6 @@ INSERT INTO states (name, country_id) VALUES ('Soufrière', (SELECT id FROM coun
 
 -- Saint Vincent and the Grenadines states
 INSERT INTO states (name, country_id) VALUES ('Kingstown', (SELECT id FROM countries WHERE code = 'VCT'));
-INSERT INTO states (name, country_id) VALUES ('Georgetown', (SELECT id FROM countries WHERE code = 'VCT'));
 INSERT INTO states (name, country_id) VALUES ('Barrouallie', (SELECT id FROM countries WHERE code = 'VCT'));
 
 -- Samoa states
@@ -745,7 +743,6 @@ INSERT INTO states (name, country_id) VALUES ('Novi Sad', (SELECT id FROM countr
 INSERT INTO states (name, country_id) VALUES ('Niš', (SELECT id FROM countries WHERE code = 'SRB'));
 
 -- Seychelles states
-INSERT INTO states (name, country_id) VALUES ('Victoria', (SELECT id FROM countries WHERE code = 'SYC'));
 INSERT INTO states (name, country_id) VALUES ('Anse Boileau', (SELECT id FROM countries WHERE code = 'SYC'));
 INSERT INTO states (name, country_id) VALUES ('Beau Vallon', (SELECT id FROM countries WHERE code = 'SYC'));
 

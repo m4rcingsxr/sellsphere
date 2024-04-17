@@ -149,3 +149,26 @@
       class="text-danger p-1">
 </span>
 
+
+<!-- settings -->
+<th:block th:fragment="label_input(label, id, name, value)">
+    <label class="col-sm-4 col-form-label" th:text="${label}"></label>
+    <div class="col-sm-8">
+        <input class="form-control" type="text" th:id="${id}" th:name="${name}" th:value="${value}"/>
+    </div>
+</th:block>
+
+<th:block th:fragment="file_input(label, name, imgSrc)">
+    <label class="col-sm-4 col-form-label" th:text="${label}"></label>
+    <div class="col-sm-8">
+        <input type="file" class="form-control" th:name="${name}" accept="image/png, image/jpeg"/>
+        <div class="entity-image-container mt-3" style="width: 150px; height: 150px;">
+            <img class="img-fluid" id="previewImage" alt="Site Logo thumbnail" th:src="${imgSrc}"/>
+        </div>
+    </div>
+</th:block>
+
+<div th:fragment="form_floating(id, placeholder, label)" class="form-floating mb-3 w-50">
+    <input type="text" class="form-control" th:id="${id}" th:placeholder="${placeholder}">
+    <label th:for="${id}" th:text="${label}"></label>
+</div>

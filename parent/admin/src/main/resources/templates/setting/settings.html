@@ -17,18 +17,19 @@
                             aria-controls="overview-tab-pane" aria-selected="true">General
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="country-tab" data-bs-toggle="tab"
+                            data-bs-target="#country-tab-pane" type="button" role="tab"
+                            aria-controls="country-tab-pane" aria-selected="true">Country
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="myTabContent">
                 <div th:insert="~{setting/general_settings.html :: general()}" class="tab-pane fade show active"
                      id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0"></div>
-            </div>
-
-
-            <div class="d-flex justify-content-center gap-3 mt-4">
-                <input type="submit" value="Update" class="btn btn-primary rounded-4 save"/>
-                <input type="button" value="Cancel" class="btn btn-secondary rounded-4 cancel"
-                       onclick="goToListPage()"/>
+                <div th:insert="~{setting/country_settings.html :: country()}" class="tab-pane fade"
+                     id="country-tab-pane" role="tabpanel" aria-labelledby="country-tab" tabindex="0"></div>
             </div>
         </form>
 
@@ -37,5 +38,16 @@
 
 <footer th:replace="~{navigations :: footer()}"></footer>
 
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+<script type="text/javascript" th:src="@{/js/settings_country.js}"></script>
+<script type="text/javascript">
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const WIDTH = 150;
+    const HEIGHT = 150;
+    const QUALITY = 1;
+
+    const MODULE_URL = "[[@{/}]]";
+</script>
 </body>
 </html>

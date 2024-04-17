@@ -58,6 +58,31 @@ const ajaxUtil = {
     },
 
     /**
+     * Performs a GET request to the specified URL and does not expect a response body.
+     *
+     * @param {string} url - The URL to send the GET request to.
+     * @returns {Promise<void>} A promise that resolves if the request is successful, or rejects if it fails.
+     * @throws {Error} If the GET request fails.
+     */
+    async getVoid(url) {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const error = new Error(`GET request failed: ${response.statusText}`);
+            error.response = errorResponse;
+            throw error;
+        }
+
+        // No need to return anything as we expect no response body
+    },
+
+    /**
      * Performs a POST request to the specified URL with the provided data.
      *
      * @param {string} url - The URL to send the POST request to.

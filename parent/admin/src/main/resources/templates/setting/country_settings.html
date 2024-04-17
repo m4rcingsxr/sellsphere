@@ -1,0 +1,47 @@
+<div th:fragment="country()" class="p-4" id="countries">
+
+    <div class="row g-3">
+
+        <label class="col-form-label col-sm-2">Select country</label>
+        <div class="col-sm-6">
+            <select id="countriesCountrySettings" class="form-control">
+            </select>
+        </div>
+
+        <div class="col-sm-4">
+            <a href="#" id="updateCountriesCountrySettings" class="btn btn-outline-primary mx-auto d-block">Refresh
+                Countries</a>
+        </div>
+
+        <th:block th:replace="~{form_fragments :: label_input('Selected Country', 'country','', '')}"></th:block>
+
+        <th:block th:replace="~{form_fragments :: label_input('Code', 'code','', '')}"></th:block>
+
+        <div class="col-sm-12">
+            <a class="link-primary link-underline-opacity-50-hover link-underline-opacity-0" data-bs-toggle="collapse"
+               href="#countryFormCollapse" role="button" aria-expanded="false" aria-controls="countryFormCollapse"
+               id="showCountryForm">
+                Create new country
+            </a>
+
+            <div class="collapse mt-4 p-2 " id="countryFormCollapse">
+                <div class="d-flex gap-5">
+                    <div th:replace="~{form_fragments :: form_floating('newCountryName', 'Country name', 'Name')}"></div>
+                    <div th:replace="~{form_fragments :: form_floating('newCountryCode', 'Country code (ISO 3166)', 'Code')}"></div>
+                </div>
+
+                <div class="d-flex gap-5">
+                    <a class="btn-outline-primary btn w-25" id="saveCountry">Save</a>
+                    <a class="btn-outline-secondary btn w-25" id="hideCountryForm">Close</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="d-flex mt-5 gap-2">
+        <button type="button" class="btn btn-primary w-25" id="updateCountry">Update</button>
+        <button type="button" class="btn btn-secondary w-25" id="deleteCountry">Delete</button>
+    </div>
+
+</div>
