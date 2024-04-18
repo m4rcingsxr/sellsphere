@@ -1,0 +1,27 @@
+<div th:fragment="mail_server()" class="p-4">
+    <div class="row g-3">
+        <th:block th:replace="~{form_fragments :: label_input('SMTP Server Host Name', 'MAIL_HOST', 'MAIL_HOST', ${MAIL_HOST})}"></th:block>
+        <th:block th:replace="~{form_fragments :: label_input('Port Number', 'MAIL_PORT', 'MAIL_PORT', ${MAIL_PORT})}"></th:block>
+        <th:block th:replace="~{form_fragments :: label_input('Username', 'MAIL_USERNAME', 'MAIL_USERNAME', ${MAIL_USERNAME})}"></th:block>
+        <th:block th:replace="~{form_fragments :: label_input('Password', 'MAIL_PASSWORD', 'MAIL_PASSWORD', ${MAIL_PASSWORD})}"></th:block>
+
+        <label class="col-sm-4 col-form-label">Server Authentication Required</label>
+        <div class="col-sm-8">
+            <select name="SMTP_AUTH" class="form-control" th:value="${SMTP_AUTH}">
+                <option th:value="true" th:selected="${SMTP_AUTH} == 'true'">true</option>
+                <option th:value="false" th:selected="${SMTP_AUTH} == 'false'">false</option>
+            </select>
+        </div>
+
+        <label class="col-sm-4 col-form-label">Server Required Secured Connection (TLS)</label>
+        <div class="col-sm-8">
+            <select name="SMTP_SECURED" class="form-control" th:value="${SMTP_SECURED}">
+                <option th:value="true" th:selected="${SMTP_SECURED} == 'true'">true</option>
+                <option th:value="false" th:selected="${SMTP_SECURED} == 'false'">false</option>
+            </select>
+        </div>
+
+        <th:block th:replace="~{form_fragments :: label_input('From E-mail Address', 'MAIL_FROM', 'MAIL_FROM', ${MAIL_FROM})}"></th:block>
+        <th:block th:replace="~{form_fragments :: label_input('Sender Name', 'MAIL_SENDER_NAME', 'MAIL_SENDER_NAME', ${MAIL_SENDER_NAME})}"></th:block>
+    </div>
+</div>

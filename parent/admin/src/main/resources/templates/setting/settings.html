@@ -29,6 +29,12 @@
                             aria-controls="state-tab-pane" aria-selected="true">State
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="mail-server-tab" data-bs-toggle="tab"
+                            data-bs-target="#mail-server-tab-pane" type="button" role="tab"
+                            aria-controls="mail-server-tab-pane" aria-selected="true">Mail server
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="myTabContent">
@@ -38,6 +44,8 @@
                      id="country-tab-pane" role="tabpanel" aria-labelledby="country-tab" tabindex="0"></div>
                 <div th:insert="~{setting/state_settings :: state()}" class="tab-pane fade"
                      id="state-tab-pane" role="tabpanel" aria-labelledby="state-tab" tabindex="0"></div>
+                <div th:insert="~{setting/mail_server_settings :: mail_server()}" class="tab-pane fade"
+                     id="mail-server-tab-pane" role="tabpanel" aria-labelledby="mail-server-tab" tabindex="0"></div>
             </div>
         </form>
 
