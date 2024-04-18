@@ -101,4 +101,21 @@ class StateRepositoryTest {
         assertEquals("Algiers", states.get(0).getName(), "The first state should be 'Algiers'");
         assertEquals("Tirana", states.get(states.size() - 1).getName(), "The last state should be 'Tirana'");
     }
+
+    @Test
+    void givenStatesLoaded_whenFindAllByCountry_thenShouldReturnAllStatesSortedByName() {
+
+        // Given - existing country
+        Country country = new Country();
+        country.setId(1);
+
+        // When
+        List<State> states = stateRepository.findAllByCountry(country,
+                                                            Sort.by(Sort.Direction.ASC, "name")
+        );
+
+        // Then
+        assertFalse(states.isEmpty());
+        assertEquals(2, states.size());
+    }
 }

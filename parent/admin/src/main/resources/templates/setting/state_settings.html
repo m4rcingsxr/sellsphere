@@ -1,0 +1,51 @@
+<div th:fragment="state()" class="p-4" id="stateSettings">
+
+    <div class="row g-4">
+
+        <label class="col-form-label col-sm-4">Select country</label>
+        <div class="col-sm-4">
+            <select id="countriesStateSettings" class="form-control">
+            </select>
+        </div>
+
+        <div class="col-sm-4">
+            <a href="#" id="updateCountriesStateSettings" class="btn btn-outline-primary mx-auto d-block">Refresh
+                Countries</a>
+        </div>
+
+
+        <label class="col-sm-4 col-form-label">All States/Provinces</label>
+        <div class="col-sm-8">
+            <select id="states" class="form-control" size="10">
+            </select>
+        </div>
+
+        <th:block
+                th:replace="~{form_fragments :: label_input('Selected State/Province', 'state', 'state', '')}"></th:block>
+
+        <div class="col-sm-4">
+            <a class="link-primary link-underline-opacity-50-hover link-underline-opacity-0" data-bs-toggle="collapse"
+               href="#stateFormCollapse" role="button" aria-expanded="false" aria-controls="stateFormCollapse"
+               id="showStateForm">
+                Create new state
+            </a>
+        </div>
+
+        <div class="collapse mt-4 p-2 col-sm-8" id="stateFormCollapse">
+
+            <div th:replace="~{form_fragments :: form_floating('newStateName', 'State name', 'Name')}" ></div>
+
+            <div class="d-flex gap-5">
+                <a class="btn-outline-primary btn w-25" id="newState">Save</a>
+                <a class="btn-outline-secondary btn w-25" id="hideStateForm">Close</a>
+            </div>
+        </div>
+
+        <div class="offset-4 col-sm-8 d-flex gap-3">
+            <a id="updateState" class="btn btn-primary">Update</a>
+            <a id="deleteState" class="btn btn-secondary">Delete</a>
+        </div>
+
+    </div>
+
+</div>

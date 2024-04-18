@@ -26,7 +26,7 @@ public class State extends IdentifiedEntity {
      */
     @NotNull(message = "State name is required.")
     @Size(max = 255, message = "State name must be 255 characters or less")
-    @Column(name = "name", length = 255, nullable = false, unique = true)
+    @Column(name = "name", length = 255, nullable = false)
     private String name;
 
     /**

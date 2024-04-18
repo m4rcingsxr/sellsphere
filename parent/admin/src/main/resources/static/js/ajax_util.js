@@ -154,6 +154,36 @@ const ajaxUtil = {
         }
 
         return await response.blob(); // Assuming the response is an image
+    },
+
+    /**
+     * Performs a DELETE request to the specified URL.
+     *
+     * @param {string} url - The URL to send the DELETE request to.
+     * @returns {Promise<void>} A promise that resolves if the request is successful, or rejects if it fails.
+     * @throws {Error} If the DELETE request fails.
+     */
+    async delete(url) {
+        const csrfToken = this.getCSRFToken();
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken;
+        }
+
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: headers
+        });
+
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const error = new Error(`DELETE request failed: ${response.statusText}`);
+            error.response = errorResponse;
+            throw error;
+        }
     }
 };
 

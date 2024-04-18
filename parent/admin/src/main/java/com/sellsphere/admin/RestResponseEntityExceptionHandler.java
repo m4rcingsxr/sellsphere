@@ -3,6 +3,7 @@ package com.sellsphere.admin;
 import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.CountryNotFoundException;
 import com.sellsphere.common.entity.ErrorResponse;
+import com.sellsphere.common.entity.StateNotFoundException;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Order(1)
 public class RestResponseEntityExceptionHandler {
 
-    @ExceptionHandler({BrandNotFoundException.class, CountryNotFoundException.class})
+    @ExceptionHandler({BrandNotFoundException.class, CountryNotFoundException.class,
+                       StateNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleNotFoundExceptions(Exception e) {
-        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),
+                                                        HttpStatus.NOT_FOUND.value()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }

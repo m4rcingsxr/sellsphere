@@ -23,13 +23,21 @@
                             aria-controls="country-tab-pane" aria-selected="true">Country
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="state-tab" data-bs-toggle="tab"
+                            data-bs-target="#state-tab-pane" type="button" role="tab"
+                            aria-controls="state-tab-pane" aria-selected="true">State
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="myTabContent">
-                <div th:insert="~{setting/general_settings.html :: general()}" class="tab-pane fade show active"
+                <div th:insert="~{setting/general_settings :: general()}" class="tab-pane fade show active"
                      id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0"></div>
-                <div th:insert="~{setting/country_settings.html :: country()}" class="tab-pane fade"
+                <div th:insert="~{setting/country_settings :: country()}" class="tab-pane fade"
                      id="country-tab-pane" role="tabpanel" aria-labelledby="country-tab" tabindex="0"></div>
+                <div th:insert="~{setting/state_settings :: state()}" class="tab-pane fade"
+                     id="state-tab-pane" role="tabpanel" aria-labelledby="state-tab" tabindex="0"></div>
             </div>
         </form>
 
@@ -40,7 +48,9 @@
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
+<script type="text/javascript" th:src="@{/js/settings_common.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_country.js}"></script>
+<script type="text/javascript" th:src="@{/js/settings_state.js}"></script>
 <script type="text/javascript">
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const WIDTH = 150;

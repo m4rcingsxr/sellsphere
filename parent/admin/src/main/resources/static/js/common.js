@@ -142,3 +142,11 @@ const hideFullScreenSpinner = () => {
         document.body.removeChild(spinnerOverlay);
     }
 }
+
+/**
+ * Logs debugging messages to the console.
+ * @param {string} message - The message to log.
+ */
+function debug(message) {
+    console.debug(message);
+}

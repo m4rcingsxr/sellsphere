@@ -1,65 +1,27 @@
 $(function () {
-    loadCountries();
-    initListeners();
+    initializeCountrySettings();
 });
+
+function initializeCountrySettings() {
+    showFullScreenSpinner();
+    loadCountries('countriesCountrySettings')
+        .catch(handleError)
+        .finally(hideFullScreenSpinner);
+    initCountryListeners();
+}
 
 /**
  * Initializes event listeners for various elements.
  */
-function initListeners() {
+function initCountryListeners() {
+    debug("Country Setting up event listeners...");
     $("#countriesCountrySettings").on("change", handleSelectedCountry);
-    $("#updateCountriesCountrySettings").on("click", loadCountries);
+    $("#updateCountriesCountrySettings").on("click", () => updateCountries('countriesCountrySettings'));
     $("#updateCountry").on("click", updateCountry);
     $("#saveCountry").on("click", saveNewCountry);
     $("#hideCountryForm").on("click", handleHideCountryForm);
     $("#deleteCountry").on("click", deleteCountry);
-}
-
-/**
- * Loads the list of countries and populates the country settings dropdown.
- */
-async function loadCountries() {
-    try {
-        const countries = await fetchCountries();
-        const $countries = $("#countriesCountrySettings");
-        $countries.empty();
-        countries.forEach((country) => {
-            $countries.append(generateCountryOptionHtml(country));
-        });
-        handleSelectedCountry();
-    } catch (error) {
-        console.error("Error during loading the countries:", error.response);
-        showErrorModal(error.response);
-    }
-}
-
-/**
- * Generates the HTML for a country option in the dropdown.
- *
- * @param {Object} country - The country object.
- * @param {number} country.id - The ID of the country.
- * @param {string} country.code - The code of the country.
- * @param {string} country.name - The name of the country.
- * @returns {string} The HTML string for the country option.
- */
-function generateCountryOptionHtml(country) {
-    return `<option value="${country.id}" data-code="${country.code}">${country.name}</option>`;
-}
-
-/**
- * Fetches the list of countries from the server.
- *
- * @returns {Promise<Object[]>} A promise that resolves to the list of countries.
- * @throws Will throw an error if the fetch operation fails.
- */
-async function fetchCountries() {
-    try {
-        const url = `${MODULE_URL}countries/list`;
-        return await ajaxUtil.get(url);
-    } catch (error) {
-        console.error("Error during fetching the countries:", error.response);
-        throw error;
-    }
+    debug("Country Event listeners set up.");
 }
 
 /**
@@ -67,32 +29,39 @@ async function fetchCountries() {
  */
 function handleSelectedCountry() {
     const $option = $('#countriesCountrySettings option:selected');
-    $("#country").val($option.text());
-    $("#code").val($option.data("code"));
+    setCountryForm($option.text(), $option.data("code"));
+    debug(`Selected country: ${$option.text()} with code ${$option.data("code")}`);
+}
+
+/**
+ * Sets the country form values.
+ */
+function setCountryForm(name, code) {
+    $("#country").val(name);
+    $("#code").val(code);
 }
 
 /**
  * Saves a country to the server.
  *
  * @param {Object} country - The country object.
- * @param {number} [country.id] - The ID of the country (optional for new countries).
- * @param {string} country.code - The code of the country.
- * @param {string} country.name - The name of the country.
  * @returns {Promise<void>}
  */
 async function saveCountry(country) {
+    handleHideCountryForm();
+    showFullScreenSpinner();
     try {
-        handleHideCountryForm();
         const url = `${MODULE_URL}countries/save`;
         const savedCountry = await ajaxUtil.post(url, country);
-        const message = country.id ? `Successfully updated the country ${savedCountry.name}.` : `Successfully saved the country ${savedCountry.name}`;
-        await loadCountries();
+        await loadCountries('countriesCountrySettings');
         $("#countriesCountrySettings").val(savedCountry.id);
         handleSelectedCountry();
-        showSuccessAlert(message);
+        showSuccessAlert(`Successfully ${country.id ? 'updated' : 'saved'} the country ${savedCountry.name}.`, 'countries');
+        debug(`Successfully ${country.id ? 'updated' : 'saved'} the country ${savedCountry.name}.`);
     } catch (error) {
-        console.error("Error during saving the country:", error.response);
-        showErrorModal(error.response);
+        handleError(error, "saving the country");
+    } finally {
+        hideFullScreenSpinner();
     }
 }
 
@@ -101,6 +70,7 @@ async function saveCountry(country) {
  */
 function handleHideCountryForm() {
     $("#countryFormCollapse").collapse("hide");
+    debug('Country form collapsed');
 }
 
 /**
@@ -109,41 +79,19 @@ function handleHideCountryForm() {
  * @returns {Promise<void>}
  */
 async function deleteCountry() {
+    showFullScreenSpinner();
     try {
         const countryId = $('#countriesCountrySettings').val();
         const url = `${MODULE_URL}countries/delete/${countryId}`;
         await ajaxUtil.getVoid(url);
-        await loadCountries();
-        showSuccessAlert(`Successfully removed country ${countryId}`);
+        await loadCountries('countriesCountrySettings');
+        showSuccessAlert(`Successfully removed country ${countryId}`, 'countries');
+        debug(`Successfully removed country ${countryId}`);
     } catch (error) {
-        console.error("Error during deleting the country:", error.response);
-        showErrorModal(error.response);
+        handleError(error, "deleting the country");
+    } finally {
+        hideFullScreenSpinner();
     }
-}
-
-/**
- * Displays a success alert with a given message.
- *
- * @param {string} message - The message to display in the alert.
- */
-function showSuccessAlert(message) {
-    $("#countries").prepend(generateSuccessAlert(message));
-}
-
-/**
- * Generates the HTML for a success alert.
- *
- * @param {string} message - The message to display in the alert.
- * @returns {string} The HTML string for the success alert.
- */
-function generateSuccessAlert(message) {
-    $(".alert").remove();
-    return `
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    `;
 }
 
 /**
@@ -154,6 +102,7 @@ function updateCountry() {
     const country = {
         id: $option.val(), code: $("#code").val(), name: $("#country").val()
     };
+    debug(`Updating country: ${JSON.stringify(country)}`);
     saveCountry(country);
 }
 
@@ -163,12 +112,37 @@ function updateCountry() {
  * @returns {Promise<void>}
  */
 function saveNewCountry() {
-    const countryName = $("#newCountryName").val();
-    const countryCode = $("#newCountryCode").val();
-    const country = { name: countryName, code: countryCode };
-    saveCountry(country)
-        .then(() => {
-            $("#newCountryName").val("");
-            $("#newCountryCode").val("");
-        });
+    const country = {
+        name: $("#newCountryName").val(),
+        code: $("#newCountryCode").val()
+    };
+    debug(`Saving new country: ${JSON.stringify(country)}`);
+    saveCountry(country).then(clearNewCountryForm);
+}
+
+/**
+ * Clears the new country form.
+ */
+function clearNewCountryForm() {
+    $("#newCountryName").val("");
+    $("#newCountryCode").val("");
+}
+
+/**
+ * Updates the list of countries.
+ */
+function updateCountries(selectInputId) {
+    debug("Update countries country settings clicked.");
+    showFullScreenSpinner();
+    loadCountries(selectInputId)
+        .catch(handleError)
+        .finally(hideFullScreenSpinner);
+}
+
+/**
+ * Handles errors and displays an error modal.
+ */
+function handleError(error, action = "performing the action") {
+    console.error(`Error during ${action}:`, error);
+    showErrorModal(error.response);
 }
