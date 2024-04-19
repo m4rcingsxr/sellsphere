@@ -1,0 +1,41 @@
+<div th:fragment="mail_template()" class="p-4">
+
+    <ul class="nav nav-tabs" id="mailTemplateTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="registration-template-tab" data-bs-toggle="tab"
+                    data-bs-target="#registration-template-tab-pane" type="button" role="tab"
+                    aria-controls="registration-template-tab-pane" aria-selected="true">Verify registration
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="order-template-tab" data-bs-toggle="tab"
+                    data-bs-target="#order-template-tab-pane" type="button" role="tab"
+                    aria-controls="order-template-tab-pane" aria-selected="true">Order confirmation
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="mailTemplateTabContent">
+        <div class="tab-pane fade show active" id="registration-template-tab-pane" role="tabpanel"
+             aria-labelledby="registration-template-tab" tabindex="0">
+            <div class="p-4 row g-5">
+                <th:block
+                        th:replace="~{form_fragments :: label_input('Customer verify email subject', 'CUSTOMER_EMAIL_VERIFY_SUBJECT', 'CUSTOMER_EMAIL_VERIFY_SUBJECT', ${CUSTOMER_EMAIL_VERIFY_SUBJECT})}"></th:block>
+                <div class="col-sm-12">
+                    <textarea name="CUSTOMER_EMAIL_VERIFY_CONTENT" th:utext="${CUSTOMER_EMAIL_VERIFY_CONTENT}" id="customerVerification"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="order-template-tab-pane" role="tabpanel" aria-labelledby="order-template-tab"
+             tabindex="0">
+            <div class="p-4 row g-5">
+                <th:block
+                        th:replace="~{form_fragments :: label_input('Order confirmation email subject', 'ORDER_CONFIRMATION_SUBJECT', 'ORDER_CONFIRMATION_SUBJECT', ${ORDER_CONFIRMATION_SUBJECT})}"></th:block>
+                <div class="col-sm-12">
+                    <textarea name="ORDER_CONFIRMATION_CONTENT" th:utext="${ORDER_CONFIRMATION_CONTENT}" id="orderVerification"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -35,6 +35,12 @@
                             aria-controls="mail-server-tab-pane" aria-selected="true">Mail server
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="mail-template-tab" data-bs-toggle="tab"
+                            data-bs-target="#mail-template-tab-pane" type="button" role="tab"
+                            aria-controls="mail-template-tab-pane" aria-selected="true">Mail template
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="myTabContent">
@@ -46,6 +52,8 @@
                      id="state-tab-pane" role="tabpanel" aria-labelledby="state-tab" tabindex="0"></div>
                 <div th:insert="~{setting/mail_server_settings :: mail_server()}" class="tab-pane fade"
                      id="mail-server-tab-pane" role="tabpanel" aria-labelledby="mail-server-tab" tabindex="0"></div>
+                <div th:insert="~{setting/mail_template_settings :: mail_template()}" class="tab-pane fade"
+                     id="mail-template-tab-pane" role="tabpanel" aria-labelledby="mail-template-tab" tabindex="0"></div>
             </div>
         </form>
 
@@ -59,6 +67,7 @@
 <script type="text/javascript" th:src="@{/js/settings_common.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_country.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_state.js}"></script>
+<script type="text/javascript" th:src="@{/js/settings_mail_template.js}"></script>
 <script type="text/javascript">
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const WIDTH = 150;

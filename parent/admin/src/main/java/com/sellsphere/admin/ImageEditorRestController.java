@@ -1,6 +1,5 @@
-package com.sellsphere.admin.product;
+package com.sellsphere.admin;
 
-import com.sellsphere.admin.FileService;
 import com.sellsphere.common.entity.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,9 +19,9 @@ import java.util.Map;
  */
 @RequiredArgsConstructor
 @RestController
-public class RestProductDescriptionController {
+public class ImageEditorRestController {
 
-    private static final String IMAGE_PATH = "description/images";
+    private static final String IMAGE_PATH = "editor/images";
 
     /**
      * Uploads a product description image.
@@ -32,7 +31,7 @@ public class RestProductDescriptionController {
      * @throws IOException             If an I/O error occurs during file upload.
      * @throws IllegalArgumentException If the provided file is empty.
      */
-    @PostMapping("/descriptions/upload")
+    @PostMapping("/editor/upload")
     public ResponseEntity<Map<String, String>> uploadProductDescriptionImage(
             @RequestParam("file") MultipartFile image)
             throws IOException, IllegalArgumentException {
@@ -57,7 +56,7 @@ public class RestProductDescriptionController {
      * @return A ResponseEntity indicating the status of the deletion.
      * @throws IllegalArgumentException If the file name is empty.
      */
-    @PostMapping("/descriptions/delete")
+    @PostMapping("/editor/delete")
     public ResponseEntity<Void> deleteProductDescriptionImage(@RequestBody Map<String, String> request)
             throws IllegalArgumentException {
 
