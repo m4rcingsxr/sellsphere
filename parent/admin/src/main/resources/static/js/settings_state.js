@@ -44,6 +44,7 @@ function initStateListeners() {
     $("#newState").on("click", handleNewState);
     $("#updateState").on("click", handleUpdateState);
     $("#deleteState").on("click", handleDeleteState);
+    $("#hideStateForm").on("click", handleHideStateForm);
     debug("State Event listeners set up.");
 }
 
@@ -257,5 +258,10 @@ async function handlePostSave(state) {
     }
 }
 
-
-
+/**
+ * Hides the state form.
+ */
+function handleHideStateForm() {
+    $("#stateFormCollapse").collapse("hide");
+    debug('State form collapsed');
+}
