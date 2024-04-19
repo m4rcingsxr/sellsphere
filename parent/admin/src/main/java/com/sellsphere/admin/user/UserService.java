@@ -44,6 +44,17 @@ public class UserService {
     }
 
     /**
+     * Retrieves a user by their email address.
+     *
+     * @param email the email address of the user
+     * @return the found user
+     * @throws UserNotFoundException if no user is found with the given email
+     */
+    public User get(String email) throws UserNotFoundException {
+        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+    }
+
+    /**
      * Lists all roles.
      *
      * @return the list of roles

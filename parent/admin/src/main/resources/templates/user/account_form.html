@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{form_fragments :: head('Edit Account')}"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="container mt-4">
+        <h1 class="text-center">Edit Account</h1>
+
+        <div th:replace="~{common :: alerts()}"></div>
+
+        <form id="mainForm" th:action="@{/account/update}" method="POST" th:object="${user}"
+              enctype="multipart/form-data">
+
+            <div class="mx-auto mt-5">
+                <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                    <input th:replace="~{form_fragments :: hidden_input('id')}"/>
+                    <input th:replace="~{form_fragments :: hidden_input('enabled')}"/>
+
+                    <th:block th:replace="~{form_fragments :: text_input('Email address', 'email', false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: text_input('First name', 'firstName', false)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: text_input('Last name', 'lastName', false)}"></th:block>
+
+                    <th:block th:replace="~{form_fragments :: password_input(${user.id})}"></th:block>
+
+                    <label class="col-sm-4 col-form-label">Confirm password</label>
+                    <div class="col-sm-8">
+                        <input id="confirmedPassword" type="password" class="form-control" th:placeholder="${user.id != null ? 'Leave the field blank to keep the old password' : ''}"/>
+                    </div>
+
+                    <label class="col-sm-4 col-form-label">Roles</label>
+                    <div class="col-sm-8">
+                        <th:block th:each="role : ${roleList}">
+                            <div th:replace="~{form_fragments :: checkbox_list_input(${role.simpleName}, 'roles', ${role.id}, ${user.roles.contains(role)}, true)}"></div>
+                        </th:block>
+                    </div>
+
+                    <th:block th:replace="~{form_fragments :: image_input(${user.mainImagePath}, 'mainImage', 150, 150)}"></th:block>
+                </div>
+            </div>
+
+            <div th:replace="~{form_fragments :: form_buttons(${user})}"></div>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<script type="text/javascript">
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const WIDTH = 150;
+    const HEIGHT = 150;
+    const QUALITY = 1;
+
+    const MODULE_URL = "[[@{/}]]";
+
+    const validationRules = {
+    };
+
+    const validationMessages = {
+    };
+
+    const dynamicRules = [];
+</script>
+
+</body>
+</html>
