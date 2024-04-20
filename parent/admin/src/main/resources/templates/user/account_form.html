@@ -26,7 +26,8 @@
 
                     <label class="col-sm-4 col-form-label">Confirm password</label>
                     <div class="col-sm-8">
-                        <input id="confirmedPassword" type="password" class="form-control" th:placeholder="${user.id != null ? 'Leave the field blank to keep the old password' : ''}"/>
+                        <input name="confirmedPassword" type="password" class="form-control"
+                               th:placeholder="${user.id != null ? 'Leave the field blank to keep the old password' : ''}"/>
                     </div>
 
                     <label class="col-sm-4 col-form-label">Roles</label>
@@ -47,6 +48,7 @@
 
 <footer th:replace="~{navigations :: footer()}"></footer>
 
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 <script type="text/javascript">
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const WIDTH = 150;
@@ -56,9 +58,80 @@
     const MODULE_URL = "[[@{/}]]";
 
     const validationRules = {
+        firstName: {
+            required: true,
+            maxlength: 45,
+        },
+        lastName: {
+            required: true,
+            maxlength: 45,
+        },
+        password: {
+            passwordRequired: true,
+            mypassword: true,
+        },
+        confirmedPassword: {
+            passwordMatch: true,
+            passwordRequired: true,
+            mypassword: true,
+        },
+        email: {
+            required: true,
+            email: true,
+            remote: {
+                url: `${MODULE_URL}users/check_uniqueness`,
+                type: "post",
+                data: {
+                    email: function () {
+                        return $('input[name="email"]').val();
+                    },
+                    _csrf: function () {
+                        return $('input[name="_csrf"]').val();
+                    },
+                    id: function () {
+                        return $('input[name="id"]').val();
+                    },
+                },
+                error: function (jqXHR) {
+                    handleRemoteValidationError(jqXHR);
+                }
+            }
+        },
+        newImage: {
+            imageRequired: ["mainImage"],
+            maxImageSize: true
+        }
     };
 
     const validationMessages = {
+        firstName: {
+            required: "Please enter your first name.",
+            maxlength: "Your first name cannot exceed 45 characters. Please shorten it.",
+        },
+        lastName: {
+            required: "Please enter your last name.",
+            maxlength: "Your last name cannot exceed 45 characters. Please shorten it.",
+        },
+        password: {
+            passwordRequired: "A password is required to secure your account.",
+            minlength: "Your password must be at least 8 characters long to meet our security requirements.",
+            maxlength: "Your password cannot exceed 72 characters. Please choose a shorter password.",
+            mypassword: "Your password must be 8-72 characters long and include at least one uppercase letter and one digit."
+        },
+        confirmedPassword: {
+            passwordMatch: "Passwords do not match.",
+            passwordRequired: "A confirmed password is required.",
+            mypassword: "Your confirmed password must be 8-72 characters long and include at least one uppercase letter and one digit."
+        },
+        email: {
+            required: "An email address is required for account creation and recovery.",
+            email: "The email address entered doesn't look right. Please check it for typos.",
+            remote: "The email address you entered is already associated with an account. If it belongs to you, please log in."
+        },
+        newImage: {
+            imageRequired: "An image is required to represent the user. Please upload one.",
+            maxImageSize: `The image size cannot exceed ${formatBytes(MAX_FILE_SIZE)}. Please choose a smaller image.`
+        }
     };
 
     const dynamicRules = [];

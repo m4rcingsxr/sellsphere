@@ -42,14 +42,22 @@ function addCategoryIconValidator() {
 function addPasswordValidators() {
     $.validator.addMethod('mypassword', function (value, element) {
         const isExistingUser = $('input[name="id"]').val().trim() !== '';
-        // Allow existing users to bypass the password check
-        return isExistingUser || /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,72}$/.test(value);
+        // When user exists, allow null or valid password, otherwise enforce pattern
+        return isExistingUser ? (value.trim() === '' || /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,72}$/.test(value))
+            : /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,72}$/.test(value);
     }, 'Your password must be 8-72 characters long and include at least one uppercase letter and one digit.');
 
-    $.validator.addMethod("passwordRequired", function (value) {
+    $.validator.addMethod("passwordRequired", function (value, element) {
         const isNewUser = $('input[name="id"]').val().trim() === '';
-        return !isNewUser || value.trim() !== '';
+        // When user does not exist, password is required and must match pattern
+        return isNewUser ? value.trim() !== '' && /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,72}$/.test(value)
+            : true;
     }, "A password is required for creating a new user account.");
+
+    $.validator.addMethod("passwordMatch", function (value, element) {
+        const password = $("input[name='password']").val();
+        return value === password;
+    }, "Passwords do not match.");
 }
 
 /**

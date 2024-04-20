@@ -26,8 +26,18 @@ import java.security.Principal;
 public class AccountController {
 
     private static final String ACCOUNT_FORM_PATH = "user/account_form";
+
     private final UserService userService;
 
+    /**
+     * Presents the account form pre-populated with user information, enabling users to view and
+     * update their account details.
+     *
+     * @param email User's email to fetch and display the corresponding account details.
+     * @param model Spring's model interface to add attributes used for rendering views.
+     * @return Path to the account form view.
+     * @throws UserNotFoundException Thrown if no user is found with the specified email.
+     */
     @GetMapping("/account")
     public String showAccountForm(@RequestParam("email") String email, Principal principal,
                                   Model model) throws UserNotFoundException {
