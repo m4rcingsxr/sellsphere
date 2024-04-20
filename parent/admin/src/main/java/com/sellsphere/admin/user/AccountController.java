@@ -1,12 +1,15 @@
 package com.sellsphere.admin.user;
 
+import com.sellsphere.admin.ValidationHelper;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.ForbiddenException;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,9 +63,17 @@ public class AccountController {
      * @throws IOException Thrown if there is an error processing the file upload.
      */
     @PostMapping("/account/update")
-    public String updateUser(@ModelAttribute("user") User user, RedirectAttributes ra,
+    public String updateUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult,
+                             RedirectAttributes ra,
                              @RequestParam(value = "newImage", required = false) MultipartFile file)
             throws IOException, UserNotFoundException {
+        ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.user");
+        validationHelper.validateMultipartFile(file, user.getId(), "mainImage", "An image file is required.");
+        validationHelper.validatePassword(user.getPassword(), user.getId());
+
+        if (!validationHelper.validate()) {
+            return ACCOUNT_FORM_PATH;
+        }
 
         userService.save(user, file);
 
