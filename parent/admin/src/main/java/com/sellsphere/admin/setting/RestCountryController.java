@@ -62,6 +62,19 @@ public class RestCountryController {
      */
     @PostMapping("/countries/save")
     public ResponseEntity<CountryDTO> save(@RequestBody Country country) {
+        String errorMessage = "";
+        if(country.getName().isEmpty() || country.getCode().length() > 64) {
+            errorMessage = "Country name can not be empty and exceed 64 characters.";
+        }
+
+        if(country.getCode().isEmpty() || country.getCode().length() > 3) {
+            errorMessage += "Country code can not be empty and exceed 3 characters.";
+        }
+
+        if(!errorMessage.isEmpty()) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+
         Country savedCountry = countryRepository.save(country);
         return ResponseEntity.ok(new CountryDTO(savedCountry));
     }

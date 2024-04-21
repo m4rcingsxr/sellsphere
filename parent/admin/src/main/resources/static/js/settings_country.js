@@ -113,8 +113,7 @@ function updateCountry() {
  */
 function saveNewCountry() {
     const country = {
-        name: $("#newCountryName").val(),
-        code: $("#newCountryCode").val()
+        name: $("#newCountryName").val(), code: $("#newCountryCode").val()
     };
     debug(`Saving new country: ${JSON.stringify(country)}`);
     saveCountry(country).then(clearNewCountryForm);

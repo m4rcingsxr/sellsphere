@@ -150,7 +150,7 @@ function handleNewState() {
         })
         .catch(error => {
             console.error("Error saving new state:", error);
-            showErrorModal(error.message || "An error occurred while saving the new state.");
+            showErrorModal(error.response);
         })
         .finally(() => hideFullScreenSpinner());
 }
@@ -176,7 +176,7 @@ function handleUpdateState() {
         })
         .catch(error => {
             console.error("Error updating state:", error);
-            showErrorModal(error.message || "An error occurred while updating the state.");
+            showErrorModal(error.response);
         })
         .finally(() => hideFullScreenSpinner());
 }
@@ -199,7 +199,7 @@ function handleDeleteState() {
         })
         .catch(error => {
             console.error("Error deleting state:", error);
-            showErrorModal(error.message || "An error occurred while deleting the state.");
+            showErrorModal(error.response);
         })
         .finally(() => hideFullScreenSpinner());
 }
@@ -218,7 +218,7 @@ async function saveState(state) {
         return savedState;
     } catch (error) {
         console.error("Error saving state:", error);
-        throw new Error("Failed to save state.");
+        throw error;
     }
 }
 
@@ -235,7 +235,7 @@ async function deleteState(stateId) {
         debug(`State with ID ${stateId} deleted.`);
     } catch (error) {
         console.error("Error deleting state:", error);
-        throw new Error("Failed to delete state.");
+        throw error;
     }
 }
 
@@ -254,7 +254,7 @@ async function handlePostSave(state) {
         debug("Post-save actions complete.");
     } catch (error) {
         console.error("Error during post-save actions:", error);
-        throw new Error("Failed to complete post-save actions.");
+        throw error;
     }
 }
 
