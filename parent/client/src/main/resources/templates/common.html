@@ -1,0 +1,31 @@
+<head th:fragment="head(title)">
+    <th:block th:replace=":: common_head(${title})"></th:block>
+</head>
+
+<th:block th:fragment="common_head(title)">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title th:text="(${SITE_NAME} + ' - ' + ${title})"></title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/general.css}">
+    <link rel="stylesheet" th:href="@{/css/media_queries.css}">
+
+    <!-- Font awesome   -->
+    <link rel="stylesheet" th:href="@{/node_modules/@fortawesome/fontawesome-free/css/all.css}">
+
+    <!-- JQuery   -->
+    <script th:src="@{/node_modules/jquery/dist/jquery.min.js}"></script>
+
+    <!-- Bootstrap   -->
+    <link rel="stylesheet" type="text/css" th:href="@{/node_modules/bootstrap/dist/css/bootstrap.css}">
+    <script type="text/javascript" th:src="@{/node_modules/bootstrap/dist/js/bootstrap.bundle.js}"></script>
+
+    <!-- Bootstrap icons   -->
+    <link rel="stylesheet" th:hreaf="@{/node_modules/bootstrap-icons/font/bootstrap-icons.css}"/>
+
+</th:block>
+

@@ -1,6 +1,10 @@
 <html lang="en">
-<head></head>
+<head th:replace="~{common :: head('Main page')}"></head>
 <body>
-    <h1>Hello World!</h1>
+    <header th:replace="~{navigations :: header()}"></header>
+    <main class="content">
+
+    </main>
+    <footer th:replace="~{navigations :: footer()}"></footer>
 </body>
 </html>
