@@ -34,6 +34,21 @@ public class RestStateController {
     @PostMapping("/states/save")
     public ResponseEntity<StateDTO> save(@RequestBody StateDTO stateDTO)
             throws CountryNotFoundException {
+
+        String errorMessage = "";
+        if(stateDTO.getCountryId() == null) {
+            errorMessage += "Country id must be present.";
+        }
+
+        if(stateDTO.getName().length() > 255 || stateDTO.getName().isEmpty()) {
+            errorMessage += "Name is required and can not exceed 255 characters.";
+        }
+
+        if(!errorMessage.isEmpty()) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+
         Country country = countryRepository
                 .findById(stateDTO.getCountryId())
                 .orElseThrow(CountryNotFoundException::new);

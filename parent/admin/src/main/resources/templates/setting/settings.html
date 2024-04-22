@@ -6,6 +6,9 @@
 
 <main class="content">
     <div class="container-md mt-4">
+
+        <div th:replace="~{common :: alerts()}"></div>
+
         <h2 class="text-center mt-4" th:text="${pageTitle}"></h2>
 
         <form id="mainForm" class="mt-4" enctype="multipart/form-data" method="POST" th:action="@{/settings/save}">
@@ -70,11 +73,130 @@
 <script type="text/javascript" th:src="@{/js/settings_mail_template.js}"></script>
 <script type="text/javascript">
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
-    const WIDTH = 150;
-    const HEIGHT = 150;
+    const WIDTH = 700;
+    const HEIGHT = 700;
     const QUALITY = 1;
 
     const MODULE_URL = "[[@{/}]]";
+
+    const validSetting = {
+        required: true,
+        maxlength: 1024
+    }
+
+    const validationRules = {
+        SITE_NAME: {
+            ...validSetting,
+        },
+        COPYRIGHT: {
+            ...validSetting,
+        },
+        MAIL_HOST: {
+            ...validSetting,
+        },
+        MAIL_PORT: {
+            ...validSetting,
+        },
+        MAIL_USERNAME: {
+            ...validSetting,
+        },
+        MAIL_PASSWORD: {
+            ...validSetting,
+        },
+        MAIL_FROM: {
+            ...validSetting,
+        },
+        MAIL_SENDER_NAME: {
+            ...validSetting,
+        },
+        newImage: {
+            maxImageSize: true,
+        },
+        SMTP_AUTH: {
+            required: true,
+        },
+        SMTP_SECURED: {
+            required: true,
+        },
+        CURRENCY_ID: {
+            required: true,
+            min: 1
+        },
+        CURRENCY_SYMBOL_POSITION: {
+            required: true,
+        },
+        DECIMAL_POINT_TYPE: {
+            required: true,
+        },
+        DECIMAL_DIGITS: {
+            required: true,
+        },
+        THOUSANDS_POINT_TYPE: {
+            required: true
+        },
+    };
+
+    const validationMessages = {
+        SITE_NAME: {
+            required: "Site name is required.",
+            maxlength: "Site name cannot exceed 1024 characters."
+        },
+        COPYRIGHT: {
+            required: "Copyright information is required.",
+            maxlength: "Copyright information cannot exceed 1024 characters."
+        },
+        MAIL_HOST: {
+            required: "Mail host is required.",
+            maxlength: "Mail host cannot exceed 1024 characters."
+        },
+        MAIL_PORT: {
+            required: "Mail port is required.",
+            maxlength: "Mail port cannot exceed 1024 characters."
+        },
+        MAIL_USERNAME: {
+            required: "Mail username is required.",
+            maxlength: "Mail username cannot exceed 1024 characters."
+        },
+        MAIL_PASSWORD: {
+            required: "Mail password is required.",
+            maxlength: "Mail password cannot exceed 1024 characters."
+        },
+        MAIL_FROM: {
+            required: "Mail from address is required.",
+            maxlength: "Mail from address cannot exceed 1024 characters."
+        },
+        MAIL_SENDER_NAME: {
+            required: "Mail sender name is required.",
+            maxlength: "Mail sender name cannot exceed 1024 characters."
+        },
+        newImage: {
+            maxImageSize: "The image size cannot exceed the maximum allowed size."
+        },
+        SMTP_AUTH: {
+            required: "SMTP authentication is required."
+        },
+        SMTP_SECURED: {
+            required: "SMTP secured is required."
+        },
+        CURRENCY_ID: {
+            required: "Currency ID is required.",
+            min: "Currency ID must be at least 1."
+        },
+        CURRENCY_SYMBOL_POSITION: {
+            required: "Currency symbol position is required."
+        },
+        DECIMAL_POINT_TYPE: {
+            required: "Decimal point type is required."
+        },
+        DECIMAL_DIGITS: {
+            required: "Decimal digits are required."
+        },
+        THOUSANDS_POINT_TYPE: {
+            required: "Thousands point type is required."
+        },
+    };
+
+    const dynamicRules = [];
 </script>
 </body>
 </html>

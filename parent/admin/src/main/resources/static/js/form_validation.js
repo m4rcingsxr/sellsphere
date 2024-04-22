@@ -170,6 +170,8 @@ function errorPlacementHandler(error, element) {
         placement = element;
     }
 
+    console.log(placement);
+
     error.addClass("text-danger").insertAfter(placement);
 }
 

@@ -55,7 +55,8 @@ public class FileService {
      * @param extrasFolderName the directory name on S3
      * @throws IOException if an I/O error occurs
      */
-    public static void uploadFiles(MultipartFile[] files, String extrasFolderName) throws IOException {
+    public static void uploadFiles(MultipartFile[] files, String extrasFolderName)
+            throws IOException {
         if (files == null || files.length == 0) {
             return;
         }

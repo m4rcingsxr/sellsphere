@@ -8,7 +8,7 @@ CREATE TABLE settings
 );
 
 INSERT INTO settings (setting_key, value, category)
-VALUES ('SITE_LOGO', '/site-logo/SellSphere.png', 'GENERAL');
+VALUES ('SITE_LOGO', '/site-logo/logo.png', 'GENERAL');
 INSERT INTO settings (setting_key, value, category)
 VALUES ('SITE_NAME', 'SellSphere', 'GENERAL');
 INSERT INTO settings (setting_key, value, category)
@@ -19,7 +19,7 @@ VALUES ('CURRENCY_ID', '1', 'CURRENCY');
 INSERT INTO settings (setting_key, value, category)
 VALUES ('CURRENCY_SYMBOL', '$', 'CURRENCY');
 INSERT INTO settings (setting_key, value, category)
-VALUES ('CURRENCY_SYMBOL_POSITION', 'AFTER PRICE', 'CURRENCY');
+VALUES ('CURRENCY_SYMBOL_POSITION', 'AFTER_PRICE', 'CURRENCY');
 INSERT INTO settings (setting_key, value, category)
 VALUES ('DECIMAL_POINT_TYPE', 'POINT', 'CURRENCY');
 INSERT INTO settings (setting_key, value, category)

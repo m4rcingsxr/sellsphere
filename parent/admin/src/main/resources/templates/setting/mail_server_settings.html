@@ -24,4 +24,9 @@
         <th:block th:replace="~{form_fragments :: label_input('From E-mail Address', 'MAIL_FROM', 'MAIL_FROM', ${MAIL_FROM})}"></th:block>
         <th:block th:replace="~{form_fragments :: label_input('Sender Name', 'MAIL_SENDER_NAME', 'MAIL_SENDER_NAME', ${MAIL_SENDER_NAME})}"></th:block>
     </div>
+
+    <div class="d-flex justify-content-center gap-3 mt-5">
+        <input id="saveInput" type="submit" value="Update" class="btn btn-primary rounded-4"/>
+        <input type="button" value="Cancel" class="btn btn-secondary rounded-4 cancel" onclick="goToListPage()"/>
+    </div>
 </div>
