@@ -11,6 +11,7 @@
 
     <modules>
         <module>admin</module>
+        <module>client</module>
     </modules>
 
     <artifactId>parent</artifactId>
