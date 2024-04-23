@@ -20,7 +20,7 @@
              aria-labelledby="registration-template-tab" tabindex="0">
             <div class="p-4 row g-5">
                 <th:block
-                        th:replace="~{form_fragments :: label_input('Customer verify email subject', 'CUSTOMER_EMAIL_VERIFY_SUBJECT', 'CUSTOMER_EMAIL_VERIFY_SUBJECT', ${CUSTOMER_EMAIL_VERIFY_SUBJECT})}"></th:block>
+                        th:replace="~{form_fragments :: label_input('com.sellsphere.common.entity.Customer verify email subject', 'CUSTOMER_EMAIL_VERIFY_SUBJECT', 'CUSTOMER_EMAIL_VERIFY_SUBJECT', ${CUSTOMER_EMAIL_VERIFY_SUBJECT})}"></th:block>
                 <div class="col-sm-12">
                     <textarea name="CUSTOMER_EMAIL_VERIFY_CONTENT" th:utext="${CUSTOMER_EMAIL_VERIFY_CONTENT}" id="customerVerification"></textarea>
                 </div>
