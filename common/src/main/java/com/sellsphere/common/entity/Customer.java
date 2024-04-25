@@ -25,7 +25,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @Entity
-@Table(name = "customers")
+@Table(name = "customers", schema = "keycloak")
 public class Customer extends IdentifiedEntity {
 
     /**
@@ -65,14 +65,14 @@ public class Customer extends IdentifiedEntity {
      * Indicates whether the customer account is enabled.
      */
     @NotNull(message = "Enabled status must not be null")
-    @Column(name = "enabled", nullable = false)
+    @Column(name = "enabled", nullable = false, columnDefinition = "TINYINT")
     private boolean enabled;
 
     /**
      * Indicates whether the customer's email is verified.
      */
     @NotNull(message = "Email verified status must not be null")
-    @Column(name = "email_verified", nullable = false)
+    @Column(name = "email_verified", nullable = false, columnDefinition = "TINYINT")
     private boolean emailVerified;
 
     /**

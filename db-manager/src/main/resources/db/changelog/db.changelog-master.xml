@@ -21,4 +21,5 @@
     <include file="db/changelog/db.changelog-add-currencies-table.xml"/>
     <include file="db/changelog/db.changelog-add-settings-table.xml"/>
     <include file="db/changelog/db.changelog-update-states-table.xml"/>
+    <include file="db/changelog/db.changelog-add-customers-table.xml"/>
 </databaseChangeLog>
