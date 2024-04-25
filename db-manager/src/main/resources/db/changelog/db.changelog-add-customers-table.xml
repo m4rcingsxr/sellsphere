@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+
+    <changeSet id="1719254100059-1" author="Marcin Seweryn">
+        <dropTable schemaName="keycloak" tableName="customers"/>
+    </changeSet>
+
+    <changeSet id="1719253564512-1" author="Marcin Seweryn">
+        <createTable schemaName="keycloak" tableName="customers">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_customers"/>
+            </column>
+            <column name="email" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_password" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enabled" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email_verified" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_time" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint schemaName="keycloak" columnNames="email" constraintName="uc_customers_email" tableName="customers"/>
+    </changeSet>
+
+</databaseChangeLog>

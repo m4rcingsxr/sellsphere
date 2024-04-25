@@ -10,4 +10,4 @@ values  (273, 'ASUS TUF FX505DT Gaming Laptop- 15.6", 120Hz Full HD, AMD Ryzen 5
 <li class="a-spacing-mini"><span class="a-list-item">Dual fans with anti-dust technology | RGB backlit Keyboard rated for 20-million keystroke durability</span></li>
 </ul>', '<p><img style="display: block; margin-left: auto; margin-right: auto;" src="https://sellsphere-files.s3.eu-north-1.amazonaws.com/description/images/1_full_description_1718905647190.jpg" alt="" width="983" height="403"></p>
 <p style="text-align: center;">Featuring AMD Ryzen processors and GeForce GTX 16-Series graphics, the newest TUF Gaming (FX505) adeptly handles modern game titles while providing MIL-STD-810G reliability and an RGB keyboard to stand apart from the competition.</p>
-<p>&nbsp;</p>', '2024-06-20 19:52:00', 1, 1, 700.00, 777.00, 0.00, 10.31, 14.17, 1.02, 4.85, '1_main.jpg', 1, 11);
+<p>&nbsp;</p>', CURRENT_TIMESTAMP, 1, 1, 700.00, 777.00, 0.00, 10.31, 14.17, 1.02, 4.85, '1_main.jpg', 1, 11);
