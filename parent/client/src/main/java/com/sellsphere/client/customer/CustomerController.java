@@ -1,5 +1,6 @@
 package com.sellsphere.client.customer;
 
+import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -7,10 +8,8 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 
@@ -50,5 +49,22 @@ public class CustomerController {
         model.addAttribute("customer", fetchedCustomer);
 
         return CUSTOMER_FORM_URL;
+    }
+
+    /**
+     * Update the customer profile.
+     *
+     * @param customer Customer model attribute
+     * @return View name
+     */
+    @PostMapping("/update")
+    public String updateCustomer(
+            @ModelAttribute("customer") Customer customer, RedirectAttributes ra)
+            throws CustomerNotFoundException {
+
+        customerService.update(customer);
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Profile successfully updated.");
+
+        return "redirect:" + CUSTOMER_FORM_URL;
     }
 }

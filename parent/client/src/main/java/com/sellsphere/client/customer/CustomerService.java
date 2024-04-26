@@ -23,4 +23,20 @@ public class CustomerService {
                 CustomerNotFoundException::new);
     }
 
+    /**
+     * Update the details of a customer.
+     * The password is retained from the existing customer data.
+     *
+     * @param newCustomer The updated customer entity
+     * @return The updated customer entity
+     * @throws CustomerNotFoundException If the customer is not found
+     */
+    public Customer update(Customer newCustomer)
+            throws CustomerNotFoundException {
+
+        Customer existingCustomer = getByEmail(newCustomer.getEmail());
+        newCustomer.setPassword(existingCustomer.getPassword());
+
+        return customerRepository.save(newCustomer);
+    }
 }

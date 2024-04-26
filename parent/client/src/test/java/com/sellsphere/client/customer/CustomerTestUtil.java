@@ -13,7 +13,7 @@ public class CustomerTestUtil {
         customer.setEmail("example@gmail.com");
         customer.setFirstName("First name");
         customer.setLastName("Last name");
-        customer.setPassword("123");
+        customer.setPassword("Password123");
         customer.setCreatedTime(LocalDateTime.now());
 
         return customer;

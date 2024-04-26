@@ -44,4 +44,34 @@ class CustomerServiceTest {
         assertThrows(CustomerNotFoundException.class, () -> customerService.getByEmail(notExistingEmail));
     }
 
+    @Test
+    void givenExistingCustomer_whenUpdateCustomer_thenOldWillBeSetPasswordAndSaveMethodIsInvoked()
+            throws CustomerNotFoundException {
+        Customer customer = generateDummyCustomer();
+        Customer newCustomer = generateDummyCustomer();
+        newCustomer.setPassword(null);
+
+        when(customerRepository.findByEmail(newCustomer.getEmail())).thenReturn(Optional.of(customer));
+        when(customerRepository.save(newCustomer)).thenReturn(newCustomer);
+
+        customerService.update(newCustomer);
+
+        assertNotNull(newCustomer.getPassword());
+
+        verify(customerRepository, times(1)).findByEmail(newCustomer.getEmail());
+        verify(customerRepository, times(1)).save(newCustomer);
+    }
+
+    @Test
+    void givenNotExistingCustomer_whenUpdateCustomer_thenThrowCustomerNotFoundException() {
+        Customer newCustomer = generateDummyCustomer();
+
+        when(customerRepository.findByEmail(newCustomer.getEmail())).thenReturn(Optional.empty());
+
+        assertThrows(CustomerNotFoundException.class, () -> customerService.update(newCustomer));
+
+        verify(customerRepository, times(1)).findByEmail(newCustomer.getEmail());
+        verifyNoMoreInteractions(customerRepository);
+    }
+
 }

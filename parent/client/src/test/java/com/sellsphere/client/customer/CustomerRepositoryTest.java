@@ -12,6 +12,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Optional;
 
+import static com.sellsphere.client.customer.CustomerTestUtil.generateDummyCustomer;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,6 +36,15 @@ class CustomerRepositoryTest {
         assertNotNull(customer.get().getId());
     }
 
+    @Test
+    void givenNewCustomer_whenSaveCustomer_thenCustomerIsPersisted() {
+        Customer customer = generateDummyCustomer();
+        customer.setId(null);
+
+        Customer savedCustomer = customerRepository.save(customer);
+        assertNotNull(savedCustomer);
+        assertNotNull(savedCustomer.getId());
+    }
 
 
 }
