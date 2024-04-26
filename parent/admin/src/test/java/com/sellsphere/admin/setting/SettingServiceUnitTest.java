@@ -3,7 +3,6 @@ package com.sellsphere.admin.setting;
 import com.sellsphere.admin.FileService;
 import com.sellsphere.common.entity.Currency;
 import com.sellsphere.common.entity.Setting;
-import com.sellsphere.common.entity.SettingCategory;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;

@@ -1,7 +1,6 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.common.entity.Currency;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;

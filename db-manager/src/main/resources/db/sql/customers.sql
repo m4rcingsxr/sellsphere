@@ -1,7 +1,7 @@
 INSERT INTO keycloak.customers (email, customer_password, first_name, last_name, enabled, email_verified, created_time)
-VALUES ('alice.smith@example.com', '$2a$10$7xzy4Sz.qz8lUwQ1Q6aD1OC2So4An4dIVFFz85y6HcJeKJDhD0neK', 'Alice', 'Smith', true, true, '2024-06-24 12:00:00'),
-       ('bob.johnson@example.com', '$2a$10$Wjdo4zvz1PxzHf7xQbR9xOheZrk/ObD3UroVbfrOQ2ZnLtKheG8ua', 'Bob', 'Johnson', true, true, '2024-06-24 12:00:00'),
-       ('carol.wilson@example.com', '$2a$10$OdcUj1ErKfYQF7yErhUQZ.hTrh6bT1/NDFv2jBQwcf.n7RJFFAw1W', 'Carol', 'Wilson', true, true, '2024-06-24 12:00:00'),
+VALUES ('alice.smith@example.com', '$2a$12$ubhNeO17OtTUGyUkVKUJ9uZaq6ixOmeNH4y0FoGF1OESiVTrujUZa', 'Alice', 'Smith', true, true, '2024-06-24 12:00:00'),
+       ('bob.johnson@example.com', '$2a$12$ubhNeO17OtTUGyUkVKUJ9uZaq6ixOmeNH4y0FoGF1OESiVTrujUZa', 'Bob', 'Johnson', true, true, '2024-06-24 12:00:00'),
+       ('carol.wilson@example.com', '$2a$12$ubhNeO17OtTUGyUkVKUJ9uZaq6ixOmeNH4y0FoGF1OESiVTrujUZa', 'Carol', 'Wilson', true, true, '2024-06-24 12:00:00'),
        ('dave.brown@example.com', '$2a$10$T7Xf3Dj4QQvCzF5rK5Jo1u1EZ10jFh8b0Wp9uK/Z4J6b11J5zHtvy', 'Dave', 'Brown', true, true, '2024-06-24 12:00:00'),
        ('eve.jones@example.com', '$2a$10$szfXU/hzQ5iT7d1PfzXz1OyblT7tQOeXt8lWVoM1P.XD4dZUhV0oO', 'Eve', 'Jones', true, true, '2024-06-24 12:00:00'),
        ('frank.davis@example.com', '$2a$10$5Jx8m5p1J9WzP7E/BuOh4e1eZQdKxqV.vH67aK6X3K8xWcXQrFGWq', 'Frank', 'Davis', true, true, '2024-06-24 12:00:00'),

@@ -5,7 +5,6 @@ import com.sellsphere.admin.category.CategoryController;
 import com.sellsphere.admin.product.ProductController;
 import com.sellsphere.admin.user.UserController;
 import com.sellsphere.common.entity.*;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
