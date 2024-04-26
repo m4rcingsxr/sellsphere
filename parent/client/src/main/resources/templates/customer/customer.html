@@ -1,0 +1,62 @@
+<html lang="en">
+<head th:replace="~{common :: head('Main page')}"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+<main class="content mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-3">
+                <div th:replace="~{customer/customer_navigation :: nav()}"></div>
+            </div>
+            <div class="col-sm-9 p-3">
+                <h2>Personal info</h2>
+
+                <form method="POST" th:action="@{/customers/update}" th:object="${customer}"
+                      class="mt-5 d-flex flex-column">
+
+                    <h5>Basic</h5>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('firstName', 'First name')}"></div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('lastName', 'Last name')}"></div>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-5">Contact</h5>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_email('email', 'Email')}"></div>
+                        </div>
+
+                    </div>
+
+                    <h5 class="mt-5">Security</h5>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_password('password')}"></div>
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-floating">
+                                <input type="password" class="form-control" id="confirmedPassword"
+                                       placeholder="********">
+                                <label for="confirmedPassword">Confirm password</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-4 mt-5">
+                        <button type="submit" class="btn btn-sm p-2 btn-outline-primary w-25">Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{navigations :: footer()}"></footer>
+</body>
+</html>

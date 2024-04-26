@@ -1,0 +1,86 @@
+<div th:fragment="nav()" class="d-flex flex-column flex-shrink-0 p-3">
+    <div class="d-flex gap-4 align-items-center">
+        <span class="d-block bg-secondary-subtle text-white rounded-circle ps-3 pe-4">
+            <i th:text="${customer.firstName.substring(0, 1)}" style="font-size: 2rem;"></i>
+        </span>
+        <span th:text="${customer.fullName}" class="fw-bolder fs-5 d-block"></span>
+    </div>
+
+    <!-- Account   -->
+    <ul class="nav nav-pills flex-column mb-auto list-group list-group-flush mt-3">
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a th:href="@{/orders}" class="nav-link text-dark d-flex align-items-center gap-2" aria-current="page">
+                <i class="bi bi-basket3 d-block" style="font-size: 1.5rem;"></i>
+                <span class="d-block">Orders</span>
+            </a>
+        </li>
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a href="#" class="nav-link text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-bookmark-heart" style="font-size: 1.5rem;"></i>
+                <span class="d-block">Wishlist</span>
+            </a>
+        </li>
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a href="#" class="nav-link text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-credit-card" style="font-size: 1.5rem;"></i>
+                <span class="d-block">Payment methods</span>
+            </a>
+        </li>
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a th:href="@{/reviews}" class="nav-link text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-star" style="font-size: 1.5rem;"></i>
+                <span class="d-block">My reviews</span>
+            </a>
+        </li>
+
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a href="#" class="nav-link text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-chat-dots d-block" style="font-size: 1.5rem;"></i>
+                <span class="d-block">My questions</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Manage account  -->
+    <h6 class="fw-bolder mt-4">Manage account</h6>
+    <ul class="nav nav-pills flex-column mb-auto list-group list-group-flush">
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a th:href="@{/customer}" class="nav-link text-dark d-flex align-items-center gap-2" aria-current="page">
+                <i class="bi bi-person d-block" style="font-size: 1.5rem;"></i>
+                <span class="d-block">Personal info</span>
+            </a>
+        </li>
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a th:href="@{/address_book}" class="nav-link text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-geo-alt" style="font-size: 1.5rem;"></i>
+                <span class="d-block">Addresses</span>
+            </a>
+        </li>
+    </ul>
+
+    <h6 class="fw-bolder mt-4">Customer service</h6>
+    <ul class="nav nav-pills flex-column mb-auto list-group list-group-flush">
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a href="#" class="nav-link text-dark d-flex align-items-center gap-2" aria-current="page">
+                <i class="bi bi-person d-block" style="font-size: 1.5rem;"></i>
+                <span class="d-block">Help center</span>
+            </a>
+        </li>
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <a href="#" class="nav-link text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-geo-alt" style="font-size: 1.5rem;"></i>
+                <span class="d-block">Terms and condition</span>
+            </a>
+        </li>
+    </ul>
+
+    <ul class="nav nav-pills flex-column mb-auto list-group list-group-flush mt-4">
+        <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+            <form th:action="@{/logout}" method="post" class="nav-link text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-box-arrow-right d-block" style="font-size: 1.5rem;"></i>
+                <button type="submit" class="btn d-block p-0">Logout</button>
+            </form>
+
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,15 @@
+<div th:fragment="field_form_floating_text(field, label)" class="form-floating">
+    <input type="text" class="form-control" th:field="*{__${field}__}" placeholder="John">
+    <label th:for="${field}" th:text="${label}"></label>
+</div>
+
+<div th:fragment="field_form_floating_email(field, label)" class="form-floating">
+    <input type="email" class="form-control" th:field="*{__${field}__}" placeholder="John">
+    <label th:for="${field}" th:text="${label}"></label>
+</div>
+
+<div th:fragment="field_form_floating_password(field)" class="form-floating">
+    <input type="password" class="form-control" th:field="*{__${field}__}"
+           placeholder="********">
+    <label th:for="${field}">Leave empty to keep old password</label>
+</div>
