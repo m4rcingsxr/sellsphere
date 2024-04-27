@@ -1,0 +1,10 @@
+INSERT INTO countries (name, code) VALUES ('Afghanistan', 'AF');
+INSERT INTO countries (name, code) VALUES ('Aland Islands', 'AX');
+INSERT INTO countries (name, code) VALUES ('Albania', 'AL');
+INSERT INTO countries (name, code) VALUES ('Algeria', 'DZ');
+INSERT INTO countries (name, code) VALUES ('American Samoa', 'AS');
+INSERT INTO countries (name, code) VALUES ('Andorra', 'AD');
+INSERT INTO countries (name, code) VALUES ('Angola', 'AO');
+INSERT INTO countries (name, code) VALUES ('Anguilla', 'AI');
+INSERT INTO countries (name, code) VALUES ('Antarctica', 'AQ');
+INSERT INTO countries (name, code) VALUES ('Antigua And Barbuda', 'AG');

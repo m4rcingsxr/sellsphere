@@ -1,9 +1,6 @@
 package com.sellsphere.common.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,6 +11,8 @@ import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -81,6 +80,15 @@ public class Customer extends IdentifiedEntity {
     @NotNull(message = "Created time must not be null")
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("primary desc")
+    private List<Address> addresses = new ArrayList<>();
+
+    public void addAddress(Address address) {
+        address.setCustomer(this);
+        this.addresses.add(address);
+    }
 
     /**
      * Returns the full name of the customer.
