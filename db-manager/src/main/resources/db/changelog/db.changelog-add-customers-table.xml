@@ -4,13 +4,8 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-
-    <changeSet id="1719254100059-1" author="Marcin Seweryn">
-        <dropTable schemaName="keycloak" tableName="customers"/>
-    </changeSet>
-
     <changeSet id="1719253564512-1" author="Marcin Seweryn">
-        <createTable schemaName="keycloak" tableName="customers">
+        <createTable tableName="customers">
             <column autoIncrement="true" name="id" type="INT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_customers"/>
             </column>
@@ -36,7 +31,7 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addUniqueConstraint schemaName="keycloak" columnNames="email" constraintName="uc_customers_email" tableName="customers"/>
+        <addUniqueConstraint columnNames="email" constraintName="uc_customers_email" tableName="customers"/>
     </changeSet>
 
 </databaseChangeLog>

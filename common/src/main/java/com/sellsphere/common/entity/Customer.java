@@ -24,7 +24,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @Entity
-@Table(name = "customers", schema = "keycloak")
+@Table(name = "customers")
 public class Customer extends IdentifiedEntity {
 
     /**
@@ -81,7 +81,7 @@ public class Customer extends IdentifiedEntity {
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("primary desc")
     private List<Address> addresses = new ArrayList<>();
 

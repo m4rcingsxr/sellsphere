@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+
+    <changeSet id="1719861397536-1" author="Marcin Seweryn">
+        <createTable tableName="addresses">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_addresses"/>
+            </column>
+            <column name="first_name" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="VARCHAR(15)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address_line_1" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address_line_2" type="VARCHAR(64)"/>
+            <column name="city" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(45)"/>
+            <column name="country_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postal_code" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="primary_address" type="TINYINT(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="country_id" baseTableName="addresses" constraintName="FK_ADDRESSES_ON_COUNTRY" referencedColumnNames="id" referencedTableName="countries"/>
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="addresses" constraintName="FK_ADDRESSES_ON_CUSTOMER" referencedColumnNames="id" referencedTableName="customers"/>
+    </changeSet>
+</databaseChangeLog>

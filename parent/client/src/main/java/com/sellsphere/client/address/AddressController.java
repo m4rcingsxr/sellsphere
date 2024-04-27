@@ -30,7 +30,7 @@ public class AddressController {
     private final CustomerService customerService;
     private final CountryRepository countryRepository;
 
-    private static final String ADDRESSES_URL = "/address/addresses";
+    private static final String ADDRESSES_URL = "address/addresses";
     private static final String ADDRESS_BOOK_DEFAULT_REDIRECT_URL = "redirect:/address_book";
 
     @InitBinder
@@ -60,7 +60,7 @@ public class AddressController {
         model.addAttribute("customer", customer);
         model.addAttribute("countryList", countryList);
         model.addAttribute("address", new Address());
-        
+
         return ADDRESSES_URL;
     }
 

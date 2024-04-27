@@ -20,7 +20,7 @@ import java.util.Objects;
 @Getter
 @Entity
 @Table(name = "addresses")
-public class Address {
+public class Address extends IdentifiedEntity{
 
     /**
      * The unique identifier for the address.
@@ -89,7 +89,7 @@ public class Address {
     /**
      * Indicates whether this is the primary address for the customer.
      */
-    @Column(name = "primary", nullable = false)
+    @Column(name = "primary_address", nullable = false, columnDefinition = "TINYINT(1)")
     private Boolean primary;
 
     /**

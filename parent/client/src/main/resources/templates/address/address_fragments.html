@@ -1,0 +1,7 @@
+<div th:fragment="addressPreview(address, index, fullName, phoneNumber, fullAddress)" class="collapse show p-2" th:id="${'collapsePreview' + index}">
+    <div class="d-flex flex-column">
+        <div class="text-light-emphasis" th:text="${fullName}"></div>
+        <div class="text-light-emphasis" th:text="${phoneNumber}"></div>
+        <div class="text-light-emphasis" th:text="${fullAddress}"></div>
+    </div>
+</div>

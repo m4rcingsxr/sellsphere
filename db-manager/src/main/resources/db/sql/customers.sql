@@ -1,4 +1,4 @@
-INSERT INTO keycloak.customers (email, customer_password, first_name, last_name, enabled, email_verified, created_time)
+INSERT INTO customers (email, customer_password, first_name, last_name, enabled, email_verified, created_time)
 VALUES ('alice.smith@example.com', '$2a$12$ubhNeO17OtTUGyUkVKUJ9uZaq6ixOmeNH4y0FoGF1OESiVTrujUZa', 'Alice', 'Smith', true, true, '2024-06-24 12:00:00'),
        ('bob.johnson@example.com', '$2a$12$ubhNeO17OtTUGyUkVKUJ9uZaq6ixOmeNH4y0FoGF1OESiVTrujUZa', 'Bob', 'Johnson', true, true, '2024-06-24 12:00:00'),
        ('carol.wilson@example.com', '$2a$12$ubhNeO17OtTUGyUkVKUJ9uZaq6ixOmeNH4y0FoGF1OESiVTrujUZa', 'Carol', 'Wilson', true, true, '2024-06-24 12:00:00'),
