@@ -8,3 +8,16 @@ INSERT INTO countries (name, code) VALUES ('Angola', 'AO');
 INSERT INTO countries (name, code) VALUES ('Anguilla', 'AI');
 INSERT INTO countries (name, code) VALUES ('Antarctica', 'AQ');
 INSERT INTO countries (name, code) VALUES ('Antigua And Barbuda', 'AG');
+
+INSERT INTO states (name, country_id) VALUES ('Badakhshan', 1);
+INSERT INTO states (name, country_id) VALUES ('Kabul', 1);
+INSERT INTO states (name, country_id) VALUES ('Mirditë District', 2);
+INSERT INTO states (name, country_id) VALUES ('Durrës District', 2);
+INSERT INTO states (name, country_id) VALUES ('Timimoun', 3);
+INSERT INTO states (name, country_id) VALUES ('Touggourt', 3);
+INSERT INTO states (name, country_id) VALUES ('Ordino', 4);
+INSERT INTO states (name, country_id) VALUES ('Escaldes-Engordany', 5);
+INSERT INTO states (name, country_id) VALUES ('Luanda Province', 6);
+INSERT INTO states (name, country_id) VALUES ('Lunda Norte Province', 7);
+INSERT INTO states (name, country_id) VALUES ('Saint Peter Parish', 8);
+INSERT INTO states (name, country_id) VALUES ('Saint Paul Parish', 9);
