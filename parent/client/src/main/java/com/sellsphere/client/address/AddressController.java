@@ -26,10 +26,11 @@ import java.util.List;
 public class AddressController {
 
     private final CustomerService customerService;
+    private final AddressService addressService;
     private final CountryRepository countryRepository;
 
     private static final String ADDRESSES_URL = "address/addresses";
-    private static final String ADDRESS_BOOK_DEFAULT_REDIRECT_URL = "redirect:/address_book";
+    public static final String ADDRESS_BOOK_DEFAULT_REDIRECT_URL = "redirect:/address_book";
 
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
@@ -46,7 +47,7 @@ public class AddressController {
      * @return the address book view
      * @throws CustomerNotFoundException if the customer is not found
      */
-    @GetMapping()
+    @GetMapping
     public String showAddressBook(
             Model model, Principal principal) throws CustomerNotFoundException {
         String email = principal.getName();
@@ -74,5 +75,19 @@ public class AddressController {
         return ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
     }
 
+    /**
+     * Deletes the address for the authenticated customer.
+     *
+     * @param addressId the address ID to delete
+     * @return the address book redirect view
+     * @throws AddressNotFoundException if the address is not found
+     */
+    @GetMapping("/delete/{id}")
+    public String deleteAddress(@PathVariable("id") Integer addressId)
+            throws AddressNotFoundException {
+        addressService.delete(addressId);
+
+        return ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
+    }
 
 }

@@ -67,7 +67,7 @@ public class Address extends IdentifiedEntity{
     /**
      * The country associated with the address.
      */
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.REFRESH})
     @JoinColumn(name = "country_id", nullable = false)
     private Country country;
 

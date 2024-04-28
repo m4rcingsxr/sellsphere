@@ -1,6 +1,7 @@
 package com.sellsphere.client;
 
 import com.sellsphere.client.address.AddressController;
+import com.sellsphere.common.entity.AddressNotFoundException;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.CustomerNotFoundException;
 import com.sellsphere.common.entity.ForbiddenException;
@@ -39,6 +40,15 @@ public class GlobalExceptionHandler {
         ra.addFlashAttribute(Constants.ERROR_MESSAGE, ex.getMessage());
 
         return "redirect:/";
+    }
+
+    @ExceptionHandler(AddressNotFoundException.class)
+    public String handleAddressNotFound(AddressNotFoundException ex, RedirectAttributes ra) {
+        log.error(ex.getMessage(), ex);
+
+        ra.addFlashAttribute(Constants.ERROR_MESSAGE, ex.getMessage());
+
+        return AddressController.ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

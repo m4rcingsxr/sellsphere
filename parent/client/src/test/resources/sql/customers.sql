@@ -7,3 +7,5 @@ VALUES ('alice.smith@example.com', 'password123', 'Alice', 'Smith', 1, 1, CURREN
        ('frank.davis@example.com', 'password123', 'Frank', 'Davis', 1, 1, CURRENT_TIMESTAMP),
        ('grace.miller@example.com', 'password123', 'Grace', 'Miller', 1, 1, CURRENT_TIMESTAMP);
 
+INSERT INTO countries (name, code) VALUES ('Albania', 'AL');
+
