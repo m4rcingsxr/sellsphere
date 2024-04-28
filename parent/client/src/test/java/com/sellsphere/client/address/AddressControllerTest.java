@@ -4,6 +4,7 @@ import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.customer.CustomerTestUtil;
 import com.sellsphere.client.setting.CountryRepository;
 import com.sellsphere.common.entity.Address;
+import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Customer;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -26,15 +27,20 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.sellsphere.client.customer.CustomerTestUtil.generateDummyCustomer;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class AddressControllerTest {
+
+    private static final String BASE_URL = "/address_book";
 
     @MockBean
     private CustomerService customerService;
@@ -48,7 +54,7 @@ class AddressControllerTest {
     @Test
     @WithMockUser(username = "example@gmail.com")
     void whenDisplayAddressBook_thenModelShouldContainCorrectAttributes() throws Exception {
-        Customer customer = CustomerTestUtil.generateDummyCustomer();
+        Customer customer = generateDummyCustomer();
         List<Country> countries = List.of(AddressTestUtil.generateDummyCountry());
 
         when(customerService.getByEmail(customer.getEmail())).thenReturn(customer);
@@ -56,7 +62,7 @@ class AddressControllerTest {
 
         Principal principal = customer::getEmail;
 
-        mockMvc.perform(get("/address_book").principal(principal))
+        mockMvc.perform(get(BASE_URL).principal(principal))
                 .andExpect(status().isOk())
                 .andExpect(view().name("/address/addresses"))
                 .andExpect(model().attributeExists("customer"))
@@ -68,5 +74,21 @@ class AddressControllerTest {
         verify(customerService, times(1)).getByEmail(customer.getEmail());
         verify(countryRepository, times(1)).findAll(Sort.by("name").ascending());
     }
+
+    @Test
+    @WithMockUser(username = "example@gmail.com")
+    void whenGivenCustomerWithUpdatedAddresses_whenCustomerIsUpdated_thenRedirectWithUpdateCall() throws Exception {
+        Customer newCustomer = generateDummyCustomer();
+        when(customerService.update(any(Customer.class))).thenReturn(newCustomer);
+
+        mockMvc.perform(post(BASE_URL + "/update"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attribute(Constants.SUCCESS_MESSAGE, equalTo("Successfully updated addresses")))
+                .andExpect(view().name("redirect:/address_book"));
+
+        verify(customerService, times(1)).update(any(Customer.class));
+    }
+
+
 
 }

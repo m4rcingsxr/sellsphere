@@ -23,15 +23,6 @@ import java.util.Objects;
 public class Address extends IdentifiedEntity{
 
     /**
-     * The unique identifier for the address.
-     */
-    @Id
-    @GeneratedValue(generator = "sequence_generator", strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "sequence_generator", sequenceName = "address_sequence",
-            allocationSize = 1)
-    private Integer id;
-
-    /**
      * The first name of the recipient.
      */
     @Column(name = "first_name", length = 45, nullable = false)
@@ -89,8 +80,8 @@ public class Address extends IdentifiedEntity{
     /**
      * Indicates whether this is the primary address for the customer.
      */
-    @Column(name = "primary_address", nullable = false, columnDefinition = "TINYINT(1)")
-    private Boolean primary;
+    @Column(name = "primary_address", nullable = false, columnDefinition = "TINYINT")
+    private boolean primary;
 
     /**
      * The customer associated with this address.

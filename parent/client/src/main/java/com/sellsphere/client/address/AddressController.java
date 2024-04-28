@@ -2,18 +2,15 @@ package com.sellsphere.client.address;
 
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.setting.CountryRepository;
-import com.sellsphere.common.entity.Address;
-import com.sellsphere.common.entity.Country;
-import com.sellsphere.common.entity.Customer;
-import com.sellsphere.common.entity.CustomerNotFoundException;
+import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.List;
@@ -25,6 +22,7 @@ import java.util.List;
  */
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/address_book")
 public class AddressController {
 
     private final CustomerService customerService;
@@ -48,7 +46,7 @@ public class AddressController {
      * @return the address book view
      * @throws CustomerNotFoundException if the customer is not found
      */
-    @GetMapping("/address_book")
+    @GetMapping()
     public String showAddressBook(
             Model model, Principal principal) throws CustomerNotFoundException {
         String email = principal.getName();
@@ -63,5 +61,18 @@ public class AddressController {
 
         return ADDRESSES_URL;
     }
+
+    @PostMapping("/update")
+    public String updateAddresses(@ModelAttribute("customer") Customer customer,
+                                  RedirectAttributes ra)
+            throws CustomerNotFoundException {
+        String successMessage = "Successfully updated addresses";
+        customerService.update(customer);
+
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
+
+        return ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
+    }
+
 
 }

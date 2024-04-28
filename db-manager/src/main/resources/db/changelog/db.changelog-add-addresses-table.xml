@@ -34,7 +34,7 @@
             <column name="postal_code" type="VARCHAR(10)">
                 <constraints nullable="false"/>
             </column>
-            <column name="primary_address" type="TINYINT(1)">
+            <column name="primary_address" type="TINYINT">
                 <constraints nullable="false"/>
             </column>
             <column name="customer_id" type="INT">

@@ -1,22 +1,26 @@
 package com.sellsphere.client.customer;
 
+import com.sellsphere.common.entity.Address;
 import com.sellsphere.common.entity.Customer;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.List;
 import java.util.Optional;
 
+import static com.sellsphere.client.address.AddressTestUtil.*;
 import static com.sellsphere.client.customer.CustomerTestUtil.generateDummyCustomer;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts =
-        "classpath:/sql/customers.sql")
+@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts = "classpath:/sql/customers" +
+        ".sql")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class CustomerRepositoryTest {
 
@@ -42,6 +46,7 @@ class CustomerRepositoryTest {
         assertNotNull(savedCustomer);
         assertNotNull(savedCustomer.getId());
     }
+
 
 
 }
