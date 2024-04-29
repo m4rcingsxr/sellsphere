@@ -13,3 +13,10 @@
            placeholder="********">
     <label th:for="${field}">Leave empty to keep old password</label>
 </div>
+
+<div th:fragment="field_check(fieldName, label)" class="form-check">
+    <input class="form-check-input" type="checkbox"
+           th:field="*{__${fieldName}__}">
+    <label class="form-check-label" th:text="${label}">
+    </label>
+</div>

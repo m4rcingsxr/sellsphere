@@ -5,3 +5,106 @@
         <div class="text-light-emphasis" th:text="${fullAddress}"></div>
     </div>
 </div>
+
+<div th:fragment="deleteAddressModal()" class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-3 shadow">
+            <div class="modal-body p-4 text-center">
+                <h5 class="mb-0">Delete this address?</h5>
+                <p class="mb-0">Deleting the primary address will assign primary status to the next address.</p>
+            </div>
+            <div class="modal-footer flex-nowrap p-0">
+                <a href="#" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0 border-end"
+                   id="deleteModalBtn"><strong>Yes, delete</strong></a>
+                <button type="button" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0"
+                        data-bs-dismiss="modal">I change my mind
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="newAddressModal()" class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5 p-2" id="staticBackdropLabel">Create new address</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:object="${address}" method="POST" th:action="@{/address_book/save}" class="p-3">
+                    <input type="hidden" name="customer" th:value="${customer.id}">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('firstName', 'First name')}"></div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('lastName', 'Last name')}"></div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('phoneNumber', 'Phone number')}"></div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="row g-3 mt-3">
+
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('addressLine1', 'Address line 1')}"></div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('addressLine2', 'Address line 2')}"></div>
+                        </div>
+
+                        <div class="col-sm-12">
+                            <div class="form-floating">
+                                <select class="form-select country" th:field="*{country}" data-select-type="modal"
+                                        aria-label="Floating label select example">
+                                    <option th:each="country : ${countryList}" th:value="${country.id}"
+                                            th:text="${country.name}"></option>
+                                </select>
+                                <label>Select country</label>
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-4">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('city', 'City')}"></div>
+                        </div>
+
+
+                        <div class="col-sm-4">
+                            <div th:replace="~{form_fragments :: field_form_floating_text('postalCode', 'Postal code')}"></div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-floating">
+                                <input list="states" class="form-control" placeholder="State" th:field="*{state}">
+                                <datalist id="states">
+
+                                </datalist>
+                                <label>State</label>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div th:replace="~{form_fragments :: field_check('primary', 'Set as primary address')}"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-sm btn-outline-primary w-25">Add address</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-25" data-bs-dismiss="modal">Close
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

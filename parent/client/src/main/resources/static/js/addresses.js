@@ -40,27 +40,25 @@ $(document).ready(function () {
         const $stateList = $(stateListId);
 
         $stateList.empty();
+        showFullScreenSpinner();
+
         fetchStates(countryId)
             .then(states => {
                 states.forEach(state => {
                     $stateList.append(`<option value="${state.name}"></option>`);
                 });
             })
+            .catch(error => {
+                showErrorModal(error.response);
+            })
+            .finally(function () {
+                hideFullScreenSpinner();
+            })
     })
 });
 
 async function fetchStates(countryId) {
 
-    try {
-        const response = await fetch(`${MODULE_URL}states/list_by_country/${countryId}`)
+    return await ajaxUtil.get(`${MODULE_URL}states/list_by_country/${countryId}`)
 
-        if (!response.ok) {
-            throw new Error("Resposne was not ok!");
-        }
-
-        return await response.json();
-
-    } catch (error) {
-        throw error;
-    }
 }

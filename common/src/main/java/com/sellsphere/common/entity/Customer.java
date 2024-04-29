@@ -90,6 +90,11 @@ public class Customer extends IdentifiedEntity {
         this.addresses.add(address);
     }
 
+    public void removeAddress(Address address) {
+        this.addresses.remove(address);
+        address.setCustomer(null);
+    }
+
     /**
      * Returns the full name of the customer.
      *

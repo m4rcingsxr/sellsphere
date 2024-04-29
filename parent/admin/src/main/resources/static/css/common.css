@@ -55,6 +55,7 @@
     transform: rotate(360deg);
   }
 }
+
 .fixed-top-alert {
   position: fixed !important;
   top: 70px;

@@ -83,9 +83,10 @@ public class AddressController {
      * @throws AddressNotFoundException if the address is not found
      */
     @GetMapping("/delete/{id}")
-    public String deleteAddress(@PathVariable("id") Integer addressId)
+    public String deleteAddress(@PathVariable("id") Integer addressId, RedirectAttributes ra)
             throws AddressNotFoundException {
         addressService.delete(addressId);
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Successfully deleted address");
 
         return ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
     }
