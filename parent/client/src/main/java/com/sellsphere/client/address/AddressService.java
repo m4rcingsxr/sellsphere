@@ -5,9 +5,7 @@ import com.sellsphere.common.entity.AddressNotFoundException;
 import com.sellsphere.common.entity.Customer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.Transient;
 import java.util.List;
 
 @Service
@@ -48,6 +46,29 @@ public class AddressService {
     }
 
     /**
+     * Saves an address. If it's the only address for a customer or if it's set to primary,
+     * updates its primary status accordingly.
+     *
+     * @param address The address to save.
+     * @return The saved address.
+     */
+    public Address save(Address address) {
+        boolean isFirstAddress = address.getCustomer().getAddresses().isEmpty();
+        boolean isSettingPrimary = address.isPrimary();
+
+        if(isFirstAddress) {
+            address.setPrimary(true);
+            return addressRepository.save(address);
+        }
+
+        if(isSettingPrimary) {
+            resetCurrentPrimaryAddress(address.getCustomer());
+        }
+
+        return addressRepository.save(address);
+    }
+
+    /**
      * Sets a new default address for a customer.
      *
      * @param customer The customer whose default address to reset.
@@ -61,4 +82,19 @@ public class AddressService {
             addressRepository.save(newDefaultAddress);
         }
     }
+
+    /**
+     * Resets the primary status of all addresses for a customer.
+     *
+     * @param customer The customer whose addresses to reset.
+     */
+    private void resetCurrentPrimaryAddress(Customer customer) {
+        Address defaultAddress = addressRepository.findByPrimaryIsTrueAndCustomer(customer);
+
+        if (defaultAddress != null) {
+            defaultAddress.setPrimary(false);
+            addressRepository.save(defaultAddress);
+        }
+    }
+
 }

@@ -21,7 +21,6 @@ import java.security.Principal;
 import java.util.List;
 
 import static com.sellsphere.client.address.AddressTestUtil.generateDummyAddress1;
-import static com.sellsphere.client.address.AddressTestUtil.generateDummyAddress2;
 import static com.sellsphere.client.customer.CustomerTestUtil.generateDummyCustomer;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;

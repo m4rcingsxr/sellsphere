@@ -10,9 +10,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static com.sellsphere.client.customer.CustomerTestUtil.generateDummyCustomer;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static com.sellsphere.client.customer.CustomerTestUtil.*;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerServiceTest {

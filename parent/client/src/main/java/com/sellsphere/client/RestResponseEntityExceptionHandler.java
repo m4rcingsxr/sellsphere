@@ -1,6 +1,9 @@
 package com.sellsphere.client;
 
-import com.sellsphere.common.entity.*;
+import com.sellsphere.common.entity.CountryNotFoundException;
+import com.sellsphere.common.entity.CustomerNotFoundException;
+import com.sellsphere.common.entity.ErrorResponse;
+import com.sellsphere.common.entity.StateNotFoundException;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

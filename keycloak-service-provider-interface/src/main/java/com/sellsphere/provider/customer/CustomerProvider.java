@@ -1,6 +1,6 @@
 package com.sellsphere.provider.customer;
 
-import com.sellsphere.common.entity.Customer;
+import com.sellsphere.provider.customer.external.Customer;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.keycloak.component.ComponentModel;

@@ -75,6 +75,19 @@ public class AddressController {
         return ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
     }
 
+    @PostMapping("/address_book/save")
+    public String saveAddress(@ModelAttribute("address") Address address,
+                              RedirectAttributes ra) {
+        String successMessage = "Successfully " + (address.getId() != null ?
+                "updated" : "saved") + " new address.";
+
+        addressService.save(address);
+
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
+
+        return ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
+    }
+
     /**
      * Deletes the address for the authenticated customer.
      *
