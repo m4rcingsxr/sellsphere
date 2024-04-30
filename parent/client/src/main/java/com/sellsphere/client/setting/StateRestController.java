@@ -26,9 +26,6 @@ public class StateRestController {
     @GetMapping("/states/list_by_country/{countryId}")
     public ResponseEntity<List<StateDTO>> listStates(@PathVariable("countryId") Integer countryId)
             throws CountryNotFoundException {
-        if(true) {
-            throw new CountryNotFoundException();
-        }
         Country country = countryRepository.findById(countryId).orElseThrow(CountryNotFoundException::new);;
 
         List<StateDTO> states = country.getStates().stream().map(

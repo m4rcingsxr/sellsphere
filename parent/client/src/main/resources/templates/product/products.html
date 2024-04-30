@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{common :: common_head(${pageTitle})}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/products.css}">
+</head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<header class="mt-3">
+    <div class="container">
+        <nav th:replace="~{navigations :: breadcrumbCategory(${categoryParentList})}"></nav>
+        <nav th:replace="~{navigations :: breadcrumbKeyword()}"></nav>
+
+        <div th:if="${category != null}" class="row bg-body-tertiary p-4 rounded-3">
+            <div th:each="category : ${category.children}" class="col-sm-4">
+                <a th:href="@{'/c/' + ${category.alias}}"
+                   class="link-dark link-underline-opacity-0 link-underline-opacity-50-hover">
+                    <img class="img-fluid category-image" th:src="${category.mainImagePath}"/>
+                    <span class="ms-3" th:text="${category.name}"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+</header>
+
+<main class="content">
+    <div class="container mb-7">
+
+        <div class="row mb-4">
+
+        </div>
+
+        <div id="products" class="row"></div>
+
+    </div>
+</main>
+
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+</body>
+</html>

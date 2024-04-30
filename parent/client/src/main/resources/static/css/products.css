@@ -1,0 +1,4 @@
+.category-image {
+  max-width: 70px;
+  object-fit: contain;
+}
