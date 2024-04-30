@@ -76,7 +76,7 @@ class ProductControllerTest {
         String keyword = "laptop";
 
         // When / Then
-        mockMvc.perform(get("/p/{keyword}", keyword))
+        mockMvc.perform(get("/p/search/{keyword}", keyword))
                 .andExpect(status().isOk())
                 .andExpect(view().name(ProductController.PRODUCTS_PATH))
                 .andExpect(model().attributeExists("keyword"))
@@ -89,7 +89,7 @@ class ProductControllerTest {
         String[] filters = {"brand=Apple", "price=1000-2000"};
 
         // When / Then
-        mockMvc.perform(get("/p").param("filters", filters))
+        mockMvc.perform(get("/p/filters").param("filters", filters))
                 .andExpect(status().isOk())
                 .andExpect(view().name(ProductController.PRODUCTS_PATH));
     }

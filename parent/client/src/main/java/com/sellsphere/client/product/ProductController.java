@@ -30,7 +30,9 @@ public class ProductController {
 
     @GetMapping("/c/{category_alias}")
     public String viewProductsByCategory(
-            @PathVariable(value = "category_alias") String alias, Model model) {
+            @PathVariable(value = "category_alias") String alias,
+            @RequestParam("filters") String[] filters,
+            Model model) {
         String pageTitle = "Products by category: ";
 
         Category category = categoryService.getCategoryByAlias(alias);
@@ -43,17 +45,15 @@ public class ProductController {
         return PRODUCTS_PATH;
     }
 
-    @GetMapping("/p/{keyword}")
+    @GetMapping("/p/search/{keyword}")
     public String viewProductsByKeyword(
-            @PathVariable(value = "keyword") String keyword, Model model
+            @PathVariable(value = "keyword") String keyword,
+            @RequestParam("filters") String[] filters,
+            Model model
     ) {
         model.addAttribute("keyword", keyword);
         return PRODUCTS_PATH;
     }
 
-    @GetMapping("/p")
-    public String viewProductsByFilters(@RequestParam("filters") String[] filters) {
-        return PRODUCTS_PATH;
-    }
 
 }

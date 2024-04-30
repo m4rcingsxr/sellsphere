@@ -16,7 +16,7 @@
             <div th:each="category : ${category.children}" class="col-sm-4">
                 <a th:href="@{'/c/' + ${category.alias}}"
                    class="link-dark link-underline-opacity-0 link-underline-opacity-50-hover">
-                    <img class="img-fluid category-image" th:src="${category.mainImagePath}"/>
+                    <img class="img-fluid category-image" th:src="${category.mainImagePath}" th:alt="${category.name}"/>
                     <span class="ms-3" th:text="${category.name}"></span>
                 </a>
             </div>
@@ -27,14 +27,8 @@
 </header>
 
 <main class="content">
-    <div class="container mb-7">
-
-        <div class="row mb-4">
-
-        </div>
-
+    <div class="container">
         <div id="products" class="row"></div>
-
     </div>
 </main>
 
