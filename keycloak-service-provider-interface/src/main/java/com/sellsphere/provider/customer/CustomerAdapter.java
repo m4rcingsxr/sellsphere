@@ -52,6 +52,11 @@ public class CustomerAdapter extends AbstractUserAdapter {
         return customer.getEmail();
     }
 
+    @Override
+    public boolean isEmailVerified() {
+        return customer.isEmailVerified();
+    }
+
     public String getPassword() {
         return customer.getPassword();
     }
@@ -120,52 +125,6 @@ public class CustomerAdapter extends AbstractUserAdapter {
     @Override
     public void removeRequiredAction(RequiredAction action) {
         getFederatedStorage().removeRequiredAction(realm, this.getId(), action.name());
-    }
-
-
-    @Override
-    public void setAttribute(String name, List<String> values) {
-        // intended, see commit message
-    }
-
-    @Override
-    public void setFirstName(String firstName) {
-        // intended, see commit message
-    }
-
-    @Override
-    public void setLastName(String lastName) {
-        // intended, see commit message
-    }
-
-    @Override
-    public void setEmail(String email) {
-        // intended, see commit message
-    }
-
-    @Override
-    public void setEmailVerified(boolean verified) {
-        // intended, see commit message
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        // intended, see commit message
-    }
-
-    @Override
-    public void setCreatedTimestamp(Long timestamp) {
-        // intended, see commit message
-    }
-
-    @Override
-    public void setSingleAttribute(String name, String value) {
-        // intended, see commit message
-    }
-
-    @Override
-    public void removeAttribute(String name) {
-        // intended, see commit message
     }
 
     UserFederatedStorageProvider getFederatedStorage() {

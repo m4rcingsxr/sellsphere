@@ -95,7 +95,10 @@ public class CustomerProvider
     @Override
     public UserModel getUserById(RealmModel realm, String id) {
         String persistenceId = StorageId.externalId(id);
-        Customer entity = entityManager.find(Customer.class, persistenceId);
+        TypedQuery<Customer> query = entityManager.createQuery(
+                        "SELECT c FROM Customer c where email = :email", Customer.class)
+                .setParameter("email", persistenceId);
+        Customer entity = query.getSingleResult();
         if (entity == null) {
             return null;
         }

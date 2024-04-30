@@ -10,10 +10,6 @@ import org.hibernate.proxy.HibernateProxy;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/**
- * Represents a customer client that will log in as a client.
- * This entity will also be used by Keycloak authentication server for authentication and authorization.
- */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -67,16 +63,6 @@ public class Customer {
      */
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime = LocalDateTime.now();
-
-    /**
-     * Returns the full name of the customer.
-     *
-     * @return the full name of the customer.
-     */
-    @Transient
-    public String getFullName() {
-        return String.join(" ", this.firstName, this.lastName);
-    }
 
     @Override
     public final boolean equals(Object o) {
