@@ -16,23 +16,7 @@ public class ProductSpecification {
     public static Specification<Product> filterProducts(ProductPageRequest pageRequest) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            // Handle filters
-            String[] filterStrings = pageRequest.getFilter();
-            if (filterStrings != null) {
-                List<Filter> filters = parseProductFilters(filterStrings);
-                for (Filter filter : filters) {
-                    if ("brand".equals(filter.getName())) {
-                        predicates.add(criteriaBuilder.equal(root.get("brand").get("name"), filter.getValue()));
-                    } else {
-                        Join<Product, ProductDetail> detailsJoin = root.join("details", JoinType.INNER);
-                        predicates.add(criteriaBuilder.and(
-                                criteriaBuilder.equal(detailsJoin.get("name"), filter.getName()),
-                                criteriaBuilder.equal(detailsJoin.get("value"), filter.getValue())
-                        ));
-                    }
-                }
-            }
+            List<Predicate> filterPredicates = new ArrayList<>();
 
             // Handle category or keyword
             if (pageRequest.getCategoryAlias() != null) {
@@ -41,6 +25,26 @@ public class ProductSpecification {
                 predicates.add(criteriaBuilder.like(root.get("name"), "%" + pageRequest.getKeyword() + "%"));
             } else {
                 throw new IllegalArgumentException("Either category alias or keyword must be provided");
+            }
+
+            // Handle filters
+            String[] filterStrings = pageRequest.getFilter();
+            if (filterStrings != null && filterStrings.length > 0) {
+                List<Filter> filters = parseProductFilters(filterStrings);
+                for (Filter filter : filters) {
+                    if ("brand".equals(filter.getName())) {
+                        filterPredicates.add(criteriaBuilder.equal(root.get("brand").get("name"), filter.getValue()));
+                    } else {
+                        Join<Product, ProductDetail> detailsJoin = root.join("details", JoinType.INNER);
+                        filterPredicates.add(criteriaBuilder.and(
+                                criteriaBuilder.equal(detailsJoin.get("name"), filter.getName()),
+                                criteriaBuilder.equal(detailsJoin.get("value"), filter.getValue())
+                        ));
+                    }
+                }
+                if (!filterPredicates.isEmpty()) {
+                    predicates.addAll(filterPredicates);
+                }
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -54,7 +58,7 @@ public class ProductSpecification {
 
         // validate filters length
         if(filters == null || filters.length == 0) {
-            throw new IllegalArgumentException("Filters are required in format : [filter...] ; filter='name,val1,val2'");
+            throw new IllegalArgumentException("Filters are required in format : [filter...] ; filter='name,value'");
         }
 
         // parse filters
@@ -62,32 +66,30 @@ public class ProductSpecification {
         boolean isSingle = Arrays.stream(filters).noneMatch(filter -> filter.contains(","));
 
         if(isSingle) {
-            return parseFilters(String.join(",", filters));
+            return List.of(parseFilter(String.join(",", filters)));
         } else {
             return Arrays.stream(filters)
-                    .map(ProductSpecification::parseFilters)
-                    .flatMap(List::stream)
+                    .map(ProductSpecification::parseFilter)
                     .toList();
         }
     }
 
-    private static List<Filter> parseFilters(String csvFilter) {
+    private static Filter parseFilter(String csvFilter) {
         String[] filters = csvFilter.split(",");
 
         // validate if each entry if it does contains csv have min 2 values..
         if(filters.length < 2) {
-            throw new IllegalArgumentException(csvFilter + " is incorrect. Each filter must have at least two values : filter='name,val1,val2'");
+            throw new IllegalArgumentException(csvFilter + " is incorrect. Each filter must have two values : filter='name,value'");
         }
 
         String name = filters[0].trim();
+        String value = filters[1].trim();
 
-        List<Filter> filterList = new ArrayList<>();
-        for (int i = 1; i < filters.length; i++) {
-            Filter filter = new Filter(name, filters[i]);
-            filterList.add(filter);
+        if(name.isEmpty() || value.isEmpty()) {
+            throw new IllegalArgumentException("Filter name and value cannot be empty.");
         }
 
-        return filterList;
+        return new Filter(name, value);
     }
 
 }

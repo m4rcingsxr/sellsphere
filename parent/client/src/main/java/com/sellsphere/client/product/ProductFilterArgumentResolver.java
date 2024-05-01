@@ -25,11 +25,20 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
         String keyword = webRequest.getParameter("keyword");
         String pageNumStr = webRequest.getParameter("pageNum");
 
+        // Set parameters
         params.setFilter(filter);
         params.setCategoryAlias(categoryAlias);
         params.setKeyword(keyword);
-        if (pageNumStr != null) {
-            params.setPageNum(Integer.parseInt(pageNumStr));
+
+        // Validate that pageNum is provided
+        if (pageNumStr == null) {
+            throw new IllegalArgumentException("pageNum must be provided");
+        }
+        params.setPageNum(Integer.parseInt(pageNumStr));
+
+        // Validate that either categoryAlias or keyword is provided
+        if ((categoryAlias == null || categoryAlias.isEmpty()) && (keyword == null || keyword.isEmpty())) {
+            throw new IllegalArgumentException("Either categoryAlias or keyword must be provided");
         }
 
         return params;

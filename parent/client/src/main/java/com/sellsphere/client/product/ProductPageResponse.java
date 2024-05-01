@@ -1,5 +1,6 @@
 package com.sellsphere.client.product;
 
+import com.sellsphere.common.entity.BasicProductDto;
 import com.sellsphere.common.entity.Product;
 import lombok.*;
 
@@ -12,8 +13,8 @@ public class ProductPageResponse {
 
     private int page;
     private int pageSize;
-    private int totalElements;
+    private long totalElements;
     private int totalPages;
-    private List<Product> content;
+    private List<BasicProductDto> content;
 
 }

@@ -1,5 +1,5 @@
-insert into sellsphere_dev.product_images (id, name, product_id)
-values  (9, '1_extra.jpg', 273),
-        (10, '2_extra.jpg', 273),
-        (11, '3_extra.jpg', 273),
-        (12, '4_extra.jpg', 273);
+insert into product_images (name, product_id)
+values ('1_extra.jpg', 1),
+       ('2_extra.jpg', 1),
+       ('3_extra.jpg', 1),
+       ('4_extra.jpg', 1);

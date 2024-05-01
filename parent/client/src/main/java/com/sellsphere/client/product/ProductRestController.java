@@ -14,15 +14,10 @@ public class ProductRestController {
 
     private final ProductService productService;
 
-    @GetMapping("/page")
+    @GetMapping
     public ResponseEntity<ProductPageResponse> pageFilteredProducts(
             @ProductFilter ProductPageRequest pageRequest
     ) {
-        if (pageRequest.getCategoryAlias() == null && pageRequest.getKeyword() == null) {
-            throw new IllegalArgumentException(
-                    "Category or Keyword query parameter is required to consume this endpoint.");
-        }
-
         ProductPageResponse page = productService.listProductsPage(pageRequest);
 
         return ResponseEntity.ok(page);
