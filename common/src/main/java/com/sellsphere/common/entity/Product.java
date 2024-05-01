@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -212,6 +213,16 @@ public class Product extends IdentifiedEntity {
     public String getMainImagePath() {
         return Constants.S3_BASE_URI + (id == null || mainImage == null ? "/default.png" :
                 "/product-photos/" + this.id + "/" + mainImage);
+    }
+
+    @Transient
+    public BigDecimal getDiscountPrice() {
+        if (discountPercent != null && discountPercent.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discountMultiplier = BigDecimal.valueOf(100).subtract(discountPercent).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            return price.multiply(discountMultiplier);
+        }
+
+        return this.price;
     }
 
     /**

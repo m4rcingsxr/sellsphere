@@ -34,5 +34,4 @@ public class ProductRestController {
         return ResponseEntity.ok(filterCountMap);
     }
 
-
 }

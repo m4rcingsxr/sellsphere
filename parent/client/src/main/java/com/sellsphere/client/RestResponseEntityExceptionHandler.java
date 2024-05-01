@@ -6,6 +6,7 @@ import com.sellsphere.common.entity.ErrorResponse;
 import com.sellsphere.common.entity.StateNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -28,9 +29,9 @@ public class RestResponseEntityExceptionHandler {
     }
 
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler({IllegalArgumentException.class, InvalidDataAccessApiUsageException.class})
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-            IllegalArgumentException e) {
+            Exception e) {
         log.error(e.getMessage(), e);
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),
                                                         HttpStatus.BAD_REQUEST.value()

@@ -1,14 +1,14 @@
 insert into product_details (name, detail_value, product_id)
 values ('Number of USB 2.0 Ports', '1', 1),
-       (' Standing screen display size', '‎15.6 Inches', 1),
-       ('Max Screen Resolution‎', '1920 x 1080 Pixels', 1),
-       ('Screen Resolution‎', '1920 x 1080 pixels', 1),
+       ('Standing screen display size', '15.6 Inches', 1),
+       ('Max Screen Resolution', '1920 x 1080 Pixels', 1),
+       ('Screen Resolution', '1920 x 1080 pixels', 1),
        ('Number of USB 3.0 Ports', '2', 1),
-       ('Hard Drive', '‎256 GB SSD', 1),
-       ('Memory Speed', '‎2666 MHz', 1),
+       ('Hard Drive', '256 GB SSD', 1),
+       ('Memory Speed', '2666 MHz', 1),
        ('Processor', '3.7 GHz ryzen_5_3550h', 1),
-       ('Graphics Card Ram Size', '‎4 GB', 1),
-       ('RAM', '‎8 GB DDR4', 1);
+       ('Graphics Card Ram Size', '4 GB', 1),
+       ('RAM', '8 GB DDR4', 1);
 
 
 insert into product_details (name, detail_value, product_id)

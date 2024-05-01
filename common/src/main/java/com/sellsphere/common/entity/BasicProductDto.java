@@ -35,17 +35,21 @@ public class BasicProductDto implements Serializable {
             integer = 4, fraction = 2)
     BigDecimal discountPercent;
 
+    BigDecimal discountPrice;
+
     String categoryName;
 
     String brandName;
 
     String mainImagePath;
 
+
     List<ProductDetailDto> details;
 
     public BasicProductDto(Product other) {
         this.id = other.getId();
         this.name = other.getName();
+        this.discountPrice = other.getDiscountPrice();
         this.alias = other.getAlias();
         this.inStock = other.isInStock();
         this.price = other.getPrice();

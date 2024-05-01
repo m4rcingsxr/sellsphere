@@ -28,6 +28,7 @@ class ProductRepositoryTest {
     void givenEmptyFiltersAndCategory_whenFindAll_thenReturnPagedProductsSortedByName() {
         // Given
         ProductPageRequest pageRequest = new ProductPageRequest(new String[]{}, "laptops", null, 0);
+        pageRequest.setCategoryId(1);
         Specification<Product> spec = ProductSpecification.filterProducts(pageRequest);
         Pageable pageable = PageRequest.of(0, 2, Sort.by("name").ascending());
 

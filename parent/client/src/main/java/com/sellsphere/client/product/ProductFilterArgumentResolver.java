@@ -1,5 +1,9 @@
 package com.sellsphere.client.product;
 
+import com.sellsphere.client.category.CategoryRepository;
+import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -10,6 +14,9 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public class ProductFilterArgumentResolver implements HandlerMethodArgumentResolver {
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.getParameterAnnotation(ProductFilter.class) != null;
@@ -17,7 +24,8 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
 
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory)
+            throws Exception {
         ProductPageRequest params = new ProductPageRequest();
 
         String[] filter = webRequest.getParameterValues("filter");
@@ -31,14 +39,19 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
         params.setKeyword(keyword);
 
         // Validate that pageNum is provided
-        if (pageNumStr == null) {
-            throw new IllegalArgumentException("pageNum must be provided");
+        if(pageNumStr != null) {
+            params.setPageNum(Integer.parseInt(pageNumStr));
         }
-        params.setPageNum(Integer.parseInt(pageNumStr));
 
         // Validate that either categoryAlias or keyword is provided
         if ((categoryAlias == null || categoryAlias.isEmpty()) && (keyword == null || keyword.isEmpty())) {
             throw new IllegalArgumentException("Either categoryAlias or keyword must be provided");
+        }
+
+        if (categoryAlias != null) {
+            Category category = categoryRepository.findByAliasAndEnabledIsTrue(
+                    categoryAlias).orElseThrow(CategoryNotFoundException::new);
+            params.setCategoryId(category.getId());
         }
 
         return params;

@@ -2,3 +2,82 @@
   max-width: 70px;
   object-fit: contain;
 }
+
+.form-check-label:hover {
+  cursor: pointer;
+}
+
+.product-carousel-card {
+  display: block;
+  transition: transform 0.3s ease-in-out; /* Smooth transition for the transform */
+  height: 350px;
+  position: relative;
+  overflow: hidden; /* Ensure overflow is hidden */
+}
+
+.product-carousel-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow on hover */
+  height: auto;
+}
+
+.product-carousel-card:hover .product-carousel-card-details {
+  display: block;
+}
+
+.product-carousel-card-details {
+  font-size: 10px;
+  display: none;
+}
+
+.product-carousel-img-container {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Hide any overflow */
+}
+
+.product-carousel-img-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Contain the image within the container */
+}
+
+.product-title {
+  white-space: nowrap; /* Prevents the text from wrapping to the next line */
+  overflow: hidden; /* Hides any text that overflows */
+  text-overflow: ellipsis; /* Adds the ellipsis (...) */
+  width: 100%; /* Ensures the title takes up the full width of the container */
+  display: block; /* Ensures the element behaves like a block element */
+}
+
+.product-carousel-card:hover .cart-icon {
+  background-color: rgb(220, 53, 69) !important;
+  color: white !important;
+}
+
+.heart-icon {
+  display: none;
+  padding-left: 0.5rem; /* Equivalent to px-2 */
+  padding-right: 0.5rem; /* Equivalent to px-2 */
+  margin: 0.5rem; /* Equivalent to m-2 */
+  background-color: rgb(245, 247, 250);
+  border-radius: 0.25rem; /* Equivalent to rounded-2 */
+}
+
+.product-carousel-card:hover .heart-icon {
+  display: block;
+}
+
+.cart-icon {
+  padding-left: 0.5rem; /* Equivalent to px-2 */
+  padding-right: 0.5rem; /* Equivalent to px-2 */
+  margin: 0.5rem; /* Equivalent to m-2 */
+  background-color: rgb(245, 247, 250);
+  border-radius: 0.25rem; /* Equivalent to rounded-2 */
+}
+
+.cart-icon-size {
+  font-size: 1.2rem;
+}

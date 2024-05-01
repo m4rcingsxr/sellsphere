@@ -31,7 +31,6 @@ public class ProductController {
     @GetMapping("/c/{category_alias}")
     public String viewProductsByCategory(
             @PathVariable(value = "category_alias") String alias,
-            @RequestParam("filters") String[] filters,
             Model model) {
         String pageTitle = "Products by category: ";
 
@@ -48,7 +47,6 @@ public class ProductController {
     @GetMapping("/p/search/{keyword}")
     public String viewProductsByKeyword(
             @PathVariable(value = "keyword") String keyword,
-            @RequestParam("filters") String[] filters,
             Model model
     ) {
         model.addAttribute("keyword", keyword);

@@ -26,13 +26,46 @@
 
 </header>
 
-<main class="content">
+<main class="content mt-4">
     <div class="container">
-        <div id="products" class="row"></div>
+        <div class="row">
+            <div class="col-sm-3 bg-body-tertiary rounded-3 p-4 d-flex flex-column gap-3" id="filters">
+
+            </div>
+            <div class="col-sm-9">
+                <div class="row g-5" id="products">
+
+                </div>
+
+            </div>
+        </div>
     </div>
 </main>
 
 
 <footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+<script type="text/javascript" th:src="@{/js/FormatPriceUtil.js}"></script>
+<script type="text/javascript" th:src="@{/js/filter_products.js}"></script>
+<script type="text/javascript">
+    const MODULE_URL = "[[@{/}]]";
+
+    const currencySymbolPosition = '[[${CURRENCY_SYMBOL_POSITION}]]';
+    const currencySymbol = '[[${CURRENCY_SYMBOL}]]';
+    const thousandsPointType = '[[${THOUSANDS_POINT_TYPE}]]';
+    const decimalDigits = '[[${DECIMAL_DIGITS}]]';
+    const decimalPointType = '[[${DECIMAL_POINT_TYPE}]]';
+
+
+    const CURRENCY_SETTINGS = {
+        currencySymbolPosition,
+        currencySymbol,
+        thousandsPointType,
+        decimalDigits,
+        decimalPointType
+    };
+</script>
 </body>
 </html>
