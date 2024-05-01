@@ -13,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,7 +47,7 @@ class ProductRestControllerTest {
 
         when(productService.listProductsPage(any(ProductPageRequest.class))).thenReturn(productPageResponse);
 
-        mockMvc.perform(get("/products/filter")
+        mockMvc.perform(get("/filter/products")
                                 .param("filter", "")
                                 .param("category_alias", "laptops")
                                 .param("pageNum", "0")
@@ -64,7 +66,7 @@ class ProductRestControllerTest {
     @Test
     void givenInvalidRequest_whenPageFilteredProducts_thenReturnsBadRequest() throws Exception {
 
-        mockMvc.perform(get("/products/filter")
+        mockMvc.perform(get("/filter/products")
                                 .param("filter", "")
                                 .param("category_alias", "")
                                 .param("pageNum", "0")
@@ -74,7 +76,7 @@ class ProductRestControllerTest {
 
     @Test
     void givenMissingPageNum_whenPageFilteredProducts_thenReturnsBadRequest() throws Exception {
-        mockMvc.perform(get("/products/filter")
+        mockMvc.perform(get("/filter/products")
                                 .param("filter", "")
                                 .param("category_alias", "laptops")
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -96,7 +98,7 @@ class ProductRestControllerTest {
 
         when(productService.listProductsPage(any(ProductPageRequest.class))).thenReturn(productPageResponse);
 
-        mockMvc.perform(get("/products/filter")
+        mockMvc.perform(get("/filter/products")
                                 .param("filter", "")
                                 .param("keyword", "Laptop")
                                 .param("pageNum", "0")
@@ -110,6 +112,34 @@ class ProductRestControllerTest {
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].categoryName").value("Laptops"))
                 .andExpect(jsonPath("$.content[0].brandName").value("Test Brand"));
+    }
+
+    @Test
+     void givenProductPageRequest_whenListFilterCounts_thenReturnFilterCounts() throws Exception {
+        Map<String, Map<String, Long>> filterCountMap = new HashMap<>();
+        Map<String, Long> colorCounts = new HashMap<>();
+        colorCounts.put("Red", 2L);
+        colorCounts.put("Blue", 1L);
+        Map<String, Long> sizeCounts = new HashMap<>();
+        sizeCounts.put("M", 2L);
+        sizeCounts.put("L", 1L);
+
+        filterCountMap.put("Color", colorCounts);
+        filterCountMap.put("Size", sizeCounts);
+
+        when(productService.getFilterCounts(any(ProductPageRequest.class)))
+                .thenReturn(filterCountMap);
+
+        mockMvc.perform(get("/filter/counts")
+                                .param("pageNum", "0")
+                                .param("filter", "A,B")
+                                .param("category_alias", "laptops")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.Color.Red").value(2))
+                .andExpect(jsonPath("$.Color.Blue").value(1))
+                .andExpect(jsonPath("$.Size.M").value(2))
+                .andExpect(jsonPath("$.Size.L").value(1));
     }
 
     private Product createTestProduct() {

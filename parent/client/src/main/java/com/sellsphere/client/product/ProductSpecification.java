@@ -51,6 +51,7 @@ public class ProductSpecification {
         };
     }
 
+
     private static List<Filter> parseProductFilters(String[] filters) {
         // 1) 1 value always indicate the name of filter
         // 2) 1 filter query param - filters = array of this one entry
