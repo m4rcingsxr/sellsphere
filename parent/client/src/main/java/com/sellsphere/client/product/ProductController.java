@@ -2,6 +2,7 @@ package com.sellsphere.client.product;
 
 import com.sellsphere.client.category.CategoryService;
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
@@ -31,7 +32,7 @@ public class ProductController {
     @GetMapping("/c/{category_alias}")
     public String viewProductsByCategory(
             @PathVariable(value = "category_alias") String alias,
-            Model model) {
+            Model model) throws CategoryNotFoundException {
         String pageTitle = "Products by category: ";
 
         Category category = categoryService.getCategoryByAlias(alias);

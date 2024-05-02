@@ -1,6 +1,7 @@
 package com.sellsphere.client.category;
 
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,7 +60,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    void givenAlias_whenGetCategoryByAlias_thenReturnCategory() {
+    void givenAlias_whenGetCategoryByAlias_thenReturnCategory() throws CategoryNotFoundException {
         // Given
         given(categoryRepository.findByAliasAndEnabledIsTrue("computers")).willReturn(Optional.of(computers));
 

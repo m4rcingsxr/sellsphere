@@ -1,6 +1,7 @@
 package com.sellsphere.client.category;
 
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +18,10 @@ public class CategoryService {
         return categoryRepository.findAllByParentIsNull();
     }
 
-    public Category getCategoryByAlias(String alias) {
+    public Category getCategoryByAlias(String alias) throws CategoryNotFoundException {
         return categoryRepository
                 .findByAliasAndEnabledIsTrue(alias)
-                .orElseThrow();
+                .orElseThrow(CategoryNotFoundException::new);
     }
 
     public Category getCategoryByName(String name) {

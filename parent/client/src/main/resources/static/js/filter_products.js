@@ -32,7 +32,7 @@ function init() {
     const filters = extractFiltersFromUrl(window.location.href);
     fetchAndHandleFilterCounts(null)
         .then(() => {
-            handleFilterChange(filters);
+            return handleFilterChange(filters);
         })
         .catch(error => showErrorModal(error.response))
         .finally(hideFullScreenSpinner);
@@ -55,11 +55,12 @@ function extractFiltersFromUrl(url) {
  * Initializes event listeners for filter changes.
  */
 function initListeners() {
-    $("#filters").on("click", ".filter", event => {
+    $("#filters, #allFilters").on("click", ".filter", event => {
         showFullScreenSpinner();
+        synchronizeSingleFilterState(event.target);
 
         try {
-            const filters = gatherSelectedFilters(event);
+            const filters = gatherProductSelectedFilters(event);
             handleFilterChange(filters)
                 .catch(error => showErrorModal(error.response))
                 .finally(hideFullScreenSpinner);
@@ -68,7 +69,37 @@ function initListeners() {
             hideFullScreenSpinner();
         }
     });
+
+    $("#showAllFilters").on("click", event => {
+        $("#products").toggleClass("d-none");
+        $("#allFilters").toggleClass("d-none");
+        $(".viewProducts").toggleClass("d-none");
+        $("#showAllFilters").toggleClass("d-none");
+    })
+
+    $(".viewProducts").on("click", event => {
+        $("#products").toggleClass("d-none");
+        $("#allFilters").toggleClass("d-none");
+        $(".viewProducts").toggleClass("d-none");
+        $("#showAllFilters").toggleClass("d-none");
+    })
 }
+
+/**
+ * Synchronizes the state of a single checkbox between #filters and #allFilters.
+ * @param {Element} target - The checkbox element that triggered the event.
+ */
+function synchronizeSingleFilterState(target) {
+    const value = target.value;
+    const isChecked = target.checked;
+    const containerToSync = target.closest('#filters') ? '#allFilters' : '#filters';
+
+    const matchingCheckbox = document.querySelector(`${containerToSync} .form-check-input[value="${value}"]`);
+    if (matchingCheckbox) {
+        matchingCheckbox.checked = isChecked;
+    }
+}
+
 
 /**
  * Handles filter changes by fetching products and updating the filter display.
@@ -78,7 +109,7 @@ function initListeners() {
 async function handleFilterChange(filters) {
     try {
         await fetchAndHandleProducts(filters, 0);
-        await updateFiltersDisplay(filters);
+        await updateFilterDisplay(filters);
         console.info("Successfully handled filter change");
     } catch (error) {
         throw error;
@@ -90,29 +121,41 @@ async function handleFilterChange(filters) {
  * @param {Array<string>} filters - The filters to apply.
  * @throws Will throw an error if fetching filter counts fails.
  */
-async function updateFiltersDisplay(filters) {
+async function updateFilterDisplay(filters) {
     try {
-
         const countMap = await fetchFilterCounts(filters);
-        const filterCheckboxes = document.querySelectorAll('#filters .form-check-input');
 
-        filterCheckboxes.forEach(checkbox => {
-            const filterName = checkbox.closest('.d-flex.flex-column.gap-1.mt-2').previousElementSibling.textContent.trim();
-            const filterValue = decodeURIComponent(checkbox.value).trim();
+        updateCheckboxesDisplay('#filters', filters, countMap);
+        updateCheckboxesDisplay('#allFilters', filters, countMap);
 
-            if (countMap[filterName]?.[filterValue] !== undefined) {
-                checkbox.disabled = false;
-                checkbox.nextElementSibling.innerHTML = `(${countMap[filterName][filterValue]}) ${filterValue}`;
-            } else {
-                checkbox.disabled = true;
-                checkbox.nextElementSibling.innerHTML = `(0) ${filterValue}`;
-            }
-
-            checkbox.checked = filters.includes(`${filterName},${filterValue}`);
-        });
     } catch (error) {
         throw error;
     }
+}
+
+/**
+ * Updates the display of checkboxes based on the filter counts.
+ * @param {string} containerSelector - The CSS selector for the container.
+ * @param {Array<string>} filters - The filters to apply.
+ * @param {Object} countMap - The map of filter counts.
+ */
+function updateCheckboxesDisplay(containerSelector, filters, countMap) {
+    const filterCheckboxes = document.querySelectorAll(`${containerSelector} .form-check-input`);
+
+    filterCheckboxes.forEach(checkbox => {
+        const filterName = checkbox.closest(containerSelector === '#filters' ? '.d-flex.flex-column.gap-1.mt-2' : '.row.g-3.mt-1').previousElementSibling.textContent.trim();
+        const filterValue = decodeURIComponent(checkbox.value).trim();
+
+        if (countMap[filterName]?.[filterValue] !== undefined) {
+            checkbox.disabled = false;
+            checkbox.nextElementSibling.innerHTML = `(${countMap[filterName][filterValue]}) ${filterValue}`;
+        } else {
+            checkbox.disabled = true;
+            checkbox.nextElementSibling.innerHTML = `(0) ${filterValue}`;
+        }
+
+        checkbox.checked = filters.includes(`${filterName},${filterValue}`);
+    });
 }
 
 /**
@@ -132,7 +175,7 @@ async function fetchAndHandleProducts(filters, pageNum) {
 }
 
 function formatFiltersToIncludeCommaValues(filters) {
-    if(filters != null) {
+    if (filters != null) {
         return filters.map(filter => {
             const [name, value] = filter.split(/,(.+)/); // Split only on the first comma
             const formattedValue = value.includes(',') ? `'${value}'` : value;
@@ -212,9 +255,9 @@ async function fetchProductsPage(filters, pageNum) {
  * @returns {Array<string>} - An array of selected filters.
  * @throws Will throw an error if multiple values are selected for a single filter.
  */
-function gatherSelectedFilters(event) {
-    const selectedFilters = [];
-    document.querySelectorAll('#filters > div > .d-flex.flex-column.gap-1.mt-2').forEach(group => {
+function gatherProductSelectedFilters(event) {
+    const selectedFiltersSet = new Set();
+    document.querySelectorAll('#filters > div > .d-flex.flex-column.gap-1.mt-2, #allFilters .row.g-3.mt-1').forEach(group => {
         const filterName = group.previousElementSibling.textContent.trim();
         const selectedCheckboxes = group.querySelectorAll('input.form-check-input:checked');
 
@@ -223,14 +266,13 @@ function gatherSelectedFilters(event) {
             throw new Error(`Multiple values selected for the filter: ${filterName}`);
         }
 
-
         selectedCheckboxes.forEach(checkbox => {
             let value = decodeURIComponent(checkbox.value).trim();
-
-            selectedFilters.push(`${filterName},${value}`)
-        })
+            selectedFiltersSet.add(`${filterName},${value}`);
+        });
     });
-    return selectedFilters;
+
+    return Array.from(selectedFiltersSet);
 }
 
 /**
@@ -242,7 +284,8 @@ async function fetchAndHandleFilterCounts(filters) {
         showFullScreenSpinner();
         const formattedFilters = formatFiltersToIncludeCommaValues(filters);
         const countMap = await fetchFilterCounts(formattedFilters)
-        renderFilters(countMap);
+        renderProductFilters(countMap);
+        renderAllFilters(countMap);
     } catch (error) {
         throw error;
     } finally {
@@ -255,10 +298,10 @@ async function fetchAndHandleFilterCounts(filters) {
  * Renders the filter options based on the fetched counts.
  * @param {Object} countMap - The map of filter counts.
  */
-function renderFilters(countMap) {
+function renderProductFilters(countMap) {
     let filtersHtml = '';
     for (const [name, values] of Object.entries(countMap)) {
-        filtersHtml += generateFilterHtml(name, values);
+        filtersHtml += generateProductFilterHtml(name, values);
     }
     document.getElementById('filters').innerHTML = filtersHtml;
 }
@@ -269,7 +312,7 @@ function renderFilters(countMap) {
  * @param {Object} values - The values and counts for the filter group.
  * @returns {string} - The HTML string for the filter group.
  */
-function generateFilterHtml(name, values) {
+function generateProductFilterHtml(name, values) {
     return `
         <div>
             <span class="fw-bolder">${name}</span>
@@ -283,6 +326,34 @@ function generateFilterHtml(name, values) {
             </div>
         </div>
     `;
+}
+
+function renderAllFilters(countMap) {
+    let filtersHtml = '';
+    for (const [name, values] of Object.entries(countMap)) {
+        filtersHtml += generateListGroupItemHtmlForAllFilters(name, values);
+    }
+    document.getElementById('allFilters').innerHTML = filtersHtml;
+}
+
+function generateListGroupItemHtmlForAllFilters(name, values) {
+    return `
+        <li class="list-group-item p-4">
+            <span class="fw-bolder">${name}</span>
+            <div class="row g-3 mt-1">
+                ${Object.entries(values).map(([value, count]) => `
+                    <div class="col-sm-4">
+                        <div class="form-check">
+                            <input class="form-check-input filter" type="checkbox" value="${encodeURIComponent(value)}" id="${value}">
+                            <label class="form-check-label" for="flexCheckDefault">
+                                (${count}) ${value} 
+                            </label>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </li>
+    `
 }
 
 /**
@@ -323,3 +394,4 @@ function buildPageRequestUrl(baseUrl, filters, pageNum) {
 
     return `${baseUrl}?${params.toString()}`;
 }
+
