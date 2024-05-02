@@ -69,7 +69,9 @@ public class ProductSpecification {
     }
 
     private static Filter parseFilter(String csvFilter) {
-        String[] filters = csvFilter.split(",");
+
+        // allow filter values to have commas when they are surrounded with single quote
+        String[] filters = CSVParser.parseCSV(csvFilter);
 
         // Validate if each entry contains at least 2 values
         if (filters.length != 2) {

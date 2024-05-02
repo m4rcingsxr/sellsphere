@@ -92,12 +92,13 @@ async function handleFilterChange(filters) {
  */
 async function updateFiltersDisplay(filters) {
     try {
+
         const countMap = await fetchFilterCounts(filters);
         const filterCheckboxes = document.querySelectorAll('#filters .form-check-input');
 
         filterCheckboxes.forEach(checkbox => {
             const filterName = checkbox.closest('.d-flex.flex-column.gap-1.mt-2').previousElementSibling.textContent.trim();
-            const filterValue = checkbox.value.trim();
+            const filterValue = decodeURIComponent(checkbox.value).trim();
 
             if (countMap[filterName]?.[filterValue] !== undefined) {
                 checkbox.disabled = false;
@@ -122,10 +123,23 @@ async function updateFiltersDisplay(filters) {
  */
 async function fetchAndHandleProducts(filters, pageNum) {
     try {
-        const productsPage = await fetchProductsPage(filters, pageNum);
+        const formattedFilters = formatFiltersToIncludeCommaValues(filters);
+        const productsPage = await fetchProductsPage(formattedFilters, pageNum);
         renderProducts(productsPage);
     } catch (error) {
         throw error;
+    }
+}
+
+function formatFiltersToIncludeCommaValues(filters) {
+    if(filters != null) {
+        return filters.map(filter => {
+            const [name, value] = filter.split(/,(.+)/); // Split only on the first comma
+            const formattedValue = value.includes(',') ? `'${value}'` : value;
+            return `${name},${formattedValue}`;
+        });
+    } else {
+        return filters;
     }
 }
 
@@ -209,7 +223,12 @@ function gatherSelectedFilters(event) {
             throw new Error(`Multiple values selected for the filter: ${filterName}`);
         }
 
-        selectedCheckboxes.forEach(checkbox => selectedFilters.push(`${filterName},${checkbox.value.trim()}`));
+
+        selectedCheckboxes.forEach(checkbox => {
+            let value = decodeURIComponent(checkbox.value).trim();
+
+            selectedFilters.push(`${filterName},${value}`)
+        })
     });
     return selectedFilters;
 }
@@ -221,7 +240,8 @@ function gatherSelectedFilters(event) {
 async function fetchAndHandleFilterCounts(filters) {
     try {
         showFullScreenSpinner();
-        const countMap = await fetchFilterCounts(filters)
+        const formattedFilters = formatFiltersToIncludeCommaValues(filters);
+        const countMap = await fetchFilterCounts(formattedFilters)
         renderFilters(countMap);
     } catch (error) {
         throw error;
@@ -256,7 +276,7 @@ function generateFilterHtml(name, values) {
             <div class="d-flex flex-column gap-1 mt-2">
                 ${Object.entries(values).map(([value, count]) => `
                     <div class="form-check">
-                        <input class="form-check-input filter" type="checkbox" value="${value}" id="${value}">
+                        <input class="form-check-input filter" type="checkbox" value="${encodeURIComponent(value)}" id="${value}">
                         <label class="form-check-label" for="${value}">(${count}) ${value}</label>
                     </div>
                 `).join('')}

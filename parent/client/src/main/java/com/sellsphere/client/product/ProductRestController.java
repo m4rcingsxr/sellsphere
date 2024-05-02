@@ -9,12 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 
+// filter=name,'value, description with commas'
+// filter=name1,value1&filter=name2,value2
 @RestController
 @RequestMapping("/filter")
 @RequiredArgsConstructor
 public class ProductRestController {
 
     private final ProductService productService;
+
 
     @GetMapping("/products")
     public ResponseEntity<ProductPageResponse> pageFilteredProducts(

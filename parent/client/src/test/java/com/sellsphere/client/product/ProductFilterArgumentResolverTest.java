@@ -1,22 +1,28 @@
 package com.sellsphere.client.product;
 
+import com.sellsphere.client.category.CategoryRepository;
+import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.CategoryNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
+import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.bind.support.WebDataBinderFactory;
-import org.springframework.core.MethodParameter;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class ProductFilterArgumentResolverTest {
 
     private ProductFilterArgumentResolver resolver;
+
+    @Mock
+    private CategoryRepository categoryRepository;
 
     @Mock
     private NativeWebRequest webRequest;
@@ -27,65 +33,69 @@ class ProductFilterArgumentResolverTest {
     @Mock
     private ModelAndViewContainer mavContainer;
 
-    @Mock
-    private WebDataBinderFactory binderFactory;
-
     @BeforeEach
     void setUp() {
-        resolver = new ProductFilterArgumentResolver();
+        MockitoAnnotations.openMocks(this);
+        resolver = new ProductFilterArgumentResolver(categoryRepository);
     }
 
     @Test
-    void givenProductFilterAnnotation_whenSupportsParameter_thenReturnsTrue() {
-        when(methodParameter.getParameterAnnotation(ProductFilter.class)).thenReturn(mock(ProductFilter.class));
-        assertTrue(resolver.supportsParameter(methodParameter));
+    void testResolveArgument_WithValidCategoryAlias() throws Exception {
+        when(webRequest.getParameter("category_alias")).thenReturn("electronics");
+        when(webRequest.getParameter("keyword")).thenReturn(null);
+        when(webRequest.getParameterValues("filter")).thenReturn(new String[]{"new", "popular"});
+        when(webRequest.getParameter("pageNum")).thenReturn("1");
+
+        Category category = new Category();
+        category.setId(1);
+        when(categoryRepository.findByAliasAndEnabledIsTrue("electronics")).thenReturn(Optional.of(category));
+
+        ProductPageRequest result = (ProductPageRequest) resolver.resolveArgument(methodParameter, mavContainer, webRequest, null);
+
+        assertNotNull(result);
+        assertArrayEquals(new String[]{"new", "popular"}, result.getFilter());
+        assertEquals("electronics", result.getCategoryAlias());
+        assertNull(result.getKeyword());
+        assertEquals(1, result.getPageNum());
+        assertEquals(1, result.getCategoryId());
     }
 
     @Test
-    void givenNoProductFilterAnnotation_whenSupportsParameter_thenReturnsFalse() {
-        when(methodParameter.getParameterAnnotation(ProductFilter.class)).thenReturn(null);
-        assertFalse(resolver.supportsParameter(methodParameter));
+    void testResolveArgument_WithValidKeyword() throws Exception {
+        when(webRequest.getParameter("category_alias")).thenReturn(null);
+        when(webRequest.getParameter("keyword")).thenReturn("laptop");
+        when(webRequest.getParameterValues("filter")).thenReturn(new String[]{"discounted"});
+        when(webRequest.getParameter("pageNum")).thenReturn("2");
+
+        ProductPageRequest result = (ProductPageRequest) resolver.resolveArgument(methodParameter, mavContainer, webRequest, null);
+
+        assertNotNull(result);
+        assertArrayEquals(new String[]{"discounted"}, result.getFilter());
+        assertNull(result.getCategoryAlias());
+        assertEquals("laptop", result.getKeyword());
+        assertEquals(2, result.getPageNum());
+        assertNull(result.getCategoryId());
     }
 
     @Test
-    void givenMissingCategoryAliasAndKeyword_whenResolveArgument_thenThrowsException() {
+    void testResolveArgument_MissingCategoryAliasAndKeyword() {
         when(webRequest.getParameter("category_alias")).thenReturn(null);
         when(webRequest.getParameter("keyword")).thenReturn(null);
-        when(webRequest.getParameter("pageNum")).thenReturn("1");
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            resolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
+        assertThrows(IllegalArgumentException.class, () -> {
+            resolver.resolveArgument(methodParameter, mavContainer, webRequest, null);
         });
-
-        assertEquals("Either categoryAlias or keyword must be provided", exception.getMessage());
     }
 
     @Test
-    void givenMissingPageNum_whenResolveArgument_thenThrowsException() {
-        when(webRequest.getParameter("category_alias")).thenReturn("someAlias");
+    void testResolveArgument_CategoryNotFound() {
+        when(webRequest.getParameter("category_alias")).thenReturn("nonexistent");
         when(webRequest.getParameter("keyword")).thenReturn(null);
-        when(webRequest.getParameter("pageNum")).thenReturn(null);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            resolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
+        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(CategoryNotFoundException.class, () -> {
+            resolver.resolveArgument(methodParameter, mavContainer, webRequest, null);
         });
-
-        assertEquals("pageNum must be provided", exception.getMessage());
-    }
-
-    @Test
-    void givenValidParameters_whenResolveArgument_thenReturnsProductPageRequest() throws Exception {
-        when(webRequest.getParameterValues("filter")).thenReturn(new String[] {"RAM,16gb", "Processor,intel i7"});
-        when(webRequest.getParameter("category_alias")).thenReturn("someAlias");
-        when(webRequest.getParameter("keyword")).thenReturn("someKeyword");
-        when(webRequest.getParameter("pageNum")).thenReturn("1");
-
-        ProductPageRequest params = (ProductPageRequest) resolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
-
-        assertNotNull(params);
-        assertArrayEquals(new String[] {"RAM,16gb", "Processor,intel i7"}, params.getFilter());
-        assertEquals("someAlias", params.getCategoryAlias());
-        assertEquals("someKeyword", params.getKeyword());
-        assertEquals(1, params.getPageNum());
     }
 }

@@ -200,7 +200,7 @@ public class Product extends IdentifiedEntity {
      * These details provide specific information about the product's features.
      */
     @OrderBy("name asc")
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.ALL}, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProductDetail> details = new ArrayList<>();
 
     /**

@@ -14,8 +14,12 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public class ProductFilterArgumentResolver implements HandlerMethodArgumentResolver {
 
+    private final CategoryRepository categoryRepository;
+
     @Autowired
-    private CategoryRepository categoryRepository;
+    public ProductFilterArgumentResolver(CategoryRepository categoryRepository) {
+        this.categoryRepository = categoryRepository;
+    }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {

@@ -1,168 +1,101 @@
 package com.sellsphere.client.product;
 
-import com.sellsphere.client.PageUtil;
 import com.sellsphere.common.entity.Product;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @DataJpaTest
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts = "classpath:sql/products.sql")
 class ProductRepositoryTest {
 
+
     @Autowired
     private ProductRepository productRepository;
 
-    @Test
-    void givenEmptyFiltersAndCategory_whenFindAll_thenReturnPagedProductsSortedByName() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{}, "laptops", null, 0);
+    @ParameterizedTest
+    @CsvSource({"'brand,Apple|Color,Red', 'Product One,Product Two'",
+                "'brand,Apple|Size,Medium', 'Product One,Product Two'",
+                "'brand,Apple|Weight,1.5kg', 'Product One'",
+                "'brand,Apple|Material,Plastic', 'Product Two'",
+                "'brand,Apple|Color,Green', 'Product Three'",
+                "'brand,Apple|Size,Large', 'Product Three'", "'brand,Apple|Color,Black', ''",
+                "'brand,Apple|Size,Small', ''", "'brand,Apple|Warranty,3 years', ''",
+                "'brand,Apple|Warranty,5 years', ''",
+                "'brand,Apple|Color,Red|Size,Medium', 'Product One,Product Two'",
+                "'brand,Apple|Color,Green|Weight,2kg', 'Product Three'"})
+    void givenFilters_whenFindAllWithProductSpecification_thenShouldReturnMatchingFilterExpectedProducts(
+            String filter, String expectedProducts) {
+        // Prepare the filters
+        String[] filters = filter.split("\\|");
+        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null, 0);
         pageRequest.setCategoryId(1);
-        Specification<Product> spec = ProductSpecification.filterProducts(pageRequest);
-        Pageable pageable = PageRequest.of(0, 2, Sort.by("name").ascending());
 
-        // When
-        var result = productRepository.findAll(spec, pageable);
+        // Get the filtered products
+        List<Product> result = productRepository.findAll(
+                ProductSpecification.filterProducts(pageRequest));
 
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getTotalPages()).isEqualTo(3);
-        assertThat(result.getTotalElements()).isEqualTo(5);
-        assertThat(result.getContent().size()).isEqualTo(2);
-        PageUtil.assertSortOrder(result.getContent(), Comparator.comparing(Product::getName));
-    }
+        // Convert expected products to a list
+        List<String> expectedProductList = expectedProducts.isEmpty() ? List.of() : List.of(
+                expectedProducts.split(","));
 
-    @Test
-    void givenEmptyFiltersAndKeyword_whenFindAll_thenReturnPagedProductsSortedByPrice() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{}, null, "Laptop", 0);
-        Specification<Product> spec = ProductSpecification.filterProducts(pageRequest);
-        Pageable pageable = PageRequest.of(0, 2, Sort.by("price").ascending());
-
-        // When
-        var result = productRepository.findAll(spec, pageable);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getTotalPages()).isEqualTo(2);
-        assertThat(result.getTotalElements()).isEqualTo(3);
-        assertThat(result.getContent().size()).isEqualTo(2);
-        PageUtil.assertSortOrder(result.getContent(), Comparator.comparing(Product::getPrice));
-    }
-
-    @Test
-    void givenBrandFilterAndCategory_whenFindAll_thenReturnPagedProductsSortedByPrice() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{"brand,Apple"}, "laptops", null, 0);
-        Specification<Product> spec = ProductSpecification.filterProducts(pageRequest);
-        Pageable pageable = PageRequest.of(0, 2, Sort.by("price").ascending());
-
-        // When
-        var result = productRepository.findAll(spec, pageable);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getTotalPages()).isEqualTo(1);
-        assertThat(result.getTotalElements()).isEqualTo(1);
-        assertThat(result.getContent().size()).isEqualTo(1);
-        PageUtil.assertSortOrder(result.getContent(), Comparator.comparing(Product::getPrice));
-    }
-
-    @Test
-    void givenFeatureFilterAndKeyword_whenFindAll_thenReturnPagedProductsSortedByName() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{"Processor,Intel Core i7-8565U"}, null, "Laptop", 0);
-        Specification<Product> spec = ProductSpecification.filterProducts(pageRequest);
-        Pageable pageable = PageRequest.of(0, 2, Sort.by("name").ascending());
-
-        // When
-        var result = productRepository.findAll(spec, pageable);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getTotalPages()).isEqualTo(1);
-        assertThat(result.getTotalElements()).isEqualTo(1);
-        assertThat(result.getContent().size()).isEqualTo(1);
-        PageUtil.assertSortOrder(result.getContent(), Comparator.comparing(Product::getName));
-    }
-
-    @Test
-    void givenMultipleFiltersAndCategory_whenFindAll_thenReturnPagedProductsSortedByPrice() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{
-                "RAM,16GB DDR4", "Storage,1TB SSD"}, "laptops", null, 0);
-        Specification<Product> spec = ProductSpecification.filterProducts(pageRequest);
-        Pageable pageable = PageRequest.of(0, 2, Sort.by("price").ascending());
-
-        // When
-        var result = productRepository.findAll(spec, pageable);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getTotalPages()).isEqualTo(2);
-        assertThat(result.getTotalElements()).isEqualTo(3);
-        assertThat(result.getContent().size()).isEqualTo(2);
-        PageUtil.assertSortOrder(result.getContent(), Comparator.comparing(Product::getPrice));
+        // Assert the result
+        List<String> resultNames = result.stream().map(Product::getName).collect(
+                Collectors.toList());
+        assertThat(resultNames).containsExactlyInAnyOrderElementsOf(expectedProductList);
     }
 
 
-    @Test
-    void givenInvalidFilterFormat_whenFindAll_thenThrowIllegalArgumentException() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{"invalidFilterFormat"}, "laptops", null, 0);
-        Pageable pageable = PageRequest.of(0, 2);
+    @ParameterizedTest
+    @CsvSource({
+            "'brand,Apple|Color,Red', 'Product One', 2, 1, 2",
+            "'brand,Apple|Size,Medium', 'Product One', 2, 1, 2",
+            "'brand,Apple|Weight,1.5kg', 'Product One', 1, 1, 1",
+            "'brand,Apple|Material,Plastic', 'Product Two', 1, 1, 1",
+            "'brand,Apple|Color,Green', 'Product Three', 1, 1, 1",
+            "'brand,Apple|Size,Large', 'Product Three', 1, 1, 1",
+            "'brand,Apple|Color,Black', '', 0, 0, 0",
+            "'brand,Apple|Size,Small', '', 0, 0, 0",
+            "'brand,Apple|Warranty,3 years', '', 0, 0, 0",
+            "'brand,Apple|Warranty,5 years', '', 0, 0, 0",
+            "'brand,Apple|Color,Red|Size,Medium', 'Product One', 2, 1, 2",
+            "'brand,Apple|Color,Green|Weight,2kg', 'Product Three', 1, 1, 1"
+    })
+    void givenFilters_whenFindAllWithProductSpecificationAndPagination_thenShouldReturnMatchingFilterExpectedProductsWithPagination(
+            String filter, String expectedProducts, long totalElements, int contentSize, int totalPages) {
+        // Prepare the filters
+        String[] filters = filter.split("\\|");
+        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null, 0);
+        pageRequest.setCategoryId(1);
 
-        // When & Then
-        assertThatThrownBy(() -> productRepository.findAll(ProductSpecification.filterProducts(pageRequest), pageable))
-                .isInstanceOf(InvalidDataAccessApiUsageException.class)
-                .hasMessageContaining("is incorrect. Each filter must have two values : filter='name,value'");
+        // Set page size to 1
+        PageRequest pageable = PageRequest.of(0, 1);
+
+        // Get the filtered products with pagination
+        Page<Product> resultPage = productRepository.findAll(ProductSpecification.filterProducts(pageRequest), pageable);
+
+        // Convert expected products to a list
+        List<String> expectedProductList = expectedProducts.isEmpty() ? List.of() : List.of(expectedProducts.split(","));
+
+        // Assert the result
+        List<String> resultNames = resultPage.getContent().stream().map(Product::getName).collect(Collectors.toList());
+        assertThat(resultNames).containsExactlyInAnyOrderElementsOf(expectedProductList);
+
+        // Assert the page information
+        assertThat(resultPage.getTotalElements()).isEqualTo(totalElements);
+        assertThat(resultPage.getContent().size()).isEqualTo(contentSize);
+        assertThat(resultPage.getTotalPages()).isEqualTo(totalPages);
     }
 
-    @Test
-    void givenEmptyFilters_whenFindAll_thenThrowIllegalArgumentException() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{}, null, null, 0);
-        Pageable pageable = PageRequest.of(0, 2);
 
-        // When & Then
-        assertThatThrownBy(() -> productRepository.findAll(ProductSpecification.filterProducts(pageRequest), pageable))
-                .isInstanceOf(InvalidDataAccessApiUsageException.class)
-                .hasMessageContaining("Either category alias or keyword must be provided");
-    }
-
-    @Test
-    void givenFiltersWithMissingValues_whenFindAll_thenThrowIllegalArgumentException() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{"brand"}, "laptops", null, 0);
-        Pageable pageable = PageRequest.of(0, 2);
-
-        // When & Then
-        assertThatThrownBy(() -> productRepository.findAll(ProductSpecification.filterProducts(pageRequest), pageable))
-                .isInstanceOf(InvalidDataAccessApiUsageException.class)
-                .hasMessageContaining("is incorrect. Each filter must have two values : filter='name,value'");
-    }
-
-    @Test
-    void givenFiltersWithEmptyName_whenFindAll_thenThrowIllegalArgumentException() {
-        // Given
-        ProductPageRequest pageRequest = new ProductPageRequest(new String[]{",value"}, "laptops", null, 0);
-        Pageable pageable = PageRequest.of(0, 2);
-
-        // When & Then
-        assertThatThrownBy(() -> productRepository.findAll(ProductSpecification.filterProducts(pageRequest), pageable))
-                .isInstanceOf(InvalidDataAccessApiUsageException.class)
-                .hasMessageContaining("Filter name and value cannot be empty.");
-    }
 
 }

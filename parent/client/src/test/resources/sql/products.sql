@@ -1,94 +1,81 @@
-INSERT INTO categories (ID, NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
+-- Root Category (lvl 0)
+INSERT INTO categories (id, NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
 VALUES (1, 'Laptops', 'laptops', 'laptops.png', 1, NULL, NULL);
 
+-- Categories under 'Laptops' (lvl 1)
+INSERT INTO categories (id, NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
+VALUES (2, 'Laptops and Tablets', 'laptops and tablets', 'laptop_and_tablets.png', 1, 1, '-1-'),
+       (3, 'Laptop Accessories', 'laptop accessories', 'laptop_accessories.png', 1, 1, '-1-'),
+       (4, 'Laptop Components', 'laptop components', 'laptop_components.png', 1, 1, '-1-'),
+       (5, 'Tablet Accessories', 'tablet accessories', 'tablet_accessories.png', 1, 1, '-1-');
 
-INSERT INTO brands (id, name, logo) VALUES (1, 'Apple', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (2, 'Samsung', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (3, 'Sony', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (4, 'LG', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (5, 'Panasonic', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (6, 'Microsoft', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (7, 'Dell', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (8, 'HP', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (9, 'Lenovo', 'logo.jpg');
-INSERT INTO brands (id, name, logo) VALUES (10, 'Asus', 'logo.jpg');
+INSERT INTO brands (id, name, logo)
+VALUES (1, 'Apple', 'logo.jpg'),
+       (2, 'Samsung', 'logo.jpg');
 
-INSERT INTO products (id, name, alias, short_description, full_description, created_time, enabled, in_stock, cost, price, discount_percent, length, width, height, weight, main_image, category_id, brand_id)
-VALUES (2, 'Dell XPS 13 9380 Laptop, 13.3" 4K UHD Touchscreen, Intel Core i7-8565U, 16GB RAM, 512GB SSD, Windows 10', 'Dell_XPS_13_9380_Laptop', '13.3" 4K UHD Touchscreen, Intel Core i7-8565U, 16GB RAM, 512GB SSD', 'A detailed description of Dell XPS 13 9380', CURRENT_TIMESTAMP, 1, 1, 1200.00, 1300.00, 5.00, 11.98, 7.88, 0.46, 2.70, 'dell_xps_13.jpg', 1, 7);
-
-INSERT INTO products (id, name, alias, short_description, full_description, created_time, enabled, in_stock, cost, price, discount_percent, length, width, height, weight, main_image, category_id, brand_id)
-VALUES (3, 'HP Spectre x360 15t 2-in-1 Laptop, 15.6" 4K UHD Touchscreen, Intel Core i7-9750H, 16GB RAM, 1TB SSD, Windows 10', 'HP_Spectre_x360_15t', '15.6" 4K UHD Touchscreen, Intel Core i7-9750H, 16GB RAM, 1TB SSD', 'A detailed description of HP Spectre x360 15t', CURRENT_TIMESTAMP, 1, 1, 1400.00, 1500.00, 5.00, 14.17, 9.84, 0.79, 4.62, 'hp_spectre_x360.jpg', 1, 8);
-
-INSERT INTO products (id, name, alias, short_description, full_description, created_time, enabled, in_stock, cost, price, discount_percent, length, width, height, weight, main_image, category_id, brand_id)
-VALUES (4, 'Lenovo ThinkPad X1 Carbon, 14" FHD Display, Intel Core i7-10510U, 16GB RAM, 1TB SSD, Windows 10 Pro', 'Lenovo_ThinkPad_X1_Carbon', '14" FHD Display, Intel Core i7-10510U, 16GB RAM, 1TB SSD', 'A detailed description of Lenovo ThinkPad X1 Carbon', CURRENT_TIMESTAMP, 1, 1, 1300.00, 1400.00, 5.00, 12.74, 8.55, 0.59, 2.40, 'lenovo_x1_carbon.jpg', 1, 9);
-
-INSERT INTO products (id, name, alias, short_description, full_description, created_time, enabled, in_stock, cost, price, discount_percent, length, width, height, weight, main_image, category_id, brand_id)
-VALUES (5, 'Apple MacBook Pro 16", Intel Core i9, 16GB RAM, 1TB SSD, Radeon Pro 5500M, macOS', 'Apple_MacBook_Pro_16', '16" Retina Display, Intel Core i9, 16GB RAM, 1TB SSD', 'A detailed description of Apple MacBook Pro 16"', CURRENT_TIMESTAMP, 1, 1, 2000.00, 2200.00, 10.00, 14.09, 9.68, 0.64, 4.30, 'macbook_pro_16.jpg', 1, 1);
-
-INSERT INTO products (id, name, alias, short_description, full_description, created_time, enabled, in_stock, cost, price, discount_percent, length, width, height, weight, main_image, category_id, brand_id)
-VALUES (6, 'Microsoft Surface Laptop 3, 15" Touch-Screen, AMD Ryzen 7, 16GB RAM, 512GB SSD, Windows 10', 'Microsoft_Surface_Laptop_3', '15" Touch-Screen, AMD Ryzen 7, 16GB RAM, 512GB SSD', 'A detailed description of Microsoft Surface Laptop 3', CURRENT_TIMESTAMP, 1, 1, 1100.00, 1200.00, 5.00, 13.4, 9.6, 0.57, 3.40, 'surface_laptop_3.jpg', 1, 6);
-
-INSERT INTO product_details (id, name, detail_value, product_id)
-VALUES
-    (11, 'Processor', 'Intel Core i7-8565U', 2),
-    (12, 'RAM', '16GB DDR4', 2),
-    (13, 'Storage', '512GB SSD', 2),
-    (14, 'Display', '13.3" 4K UHD Touchscreen', 2),
-    (15, 'Battery Life', '10 hours', 2),
-    (16, 'Weight', '2.7 lbs', 2),
-    (17, 'Operating System', 'Windows 10', 2),
-    (18, 'USB Ports', '2 x USB-C', 2),
-    (19, 'Graphics', 'Intel UHD Graphics 620', 2),
-    (20, 'Webcam', '720p HD', 2);
+INSERT INTO products (id, name, alias, short_description, full_description, created_time, enabled, in_stock, cost,
+                      price, discount_percent, length, width, height, weight, main_image, category_id, brand_id)
+VALUES (1, 'Product One', 'product-one', 'Short description of Product One', 'Detailed description of Product One',
+        '2024-07-03 10:00:00', true, true, 10.00, 15.00, 10.00, 10.00, 5.00, 1.50, 0.50, 'product_one.png', 5, 1),
+       (2, 'Product Two', 'product-two', 'Short description of Product Two', 'Detailed description of Product Two',
+        '2024-07-03 10:00:00', true, true, 20.00, 30.00, 5.00, 15.00, 7.50, 2.00, 0.75, 'product_two.png', 2, 1),
+       (3, 'Product Three', 'product-three', 'Short description of Product Three',
+        'Detailed description of Product Three', '2024-07-03 10:00:00', true, true, 30.00, 45.00, 15.00, 20.00, 10.00,
+        2.50, 1.00, 'product_three.png', 2, 1),
+       (4, 'Product Four', 'product-four', 'Short description of Product Four', 'Detailed description of Product Four',
+        '2024-07-03 10:00:00', true, true, 40.00, 60.00, 20.00, 25.00, 12.50, 3.00, 1.25, 'product_four.png', 3, 2),
+       (5, 'Product Five', 'product-five', 'Short description of Product Five', 'Detailed description of Product Five',
+        '2024-07-03 10:00:00', true, true, 50.00, 75.00, 25.00, 30.00, 15.00, 3.50, 1.50, 'product_five.png', 4, 2),
+       (6, 'Product Six', 'product-six', 'Short description of Product Six', 'Detailed description of Product Six',
+        '2024-07-03 10:00:00', true, true, 60.00, 90.00, 30.00, 35.00, 17.50, 4.00, 1.75, 'product_six.png', 5, 2),
+       (7, 'Product Seven', 'product-seven', 'Short description of Product Seven',
+        'Detailed description of Product Seven', '2024-07-03 10:00:00', true, true, 70.00, 105.00, 35.00, 40.00, 20.00,
+        4.50, 2.00, 'product_seven.png', 2, 1),
+       (8, 'Product Eight', 'product-eight', 'Short description of Product Eight',
+        'Detailed description of Product Eight', '2024-07-03 10:00:00', true, true, 80.00, 120.00, 40.00, 45.00, 22.50,
+        5.00, 2.25, 'product_eight.png', 1, 2),
+       (9, 'Product Nine', 'product-nine', 'Short description of Product Nine', 'Detailed description of Product Nine',
+        '2024-07-03 10:00:00', true, true, 90.00, 135.00, 45.00, 50.00, 25.00, 5.50, 2.50, 'product_nine.png', 3, 2),
+       (10, 'Product Ten', 'product-ten', 'Short description of Product Ten', 'Detailed description of Product Ten',
+        '2024-07-03 10:00:00', true, true, 100.00, 150.00, 50.00, 55.00, 27.50, 6.00, 2.75, 'product_ten.png', 4, 2);
 
 INSERT INTO product_details (id, name, detail_value, product_id)
-VALUES
-    (21, 'Processor', 'Intel Core i7-9750H', 3),
-    (22, 'RAM', '16GB DDR4', 3),
-    (23, 'Storage', '1TB SSD', 3),
-    (24, 'Display', '15.6" 4K UHD Touchscreen', 3),
-    (25, 'Battery Life', '12 hours', 3),
-    (26, 'Weight', '4.62 lbs', 3),
-    (27, 'Operating System', 'Windows 10', 3),
-    (28, 'USB Ports', '2 x USB-C, 1 x USB-A', 3),
-    (29, 'Graphics', 'NVIDIA GeForce GTX 1650', 3),
-    (30, 'Webcam', '1080p FHD', 3);
+VALUES (1, 'Color', 'Red', 1),
+       (2, 'Size', 'Medium', 1),
+       (3, 'Weight', '1.5kg', 1),
 
-INSERT INTO product_details (id, name, detail_value, product_id)
-VALUES
-    (31, 'Processor', 'Intel Core i7-10510U', 4),
-    (32, 'RAM', '16GB DDR4', 4),
-    (33, 'Storage', '1TB SSD', 4),
-    (34, 'Display', '14" FHD', 4),
-    (35, 'Battery Life', '15 hours', 4),
-    (36, 'Weight', '2.40 lbs', 4),
-    (37, 'Operating System', 'Windows 10 Pro', 4),
-    (38, 'USB Ports', '2 x USB-C, 2 x USB-A', 4),
-    (39, 'Graphics', 'Intel UHD Graphics', 4),
-    (40, 'Webcam', '720p HD', 4);
+       (4, 'Color', 'Red', 2),
+       (5, 'Material', 'Plastic', 2),
+       (6, 'Size', 'Medium', 2),
 
-INSERT INTO product_details (id, name, detail_value, product_id)
-VALUES
-    (41, 'Processor', 'Intel Core i9', 5),
-    (42, 'RAM', '16GB DDR4', 5),
-    (43, 'Storage', '1TB SSD', 5),
-    (44, 'Display', '16" Retina', 5),
-    (45, 'Battery Life', '11 hours', 5),
-    (46, 'Weight', '4.30 lbs', 5),
-    (47, 'Operating System', 'macOS', 5),
-    (48, 'USB Ports', '4 x USB-C', 5),
-    (49, 'Graphics', 'Radeon Pro 5500M', 5),
-    (50, 'Webcam', '720p HD', 5);
+       (7, 'Color', 'Green', 3),
+       (8, 'Size', 'Large', 3),
+       (9, 'Weight', '2kg', 3),
 
-INSERT INTO product_details (id, name, detail_value, product_id)
-VALUES
-    (51, 'Processor', 'AMD Ryzen 7', 6),
-    (52, 'RAM', '16GB DDR4', 6),
-    (53, 'Storage', '512GB SSD', 6),
-    (54, 'Display', '15" Touch-Screen', 6),
-    (55, 'Battery Life', '11.5 hours', 6),
-    (56, 'Weight', '3.40 lbs', 6),
-    (57, 'Operating System', 'Windows 10', 6),
-    (58, 'USB Ports', '1 x USB-C, 1 x USB-A', 6),
-    (59, 'Graphics', 'Radeon Vega 11', 6),
-    (60, 'Webcam', '720p HD', 6);
+       (10, 'Color', 'Red', 4),
+       (11, 'Material', 'Metal', 4),
+       (12, 'Weight', '1.5kg', 4),
+
+       (13, 'Color', 'Black', 5),
+       (14, 'Size', 'Small', 5),
+       (15, 'Weight', '0.5kg', 5),
+
+       (16, 'Color', 'White', 6),
+       (17, 'Material', 'Plastic', 6),
+       (18, 'Warranty', '3 years', 6),
+
+       (19, 'Color', 'Yellow', 7),
+       (20, 'Size', 'Extra Large', 7),
+       (21, 'Weight', '3kg', 7),
+
+       (22, 'Color', 'Blue', 8),
+       (23, 'Material', 'Plastic', 8),
+       (24, 'Warranty', '5 years', 8),
+
+       (25, 'Color', 'Green', 9),
+       (26, 'Size', 'Medium', 9),
+       (27, 'Weight', '2kg', 9),
+
+       (28, 'Color', 'Black', 10),
+       (29, 'Material', 'Glass', 10),
+       (30, 'Warranty', '6 months', 10);
