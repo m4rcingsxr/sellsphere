@@ -24,7 +24,7 @@ public class ProductPageRequest {
     private Integer categoryId;
 
     public ProductPageRequest(String[] filter, String categoryAlias, String keyword,
-                              Integer pageNum) {
+                              BigDecimal minPrice, BigDecimal maxPrice, Integer pageNum) {
         this.filter = filter;
         this.categoryAlias = categoryAlias;
         this.keyword = keyword;

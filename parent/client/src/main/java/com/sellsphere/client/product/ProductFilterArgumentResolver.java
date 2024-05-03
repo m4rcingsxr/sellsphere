@@ -55,7 +55,7 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
 
         if(minPrice != null && maxPrice != null) {
                 params.setMinPrice(new BigDecimal(minPrice));
-                params.setMaxPrice(new BigDecimal(minPrice));
+                params.setMaxPrice(new BigDecimal(maxPrice));
         }
 
         if (pageNumStr != null) {

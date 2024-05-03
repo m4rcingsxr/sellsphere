@@ -2,6 +2,7 @@ package com.sellsphere.client.product;
 
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetail;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -29,17 +30,26 @@ public class ProductSpecifications {
         };
     }
 
-    public static Specification<Product> hasPriceInRange(ProductPageRequest pageRequest) {
+    public static Specification<Product> hasDiscountPriceInRange(ProductPageRequest pageRequest) {
         return (root, query, criteriaBuilder) -> {
             BigDecimal minPrice = pageRequest.getMinPrice();
             BigDecimal maxPrice = pageRequest.getMaxPrice();
 
+            // Calculate discounted price and cast to BigDecimal
+            Expression<BigDecimal> discountedPrice = criteriaBuilder.diff(
+                    root.get("price"),
+                    criteriaBuilder.prod(
+                            root.get("price"),
+                            criteriaBuilder.quot(root.get("discountPercent"), BigDecimal.valueOf(100))
+                    ).as(BigDecimal.class)
+            ).as(BigDecimal.class);
+
             if (minPrice != null && maxPrice != null) {
-                return criteriaBuilder.between(root.get("price"), minPrice, maxPrice);
+                return criteriaBuilder.between(discountedPrice, minPrice, maxPrice);
             } else if (minPrice != null) {
-                return criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice);
+                return criteriaBuilder.greaterThanOrEqualTo(discountedPrice, minPrice);
             } else if (maxPrice != null) {
-                return criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice);
+                return criteriaBuilder.lessThanOrEqualTo(discountedPrice, maxPrice);
             } else {
                 return criteriaBuilder.conjunction(); // No price filter
             }
@@ -69,4 +79,42 @@ public class ProductSpecifications {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+    public static Specification<Product> minPriceProduct() {
+        return (root, query, criteriaBuilder) -> {
+            // Calculate discounted price
+            Expression<BigDecimal> discountedPrice = criteriaBuilder.diff(
+                    root.get("price"),
+                    criteriaBuilder.prod(
+                            root.get("price"),
+                            criteriaBuilder.quot(root.get("discountPercent"), BigDecimal.valueOf(100))
+                    ).as(BigDecimal.class)
+            ).as(BigDecimal.class);
+
+            // Apply sorting by discounted price in ascending order
+            query.orderBy(criteriaBuilder.asc(discountedPrice));
+
+            return criteriaBuilder.conjunction(); // No additional criteria, just sorting
+        };
+    }
+
+    public static Specification<Product> maxPriceProduct() {
+        return (root, query, criteriaBuilder) -> {
+            // Calculate discounted price
+            Expression<BigDecimal> discountedPrice = criteriaBuilder.diff(
+                    root.get("price"),
+                    criteriaBuilder.prod(
+                            root.get("price"),
+                            criteriaBuilder.quot(root.get("discountPercent"), BigDecimal.valueOf(100))
+                    ).as(BigDecimal.class)
+            ).as(BigDecimal.class);
+
+            // Apply sorting by discounted price in descending order
+            query.orderBy(criteriaBuilder.desc(discountedPrice));
+
+            return criteriaBuilder.conjunction(); // No additional criteria, just sorting
+        };
+    }
+
+
 }

@@ -3,11 +3,19 @@ package com.sellsphere.client.product;
 import com.sellsphere.common.entity.BasicProductDto;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetail;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,17 +29,64 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
+    private final EntityManager entityManager;
+
 
     public ProductPageResponse listProductsPage(ProductPageRequest pageRequest) {
         PageRequest pageable = PageRequest.of(pageRequest.getPageNum(), PAGE_SIZE);
-        Page<Product> products = productRepository.findAll(
+        Page<Product> productPage = productRepository.findAll(
                 ProductSpecification.filterProducts(pageRequest), pageable);
 
+        BigDecimal minPrice = getMinPrice(pageRequest).orElse(pageRequest.getMinPrice());
+        BigDecimal maxPrice = getMaxPrice(pageRequest).orElse(pageRequest.getMaxPrice());
+
         return ProductPageResponse.builder().content(
-                products.map(BasicProductDto::new).toList()).page(
-                pageRequest.getPageNum()).totalElements(products.getTotalElements()).totalPages(
-                products.getTotalPages()).pageSize(PAGE_SIZE).build();
+                productPage.map(BasicProductDto::new).toList()).page(
+                pageRequest.getPageNum()).totalElements(productPage.getTotalElements()).totalPages(
+                productPage.getTotalPages()).pageSize(PAGE_SIZE)
+                .minPrice(minPrice).maxPrice(maxPrice).build();
     }
+
+    private Optional<BigDecimal> getMinPrice(ProductPageRequest pageRequest) {
+        Specification<Product> spec = ProductSpecification.minPriceProduct(pageRequest);
+
+        return getPriceBySpecification(spec);
+    }
+
+    private Optional<BigDecimal> getMaxPrice(ProductPageRequest pageRequest) {
+        Specification<Product> spec = ProductSpecification.maxPriceProduct(pageRequest);
+
+        return getPriceBySpecification(spec);
+    }
+
+    private Optional<BigDecimal> getPriceBySpecification(Specification<Product> spec) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<BigDecimal> criteriaQuery = criteriaBuilder.createQuery(BigDecimal.class);
+        Root<Product> root = criteriaQuery.from(Product.class);
+
+        // Calculate discounted price
+        Expression<BigDecimal> discountedPrice = criteriaBuilder.diff(
+                root.get("price"),
+                criteriaBuilder.prod(
+                        root.get("price"),
+                        criteriaBuilder.quot(root.get("discountPercent"), BigDecimal.valueOf(100))
+                ).as(BigDecimal.class)
+        ).as(BigDecimal.class);
+
+        criteriaQuery.select(discountedPrice);
+        criteriaQuery.where(spec.toPredicate(root, criteriaQuery, criteriaBuilder));
+
+        try {
+            return Optional.of(
+                    entityManager.createQuery(criteriaQuery)
+                            .setMaxResults(1)
+                            .getSingleResult()
+            );
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
 
     public Map<String, Map<String, Long>> getAvailableFilterCounts(ProductPageRequest pageRequest) {
         List<Product> filteredProducts = productRepository.findAll(ProductSpecification.filterProducts(pageRequest));
@@ -57,7 +112,7 @@ public class ProductService {
         String[] filters = pageRequest.getFilter();
 
         // Retrieve all products matching category or keyword without filters
-        if (filters != null && filters.length > 0) {
+        if ((filters != null && filters.length > 0) || (pageRequest.getMaxPrice() != null && pageRequest.getMinPrice() != null)) {
             pageRequest.setFilter(null);
             List<Product> allProducts = productRepository.findAll(ProductSpecification.hasCategoryOrKeyword(pageRequest));
 
@@ -133,4 +188,5 @@ public class ProductService {
         }
         return false;
     }
+
 }

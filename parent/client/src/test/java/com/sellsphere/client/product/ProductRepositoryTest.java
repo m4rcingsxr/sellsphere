@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ class ProductRepositoryTest {
             String filter, String expectedProducts) {
         // Prepare the filters
         String[] filters = filter.split("\\|");
-        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null, 0);
+        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null,null,null, 0);
         pageRequest.setCategoryId(1);
 
         // Get the filtered products
@@ -74,7 +75,7 @@ class ProductRepositoryTest {
             String filter, String expectedProducts, long totalElements, int contentSize, int totalPages) {
         // Prepare the filters
         String[] filters = filter.split("\\|");
-        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null, 0);
+        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null,null,null, 0);
         pageRequest.setCategoryId(1);
 
         // Set page size to 1
@@ -96,6 +97,41 @@ class ProductRepositoryTest {
         assertThat(resultPage.getTotalPages()).isEqualTo(totalPages);
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "'brand,Apple|Color,Red', 10, 150, 'Product One,Product Two'",
+            "'brand,Apple|Color,Red', 10, 20, 'Product One,Product Two'",
+            "'brand,Apple|Size,Medium', 10, 20, 'Product One,Product Two'",
+            "'brand,Apple|Weight,1.5kg', 10, 20, 'Product One'",
+            "'brand,Apple|Material,Plastic', 10, 40, 'Product Two'",
+            "'brand,Apple|Color,Green', 30, 50, 'Product Three'",
+            "'brand,Apple|Size,Large', 30, 50, 'Product Three'",
+            "'brand,Apple|Color,Black', 10, 20, ''",
+            "'brand,Apple|Size,Small', 10, 20, ''",
+            "'brand,Apple|Warranty,3 years', 10, 50, ''",
+            "'brand,Apple|Warranty,5 years', 10, 50, ''",
+            "'brand,Apple|Color,Red|Size,Medium', 10, 20, 'Product One,Product Two'",
+            "'brand,Apple|Color,Green|Weight,2kg', 30, 50, 'Product Three'"
+    })
+    void givenFiltersAndPriceRange_whenFindAllWithProductSpecification_thenShouldReturnMatchingFilterExpectedProducts(
+            String filter, BigDecimal minPrice, BigDecimal maxPrice, String expectedProducts) {
+        // Prepare the filters
+        String[] filters = filter.split("\\|");
+        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops",null, minPrice, maxPrice, 0);
+        pageRequest.setCategoryId(1);
 
+        // Get the filtered products
+        List<Product> result = productRepository.findAll(
+                ProductSpecification.filterProducts(pageRequest));
+
+        // Convert expected products to a list
+        List<String> expectedProductList = expectedProducts.isEmpty() ? List.of() : List.of(
+                expectedProducts.split(","));
+
+        // Assert the result
+        List<String> resultNames = result.stream().map(Product::getName).collect(
+                Collectors.toList());
+        assertThat(resultNames).containsExactlyInAnyOrderElementsOf(expectedProductList);
+    }
 
 }

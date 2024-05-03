@@ -21,10 +21,10 @@ class FilterModel {
         }
     }
 
-    async handleFilterChange(filters) {
+    async handleFilterChange(filters, minPrice, maxPrice) {
         try {
-            await this.fetchAndHandleProducts(filters, 0);
-            await this.updateFilterDisplay(filters);
+            await this.fetchAndHandleProducts(filters, 0, minPrice, maxPrice);
+            await this.updateFilterDisplay(filters, minPrice, maxPrice);
             console.info("Successfully handled filter change");
         } catch (error) {
             throw error;
@@ -42,19 +42,22 @@ class FilterModel {
         }
     }
 
-    async fetchAndHandleProducts(filters, pageNum) {
+    async fetchAndHandleProducts(filters, pageNum, minPrice, maxPrice) {
         try {
             const formattedFilters = this.formatFiltersToIncludeCommaValues(filters);
-            const productsPage = await this.fetchProductsPage(formattedFilters, pageNum);
+            const productsPage = await this.fetchProductsPage(formattedFilters, pageNum, minPrice, maxPrice);
             FilterView.renderProducts(productsPage);
+
+            FilterView.setPriceBoundaries(productsPage.minPrice, productsPage.maxPrice);
+
         } catch (error) {
             throw error;
         }
     }
 
-    async updateFilterDisplay(filters) {
+    async updateFilterDisplay(filters, minPrice, maxPrice) {
         try {
-            const countMap = await this.fetchFilterCounts(filters);
+            const countMap = await this.fetchFilterCounts(filters, minPrice, maxPrice);
             FilterView.renderAllFilters(countMap);
             FilterView.renderProductFilters(countMap, filters);
             FilterView.checkFilters(filters);
@@ -75,44 +78,44 @@ class FilterModel {
         }
     }
 
-    async fetchProductsPage(filters, pageNum) {
+    async fetchProductsPage(filters, pageNum, minPrice, maxPrice) {
         const baseUrl = `${MODULE_URL}filter/products`;
-        const fullUrl = this.buildPageRequestUrl(baseUrl, filters, pageNum);
+        const fullUrl = this.buildPageRequestUrl(baseUrl, filters,minPrice, maxPrice, pageNum);
         return await ajaxUtil.get(fullUrl);
     }
 
-    gatherProductSelectedFilters(event) {
-        const selectedFiltersSet = new Set();
-        document.querySelectorAll('#filters > div > .d-flex.flex-column.gap-1.mt-2, #allFilters .row.g-3.mt-1').forEach(group => {
-            const filterName = group.previousElementSibling.textContent.trim();
-            const selectedCheckboxes = group.querySelectorAll('input.form-check-input:checked');
-
-            if (selectedCheckboxes.length > 1) {
-                event.target.checked = false;
-                throw new Error(`Multiple values selected for the filter: ${filterName}`);
-            }
-
-            selectedCheckboxes.forEach(checkbox => {
-                let value = decodeURIComponent(checkbox.value).trim();
-                selectedFiltersSet.add(`${filterName},${value}`);
+    gatherProductSelectedFilters() {
+            const selectedFiltersSet = new Set();
+            document.querySelectorAll('#filters > div > .d-flex.flex-column.gap-1.mt-2, #allFilters .row.g-3.mt-1').forEach(group => {
+                const filterName = group.previousElementSibling.textContent.trim();
+                const selectedCheckboxes = group.querySelectorAll('input.form-check-input:checked');
+                selectedCheckboxes.forEach(checkbox => {
+                    let value = decodeURIComponent(checkbox.value).trim();
+                    selectedFiltersSet.add(`${filterName},${value}`);
+                });
             });
-        });
 
-        return Array.from(selectedFiltersSet);
+            return Array.from(selectedFiltersSet);
     }
 
-    async fetchFilterCounts(filters) {
+    async fetchFilterCounts(filters, minPrice, maxPrice) {
         const baseUrl = `${MODULE_URL}filter/all_counts`;
-        const pageRequestUrl = this.buildPageRequestUrl(baseUrl, filters);
+        const pageRequestUrl = this.buildPageRequestUrl(baseUrl, filters,minPrice, maxPrice,0);
         return await ajaxUtil.get(pageRequestUrl);
     }
 
-    buildPageRequestUrl(baseUrl, filters, pageNum, minPrice, maxPrice) {
+    buildPageRequestUrl(baseUrl, filters,minPrice, maxPrice, pageNum) {
         const params = new URLSearchParams();
         if (pageNum !== null && pageNum !== undefined) {
             params.append("pageNum", pageNum);
         }
         filters?.forEach(filter => params.append("filter", filter));
+
+
+        if(minPrice && maxPrice) {
+            params.append("minPrice", minPrice);
+            params.append("maxPrice", maxPrice);
+        }
 
         const url = new URL(window.location.href);
         const pathname = url.pathname;

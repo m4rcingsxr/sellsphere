@@ -1,12 +1,14 @@
 package com.sellsphere.client.product;
 
 import com.sellsphere.common.entity.BasicProductDto;
+import com.sellsphere.common.entity.Product;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,7 +41,7 @@ class ProductServiceTest {
             String filter, String expectedProducts, long totalElements, int contentSize, int totalPages) {
         // Prepare the filters
         String[] filters = filter.split("\\|");
-        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null, 0);
+        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null,null,null, 0);
         pageRequest.setCategoryId(1);
 
         // Get the filtered products with pagination
@@ -76,7 +78,7 @@ class ProductServiceTest {
     void givenFilters_whenGetAvailableFilterCounts_thenShouldReturnMatchingCounts(String filter, String expectedCounts) {
         // Prepare the filters
         String[] filters = filter.split("\\|");
-        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null, 0);
+        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null,null,null, 0);
         pageRequest.setCategoryId(1);
 
         // Get the filter counts

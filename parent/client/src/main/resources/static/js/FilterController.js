@@ -20,18 +20,30 @@ class FilterController {
             showFullScreenSpinner();
             this.model.synchronizeSingleFilterState(event.target);
 
-            try {
-                const filters = this.model.gatherProductSelectedFilters(event);
-                this.model.handleFilterChange(filters)
-                    .catch(error => showErrorModal(error.response))
-                    .finally(() => hideFullScreenSpinner());
-            } catch (error) {
-                console.error(error.message);
-                hideFullScreenSpinner();
-            }
+            const minPrice = Number($("#lowerPrice").val());
+            const maxPrice = Number($("#upperPrice").val());
+
+            const filters = this.model.gatherProductSelectedFilters();
+            this.model.handleFilterChange(filters, minPrice, maxPrice)
+                .catch(error => showErrorModal(error.response))
+                .finally(() => hideFullScreenSpinner());
         });
 
         $("#showAllFilters").on("click", () => FilterView.toggleFilters());
         $(".viewProducts").on("click", () => FilterView.toggleFilters());
+
+        $('input[type="range"]').on("change", event => {
+            showFullScreenSpinner();
+            this.model.synchronizeSingleFilterState(event.target);
+
+            const minPrice = Number($("#lowerPrice").val());
+            const maxPrice = Number($("#upperPrice").val());
+
+            const filters = this.model.gatherProductSelectedFilters();
+            this.model.handleFilterChange(filters, minPrice, maxPrice)
+                .catch(error => showErrorModal(error.response))
+                .finally(() => hideFullScreenSpinner());
+        })
     }
+
 }

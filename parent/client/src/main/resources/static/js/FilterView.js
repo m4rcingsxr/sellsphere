@@ -137,4 +137,16 @@ class FilterView {
             checkbox.checked = filters.includes(filterString);
         });
     }
+
+    static setPriceBoundaries(minPrice, maxPrice) {
+        const $lowerPrice = $("#lowerPrice");
+        const $upperPrice = $("#upperPrice");
+        if(minPrice && maxPrice && !$upperPrice.val() && !$lowerPrice.val()) {
+            $lowerPrice.val(minPrice);
+            $upperPrice.val(maxPrice);
+
+            $("#lower").attr("max", maxPrice);
+            $("#upper").attr("max", maxPrice).val(maxPrice);
+        }
+    }
 }
