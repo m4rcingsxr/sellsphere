@@ -81,3 +81,7 @@
 .cart-icon-size {
   font-size: 1.2rem;
 }
+
+.side-filter-container {
+  max-height: 700px;
+}

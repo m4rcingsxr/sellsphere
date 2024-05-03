@@ -30,7 +30,7 @@ function init() {
 
     // Extract and apply filters from URL if they exist
     const filters = extractFiltersFromUrl(window.location.href);
-    fetchAndHandleFilterCounts(null)
+    fetchAndHandleFilterCounts(filters)
         .then(() => {
             return handleFilterChange(filters);
         })
@@ -40,6 +40,8 @@ function init() {
     // Initialize event listeners
     initListeners();
 }
+
+
 
 /**
  * Extracts filter parameters from the given URL.
@@ -70,18 +72,26 @@ function initListeners() {
         }
     });
 
-    $("#showAllFilters").on("click", event => {
+    $("#showAllFilters").on("click", () => {
         $("#products").toggleClass("d-none");
         $("#allFilters").toggleClass("d-none");
         $(".viewProducts").toggleClass("d-none");
         $("#showAllFilters").toggleClass("d-none");
+        $("#filters").toggleClass("d-none");
+        $("#allFilterNames").toggleClass("d-none");
     })
 
-    $(".viewProducts").on("click", event => {
+    $(".viewProducts").on("click", () => {
         $("#products").toggleClass("d-none");
         $("#allFilters").toggleClass("d-none");
         $(".viewProducts").toggleClass("d-none");
         $("#showAllFilters").toggleClass("d-none");
+        $("#filters").toggleClass("d-none");
+        $("#allFilterNames").toggleClass("d-none");
+    })
+
+    $("#allFilterNames").on("click", ".filter-name", event => {
+
     })
 }
 
@@ -116,6 +126,7 @@ async function handleFilterChange(filters) {
     }
 }
 
+
 /**
  * Updates the display of filters based on the applied filters.
  * @param {Array<string>} filters - The filters to apply.
@@ -125,36 +136,32 @@ async function updateFilterDisplay(filters) {
     try {
         const countMap = await fetchFilterCounts(filters);
 
-        updateCheckboxesDisplay('#filters', filters, countMap);
-        updateCheckboxesDisplay('#allFilters', filters, countMap);
+        renderAllFilters(countMap);
+        renderProductFilters(countMap, filters);
+        checkFilters(filters);
 
     } catch (error) {
         throw error;
     }
 }
 
+
 /**
- * Updates the display of checkboxes based on the filter counts.
- * @param {string} containerSelector - The CSS selector for the container.
+ * Checks the filters based on the applied filters.
  * @param {Array<string>} filters - The filters to apply.
- * @param {Object} countMap - The map of filter counts.
  */
-function updateCheckboxesDisplay(containerSelector, filters, countMap) {
-    const filterCheckboxes = document.querySelectorAll(`${containerSelector} .form-check-input`);
+function checkFilters(filters) {
+    const filterCheckboxes = document.querySelectorAll('.form-check-input.filter');
 
     filterCheckboxes.forEach(checkbox => {
-        const filterName = checkbox.closest(containerSelector === '#filters' ? '.d-flex.flex-column.gap-1.mt-2' : '.row.g-3.mt-1').previousElementSibling.textContent.trim();
+        const filterName = checkbox.getAttribute('data-name').trim();
         const filterValue = decodeURIComponent(checkbox.value).trim();
 
-        if (countMap[filterName]?.[filterValue] !== undefined) {
-            checkbox.disabled = false;
-            checkbox.nextElementSibling.innerHTML = `(${countMap[filterName][filterValue]}) ${filterValue}`;
-        } else {
-            checkbox.disabled = true;
-            checkbox.nextElementSibling.innerHTML = `(0) ${filterValue}`;
-        }
+        // Construct the filter string in the same format used in the filters array
+        const filterString = `${filterName},${filterValue}`;
 
-        checkbox.checked = filters.includes(`${filterName},${filterValue}`);
+        // Check the checkbox if it matches any of the filters
+        checkbox.checked = filters.includes(filterString);
     });
 }
 
@@ -275,6 +282,7 @@ function gatherProductSelectedFilters(event) {
     return Array.from(selectedFiltersSet);
 }
 
+
 /**
  * Fetches and handles filter counts.
  * @param {Array<string>} filters - The filters to apply.
@@ -284,8 +292,9 @@ async function fetchAndHandleFilterCounts(filters) {
         showFullScreenSpinner();
         const formattedFilters = formatFiltersToIncludeCommaValues(filters);
         const countMap = await fetchFilterCounts(formattedFilters)
-        renderProductFilters(countMap);
+        renderProductFilters(countMap, filters);
         renderAllFilters(countMap);
+        renderAllFilterNames(countMap);
     } catch (error) {
         throw error;
     } finally {
@@ -294,15 +303,34 @@ async function fetchAndHandleFilterCounts(filters) {
 
 }
 
+
+function renderAllFilterNames(countMap) {
+    let allNamesHtml = '';
+    for (const [name, values] of Object.entries(countMap)) {
+        allNamesHtml += `
+             <a href="#allFilterNames${name}" class="list-group-item list-group-item-action bg-body-tertiary list-group-item-secondary filter-name">${name}</a>
+        `
+    }
+    $("#allFilterNames").empty().append(allNamesHtml);
+}
+
 /**
  * Renders the filter options based on the fetched counts.
  * @param {Object} countMap - The map of filter counts.
+ * @param {Array<string>} filters - The applied filters in 'name,value' format.
  */
-function renderProductFilters(countMap) {
+function renderProductFilters(countMap, filters) {
     let filtersHtml = '';
+    let filterCount = 0;
+    const filterNames = filters.map(f => f.split(',')[0]);
+
     for (const [name, values] of Object.entries(countMap)) {
-        filtersHtml += generateProductFilterHtml(name, values);
+        if (filterCount < 5 || filterNames.includes(name)) {
+            filtersHtml += generateProductFilterHtml(name, values, filters);
+            filterCount++;
+        }
     }
+
     document.getElementById('filters').innerHTML = filtersHtml;
 }
 
@@ -310,16 +338,19 @@ function renderProductFilters(countMap) {
  * Generates the HTML for a single filter group.
  * @param {string} name - The name of the filter group.
  * @param {Object} values - The values and counts for the filter group.
+ * @param {Array<string>} filters - The applied filters in 'name,value' format.
  * @returns {string} - The HTML string for the filter group.
  */
-function generateProductFilterHtml(name, values) {
+function generateProductFilterHtml(name, values, filters) {
+    const filterSet = new Set(filters);
+
     return `
         <div>
             <span class="fw-bolder">${name}</span>
             <div class="d-flex flex-column gap-1 mt-2">
                 ${Object.entries(values).map(([value, count]) => `
                     <div class="form-check">
-                        <input class="form-check-input filter" type="checkbox" value="${encodeURIComponent(value)}" id="${value}">
+                        <input class="form-check-input filter" type="checkbox" data-name="${name}" value="${encodeURIComponent(value)}" id="${value}" ${count > 0 ? '' : 'disabled'} ${filterSet.has(`${name},${value}`) ? 'checked' : ''}>
                         <label class="form-check-label" for="${value}">(${count}) ${value}</label>
                     </div>
                 `).join('')}
@@ -327,6 +358,7 @@ function generateProductFilterHtml(name, values) {
         </div>
     `;
 }
+
 
 function renderAllFilters(countMap) {
     let filtersHtml = '';
@@ -338,13 +370,13 @@ function renderAllFilters(countMap) {
 
 function generateListGroupItemHtmlForAllFilters(name, values) {
     return `
-        <li class="list-group-item p-4">
+        <li id="allFilterNames${name}" class="list-group-item p-4">
             <span class="fw-bolder">${name}</span>
             <div class="row g-3 mt-1">
                 ${Object.entries(values).map(([value, count]) => `
                     <div class="col-sm-4">
                         <div class="form-check">
-                            <input class="form-check-input filter" type="checkbox" value="${encodeURIComponent(value)}" id="${value}">
+                            <input class="form-check-input filter" type="checkbox" data-name="${name}" value="${encodeURIComponent(value)}" id="${value}" ${count > 0 ? '' : 'disabled'}>
                             <label class="form-check-label" for="flexCheckDefault">
                                 (${count}) ${value} 
                             </label>
@@ -353,7 +385,7 @@ function generateListGroupItemHtmlForAllFilters(name, values) {
                 `).join('')}
             </div>
         </li>
-    `
+    `;
 }
 
 /**
@@ -362,7 +394,7 @@ function generateListGroupItemHtmlForAllFilters(name, values) {
  * @returns {Promise<Object>} - The fetched filter counts.
  */
 async function fetchFilterCounts(filters) {
-    const baseUrl = `${MODULE_URL}filter/counts`;
+    const baseUrl = `${MODULE_URL}filter/all_counts`;
     const pageRequestUrl = buildPageRequestUrl(baseUrl, filters);
     return await ajaxUtil.get(pageRequestUrl);
 }

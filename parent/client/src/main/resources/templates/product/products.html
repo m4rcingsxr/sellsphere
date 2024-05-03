@@ -26,15 +26,20 @@
 
 </header>
 
-<main class="content mt-4">
+<main class="content my-5">
     <div class="container">
         <div class="row">
-            <div class="col-sm-3 bg-body-tertiary rounded-3 p-4 d-flex flex-column gap-3" >
-                <div id="filters">
+            <div class="col-sm-3 bg-body-tertiary rounded-3 d-flex flex-column align-self-start gap-3">
+                <div id="filters" class="p-3 side-filter-container">
+
+                </div>
+
+                <div class="list-group d-none list-group-flush p-3 overflow-y-scroll side-filter-container" id="allFilterNames">
 
                 </div>
 
                 <div>
+                    <a href="#" class="btn btn-outline-secondary viewProducts d-none mx-auto d-block w-100">Show products</a>
                     <a href="#" class="btn w-100 btn-outline-primary" id="showAllFilters">Show all filters</a>
                 </div>
             </div>
@@ -43,12 +48,11 @@
 
                 </div>
 
-                <a href="#" class="link-dark link-underline-opacity-50-hover link-underline-opacity-0 fw-bolder fs-5 p-2 viewProducts d-none">View products</a>
-                <ul class="list-group d-none mt-4" id="allFilters">
+                <ul class="list-group d-none" id="allFilters">
 
                 </ul>
 
-                <a href="#" class="btn btn-outline-secondary viewProducts d-none mx-auto d-block w-50 mt-3">Go back to products</a>
+
             </div>
         </div>
 
@@ -61,7 +65,9 @@
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
 <script type="text/javascript" th:src="@{/js/FormatPriceUtil.js}"></script>
-<script type="text/javascript" th:src="@{/js/filter_products.js}"></script>
+<script type="text/javascript" th:src="@{/js/FilterModel.js}"></script>
+<script type="text/javascript" th:src="@{/js/FilterController.js}"></script>
+<script type="text/javascript" th:src="@{/js/FilterView.js}"></script>
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
 
@@ -79,6 +85,12 @@
         decimalDigits,
         decimalPointType
     };
+
+    $(function() {
+        const model = new FilterModel();
+        const controller = new FilterController(model);
+        controller.init();
+    })
 </script>
 </body>
 </html>

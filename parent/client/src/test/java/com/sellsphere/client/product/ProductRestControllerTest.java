@@ -75,7 +75,7 @@ class ProductRestControllerTest {
                                                                  Map.of("Plastic", 1L)
         );
 
-        given(productService.getFilterCounts(any(ProductPageRequest.class))).willReturn(
+        given(productService.getAvailableFilterCounts(any(ProductPageRequest.class))).willReturn(
                 mockFilterCounts);
     }
 
