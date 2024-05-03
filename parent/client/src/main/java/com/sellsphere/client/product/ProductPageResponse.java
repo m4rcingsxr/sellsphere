@@ -1,9 +1,11 @@
 package com.sellsphere.client.product;
 
 import com.sellsphere.common.entity.BasicProductDto;
-import com.sellsphere.common.entity.Product;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -15,6 +17,10 @@ public class ProductPageResponse {
     private int pageSize;
     private long totalElements;
     private int totalPages;
+
+    private BigDecimal minPrice;
+    private BigDecimal maxPrice;
+
     private List<BasicProductDto> content;
 
 }

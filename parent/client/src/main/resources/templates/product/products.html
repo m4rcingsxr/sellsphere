@@ -3,6 +3,7 @@
 <head>
     <th:block th:replace="~{common :: common_head(${pageTitle})}"></th:block>
     <link rel="stylesheet" th:href="@{/css/products.css}">
+    <link rel="stylesheet" th:href="@{/css/double_range_slider.css}">
 </head>
 <body>
 <header th:replace="~{navigations :: header()}"></header>
@@ -34,16 +35,32 @@
 
                 </div>
 
-                <div class="list-group d-none list-group-flush p-3 overflow-y-scroll side-filter-container" id="allFilterNames">
+                <div class="list-group d-none list-group-flush p-3 overflow-y-scroll side-filter-container"
+                     id="allFilterNames">
 
                 </div>
 
                 <div>
-                    <a href="#" class="btn btn-outline-secondary viewProducts d-none mx-auto d-block w-100">Show products</a>
+                    <a href="#" class="btn btn-outline-secondary viewProducts d-none mx-auto d-block w-100">Show
+                        products</a>
                     <a href="#" class="btn w-100 btn-outline-primary" id="showAllFilters">Show all filters</a>
                 </div>
             </div>
             <div class="col-sm-9 p-3">
+                <div class="row mb-5">
+                    <div class="col-sm-4">
+                        <div class="multi-range custom-range">
+                            <input type="range" min="0" max="50" value="5" class="custom-slider" id="lower">
+                            <input type="range" min="0" max="50" value="45" class="custom-slider" id="upper">
+                        </div>
+                        <div class="d-flex gap-3">
+                            <input class="form-control" type="number" step="1" id="lowerPrice"/>
+                            <span>-</span>
+                            <input class="form-control" type="number" step="1" id="upperPrice"/>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row g-5" id="products">
 
                 </div>
@@ -68,6 +85,7 @@
 <script type="text/javascript" th:src="@{/js/FilterModel.js}"></script>
 <script type="text/javascript" th:src="@{/js/FilterController.js}"></script>
 <script type="text/javascript" th:src="@{/js/FilterView.js}"></script>
+<script type="text/javascript" th:src="@{/js/double_range_slider.js}"></script>
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
 
@@ -86,10 +104,12 @@
         decimalPointType
     };
 
-    $(function() {
+    $(function () {
         const model = new FilterModel();
         const controller = new FilterController(model);
         controller.init();
+
+        initializeRangeSlider('lower', 'upper', 'lowerPrice', 'upperPrice');
     })
 </script>
 </body>

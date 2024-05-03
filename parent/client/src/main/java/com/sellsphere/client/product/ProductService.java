@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,9 +34,13 @@ public class ProductService {
     }
 
     public Map<String, Map<String, Long>> getAvailableFilterCounts(ProductPageRequest pageRequest) {
-        List<Product> filteredProducts = productRepository.findAll(
-                ProductSpecification.filterProducts(pageRequest));
+        List<Product> filteredProducts = productRepository.findAll(ProductSpecification.filterProducts(pageRequest));
 
+        return getProductCountFromProductDetail(filteredProducts);
+    }
+
+    private static Map<String, Map<String, Long>> getProductCountFromProductDetail(
+            List<Product> filteredProducts) {
         return filteredProducts.stream().flatMap(product -> product.getDetails().stream()).collect(
                 Collectors.groupingBy(ProductDetail::getName,
                                       Collectors.groupingBy(ProductDetail::getValue,
@@ -45,21 +50,23 @@ public class ProductService {
     }
 
     public Map<String, Map<String, Long>> getAllFilterCounts(ProductPageRequest pageRequest) {
-        String[] filters = pageRequest.getFilter();
 
         // Retrieve existing counts using getAvailableFilterCounts
         Map<String, Map<String, Long>> counts = getAvailableFilterCounts(pageRequest);
 
-        // Retrieve all products matching category or keyword without filters
-        pageRequest.setFilter(null);
-        List<Product> allProducts = productRepository.findAll(
-                ProductSpecification.filterProducts(pageRequest));
+        String[] filters = pageRequest.getFilter();
 
-        // Initialize counts for all possible product details to zero if not already present
-        for (Product product : allProducts) {
-            for (ProductDetail detail : product.getDetails()) {
-                counts.computeIfAbsent(detail.getName(), k -> new HashMap<>()).putIfAbsent(
-                        detail.getValue(), 0L);
+        // Retrieve all products matching category or keyword without filters
+        if (filters != null && filters.length > 0) {
+            pageRequest.setFilter(null);
+            List<Product> allProducts = productRepository.findAll(ProductSpecification.hasCategoryOrKeyword(pageRequest));
+
+            // Initialize counts for all possible product details to zero if not already present
+            for (Product product : allProducts) {
+                for (ProductDetail detail : product.getDetails()) {
+                    counts.computeIfAbsent(detail.getName(), k -> new HashMap<>()).putIfAbsent(
+                            detail.getValue(), 0L);
+                }
             }
         }
 
@@ -67,20 +74,27 @@ public class ProductService {
         return sortCounts(counts, filters);
     }
 
+
     public Map<String, Map<String, Long>> sortCounts(Map<String, Map<String, Long>> counts,
-                                                      String[] filters) {
+                                                     String[] filters) {
+        Set<String> filterSet = filters != null ? new HashSet<>(Arrays.asList(filters)) : null;
+
         // Create a list of entries to sort
         List<Map.Entry<String, Map<String, Long>>> sortedEntries = new ArrayList<>(
                 counts.entrySet());
 
         // Sort the product detail names
-        sortedEntries.sort(Comparator
-                                   .<Map.Entry<String, Map<String, Long>>, Boolean>comparing(
-                                           entry -> !containsFilteredValues(entry.getKey(),
-                                                                            entry.getValue(),
-                                                                            filters
-                                           ))
-                                   .thenComparing(Map.Entry::getKey));
+        if (filterSet != null) {
+            sortedEntries.sort(Comparator
+                                       .<Map.Entry<String, Map<String, Long>>, Boolean>comparing(
+                                               entry -> !containsFilteredValues(entry.getKey(),
+                                                                                entry.getValue(),
+                                                                                filterSet
+                                               ))
+                                       .thenComparing(Map.Entry::getKey));
+        } else {
+            sortedEntries.sort(Map.Entry.comparingByKey());
+        }
 
         // Sort the values under each product detail name
         Map<String, Map<String, Long>> sortedCounts = new LinkedHashMap<>();
@@ -89,10 +103,15 @@ public class ProductService {
             Map<String, Long> values = entry.getValue();
 
             List<Map.Entry<String, Long>> sortedValues = new ArrayList<>(values.entrySet());
-            sortedValues.sort(Comparator
-                                      .<Map.Entry<String, Long>, Boolean>comparing(
-                                              e -> !isInFilter(filters, detailName, e.getKey()))
-                                      .thenComparing(Map.Entry::getKey));
+            if (filterSet != null) {
+                sortedValues.sort(Comparator
+                                          .<Map.Entry<String, Long>, Boolean>comparing(
+                                                  e -> !filterSet.contains(
+                                                          detailName + "," + e.getKey()))
+                                          .thenComparing(Map.Entry::getKey));
+            } else {
+                sortedValues.sort(Map.Entry.comparingByKey());
+            }
 
             Map<String, Long> sortedValueMap = new LinkedHashMap<>();
             for (Map.Entry<String, Long> sortedEntry : sortedValues) {
@@ -105,26 +124,10 @@ public class ProductService {
         return sortedCounts;
     }
 
-    private boolean isInFilter(String[] filters, String detailName, String value) {
-        if (filters == null) {
-            return false;
-        }
-        String filterString = detailName + "," + value;
-        for (String filter : filters) {
-            if (filter.equals(filterString)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean containsFilteredValues(String detailName, Map<String, Long> values,
-                                           String[] filters) {
-        if (filters == null) {
-            return false;
-        }
+                                           Set<String> filterSet) {
         for (String value : values.keySet()) {
-            if (isInFilter(filters, detailName, value)) {
+            if (filterSet.contains(detailName + "," + value)) {
                 return true;
             }
         }

@@ -11,6 +11,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.math.BigDecimal;
+
 @Component
 public class ProductFilterArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -36,14 +38,27 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
         String categoryAlias = webRequest.getParameter("category_alias");
         String keyword = webRequest.getParameter("keyword");
         String pageNumStr = webRequest.getParameter("pageNum");
+        String minPrice = webRequest.getParameter("minPrice");
+        String maxPrice = webRequest.getParameter("maxPrice");
 
         // Set parameters
         params.setFilter(filter);
         params.setCategoryAlias(categoryAlias);
         params.setKeyword(keyword);
 
-        // Validate that pageNum is provided
-        if(pageNumStr != null) {
+        // Validate that both are either null || !null
+        if (minPrice != null && maxPrice == null || minPrice == null && maxPrice != null) {
+            throw new IllegalArgumentException(
+                    "When including price range, both properties parameters minPrice & maxPrice " +
+                            "are required.");
+        }
+
+        if(minPrice != null && maxPrice != null) {
+                params.setMinPrice(new BigDecimal(minPrice));
+                params.setMaxPrice(new BigDecimal(minPrice));
+        }
+
+        if (pageNumStr != null) {
             params.setPageNum(Integer.parseInt(pageNumStr));
         }
 

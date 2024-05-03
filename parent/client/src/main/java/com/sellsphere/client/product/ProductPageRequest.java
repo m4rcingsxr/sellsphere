@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,6 +17,9 @@ public class ProductPageRequest {
     private String categoryAlias;
     private String keyword;
     private Integer pageNum;
+
+    private BigDecimal minPrice;
+    private BigDecimal maxPrice;
 
     private Integer categoryId;
 

@@ -1,0 +1,77 @@
+.custom-range {
+  position: relative;
+  height: 50px;
+  width: 100%; /* Ensure the container takes 100% of its parent */
+  padding: 0 10px; /* Add horizontal padding to the container */
+}
+
+.custom-range .custom-slider {
+  padding: 0; /* Remove padding from the slider itself */
+  box-sizing: border-box;
+  appearance: none;
+  width: calc(100% - 20px); /* Account for the padding added to the container */
+  margin: 0;
+  /* Add some L/R padding to ensure box shadow of handle is shown */
+  overflow: hidden;
+  border: 0;
+  border-radius: 1px;
+  outline: none;
+  background: linear-gradient(grey, grey) no-repeat center;
+  /* Use a linear gradient to generate only the 2px height background */
+  background-size: calc(100% - 20px) 2px; /* Account for the padding added to the container */
+  background-position: center;
+  pointer-events: none;
+}
+
+.custom-range .custom-slider:active,
+.custom-range .custom-slider:focus {
+  outline: none;
+}
+
+.custom-range .custom-slider::-webkit-slider-thumb {
+  height: 15px;
+  width: 15px;
+  border-radius: 28px;
+  background-color: #fff;
+  position: relative;
+  margin: 5px 0;
+  /* Add some margin to ensure box shadow is shown */
+  cursor: pointer;
+  appearance: none;
+  pointer-events: all;
+  box-shadow: 0 1px 4px 0.5px rgba(0, 0, 0, 0.25);
+}
+
+.custom-range .custom-slider::-webkit-slider-thumb::before {
+  content: ' ';
+  display: block;
+  position: absolute;
+  top: 13px;
+  left: 100%;
+  width: 100%; /* Ensure the pseudo-element takes 100% of the thumb */
+  height: 2px;
+}
+
+.multi-range {
+  position: relative;
+  height: 50px;
+  width: 100%; /* Ensure the multi-range container takes 100% of its parent */
+  padding: 0 10px; /* Add horizontal padding to the container */
+}
+
+.multi-range .custom-slider {
+  position: absolute;
+  width: calc(100% - 20px); /* Account for the padding added to the container */
+}
+
+.multi-range .custom-slider:nth-child(1)::-webkit-slider-thumb::before {
+  background-color: red;
+}
+
+.multi-range .custom-slider:nth-child(2) {
+  background: none;
+}
+
+.multi-range .custom-slider:nth-child(2)::-webkit-slider-thumb::before {
+  background-color: grey;
+}

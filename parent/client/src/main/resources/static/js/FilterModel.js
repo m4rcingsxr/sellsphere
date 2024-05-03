@@ -107,7 +107,7 @@ class FilterModel {
         return await ajaxUtil.get(pageRequestUrl);
     }
 
-    buildPageRequestUrl(baseUrl, filters, pageNum) {
+    buildPageRequestUrl(baseUrl, filters, pageNum, minPrice, maxPrice) {
         const params = new URLSearchParams();
         if (pageNum !== null && pageNum !== undefined) {
             params.append("pageNum", pageNum);
