@@ -106,6 +106,10 @@ class FilterModel {
 
     buildPageRequestUrl(baseUrl, filters,minPrice, maxPrice, pageNum) {
         const params = new URLSearchParams();
+        const sortBy = $("#sortBy").val();
+
+        params.append("sortBy", sortBy);
+
         if (pageNum !== null && pageNum !== undefined) {
             params.append("pageNum", pageNum);
         }

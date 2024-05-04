@@ -12,6 +12,7 @@ import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,9 @@ public class ProductService {
 
 
     public ProductPageResponse listProductsPage(ProductPageRequest pageRequest) {
-        PageRequest pageable = PageRequest.of(pageRequest.getPageNum(), PAGE_SIZE);
+        Sort sort = generateSort(pageRequest.getSortBy());
+
+        PageRequest pageable = PageRequest.of(pageRequest.getPageNum(), PAGE_SIZE, sort);
         Page<Product> productPage = productRepository.findAll(
                 ProductSpecification.filterProducts(pageRequest), pageable);
 
@@ -85,6 +88,14 @@ public class ProductService {
         } catch (NoResultException e) {
             return Optional.empty();
         }
+    }
+
+    private Sort generateSort(String sortBy) {
+        return switch (ProductSort.valueOf(sortBy)) {
+            case LOWEST -> Sort.by(Sort.Direction.ASC, "price");
+            case HIGHEST -> Sort.by(Sort.Direction.DESC, "price");
+            default -> Sort.unsorted();
+        };
     }
 
 

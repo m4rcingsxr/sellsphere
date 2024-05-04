@@ -16,6 +16,7 @@ public class ProductPageRequest {
     private String[] filter;
     private String categoryAlias;
     private String keyword;
+    private String sortBy;
     private Integer pageNum;
 
     private BigDecimal minPrice;

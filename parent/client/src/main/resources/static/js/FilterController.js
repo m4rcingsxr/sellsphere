@@ -44,6 +44,19 @@ class FilterController {
                 .catch(error => showErrorModal(error.response))
                 .finally(() => hideFullScreenSpinner());
         })
+
+        $("#sortBy").on("change", event => {
+            showFullScreenSpinner();
+            this.model.synchronizeSingleFilterState(event.target);
+
+            const minPrice = Number($("#lowerPrice").val());
+            const maxPrice = Number($("#upperPrice").val());
+
+            const filters = this.model.gatherProductSelectedFilters();
+            this.model.handleFilterChange(filters, minPrice, maxPrice)
+                .catch(error => showErrorModal(error.response))
+                .finally(() => hideFullScreenSpinner());
+        });
     }
 
 }

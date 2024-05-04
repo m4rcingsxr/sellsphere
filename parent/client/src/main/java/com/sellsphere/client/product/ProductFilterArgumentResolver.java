@@ -5,6 +5,7 @@ import com.sellsphere.common.entity.Category;
 import com.sellsphere.common.entity.CategoryNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -40,10 +41,12 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
         String pageNumStr = webRequest.getParameter("pageNum");
         String minPrice = webRequest.getParameter("minPrice");
         String maxPrice = webRequest.getParameter("maxPrice");
+        String sortBy = webRequest.getParameter("sortBy");
 
         // Set parameters
         params.setFilter(filter);
         params.setCategoryAlias(categoryAlias);
+        params.setSortBy(sortBy);
         params.setKeyword(keyword);
 
         // Validate that both are either null || !null
@@ -53,9 +56,9 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
                             "are required.");
         }
 
-        if(minPrice != null && maxPrice != null) {
-                params.setMinPrice(new BigDecimal(minPrice));
-                params.setMaxPrice(new BigDecimal(maxPrice));
+        if (minPrice != null && maxPrice != null) {
+            params.setMinPrice(new BigDecimal(minPrice));
+            params.setMaxPrice(new BigDecimal(maxPrice));
         }
 
         if (pageNumStr != null) {
@@ -75,4 +78,6 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
 
         return params;
     }
+
+
 }
