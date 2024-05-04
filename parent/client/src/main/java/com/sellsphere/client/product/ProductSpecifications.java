@@ -64,7 +64,7 @@ public class ProductSpecifications {
             if (filterStrings != null && filterStrings.length > 0) {
                 List<Filter> filters = ProductFilterParser.parseProductFilters(filterStrings);
                 for (Filter filter : filters) {
-                    if ("brand".equals(filter.getName())) {
+                    if ("Brand".equals(filter.getName())) {
                         predicates.add(criteriaBuilder.equal(root.get("brand").get("name"), filter.getValue()));
                     } else {
                         Join<Product, ProductDetail> detailsJoin = root.join("details", JoinType.INNER);

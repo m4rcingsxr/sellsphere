@@ -94,18 +94,27 @@ public class ProductService {
         return getProductCountFromProductDetail(filteredProducts);
     }
 
-    private static Map<String, Map<String, Long>> getProductCountFromProductDetail(
-            List<Product> filteredProducts) {
-        return filteredProducts.stream().flatMap(product -> product.getDetails().stream()).collect(
-                Collectors.groupingBy(ProductDetail::getName,
-                                      Collectors.groupingBy(ProductDetail::getValue,
-                                                            Collectors.counting()
-                                      )
-                ));
+    private static Map<String, Map<String, Long>> getProductCountFromProductDetail(List<Product> filteredProducts) {
+        // Initialize the map to store counts for both product details and brands
+
+        // Process product details
+        Map<String, Map<String, Long>> detailsCounts = filteredProducts.stream()
+                .flatMap(product -> product.getDetails().stream())
+                .collect(Collectors.groupingBy(ProductDetail::getName,
+                                               Collectors.groupingBy(ProductDetail::getValue, Collectors.counting())));
+
+        // Process brand details
+        Map<String, Long> brandCounts = filteredProducts.stream()
+                .collect(Collectors.groupingBy(product -> product.getBrand().getName(), Collectors.counting()));
+
+        // Add brand counts to the result map
+        Map<String, Map<String, Long>> productDetailCounts = new HashMap<>(detailsCounts);
+        productDetailCounts.put("Brand", brandCounts);
+
+        return productDetailCounts;
     }
 
     public Map<String, Map<String, Long>> getAllFilterCounts(ProductPageRequest pageRequest) {
-
         // Retrieve existing counts using getAvailableFilterCounts
         Map<String, Map<String, Long>> counts = getAvailableFilterCounts(pageRequest);
 
@@ -116,19 +125,21 @@ public class ProductService {
             pageRequest.setFilter(null);
             List<Product> allProducts = productRepository.findAll(ProductSpecification.hasCategoryOrKeyword(pageRequest));
 
-            // Initialize counts for all possible product details to zero if not already present
+            // Initialize counts for all possible product details and brands to zero if not already present
             for (Product product : allProducts) {
                 for (ProductDetail detail : product.getDetails()) {
                     counts.computeIfAbsent(detail.getName(), k -> new HashMap<>()).putIfAbsent(
                             detail.getValue(), 0L);
                 }
+                // Initialize brand counts to zero if not already present
+                String brandName = product.getBrand().getName();
+                counts.computeIfAbsent("Brand", k -> new HashMap<>()).putIfAbsent(brandName, 0L);
             }
         }
 
         // Sort the counts
         return sortCounts(counts, filters);
     }
-
 
     public Map<String, Map<String, Long>> sortCounts(Map<String, Map<String, Long>> counts,
                                                      String[] filters) {
