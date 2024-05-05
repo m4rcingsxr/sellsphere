@@ -28,20 +28,11 @@ public class ProductRestController {
         return ResponseEntity.ok(page);
     }
 
-    @GetMapping("/available_counts")
-    public ResponseEntity<Map<String, Map<String, Long>>> listFilterCounts(
-            @ProductFilter ProductPageRequest pageRequest
+    @GetMapping("/filter_counts")
+    public ResponseEntity<Map<String, Map<String, Long>>> getFilterMapCount(
+            @ProductFilter FilterMapCountRequest mapRequest
     ) {
-        Map<String, Map<String, Long>> filterCountMap = productService.getAvailableFilterCounts(pageRequest);
-
-        return ResponseEntity.ok(filterCountMap);
-    }
-
-    @GetMapping("/all_counts")
-    public ResponseEntity<Map<String, Map<String, Long>>> listAllFilterCounts(
-            @ProductFilter ProductPageRequest pageRequest
-    ) {
-        Map<String, Map<String, Long>> allFilterCounts = productService.getAllFilterCounts(pageRequest);
+        Map<String, Map<String, Long>> allFilterCounts = productService.getAllFilterCounts(mapRequest);
 
         return ResponseEntity.ok(allFilterCounts);
     }

@@ -4,6 +4,8 @@ import com.sellsphere.common.entity.CountryNotFoundException;
 import com.sellsphere.common.entity.CustomerNotFoundException;
 import com.sellsphere.common.entity.ErrorResponse;
 import com.sellsphere.common.entity.StateNotFoundException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -12,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @ControllerAdvice(annotations = RestController.class)
 @Order(1)
@@ -37,6 +42,18 @@ public class RestResponseEntityExceptionHandler {
                                                         HttpStatus.BAD_REQUEST.value()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, String> errors = ex.getConstraintViolations().stream()
+                .collect(Collectors.toMap(
+                        violation -> (violation).getPropertyPath().toString(),
+                        ConstraintViolation::getMessage,
+                        (message1, message2) -> message1 + "; " + message2
+                ));
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)

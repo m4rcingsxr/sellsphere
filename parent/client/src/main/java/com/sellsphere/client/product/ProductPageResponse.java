@@ -14,7 +14,6 @@ import java.util.List;
 public class ProductPageResponse {
 
     private int page;
-    private int pageSize;
     private long totalElements;
     private int totalPages;
 

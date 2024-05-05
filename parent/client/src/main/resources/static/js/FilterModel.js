@@ -101,7 +101,7 @@ class FilterModel {
     }
 
     async fetchFilterCounts(filters, minPrice, maxPrice) {
-        const baseUrl = `${MODULE_URL}filter/all_counts`;
+        const baseUrl = `${MODULE_URL}filter/filter_counts`;
         const pageRequestUrl = this.buildPageRequestUrl(baseUrl, filters, minPrice, maxPrice, 0);
         return await ajaxUtil.get(pageRequestUrl);
     }

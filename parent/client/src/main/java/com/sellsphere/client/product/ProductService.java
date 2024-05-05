@@ -3,12 +3,6 @@ package com.sellsphere.client.product;
 import com.sellsphere.common.entity.BasicProductDto;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetail;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,7 +10,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,68 +19,88 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private static final int PAGE_SIZE = 10;
-
+    private static final int PAGE_SIZE = 9;
     private final ProductRepository productRepository;
 
-    private final EntityManager entityManager;
+
+    public ProductPageResponse listProductsPage(ProductPageRequest productPageRequest) {
+
+        Integer pageNum = productPageRequest.getPageNum();
+
+        Integer categoryId = productPageRequest.getCategoryId();
+        String keyword = productPageRequest.getKeyword();
+
+        String[] filters = productPageRequest.getFilter();
+        BigDecimal maxPrice = productPageRequest.getMaxPrice();
+        BigDecimal minPrice = productPageRequest.getMinPrice();
+
+        Sort sort = generateSort(productPageRequest.getSortBy());
+        PageRequest pageRequest = PageRequest.of(pageNum, PAGE_SIZE, sort);
+
+        Page<Product> productPage;
+        Optional<Product> minProduct;
+        Optional<Product> maxProduct;
+
+        // check null values in if statements ... and apply correct spec
+        if (keyword != null) {
+            productPage = productRepository.findAll(
+                    ProductSpecification.filterProductsByKeywordInPriceBoundaries(keyword, filters,
+                                                                                  minPrice,
+                                                                                  maxPrice
+                    ), pageRequest);
+
+            minProduct = productRepository.findOne(
+                    ProductSpecification.minDiscountPriceInFilteredProductsByKeyword(keyword,
+                                                                                     filters,
+                                                                                     minPrice,
+                                                                                     maxPrice
+                    ));
+
+            maxProduct = productRepository.findOne(
+                    ProductSpecification.maxDiscountPriceInFilteredProductsByKeyword(keyword,
+                                                                                     filters,
+                                                                                     minPrice,
+                                                                                     maxPrice
+                    ));
 
 
-    public ProductPageResponse listProductsPage(ProductPageRequest pageRequest) {
-        Sort sort = generateSort(pageRequest.getSortBy());
+        } else if (categoryId != null) {
+            productPage = productRepository.findAll(
+                    ProductSpecification.filterProductsByCategoryInPriceBoundaries(categoryId,
+                                                                                   filters,
+                                                                                   minPrice,
+                                                                                   maxPrice
+                    ), pageRequest);
 
-        PageRequest pageable = PageRequest.of(pageRequest.getPageNum(), PAGE_SIZE, sort);
-        Page<Product> productPage = productRepository.findAll(
-                ProductSpecification.filterProducts(pageRequest), pageable);
+            minProduct = productRepository.findOne(
+                    ProductSpecification.minDiscountPriceInFilteredProductsByCategory(categoryId,
+                                                                                      filters,
+                                                                                      minPrice,
+                                                                                      maxPrice
+                    ));
 
-        BigDecimal minPrice = getMinPrice(pageRequest).orElse(pageRequest.getMinPrice());
-        BigDecimal maxPrice = getMaxPrice(pageRequest).orElse(pageRequest.getMaxPrice());
+            maxProduct = productRepository.findOne(
+                    ProductSpecification.maxDiscountPriceInFilteredProductsByCategory(categoryId,
+                                                                                      filters,
+                                                                                      minPrice,
+                                                                                      maxPrice
+                    ));
+
+
+        } else {
+            throw new IllegalStateException("Either categoryId or keyword is required");
+        }
+
+        if (minProduct.isPresent() && maxProduct.isPresent()) {
+            maxPrice = maxProduct.get().getDiscountPrice();
+            minPrice = minProduct.get().getDiscountPrice();
+        }
 
         return ProductPageResponse.builder().content(
                 productPage.map(BasicProductDto::new).toList()).page(
-                pageRequest.getPageNum()).totalElements(productPage.getTotalElements()).totalPages(
-                productPage.getTotalPages()).pageSize(PAGE_SIZE)
-                .minPrice(minPrice).maxPrice(maxPrice).build();
-    }
-
-    private Optional<BigDecimal> getMinPrice(ProductPageRequest pageRequest) {
-        Specification<Product> spec = ProductSpecification.minPriceProduct(pageRequest);
-
-        return getPriceBySpecification(spec);
-    }
-
-    private Optional<BigDecimal> getMaxPrice(ProductPageRequest pageRequest) {
-        Specification<Product> spec = ProductSpecification.maxPriceProduct(pageRequest);
-
-        return getPriceBySpecification(spec);
-    }
-
-    private Optional<BigDecimal> getPriceBySpecification(Specification<Product> spec) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<BigDecimal> criteriaQuery = criteriaBuilder.createQuery(BigDecimal.class);
-        Root<Product> root = criteriaQuery.from(Product.class);
-
-        // Calculate discounted price
-        Expression<BigDecimal> discountedPrice = criteriaBuilder.diff(
-                root.get("price"),
-                criteriaBuilder.prod(
-                        root.get("price"),
-                        criteriaBuilder.quot(root.get("discountPercent"), BigDecimal.valueOf(100))
-                ).as(BigDecimal.class)
-        ).as(BigDecimal.class);
-
-        criteriaQuery.select(discountedPrice);
-        criteriaQuery.where(spec.toPredicate(root, criteriaQuery, criteriaBuilder));
-
-        try {
-            return Optional.of(
-                    entityManager.createQuery(criteriaQuery)
-                            .setMaxResults(1)
-                            .getSingleResult()
-            );
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
+                productPageRequest.getPageNum()).totalElements(
+                productPage.getTotalElements()).totalPages(productPage.getTotalPages()).minPrice(
+                minPrice).maxPrice(maxPrice).build();
     }
 
     private Sort generateSort(String sortBy) {
@@ -98,25 +111,71 @@ public class ProductService {
         };
     }
 
+    public Map<String, Map<String, Long>> getAvailableFilterCounts(String keyword,
+                                                                   Integer categoryId,
+                                                                   String[] filter,
+                                                                   BigDecimal minPrice,
+                                                                   BigDecimal maxPrice) {
+        List<Product> filteredProducts;
+        Specification<Product> spec;
 
-    public Map<String, Map<String, Long>> getAvailableFilterCounts(ProductPageRequest pageRequest) {
-        List<Product> filteredProducts = productRepository.findAll(ProductSpecification.filterProducts(pageRequest));
+        if (keyword != null) {
+            if (filter != null && filter.length > 0 && minPrice != null && maxPrice != null) {
+                spec = ProductSpecification.filterProductsByKeywordInPriceBoundaries(
+                        keyword,
+                        filter,
+                        minPrice,
+                        maxPrice
+                );
+            } else if (minPrice != null && maxPrice != null) {
+                spec = ProductSpecification.productsByKeywordInPriceBoundaries(
+                        keyword, minPrice, maxPrice
+                );
+            } else {
+                spec = ProductSpecifications.hasKeyword(keyword);
+            }
+        } else if (categoryId != null) {
+            if (filter != null && filter.length > 0 && minPrice != null && maxPrice != null) {
+                spec = ProductSpecification.filterProductsByCategoryInPriceBoundaries(
+                        categoryId,
+                        filter,
+                        minPrice,
+                        maxPrice
+                );
+            } else if (minPrice != null && maxPrice != null) {
+                spec = ProductSpecification.productsByCategoryInPriceBoundaries(
+                        categoryId, minPrice, maxPrice
+                );
+            } else {
+                spec = ProductSpecifications.hasCategory(categoryId);
+            }
+        } else {
+            throw new IllegalStateException("Either categoryId or keyword is required");
+        }
 
-        return getProductCountFromProductDetail(filteredProducts);
+        filteredProducts = productRepository.findAll(spec);
+
+        return getProductMapCountFromProductDetails(filteredProducts);
     }
 
-    private static Map<String, Map<String, Long>> getProductCountFromProductDetail(List<Product> filteredProducts) {
-        // Initialize the map to store counts for both product details and brands
+    // Initialize the map to store counts for both product details and brands
+    private static Map<String, Map<String, Long>> getProductMapCountFromProductDetails(
+            List<Product> filteredProducts) {
 
         // Process product details
-        Map<String, Map<String, Long>> detailsCounts = filteredProducts.stream()
-                .flatMap(product -> product.getDetails().stream())
-                .collect(Collectors.groupingBy(ProductDetail::getName,
-                                               Collectors.groupingBy(ProductDetail::getValue, Collectors.counting())));
+        Map<String, Map<String, Long>> detailsCounts = filteredProducts.stream().flatMap(
+                product -> product.getDetails().stream()).collect(
+                Collectors.groupingBy(ProductDetail::getName,
+                                      Collectors.groupingBy(ProductDetail::getValue,
+                                                            Collectors.counting()
+                                      )
+                ));
 
         // Process brand details
-        Map<String, Long> brandCounts = filteredProducts.stream()
-                .collect(Collectors.groupingBy(product -> product.getBrand().getName(), Collectors.counting()));
+        Map<String, Long> brandCounts = filteredProducts.stream().collect(
+                Collectors.groupingBy(product -> product.getBrand().getName(),
+                                      Collectors.counting()
+                ));
 
         // Add brand counts to the result map
         Map<String, Map<String, Long>> productDetailCounts = new HashMap<>(detailsCounts);
@@ -125,27 +184,104 @@ public class ProductService {
         return productDetailCounts;
     }
 
-    public Map<String, Map<String, Long>> getAllFilterCounts(ProductPageRequest pageRequest) {
+    public Map<String, Map<String, Long>> getAllFilterCounts(FilterMapCountRequest mapRequest) {
         // Retrieve existing counts using getAvailableFilterCounts
-        Map<String, Map<String, Long>> counts = getAvailableFilterCounts(pageRequest);
+        Map<String, Map<String, Long>> counts = getAvailableFilterCounts(mapRequest.getKeyword(),
+                                                                         mapRequest.getCategoryId(),
+                                                                         mapRequest.getFilter(),
+                                                                         mapRequest.getMinPrice(),
+                                                                         mapRequest.getMaxPrice()
+        );
 
-        String[] filters = pageRequest.getFilter();
+        String[] filters = mapRequest.getFilter();
 
         // Retrieve all products matching category or keyword without filters
-        if ((filters != null && filters.length > 0) || (pageRequest.getMaxPrice() != null && pageRequest.getMinPrice() != null)) {
-            pageRequest.setFilter(null);
-            List<Product> allProducts = productRepository.findAll(ProductSpecification.hasCategoryOrKeyword(pageRequest));
+        List<Product> allProducts;
+        Specification<Product> spec;
 
-            // Initialize counts for all possible product details and brands to zero if not already present
-            for (Product product : allProducts) {
-                for (ProductDetail detail : product.getDetails()) {
-                    counts.computeIfAbsent(detail.getName(), k -> new HashMap<>()).putIfAbsent(
-                            detail.getValue(), 0L);
+
+        if (filters != null && filters.length > 0) {
+            if (mapRequest.getMaxPrice() != null && mapRequest.getMinPrice() != null) {
+                if (mapRequest.getCategoryId() != null) {
+
+                    // filters + price between + category
+                    spec = ProductSpecification.filterProductsByCategoryInPriceBoundaries(
+                            mapRequest.getCategoryId(),
+                            mapRequest.getFilter(),
+                            mapRequest.getMinPrice(),
+                            mapRequest.getMaxPrice()
+                    );
+                } else if (mapRequest.getKeyword() != null) {
+
+                    // filters + price between + keyword
+                    spec = ProductSpecification.filterProductsByKeywordInPriceBoundaries(
+                            mapRequest.getKeyword(),
+                            mapRequest.getFilter(),
+                            mapRequest.getMinPrice(),
+                            mapRequest.getMaxPrice()
+                    );
+                } else {
+                    throw new IllegalStateException(
+                            "Either keyword or categoryID must be provided");
                 }
-                // Initialize brand counts to zero if not already present
-                String brandName = product.getBrand().getName();
-                counts.computeIfAbsent("Brand", k -> new HashMap<>()).putIfAbsent(brandName, 0L);
+            } else {
+                if (mapRequest.getCategoryId() != null) {
+
+                    // filters + category
+                    spec = ProductSpecification.filterProductsByCategory(
+                            mapRequest.getCategoryId(),
+                            mapRequest.getFilter()
+                    );
+                } else if (mapRequest.getKeyword() != null) {
+
+                    // filters + keyword
+                    spec = ProductSpecification.filterProductsByKeyword(
+                            mapRequest.getKeyword(),
+                            mapRequest.getFilter()
+                    );
+                } else {
+                    throw new IllegalStateException(
+                            "Either keyword or categoryID must be provided");
+                }
             }
+
+
+        } else if (mapRequest.getMaxPrice() != null && mapRequest.getMinPrice() != null) {
+            if (mapRequest.getCategoryId() != null) {
+
+                // price between + category
+                spec = ProductSpecification.productsByCategoryInPriceBoundaries(
+                        mapRequest.getCategoryId(),
+                        mapRequest.getMinPrice(),
+                        mapRequest.getMaxPrice()
+                );
+            } else if (mapRequest.getKeyword() != null) {
+
+                // price between + keyword
+                spec = ProductSpecification.productsByKeywordInPriceBoundaries(
+                        mapRequest.getKeyword(),
+                        mapRequest.getMinPrice(),
+                        mapRequest.getMaxPrice()
+                );
+            } else {
+                throw new IllegalStateException("Either keyword or categoryID must be provided");
+            }
+        } else {
+            return counts;
+        }
+
+        allProducts = productRepository.findAll(spec);
+
+        // Initialize counts for all possible product details and brands to zero if not
+        // already present
+        for (Product product : allProducts) {
+            for (ProductDetail detail : product.getDetails()) {
+                counts.computeIfAbsent(detail.getName(), k -> new HashMap<>()).putIfAbsent(
+                        detail.getValue(), 0L);
+            }
+            // Initialize brand counts to zero if not already present
+            String brandName = product.getBrand().getName();
+            counts.computeIfAbsent("Brand", k -> new HashMap<>()).putIfAbsent(brandName, 0L);
         }
 
         // Sort the counts
@@ -162,13 +298,10 @@ public class ProductService {
 
         // Sort the product detail names
         if (filterSet != null) {
-            sortedEntries.sort(Comparator
-                                       .<Map.Entry<String, Map<String, Long>>, Boolean>comparing(
-                                               entry -> !containsFilteredValues(entry.getKey(),
-                                                                                entry.getValue(),
-                                                                                filterSet
-                                               ))
-                                       .thenComparing(Map.Entry::getKey));
+            sortedEntries.sort(Comparator.<Map.Entry<String, Map<String, Long>>, Boolean>comparing(
+                    entry -> !containsFilteredValues(entry.getKey(), entry.getValue(),
+                                                     filterSet
+                    )).thenComparing(Map.Entry::getKey));
         } else {
             sortedEntries.sort(Map.Entry.comparingByKey());
         }
@@ -181,11 +314,9 @@ public class ProductService {
 
             List<Map.Entry<String, Long>> sortedValues = new ArrayList<>(values.entrySet());
             if (filterSet != null) {
-                sortedValues.sort(Comparator
-                                          .<Map.Entry<String, Long>, Boolean>comparing(
-                                                  e -> !filterSet.contains(
-                                                          detailName + "," + e.getKey()))
-                                          .thenComparing(Map.Entry::getKey));
+                sortedValues.sort(Comparator.<Map.Entry<String, Long>, Boolean>comparing(
+                        e -> !filterSet.contains(detailName + "," + e.getKey())).thenComparing(
+                        Map.Entry::getKey));
             } else {
                 sortedValues.sort(Map.Entry.comparingByKey());
             }
