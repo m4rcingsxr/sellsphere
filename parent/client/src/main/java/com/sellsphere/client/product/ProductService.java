@@ -37,59 +37,47 @@ public class ProductService {
         Sort sort = generateSort(productPageRequest.getSortBy());
         PageRequest pageRequest = PageRequest.of(pageNum, PAGE_SIZE, sort);
 
-        Page<Product> productPage;
-        Optional<Product> minProduct;
-        Optional<Product> maxProduct;
 
-        // check null values in if statements ... and apply correct spec
+
+        Specification<Product> spec;
+
         if (keyword != null) {
-            productPage = productRepository.findAll(
-                    ProductSpecification.filterProductsByKeywordInPriceBoundaries(keyword, filters,
-                                                                                  minPrice,
-                                                                                  maxPrice
-                    ), pageRequest);
-
-            minProduct = productRepository.findOne(
-                    ProductSpecification.minDiscountPriceInFilteredProductsByKeyword(keyword,
-                                                                                     filters,
-                                                                                     minPrice,
-                                                                                     maxPrice
-                    ));
-
-            maxProduct = productRepository.findOne(
-                    ProductSpecification.maxDiscountPriceInFilteredProductsByKeyword(keyword,
-                                                                                     filters,
-                                                                                     minPrice,
-                                                                                     maxPrice
-                    ));
-
-
+            if (productPageRequest.getFilter() != null && productPageRequest.getFilter().length > 0 && minPrice != null && maxPrice != null) {
+                spec = ProductSpecification.filterProductsByKeywordInPriceBoundaries(
+                        keyword,
+                        productPageRequest.getFilter(),
+                        minPrice,
+                        maxPrice
+                );
+            } else if (productPageRequest.getMinPrice() != null && productPageRequest.getMaxPrice() != null) {
+                spec = ProductSpecification.productsByKeywordInPriceBoundaries(
+                        keyword, minPrice, maxPrice
+                );
+            } else {
+                spec = ProductSpecifications.hasKeyword(keyword);
+            }
         } else if (categoryId != null) {
-            productPage = productRepository.findAll(
-                    ProductSpecification.filterProductsByCategoryInPriceBoundaries(categoryId,
-                                                                                   filters,
-                                                                                   minPrice,
-                                                                                   maxPrice
-                    ), pageRequest);
-
-            minProduct = productRepository.findOne(
-                    ProductSpecification.minDiscountPriceInFilteredProductsByCategory(categoryId,
-                                                                                      filters,
-                                                                                      minPrice,
-                                                                                      maxPrice
-                    ));
-
-            maxProduct = productRepository.findOne(
-                    ProductSpecification.maxDiscountPriceInFilteredProductsByCategory(categoryId,
-                                                                                      filters,
-                                                                                      minPrice,
-                                                                                      maxPrice
-                    ));
-
-
+            if (productPageRequest.getFilter() != null && productPageRequest.getFilter().length > 0 && minPrice != null && maxPrice != null) {
+                spec = ProductSpecification.filterProductsByCategoryInPriceBoundaries(
+                        categoryId,
+                        productPageRequest.getFilter(),
+                        minPrice,
+                        maxPrice
+                );
+            } else if (productPageRequest.getMinPrice() != null && productPageRequest.getMaxPrice() != null) {
+                spec = ProductSpecification.productsByCategoryInPriceBoundaries(
+                        categoryId, minPrice, maxPrice
+                );
+            } else {
+                spec = ProductSpecifications.hasCategory(categoryId);
+            }
         } else {
             throw new IllegalStateException("Either categoryId or keyword is required");
         }
+
+        Page<Product> productPage = productRepository.findAll(spec, pageRequest);
+        Optional<Product> minProduct = productRepository.findOne(spec.and(ProductSpecifications.minPriceProduct()));
+        Optional<Product> maxProduct = productRepository.findOne(spec.and(ProductSpecifications.maxPriceProduct()));
 
         if (minProduct.isPresent() && maxProduct.isPresent()) {
             maxPrice = maxProduct.get().getDiscountPrice();
