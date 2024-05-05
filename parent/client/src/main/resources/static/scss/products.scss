@@ -90,3 +90,30 @@
 .side-filter-container {
   max-height: 700px;
 }
+
+// Pagination
+.page-item {
+  position: relative;
+}
+
+.page-item .select-page {
+  display: block;
+}
+
+.page-item .page-input {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-item:hover .select-page {
+  display: none;
+}
+
+.page-item:hover .page-input {
+  display: block;
+  width: 75px;
+}

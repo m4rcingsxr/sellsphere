@@ -21,9 +21,9 @@ class FilterModel {
         }
     }
 
-    async handleFilterChange(filters, minPrice, maxPrice) {
+    async handleFilterChange(filters, pageNum, minPrice, maxPrice) {
         try {
-            await this.fetchAndHandleProducts(filters, 0, minPrice, maxPrice);
+            await this.fetchAndHandleProducts(filters, pageNum, minPrice, maxPrice);
             await this.updateFilterDisplay(filters, minPrice, maxPrice);
             console.info("Successfully handled filter change");
         } catch (error) {
@@ -49,11 +49,13 @@ class FilterModel {
             FilterView.renderProducts(productsPage);
 
             FilterView.setPriceBoundaries(productsPage.minPrice, productsPage.maxPrice);
+            FilterView.renderPagination(productsPage);
 
         } catch (error) {
             throw error;
         }
     }
+
 
     async updateFilterDisplay(filters, minPrice, maxPrice) {
         try {
@@ -80,31 +82,31 @@ class FilterModel {
 
     async fetchProductsPage(filters, pageNum, minPrice, maxPrice) {
         const baseUrl = `${MODULE_URL}filter/products`;
-        const fullUrl = this.buildPageRequestUrl(baseUrl, filters,minPrice, maxPrice, pageNum);
+        const fullUrl = this.buildPageRequestUrl(baseUrl, filters, minPrice, maxPrice, pageNum);
         return await ajaxUtil.get(fullUrl);
     }
 
     gatherProductSelectedFilters() {
-            const selectedFiltersSet = new Set();
-            document.querySelectorAll('#filters > div > .d-flex.flex-column.gap-1.mt-2, #allFilters .row.g-3.mt-1').forEach(group => {
-                const filterName = group.previousElementSibling.textContent.trim();
-                const selectedCheckboxes = group.querySelectorAll('input.form-check-input:checked');
-                selectedCheckboxes.forEach(checkbox => {
-                    let value = decodeURIComponent(checkbox.value).trim();
-                    selectedFiltersSet.add(`${filterName},${value}`);
-                });
+        const selectedFiltersSet = new Set();
+        document.querySelectorAll('#filters > div > .d-flex.flex-column.gap-1.mt-2, #allFilters .row.g-3.mt-1').forEach(group => {
+            const filterName = group.previousElementSibling.textContent.trim();
+            const selectedCheckboxes = group.querySelectorAll('input.form-check-input:checked');
+            selectedCheckboxes.forEach(checkbox => {
+                let value = decodeURIComponent(checkbox.value).trim();
+                selectedFiltersSet.add(`${filterName},${value}`);
             });
+        });
 
-            return Array.from(selectedFiltersSet);
+        return Array.from(selectedFiltersSet);
     }
 
     async fetchFilterCounts(filters, minPrice, maxPrice) {
         const baseUrl = `${MODULE_URL}filter/all_counts`;
-        const pageRequestUrl = this.buildPageRequestUrl(baseUrl, filters,minPrice, maxPrice,0);
+        const pageRequestUrl = this.buildPageRequestUrl(baseUrl, filters, minPrice, maxPrice, 0);
         return await ajaxUtil.get(pageRequestUrl);
     }
 
-    buildPageRequestUrl(baseUrl, filters,minPrice, maxPrice, pageNum) {
+    buildPageRequestUrl(baseUrl, filters, minPrice, maxPrice, pageNum) {
         const params = new URLSearchParams();
         const sortBy = $("#sortBy").val();
 
@@ -116,7 +118,7 @@ class FilterModel {
         filters?.forEach(filter => params.append("filter", filter));
 
 
-        if(minPrice && maxPrice) {
+        if (minPrice && maxPrice) {
             params.append("minPrice", minPrice);
             params.append("maxPrice", maxPrice);
         }
