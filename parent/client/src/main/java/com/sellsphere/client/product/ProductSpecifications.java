@@ -66,52 +66,26 @@ public class ProductSpecifications {
         };
     }
 
-    public static Specification<Product> minPriceProduct() {
+
+    public static Specification<Product> hasMinOrMaxDiscountPrice(boolean isMinPrice) {
         return (root, query, criteriaBuilder) -> {
-
-            // Calculate discounted price
             Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root, criteriaBuilder);
-
-            // Subquery to find the minimum discounted price
             Subquery<BigDecimal> subquery = query.subquery(BigDecimal.class);
             Root<Product> subRoot = subquery.from(Product.class);
             Expression<BigDecimal> subDiscountedPrice = getDiscountPriceExpression(subRoot, criteriaBuilder);
-            subquery.select(criteriaBuilder.min(subDiscountedPrice));
-
-            // Where clause to match the minimum discounted price
+            subquery.select(isMinPrice ? criteriaBuilder.min(subDiscountedPrice) : criteriaBuilder.max(subDiscountedPrice));
             return criteriaBuilder.equal(discountedPrice, subquery);
         };
     }
 
-    public static Specification<Product> maxPriceProduct() {
-        return (root, query, criteriaBuilder) -> {
-
-            // Calculate discounted price
-            Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root, criteriaBuilder);
-
-            // Subquery to find the maximum discounted price
-            Subquery<BigDecimal> subquery = query.subquery(BigDecimal.class);
-            Root<Product> subRoot = subquery.from(Product.class);
-            Expression<BigDecimal> subDiscountedPrice = getDiscountPriceExpression(subRoot, criteriaBuilder);
-            subquery.select(criteriaBuilder.max(subDiscountedPrice));
-
-            // Where clause to match the maximum discounted price
-            return criteriaBuilder.equal(discountedPrice, subquery);
-        };
-    }
-
-    private static Expression<BigDecimal> getDiscountPriceExpression(Root<Product> root,
-                                                                     CriteriaBuilder criteriaBuilder) {
+    private static Expression<BigDecimal> getDiscountPriceExpression(Root<Product> root, CriteriaBuilder criteriaBuilder) {
         return criteriaBuilder.diff(
                 root.get("price"),
                 criteriaBuilder.prod(
                         root.get("price"),
-                        criteriaBuilder.quot(root.get("discountPercent"),
-                                             BigDecimal.valueOf(100)
-                        )
+                        criteriaBuilder.quot(root.get("discountPercent"), BigDecimal.valueOf(100))
                 ).as(BigDecimal.class)
         ).as(BigDecimal.class);
     }
-
 
 }

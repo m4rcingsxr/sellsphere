@@ -2,100 +2,91 @@ package com.sellsphere.client.product;
 
 import com.sellsphere.client.category.CategoryRepository;
 import com.sellsphere.common.entity.Category;
-import com.sellsphere.common.entity.CategoryNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.core.MethodParameter;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ProductFilterArgumentResolverTest {
-
-    private ProductFilterArgumentResolver resolver;
 
     @Mock
     private CategoryRepository categoryRepository;
 
     @Mock
+    private Validator validator;
+
+    @InjectMocks
+    private ProductFilterArgumentResolver resolver;
+
     private NativeWebRequest webRequest;
+    private MockHttpServletRequest servletRequest;
 
-    @Mock
-    private MethodParameter methodParameter;
-
-    @Mock
-    private ModelAndViewContainer mavContainer;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        resolver = new ProductFilterArgumentResolver(categoryRepository);
-    }
 
     @Test
-    void testResolveArgument_WithValidCategoryAlias() throws Exception {
-        when(webRequest.getParameter("category_alias")).thenReturn("electronics");
-        when(webRequest.getParameter("keyword")).thenReturn(null);
-        when(webRequest.getParameterValues("filter")).thenReturn(new String[]{"new", "popular"});
-        when(webRequest.getParameter("pageNum")).thenReturn("1");
+    void givenValidQueryParameters_whenResolveArgument_thenShouldReturnCorrectProductPageRequest() throws Exception {
+        servletRequest.setRequestURI("/products");
+        servletRequest.setParameter("pageNum", "1");
+        servletRequest.setParameter("minPrice", "10.0");
+        servletRequest.setParameter("maxPrice", "100.0");
 
-        Category category = new Category();
-        category.setId(1);
-        when(categoryRepository.findByAliasAndEnabledIsTrue("electronics")).thenReturn(Optional.of(category));
+        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(new Category()));
+        when(validator.validate(any(ProductPageRequest.class))).thenReturn(Collections.emptySet());
 
-        ProductPageRequest result = (ProductPageRequest) resolver.resolveArgument(methodParameter, mavContainer, webRequest, null);
+        ProductPageRequest result = (ProductPageRequest) resolver.resolveArgument(null, null, webRequest, null);
 
         assertNotNull(result);
-        assertArrayEquals(new String[]{"new", "popular"}, result.getFilter());
-        assertEquals("electronics", result.getCategoryAlias());
-        assertNull(result.getKeyword());
         assertEquals(1, result.getPageNum());
-        assertEquals(1, result.getCategoryId());
+        assertEquals(BigDecimal.valueOf(10.0), result.getMinPrice());
+        assertEquals(BigDecimal.valueOf(100.0), result.getMaxPrice());
     }
 
     @Test
-    void testResolveArgument_WithValidKeyword() throws Exception {
-        when(webRequest.getParameter("category_alias")).thenReturn(null);
-        when(webRequest.getParameter("keyword")).thenReturn("laptop");
-        when(webRequest.getParameterValues("filter")).thenReturn(new String[]{"discounted"});
-        when(webRequest.getParameter("pageNum")).thenReturn("2");
+    void givenValidQueryParameters_whenResolveArgument_thenShouldReturnCorrectMapCountRequest() throws Exception {
+        servletRequest.setRequestURI("/filter_counts");
+        servletRequest.setParameter("minPrice", "5.0");
+        servletRequest.setParameter("maxPrice", "50.0");
 
-        ProductPageRequest result = (ProductPageRequest) resolver.resolveArgument(methodParameter, mavContainer, webRequest, null);
+        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(new Category()));
+        when(validator.validate(any(FilterMapCountRequest.class))).thenReturn(Collections.emptySet());
+
+        FilterMapCountRequest result = (FilterMapCountRequest) resolver.resolveArgument(null, null, webRequest, null);
 
         assertNotNull(result);
-        assertArrayEquals(new String[]{"discounted"}, result.getFilter());
-        assertNull(result.getCategoryAlias());
-        assertEquals("laptop", result.getKeyword());
-        assertEquals(2, result.getPageNum());
-        assertNull(result.getCategoryId());
+        assertEquals(BigDecimal.valueOf(5.0), result.getMinPrice());
+        assertEquals(BigDecimal.valueOf(50.0), result.getMaxPrice());
     }
 
     @Test
-    void testResolveArgument_MissingCategoryAliasAndKeyword() {
-        when(webRequest.getParameter("category_alias")).thenReturn(null);
-        when(webRequest.getParameter("keyword")).thenReturn(null);
+    void givenNotValidParameters_whenResolveArgument_thenShouldThrowExceptionWithExpectedViolations() throws Exception {
+        servletRequest.setRequestURI("/products");
+        servletRequest.setParameter("pageNum", "1");
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            resolver.resolveArgument(methodParameter, mavContainer, webRequest, null);
-        });
-    }
+        ConstraintViolation<ProductPageRequest> violation = mock(ConstraintViolation.class);
+        Set<ConstraintViolation<ProductPageRequest>> violations = Collections.singleton(violation);
 
-    @Test
-    void testResolveArgument_CategoryNotFound() {
-        when(webRequest.getParameter("category_alias")).thenReturn("nonexistent");
-        when(webRequest.getParameter("keyword")).thenReturn(null);
+        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(new Category()));
+        when(validator.validate(any(ProductPageRequest.class))).thenReturn(violations);
 
-        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.empty());
+        ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () ->
+                resolver.resolveArgument(null, null, webRequest, null)
+        );
 
-        assertThrows(CategoryNotFoundException.class, () -> {
-            resolver.resolveArgument(methodParameter, mavContainer, webRequest, null);
-        });
+        assertEquals(violations, exception.getConstraintViolations());
     }
 }

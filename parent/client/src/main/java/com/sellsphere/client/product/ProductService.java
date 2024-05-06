@@ -14,7 +14,10 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+/**
+ * Service class for handling product-related operations.
+ * Provides methods to filter, sort, and count product details based on user-provided criteria.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -23,74 +26,53 @@ public class ProductService {
     private final ProductRepository productRepository;
 
 
-    public ProductPageResponse listProductsPage(ProductPageRequest productPageRequest) {
+    /**
+     * Lists products based on the provided product page request.
+     *
+     * @param productPageRequest the request object containing filtering, sorting, and pagination
+     *                           information.
+     * @return a response object containing the list of products and pagination details.
+     */
+    public ProductPageResponse listProducts(ProductPageRequest productPageRequest) {
 
-        Integer pageNum = productPageRequest.getPageNum();
+        // Create a specification for filtering products based on the request parameters.
+        Specification<Product> spec = ProductSpecification.filterProducts(
+                productPageRequest.getCategoryId(), productPageRequest.getKeyword(),
+                productPageRequest.getFilter(), productPageRequest.getMinPrice(),
+                productPageRequest.getMaxPrice()
+        );
 
-        Integer categoryId = productPageRequest.getCategoryId();
-        String keyword = productPageRequest.getKeyword();
-
-        String[] filters = productPageRequest.getFilter();
-        BigDecimal maxPrice = productPageRequest.getMaxPrice();
-        BigDecimal minPrice = productPageRequest.getMinPrice();
-
+        // Generate the sort order based on the provided sort parameter.
         Sort sort = generateSort(productPageRequest.getSortBy());
-        PageRequest pageRequest = PageRequest.of(pageNum, PAGE_SIZE, sort);
+        PageRequest pageRequest = PageRequest.of(productPageRequest.getPageNum(), PAGE_SIZE, sort);
 
-
-
-        Specification<Product> spec;
-
-        if (keyword != null) {
-            if (productPageRequest.getFilter() != null && productPageRequest.getFilter().length > 0 && minPrice != null && maxPrice != null) {
-                spec = ProductSpecification.filterProductsByKeywordInPriceBoundaries(
-                        keyword,
-                        productPageRequest.getFilter(),
-                        minPrice,
-                        maxPrice
-                );
-            } else if (productPageRequest.getMinPrice() != null && productPageRequest.getMaxPrice() != null) {
-                spec = ProductSpecification.productsByKeywordInPriceBoundaries(
-                        keyword, minPrice, maxPrice
-                );
-            } else {
-                spec = ProductSpecifications.hasKeyword(keyword);
-            }
-        } else if (categoryId != null) {
-            if (productPageRequest.getFilter() != null && productPageRequest.getFilter().length > 0 && minPrice != null && maxPrice != null) {
-                spec = ProductSpecification.filterProductsByCategoryInPriceBoundaries(
-                        categoryId,
-                        productPageRequest.getFilter(),
-                        minPrice,
-                        maxPrice
-                );
-            } else if (productPageRequest.getMinPrice() != null && productPageRequest.getMaxPrice() != null) {
-                spec = ProductSpecification.productsByCategoryInPriceBoundaries(
-                        categoryId, minPrice, maxPrice
-                );
-            } else {
-                spec = ProductSpecifications.hasCategory(categoryId);
-            }
-        } else {
-            throw new IllegalStateException("Either categoryId or keyword is required");
-        }
-
+        // Fetch the products page based on the specification and pagination info.
         Page<Product> productPage = productRepository.findAll(spec, pageRequest);
-        Optional<Product> minProduct = productRepository.findOne(spec.and(ProductSpecifications.minPriceProduct()));
-        Optional<Product> maxProduct = productRepository.findOne(spec.and(ProductSpecifications.maxPriceProduct()));
 
-        if (minProduct.isPresent() && maxProduct.isPresent()) {
-            maxPrice = maxProduct.get().getDiscountPrice();
-            minPrice = minProduct.get().getDiscountPrice();
-        }
+        // Find the minimum and maximum discount prices within the filtered products.
+        Optional<Product> minProduct = productRepository.findOne(
+                ProductSpecification.minDiscountPrice(spec));
+        Optional<Product> maxProduct = productRepository.findOne(
+                ProductSpecification.maxDiscountPrice(spec));
 
+        // Build and return the response containing the products and additional pagination and
+        // price details.
         return ProductPageResponse.builder().content(
                 productPage.map(BasicProductDto::new).toList()).page(
                 productPageRequest.getPageNum()).totalElements(
                 productPage.getTotalElements()).totalPages(productPage.getTotalPages()).minPrice(
-                minPrice).maxPrice(maxPrice).build();
+                minProduct.map(Product::getDiscountPrice).orElse(
+                        productPageRequest.getMinPrice())).maxPrice(
+                maxProduct.map(Product::getDiscountPrice).orElse(
+                        productPageRequest.getMinPrice())).build();
     }
 
+    /**
+     * Generates a Sort object based on the provided sort parameter.
+     *
+     * @param sortBy the sort parameter specifying the sorting criteria.
+     * @return a Sort object defining the sorting order.
+     */
     private Sort generateSort(String sortBy) {
         return switch (ProductSort.valueOf(sortBy)) {
             case LOWEST -> Sort.by(Sort.Direction.ASC, "price");
@@ -99,58 +81,48 @@ public class ProductService {
         };
     }
 
-    public Map<String, Map<String, Long>> getAvailableFilterCounts(String keyword,
-                                                                   Integer categoryId,
-                                                                   String[] filter,
-                                                                   BigDecimal minPrice,
-                                                                   BigDecimal maxPrice) {
-        List<Product> filteredProducts;
-        Specification<Product> spec;
+    /**
+     * Calculates the available filter counts for product details and brands based on the
+     * provided criteria.
+     * Excludes values where products do not appear.
+     *
+     * @param keyword    the keyword for filtering products.
+     * @param categoryId the category ID for filtering products.
+     * @param filter     the filter criteria for product details.
+     * @param minPrice   the minimum price for filtering products.
+     * @param maxPrice   the maximum price for filtering products.
+     * @return a map containing the counts of available product details and brands.
+     */
+    public Map<String, Map<String, Long>> calculateAvailableFilterCounts(String keyword,
+                                                                         Integer categoryId,
+                                                                         String[] filter,
+                                                                         BigDecimal minPrice,
+                                                                         BigDecimal maxPrice) {
 
-        if (keyword != null) {
-            if (filter != null && filter.length > 0 && minPrice != null && maxPrice != null) {
-                spec = ProductSpecification.filterProductsByKeywordInPriceBoundaries(
-                        keyword,
-                        filter,
-                        minPrice,
-                        maxPrice
-                );
-            } else if (minPrice != null && maxPrice != null) {
-                spec = ProductSpecification.productsByKeywordInPriceBoundaries(
-                        keyword, minPrice, maxPrice
-                );
-            } else {
-                spec = ProductSpecifications.hasKeyword(keyword);
-            }
-        } else if (categoryId != null) {
-            if (filter != null && filter.length > 0 && minPrice != null && maxPrice != null) {
-                spec = ProductSpecification.filterProductsByCategoryInPriceBoundaries(
-                        categoryId,
-                        filter,
-                        minPrice,
-                        maxPrice
-                );
-            } else if (minPrice != null && maxPrice != null) {
-                spec = ProductSpecification.productsByCategoryInPriceBoundaries(
-                        categoryId, minPrice, maxPrice
-                );
-            } else {
-                spec = ProductSpecifications.hasCategory(categoryId);
-            }
-        } else {
-            throw new IllegalStateException("Either categoryId or keyword is required");
-        }
+        // Create a specification for filtering products based on the provided criteria.
+        Specification<Product> spec = ProductSpecification.filterProducts(categoryId, keyword,
+                                                                          filter, minPrice, maxPrice
+        );
 
-        filteredProducts = productRepository.findAll(spec);
+        // Fetch the filtered products based on the specification.
+        List<Product> filteredProducts = productRepository.findAll(spec);
 
-        return getProductMapCountFromProductDetails(filteredProducts);
+        // Aggregate the product details and return the counts.
+        return aggregateProductDetails(filteredProducts);
     }
 
-    // Initialize the map to store counts for both product details and brands
-    private static Map<String, Map<String, Long>> getProductMapCountFromProductDetails(
+
+    /**
+     * Aggregates product details and counts their occurrences in the filtered products.
+     * Also counts the occurrences of each brand.
+     *
+     * @param filteredProducts the list of filtered products.
+     * @return a map containing the counts of product details and brands.
+     */
+    private static Map<String, Map<String, Long>> aggregateProductDetails(
             List<Product> filteredProducts) {
 
-        // Process product details
+        // Group and count product details.
         Map<String, Map<String, Long>> detailsCounts = filteredProducts.stream().flatMap(
                 product -> product.getDetails().stream()).collect(
                 Collectors.groupingBy(ProductDetail::getName,
@@ -159,132 +131,78 @@ public class ProductService {
                                       )
                 ));
 
-        // Process brand details
+        // Group and count brands.
         Map<String, Long> brandCounts = filteredProducts.stream().collect(
                 Collectors.groupingBy(product -> product.getBrand().getName(),
                                       Collectors.counting()
                 ));
 
-        // Add brand counts to the result map
+        // Combine product detail counts and brand counts into a single map.
         Map<String, Map<String, Long>> productDetailCounts = new HashMap<>(detailsCounts);
         productDetailCounts.put("Brand", brandCounts);
 
         return productDetailCounts;
     }
 
-    public Map<String, Map<String, Long>> getAllFilterCounts(FilterMapCountRequest mapRequest) {
-        // Retrieve existing counts using getAvailableFilterCounts
-        Map<String, Map<String, Long>> counts = getAvailableFilterCounts(mapRequest.getKeyword(),
-                                                                         mapRequest.getCategoryId(),
-                                                                         mapRequest.getFilter(),
-                                                                         mapRequest.getMinPrice(),
-                                                                         mapRequest.getMaxPrice()
+    /**
+     * Calculates all filter counts for product details and brands based on the provided criteria.
+     * Includes values to display in the UI where products do not appear (counts as 0).
+     *
+     * @param mapRequest the request object containing filtering criteria.
+     * @return a map containing the counts of all product details and brands, including those
+     * with zero occurrences.
+     */
+    public Map<String, Map<String, Long>> calculateAllFilterCounts(
+            FilterMapCountRequest mapRequest) {
+
+        // Calculate the available filter counts.
+        Map<String, Map<String, Long>> counts = calculateAvailableFilterCounts(
+                mapRequest.getKeyword(), mapRequest.getCategoryId(), mapRequest.getFilter(),
+                mapRequest.getMinPrice(), mapRequest.getMaxPrice()
         );
 
-        String[] filters = mapRequest.getFilter();
-
-        // Retrieve all products matching category or keyword without filters
-        List<Product> allProducts;
-        Specification<Product> spec;
-
-
-        if (filters != null && filters.length > 0) {
-            if (mapRequest.getMaxPrice() != null && mapRequest.getMinPrice() != null) {
-                if (mapRequest.getCategoryId() != null) {
-
-                    // filters + price between + category
-                    spec = ProductSpecification.filterProductsByCategoryInPriceBoundaries(
-                            mapRequest.getCategoryId(),
-                            mapRequest.getFilter(),
-                            mapRequest.getMinPrice(),
-                            mapRequest.getMaxPrice()
-                    );
-                } else if (mapRequest.getKeyword() != null) {
-
-                    // filters + price between + keyword
-                    spec = ProductSpecification.filterProductsByKeywordInPriceBoundaries(
-                            mapRequest.getKeyword(),
-                            mapRequest.getFilter(),
-                            mapRequest.getMinPrice(),
-                            mapRequest.getMaxPrice()
-                    );
-                } else {
-                    throw new IllegalStateException(
-                            "Either keyword or categoryID must be provided");
-                }
-            } else {
-                if (mapRequest.getCategoryId() != null) {
-
-                    // filters + category
-                    spec = ProductSpecification.filterProductsByCategory(
-                            mapRequest.getCategoryId(),
-                            mapRequest.getFilter()
-                    );
-                } else if (mapRequest.getKeyword() != null) {
-
-                    // filters + keyword
-                    spec = ProductSpecification.filterProductsByKeyword(
-                            mapRequest.getKeyword(),
-                            mapRequest.getFilter()
-                    );
-                } else {
-                    throw new IllegalStateException(
-                            "Either keyword or categoryID must be provided");
-                }
-            }
+        // Create a specification for filtering products based on the provided criteria.
+        // Even if filters was provided we need to ensure that we retrieve all the products to include 0
+        Specification<Product> spec = ProductSpecification.hasCategoryAndKeyword(
+                mapRequest.getCategoryId(),
+                mapRequest.getKeyword()
+        );
+        List<Product> allProducts = productRepository.findAll(spec);
 
 
-        } else if (mapRequest.getMaxPrice() != null && mapRequest.getMinPrice() != null) {
-            if (mapRequest.getCategoryId() != null) {
-
-                // price between + category
-                spec = ProductSpecification.productsByCategoryInPriceBoundaries(
-                        mapRequest.getCategoryId(),
-                        mapRequest.getMinPrice(),
-                        mapRequest.getMaxPrice()
-                );
-            } else if (mapRequest.getKeyword() != null) {
-
-                // price between + keyword
-                spec = ProductSpecification.productsByKeywordInPriceBoundaries(
-                        mapRequest.getKeyword(),
-                        mapRequest.getMinPrice(),
-                        mapRequest.getMaxPrice()
-                );
-            } else {
-                throw new IllegalStateException("Either keyword or categoryID must be provided");
-            }
-        } else {
-            return counts;
-        }
-
-        allProducts = productRepository.findAll(spec);
-
-        // Initialize counts for all possible product details and brands to zero if not
-        // already present
+        // Ensure all possible product details and brands are included in the counts map,
+        // initializing counts to zero if not already present.
         for (Product product : allProducts) {
             for (ProductDetail detail : product.getDetails()) {
                 counts.computeIfAbsent(detail.getName(), k -> new HashMap<>()).putIfAbsent(
                         detail.getValue(), 0L);
             }
-            // Initialize brand counts to zero if not already present
             String brandName = product.getBrand().getName();
             counts.computeIfAbsent("Brand", k -> new HashMap<>()).putIfAbsent(brandName, 0L);
         }
 
-        // Sort the counts
-        return sortCounts(counts, filters);
+        // Sort the filter counts and return the sorted map.
+        return sortFilterCounts(counts, mapRequest.getFilter());
     }
 
-    public Map<String, Map<String, Long>> sortCounts(Map<String, Map<String, Long>> counts,
-                                                     String[] filters) {
+    /**
+     * Sorts the filter counts first by whether the user has checked the product detail, then by
+     * product detail name.
+     *
+     * @param counts  the map of filter counts to be sorted.
+     * @param filters the array of filters provided by the user.
+     * @return a sorted map of filter counts.
+     */
+    private Map<String, Map<String, Long>> sortFilterCounts(Map<String, Map<String, Long>> counts,
+                                                            String[] filters) {
         Set<String> filterSet = filters != null ? new HashSet<>(Arrays.asList(filters)) : null;
 
-        // Create a list of entries to sort
+        // Convert the counts map to a list of entries for sorting.
         List<Map.Entry<String, Map<String, Long>>> sortedEntries = new ArrayList<>(
                 counts.entrySet());
 
-        // Sort the product detail names
+        // Sort the entries first by whether the user has checked the product detail, then by
+        // product detail name.
         if (filterSet != null) {
             sortedEntries.sort(Comparator.<Map.Entry<String, Map<String, Long>>, Boolean>comparing(
                     entry -> !containsFilteredValues(entry.getKey(), entry.getValue(),
@@ -294,16 +212,16 @@ public class ProductService {
             sortedEntries.sort(Map.Entry.comparingByKey());
         }
 
-        // Sort the values under each product detail name
+        // Create a sorted map from the sorted entries.
         Map<String, Map<String, Long>> sortedCounts = new LinkedHashMap<>();
         for (Map.Entry<String, Map<String, Long>> entry : sortedEntries) {
-            String detailName = entry.getKey();
-            Map<String, Long> values = entry.getValue();
+            List<Map.Entry<String, Long>> sortedValues = new ArrayList<>(
+                    entry.getValue().entrySet());
 
-            List<Map.Entry<String, Long>> sortedValues = new ArrayList<>(values.entrySet());
+            // Sort the values under each product detail name.
             if (filterSet != null) {
                 sortedValues.sort(Comparator.<Map.Entry<String, Long>, Boolean>comparing(
-                        e -> !filterSet.contains(detailName + "," + e.getKey())).thenComparing(
+                        e -> !filterSet.contains(entry.getKey() + "," + e.getKey())).thenComparing(
                         Map.Entry::getKey));
             } else {
                 sortedValues.sort(Map.Entry.comparingByKey());
@@ -314,12 +232,20 @@ public class ProductService {
                 sortedValueMap.put(sortedEntry.getKey(), sortedEntry.getValue());
             }
 
-            sortedCounts.put(detailName, sortedValueMap);
+            sortedCounts.put(entry.getKey(), sortedValueMap);
         }
 
         return sortedCounts;
     }
 
+    /**
+     * Checks if the filter set contains any of the values for the given detail name.
+     *
+     * @param detailName the name of the product detail.
+     * @param values     the map of values for the product detail.
+     * @param filterSet  the set of filters provided by the user.
+     * @return true if the filter set contains any of the values for the given detail name, false otherwise.
+     */
     private boolean containsFilteredValues(String detailName, Map<String, Long> values,
                                            Set<String> filterSet) {
         for (String value : values.keySet()) {

@@ -1,99 +1,53 @@
 package com.sellsphere.client.product;
 
 import com.sellsphere.common.entity.Product;
+import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 
+@UtilityClass
 public class ProductSpecification {
 
-    public static Specification<Product> filterProductsByCategoryInPriceBoundaries(
+    public static Specification<Product> filterProducts(
             Integer categoryId,
+            String keyword,
             String[] filters,
             BigDecimal minPrice,
             BigDecimal maxPrice) {
-        return Specification.where(ProductSpecifications.hasCategory(categoryId))
-                .and(ProductSpecifications.hasDiscountPriceInRange(minPrice, maxPrice))
-                .and(ProductSpecifications.hasFilters(filters));
+        Specification<Product> spec = hasCategoryAndKeyword(categoryId, keyword);
+
+        if (filters != null && filters.length > 0) {
+            spec = spec.and(ProductSpecifications.hasFilters(filters));
+        }
+        if (minPrice != null && maxPrice != null) {
+            spec = spec.and(ProductSpecifications.hasDiscountPriceInRange(minPrice, maxPrice));
+        }
+
+        return spec;
     }
 
-    public static Specification<Product> filterProductsByKeywordInPriceBoundaries(String keyword,
-                                                                                  String[] filters,
-                                                                                  BigDecimal minPrice,
-                                                                                  BigDecimal maxPrice) {
-        return Specification.where(ProductSpecifications.hasKeyword(keyword))
-                .and(ProductSpecifications.hasDiscountPriceInRange(minPrice, maxPrice))
-                .and(ProductSpecifications.hasFilters(filters));
+    public static Specification<Product> hasCategoryAndKeyword(Integer categoryId, String keyword) {
+        Specification<Product> spec = Specification.where(null);
+
+        if(categoryId != null){
+            spec = spec.and(ProductSpecifications.hasCategory(categoryId));
+        }
+
+        if(keyword != null){
+            spec = spec.and(ProductSpecifications.hasKeyword(keyword));
+        }
+        return spec;
     }
 
-    public static Specification<Product> filterProductsByCategory(Integer categoryId,
-                                                                  String[] filters) {
-        return Specification.where(ProductSpecifications.hasCategory(categoryId))
-                .and(ProductSpecifications.hasFilters(filters));
+    public static Specification<Product> minDiscountPrice(Specification<Product> baseSpec) {
+        return baseSpec.and(ProductSpecifications.hasMinOrMaxDiscountPrice(true));
     }
 
-    public static Specification<Product> filterProductsByKeyword(String keyword, String[] filters) {
-        return Specification.where(ProductSpecifications.hasKeyword(keyword))
-                .and(ProductSpecifications.hasFilters(filters));
+    public static Specification<Product> maxDiscountPrice(Specification<Product> baseSpec) {
+        return baseSpec.and(ProductSpecifications.hasMinOrMaxDiscountPrice(false));
     }
 
-    public static Specification<Product> productsByCategoryInPriceBoundaries(Integer categoryId,
-                                                                  BigDecimal minPrice, BigDecimal maxPrice) {
-        return Specification.where(ProductSpecifications.hasCategory(categoryId))
-                .and(ProductSpecifications.hasDiscountPriceInRange(minPrice, maxPrice));
-    }
-
-    public static Specification<Product> productsByKeywordInPriceBoundaries(String keyword, BigDecimal minPrice, BigDecimal maxPrice) {
-        return Specification.where(ProductSpecifications.hasKeyword(keyword))
-                .and(ProductSpecifications.hasDiscountPriceInRange(minPrice, maxPrice));
-    }
-
-
-    public static Specification<Product> minDiscountPriceInFilteredProductsByCategory(
-            Integer categoryId,
-            String[] filters,
-            BigDecimal minPrice,
-            BigDecimal maxPrice) {
-        return Specification
-                .where(filterProductsByCategoryInPriceBoundaries(categoryId, filters, minPrice,
-                                                                 maxPrice
-                ))
-                .and(ProductSpecifications.minPriceProduct());
-    }
-
-    public static Specification<Product> maxDiscountPriceInFilteredProductsByCategory(
-            Integer categoryId,
-            String[] filters,
-            BigDecimal minPrice,
-            BigDecimal maxPrice) {
-        return Specification
-                .where(filterProductsByCategoryInPriceBoundaries(categoryId, filters, minPrice,
-                                                                 maxPrice
-                ))
-                .and(ProductSpecifications.maxPriceProduct());
-    }
-
-    public static Specification<Product> minDiscountPriceInFilteredProductsByKeyword(String keyword,
-                                                                                     String[] filters,
-                                                                                     BigDecimal minPrice,
-                                                                                     BigDecimal maxPrice) {
-        return Specification
-                .where(filterProductsByKeywordInPriceBoundaries(keyword, filters, minPrice,
-                                                                maxPrice
-                ))
-                .and(ProductSpecifications.minPriceProduct());
-    }
-
-    public static Specification<Product> maxDiscountPriceInFilteredProductsByKeyword(String keyword,
-                                                                                     String[] filters,
-                                                                                     BigDecimal minPrice,
-                                                                                     BigDecimal maxPrice) {
-        return Specification
-                .where(filterProductsByKeywordInPriceBoundaries(keyword, filters, minPrice,
-                                                                maxPrice
-                ))
-                .and(ProductSpecifications.maxPriceProduct());
-    }
 
 
 }

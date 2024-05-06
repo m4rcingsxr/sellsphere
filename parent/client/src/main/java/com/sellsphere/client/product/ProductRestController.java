@@ -23,7 +23,7 @@ public class ProductRestController {
     public ResponseEntity<ProductPageResponse> pageFilteredProducts(
             @ProductFilter ProductPageRequest pageRequest
     ) {
-        ProductPageResponse page = productService.listProductsPage(pageRequest);
+        ProductPageResponse page = productService.listProducts(pageRequest);
 
         return ResponseEntity.ok(page);
     }
@@ -32,7 +32,7 @@ public class ProductRestController {
     public ResponseEntity<Map<String, Map<String, Long>>> getFilterMapCount(
             @ProductFilter FilterMapCountRequest mapRequest
     ) {
-        Map<String, Map<String, Long>> allFilterCounts = productService.getAllFilterCounts(mapRequest);
+        Map<String, Map<String, Long>> allFilterCounts = productService.calculateAllFilterCounts(mapRequest);
 
         return ResponseEntity.ok(allFilterCounts);
     }
