@@ -51,9 +51,13 @@ public class ProductService {
 
         // Find the minimum and maximum discount prices within the filtered products.
         Optional<Product> minProduct = productRepository.findOne(
-                ProductSpecification.minDiscountPrice(spec));
+                ProductSpecification.minDiscountPrice(productPageRequest.getCategoryId(),
+                                                      productPageRequest.getKeyword(), spec
+                ));
         Optional<Product> maxProduct = productRepository.findOne(
-                ProductSpecification.maxDiscountPrice(spec));
+                ProductSpecification.maxDiscountPrice(productPageRequest.getCategoryId(),
+                                                      productPageRequest.getKeyword(), spec
+                ));
 
         // Build and return the response containing the products and additional pagination and
         // price details.
@@ -162,7 +166,8 @@ public class ProductService {
         );
 
         // Create a specification for filtering products based on the provided criteria.
-        // Even if filters was provided we need to ensure that we retrieve all the products to include 0
+        // Even if filters was provided we need to ensure that we retrieve all the products to
+        // include 0
         Specification<Product> spec = ProductSpecification.hasCategoryAndKeyword(
                 mapRequest.getCategoryId(),
                 mapRequest.getKeyword()
@@ -244,7 +249,8 @@ public class ProductService {
      * @param detailName the name of the product detail.
      * @param values     the map of values for the product detail.
      * @param filterSet  the set of filters provided by the user.
-     * @return true if the filter set contains any of the values for the given detail name, false otherwise.
+     * @return true if the filter set contains any of the values for the given detail name, false
+     * otherwise.
      */
     private boolean containsFilteredValues(String detailName, Map<String, Long> values,
                                            Set<String> filterSet) {

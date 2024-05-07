@@ -18,7 +18,7 @@ public class ProductSpecifications {
             Join<Object, Object> categoryJoin = root.join("category");
             return criteriaBuilder.or(
                     criteriaBuilder.equal(categoryJoin.get("id"), categoryId),
-                    criteriaBuilder.like(categoryJoin.get("allParentIDs"), "%" + categoryId + "%")
+                    criteriaBuilder.like(categoryJoin.get("allParentIDs"), "%-" + categoryId + "-%")
             );
         };
     }
@@ -82,20 +82,30 @@ public class ProductSpecifications {
         };
     }
 
-
-    public static Specification<Product> hasMinOrMaxDiscountPrice(boolean isMinPrice) {
+    public static Specification<Product> hasMinOrMaxDiscountPrice(Integer categoryId, String keyword, boolean isMinPrice) {
         return (root, query, criteriaBuilder) -> {
-            Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root,
-                                                                                criteriaBuilder
-            );
+            Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root, criteriaBuilder);
+
+            // Create subquery
             Subquery<BigDecimal> subquery = query.subquery(BigDecimal.class);
             Root<Product> subRoot = subquery.from(Product.class);
-            Expression<BigDecimal> subDiscountedPrice = getDiscountPriceExpression(subRoot,
-                                                                                   criteriaBuilder
-            );
-            subquery.select(
-                    isMinPrice ? criteriaBuilder.min(subDiscountedPrice) : criteriaBuilder.max(
-                            subDiscountedPrice));
+            Expression<BigDecimal> subDiscountedPrice = getDiscountPriceExpression(subRoot, criteriaBuilder);
+            subquery.select(isMinPrice ? criteriaBuilder.min(subDiscountedPrice) : criteriaBuilder.max(subDiscountedPrice));
+
+            // Apply criteria based on categoryId or keyword to both main query and subquery
+            List<Predicate> predicates = new ArrayList<>();
+            if (categoryId != null) {
+                predicates.add(hasCategory(categoryId).toPredicate(root, query, criteriaBuilder));
+                predicates.add(hasCategory(categoryId).toPredicate(subRoot, query, criteriaBuilder));
+            }
+            if (keyword != null && !keyword.isEmpty()) {
+                predicates.add(hasKeyword(keyword).toPredicate(subRoot, query, criteriaBuilder));
+            }
+
+            // Combine all predicates with AND
+            subquery.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+
+            // Apply main query condition to match discountedPrice with subquery result
             return criteriaBuilder.equal(discountedPrice, subquery);
         };
     }

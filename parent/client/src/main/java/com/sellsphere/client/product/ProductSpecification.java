@@ -30,24 +30,27 @@ public class ProductSpecification {
     public static Specification<Product> hasCategoryAndKeyword(Integer categoryId, String keyword) {
         Specification<Product> spec = Specification.where(null);
 
-        if(categoryId != null){
+        if (categoryId != null) {
             spec = spec.and(ProductSpecifications.hasCategory(categoryId));
         }
 
-        if(keyword != null){
+        if (keyword != null) {
             spec = spec.and(ProductSpecifications.hasKeyword(keyword));
         }
         return spec;
     }
 
-    public static Specification<Product> minDiscountPrice(Specification<Product> baseSpec) {
-        return baseSpec.and(ProductSpecifications.hasMinOrMaxDiscountPrice(true));
+    public static Specification<Product> minDiscountPrice(Integer categoryId, String keyword,
+                                                          Specification<Product> baseSpec) {
+        return baseSpec.and(
+                ProductSpecifications.hasMinOrMaxDiscountPrice(categoryId, keyword, true));
     }
 
-    public static Specification<Product> maxDiscountPrice(Specification<Product> baseSpec) {
-        return baseSpec.and(ProductSpecifications.hasMinOrMaxDiscountPrice(false));
+    public static Specification<Product> maxDiscountPrice(Integer categoryId, String keyword,
+                                                          Specification<Product> baseSpec) {
+        return baseSpec.and(
+                ProductSpecifications.hasMinOrMaxDiscountPrice(categoryId, keyword, false));
     }
-
 
 
 }

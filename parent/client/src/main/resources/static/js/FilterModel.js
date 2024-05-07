@@ -126,9 +126,9 @@ class FilterModel {
         const url = new URL(window.location.href);
         const pathname = url.pathname;
         if (pathname.includes('/c/')) {
-            params.append("category_alias", pathname.split('/c/')[1].split('/')[0]);
+            params.append("category_alias", decodeURIComponent(pathname.split('/c/')[1].split('/')[0]));
         } else if (pathname.includes('/p/search/')) {
-            params.append("keyword", pathname.split('/p/search/')[1].split('/')[0]);
+            params.append("keyword", decodeURIComponent(pathname.split('/p/search/')[1].split('/')[0]));
         } else {
             throw new Error("Not supported URL. Supported['/c/{category_alias}','/p/search/{keyword}']");
         }
