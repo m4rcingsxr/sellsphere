@@ -2,8 +2,10 @@ package com.sellsphere.client.product;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -14,7 +16,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final ProductFilterArgumentResolver productFilterArgumentResolver;
 
-    public WebConfig(ProductFilterArgumentResolver productFilterArgumentResolver) {
+    @Autowired
+    public WebConfig(@Lazy ProductFilterArgumentResolver productFilterArgumentResolver) {
         this.productFilterArgumentResolver = productFilterArgumentResolver;
     }
 
@@ -23,8 +26,4 @@ public class WebConfig implements WebMvcConfigurer {
         resolvers.add(productFilterArgumentResolver);
     }
 
-    @Bean
-    public Validator validator() {
-        return Validation.buildDefaultValidatorFactory().getValidator();
-    }
 }

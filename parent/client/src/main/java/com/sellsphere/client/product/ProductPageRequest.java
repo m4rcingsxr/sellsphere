@@ -1,8 +1,6 @@
 package com.sellsphere.client.product;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +24,7 @@ public class ProductPageRequest {
     private String sortBy;
 
     @NotNull(message = "Page number is required")
-    @Positive(message = "Page number must be positive")
+    @Min(value = 0, message = "Min page is 0")
     private Integer pageNum;
 
     private BigDecimal minPrice;

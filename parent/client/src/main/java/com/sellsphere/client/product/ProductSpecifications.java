@@ -24,10 +24,25 @@ public class ProductSpecifications {
     }
 
     public static Specification<Product> hasKeyword(String keyword) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("name"),
-                                                                      "%" + keyword + "%"
-        );
+        return (root, query, criteriaBuilder) -> {
 
+            // Constructing the full-text search expression
+            String booleanModeKeyword = keyword + " IN BOOLEAN MODE";
+
+            // Using CriteriaBuilder to create a function expression for the full-text search
+            Expression<Boolean> matchExpression = criteriaBuilder.function(
+                    "MATCH",
+                    Boolean.class,
+                    root.get("name"),
+                    root.get("alias"),
+                    root.get("shortDescription"),
+                    root.get("fullDescription"),
+                    criteriaBuilder.literal(booleanModeKeyword)
+            );
+
+            // Converting the Expression<Boolean> to a Predicate
+            return criteriaBuilder.isTrue(matchExpression);
+        };
     }
 
     public static Specification<Product> hasFilters(String[] filterStrings) {

@@ -35,8 +35,7 @@ public class RestResponseEntityExceptionHandler {
 
 
     @ExceptionHandler({IllegalArgumentException.class, InvalidDataAccessApiUsageException.class})
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-            Exception e) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(Exception e) {
         log.error(e.getMessage(), e);
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),
                                                         HttpStatus.BAD_REQUEST.value()
@@ -45,15 +44,18 @@ public class RestResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException ex) {
-        Map<String, String> errors = ex.getConstraintViolations().stream()
-                .collect(Collectors.toMap(
-                        violation -> (violation).getPropertyPath().toString(),
-                        ConstraintViolation::getMessage,
-                        (message1, message2) -> message1 + "; " + message2
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+            ConstraintViolationException ex) {
+        Map<String, String> errors = ex.getConstraintViolations().stream().collect(
+                Collectors.toMap(violation -> (violation).getPropertyPath().toString(),
+                                 ConstraintViolation::getMessage,
+                                 (message1, message2) -> message1 + "; " + message2
                 ));
 
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(
+                new ErrorResponse(errors.toString(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)

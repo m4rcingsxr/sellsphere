@@ -8,9 +8,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.TYPE })
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = ProductPageRequestValidator.class)
+@Constraint(validatedBy = {ProductPageRequestValidator.class, FilterMapCountRequestValidator.class})
 public @interface ValidFilterRequest {
     String message() default "Invalid product page request";
 

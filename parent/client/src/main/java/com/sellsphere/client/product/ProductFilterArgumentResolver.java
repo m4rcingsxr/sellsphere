@@ -5,6 +5,7 @@ import com.sellsphere.common.entity.CategoryNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
@@ -24,9 +25,9 @@ public class ProductFilterArgumentResolver implements HandlerMethodArgumentResol
     private final Validator validator;
 
     @Autowired
-    public ProductFilterArgumentResolver(CategoryRepository categoryRepository, Validator validator) {
+    public ProductFilterArgumentResolver(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
-        this.validator = validator;
+        this.validator =  Validation.buildDefaultValidatorFactory().getValidator();
     }
 
     @Override
