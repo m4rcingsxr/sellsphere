@@ -58,9 +58,10 @@ public class Product extends IdentifiedEntity {
      * A detailed description of the product.
      * This is a comprehensive description providing all necessary information about the product.
      */
+    @Lob
     @NotNull(message = "Long description is required")
     @Size(min = 1, max = 4096, message = "Long description must be between 1 and 4096 characters")
-    @Column(name = "full_description", columnDefinition = "CLOB", nullable = false)
+    @Column(name = "full_description", columnDefinition = "TEXT", nullable = false)
     private String fullDescription;
 
     /**

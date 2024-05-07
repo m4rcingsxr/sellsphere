@@ -25,23 +25,19 @@ public class ProductSpecifications {
 
     public static Specification<Product> hasKeyword(String keyword) {
         return (root, query, criteriaBuilder) -> {
-
-            // Constructing the full-text search expression
-            String booleanModeKeyword = keyword + " IN BOOLEAN MODE";
-
-            // Using CriteriaBuilder to create a function expression for the full-text search
-            Expression<Boolean> matchExpression = criteriaBuilder.function(
-                    "MATCH",
-                    Boolean.class,
+            // Create the match predicate with multiple columns
+            Expression<Double> matchExpression = criteriaBuilder.function(
+                    "match",
+                    Double.class,
                     root.get("name"),
-                    root.get("alias"),
-                    root.get("shortDescription"),
                     root.get("fullDescription"),
-                    criteriaBuilder.literal(booleanModeKeyword)
+                    root.get("shortDescription"),
+                    root.get("alias"),
+                    criteriaBuilder.literal(keyword)
             );
 
-            // Converting the Expression<Boolean> to a Predicate
-            return criteriaBuilder.isTrue(matchExpression);
+            // Convert the match expression to a predicate
+            return criteriaBuilder.greaterThan(matchExpression, 0.0);
         };
     }
 
@@ -60,7 +56,9 @@ public class ProductSpecifications {
                         ));
                     } else {
 
-                        Join<Product, ProductDetail> detailsJoin = root.join("details", JoinType.INNER);
+                        Join<Product, ProductDetail> detailsJoin = root.join("details",
+                                                                             JoinType.INNER
+                        );
                         predicates.add(criteriaBuilder.and(
                                 criteriaBuilder.equal(detailsJoin.get("name"), filter.getName()),
                                 criteriaBuilder.equal(detailsJoin.get("value"), filter.getValue())
@@ -73,9 +71,12 @@ public class ProductSpecifications {
         };
     }
 
-    public static Specification<Product> hasDiscountPriceInRange(BigDecimal minPrice, BigDecimal maxPrice) {
+    public static Specification<Product> hasDiscountPriceInRange(BigDecimal minPrice,
+                                                                 BigDecimal maxPrice) {
         return (root, query, criteriaBuilder) -> {
-            Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root, criteriaBuilder);
+            Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root,
+                                                                                criteriaBuilder
+            );
 
             return criteriaBuilder.between(discountedPrice, minPrice, maxPrice);
         };
@@ -84,16 +85,23 @@ public class ProductSpecifications {
 
     public static Specification<Product> hasMinOrMaxDiscountPrice(boolean isMinPrice) {
         return (root, query, criteriaBuilder) -> {
-            Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root, criteriaBuilder);
+            Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root,
+                                                                                criteriaBuilder
+            );
             Subquery<BigDecimal> subquery = query.subquery(BigDecimal.class);
             Root<Product> subRoot = subquery.from(Product.class);
-            Expression<BigDecimal> subDiscountedPrice = getDiscountPriceExpression(subRoot, criteriaBuilder);
-            subquery.select(isMinPrice ? criteriaBuilder.min(subDiscountedPrice) : criteriaBuilder.max(subDiscountedPrice));
+            Expression<BigDecimal> subDiscountedPrice = getDiscountPriceExpression(subRoot,
+                                                                                   criteriaBuilder
+            );
+            subquery.select(
+                    isMinPrice ? criteriaBuilder.min(subDiscountedPrice) : criteriaBuilder.max(
+                            subDiscountedPrice));
             return criteriaBuilder.equal(discountedPrice, subquery);
         };
     }
 
-    private static Expression<BigDecimal> getDiscountPriceExpression(Root<Product> root, CriteriaBuilder criteriaBuilder) {
+    private static Expression<BigDecimal> getDiscountPriceExpression(Root<Product> root,
+                                                                     CriteriaBuilder criteriaBuilder) {
         return criteriaBuilder.diff(
                 root.get("price"),
                 criteriaBuilder.prod(
