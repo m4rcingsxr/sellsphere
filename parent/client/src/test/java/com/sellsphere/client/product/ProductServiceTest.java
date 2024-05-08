@@ -1,132 +1,206 @@
-//package com.sellsphere.client.product;
-//
-//import com.sellsphere.common.entity.BasicProductDto;
-//import com.sellsphere.common.entity.Product;
-//import org.junit.jupiter.params.ParameterizedTest;
-//import org.junit.jupiter.params.provider.CsvSource;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.test.context.jdbc.Sql;
-//
-//import java.math.BigDecimal;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.stream.Collectors;
-//
-//import static org.assertj.core.api.Assertions.assertThat;
-//
-//@SpringBootTest
-//@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts = "classpath:sql/products.sql")
-//class ProductServiceTest {
-//
-//    @Autowired
-//    private ProductService productService;
-//
-//    @ParameterizedTest
-//    @CsvSource({
-//            "'brand,Apple|Color,Red', 'Product One,Product Two', 2, 2, 1",
-//            "'brand,Apple|Size,Medium', 'Product One,Product Two', 2, 2, 1",
-//            "'brand,Apple|Weight,1.5kg', 'Product One', 1, 1, 1",
-//            "'brand,Apple|Material,Plastic', 'Product Two', 1, 1, 1",
-//            "'brand,Apple|Color,Green', 'Product Three', 1, 1, 1",
-//            "'brand,Apple|Size,Large', 'Product Three', 1, 1, 1",
-//            "'brand,Apple|Color,Black', '', 0, 0, 0",
-//            "'brand,Apple|Size,Small', '', 0, 0, 0",
-//            "'brand,Apple|Warranty,3 years', '', 0, 0, 0",
-//            "'brand,Apple|Warranty,5 years', '', 0, 0, 0",
-//            "'brand,Apple|Color,Red|Size,Medium', 'Product One,Product Two', 2, 2, 1",
-//            "'brand,Apple|Color,Green|Weight,2kg', 'Product Three', 1, 1, 1"
-//    })
-//    void givenFilters_whenFindAllWithProductSpecificationAndPagination_thenShouldReturnMatchingFilterExpectedProductsWithPagination(
-//            String filter, String expectedProducts, long totalElements, int contentSize, int totalPages) {
-//        // Prepare the filters
-//        String[] filters = filter.split("\\|");
-//        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null,null,null, 0);
-//        pageRequest.setCategoryId(1);
-//
-//        // Get the filtered products with pagination
-//        ProductPageResponse response = productService.listProductsPage(pageRequest);
-//
-//        // Convert expected products to a list
-//        List<String> expectedProductList = expectedProducts.isEmpty() ? List.of() : List.of(expectedProducts.split(","));
-//
-//        // Assert the result
-//        List<String> resultNames = response.getContent().stream().map(BasicProductDto::getName).collect(Collectors.toList());
-//        assertThat(resultNames).containsExactlyInAnyOrderElementsOf(expectedProductList);
-//
-//        // Assert the page information
-//        assertThat(response.getTotalElements()).isEqualTo(totalElements);
-//        assertThat(response.getContent().size()).isEqualTo(contentSize);
-//        assertThat(response.getTotalPages()).isEqualTo(totalPages);
-//    }
-//
-//    @ParameterizedTest
-//    @CsvSource({
-//            "'brand,Apple|Color,Red', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1'",
-//            "'brand,Apple|Size,Medium', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1'",
-//            "'brand,Apple|Weight,1.5kg', 'Color=Red=1;Size=Medium=1;Weight=1.5kg=1'",
-//            "'brand,Apple|Material,Plastic', 'Color=Red=1;Material=Plastic=1;Size=Medium=1'",
-//            "'brand,Apple|Color,Green', 'Color=Green=1;Size=Large=1;Weight=2kg=1'",
-//            "'brand,Apple|Size,Large', 'Color=Green=1;Size=Large=1;Weight=2kg=1'",
-//            "'brand,Apple|Color,Black', ''",
-//            "'brand,Apple|Size,Small', ''",
-//            "'brand,Apple|Warranty,3 years', ''",
-//            "'brand,Apple|Warranty,5 years', ''",
-//            "'brand,Apple|Color,Red|Size,Medium', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1'",
-//            "'brand,Apple|Color,Green|Weight,2kg', 'Color=Green=1;Size=Large=1;Weight=2kg=1'"
-//    })
-//    void givenFilters_whenGetAvailableFilterCounts_thenShouldReturnMatchingCounts(String filter, String expectedCounts) {
-//        // Prepare the filters
-//        String[] filters = filter.split("\\|");
-//        ProductPageRequest pageRequest = new ProductPageRequest(filters, "laptops", null,null,null, 0);
-//        pageRequest.setCategoryId(1);
-//
-//        // Get the filter counts
-//        Map<String, Map<String, Long>> filterCounts = productService.getAvailableFilterCounts(pageRequest);
-//
-//        // Convert expected counts to a map
-//        Map<String, Map<String, Long>> expectedCountsMap = parseExpectedCounts(expectedCounts);
-//
-//        // Assert the result
-//        assertThat(filterCounts).isEqualTo(expectedCountsMap);
-//    }
-//
-//    private Map<String, Map<String, Long>> parseExpectedCounts(String expectedCounts) {
-//        if (expectedCounts.isEmpty()) {
-//            return Map.of();
-//        }
-//        return List.of(expectedCounts.split(";")).stream()
-//                .map(s -> s.split("="))
-//                .collect(Collectors.groupingBy(
-//                        arr -> arr[0],
-//                        Collectors.toMap(arr -> arr[1], arr -> Long.parseLong(arr[2]))
-//                ));
-//    }
-//
-//    @ParameterizedTest
-//    @CsvSource({
-//            "'brand,Apple|Color,Red', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1'",
-//            "'brand,Apple|Size,Medium', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1'",
-//            "'brand,Apple|Weight,1.5kg', 'Color=Red=1;Size=Medium=1;Weight=1.5kg=1', 'Color=Red=1;Size=Medium=1;Weight=1.5kg=1'",
-//            "'brand,Apple|Material,Plastic', 'Color=Red=1;Material=Plastic=1;Size=Medium=1', 'Color=Red=1;Material=Plastic=1;Size=Medium=1'",
-//            "'brand,Apple|Color,Green', 'Color=Green=1;Size=Large=1;Weight=2kg=1', 'Color=Green=1;Size=Large=1;Weight=2kg=1'",
-//            "'brand,Apple|Size,Large', 'Color=Green=1;Size=Large=1;Weight=2kg=1', 'Color=Green=1;Size=Large=1;Weight=2kg=1'",
-//            "'brand,Apple|Color,Black', '', ''",
-//            "'brand,Apple|Size,Small', '', ''",
-//            "'brand,Apple|Warranty,3 years', '', ''",
-//            "'brand,Apple|Warranty,5 years', '', ''",
-//            "'brand,Apple|Color,Red|Size,Medium', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1', 'Color=Red=2;Material=Plastic=1;Size=Medium=2;Weight=1.5kg=1'",
-//            "'brand,Apple|Color,Green|Weight,2kg', 'Color=Green=1;Size=Large=1;Weight=2kg=1', 'Color=Green=1;Size=Large=1;Weight=2kg=1'"
-//    })
-//    void givenFilterCounts_whenSortCounts_thenShouldReturnSortedCounts(String filter, String counts, String expectedSortedCounts) {
-//        String[] filters = filter.split("\\|");
-//
-//        Map<String, Map<String, Long>> countsMap = parseExpectedCounts(counts);
-//
-//        Map<String, Map<String, Long>> expectedSortedCountsMap = parseExpectedCounts(expectedSortedCounts);
-//
-//        Map<String, Map<String, Long>> sortedCounts = productService.sortCounts(countsMap, filters);
-//
-//        assertThat(sortedCounts).isEqualTo(expectedSortedCountsMap);
-//    }
-//}
+package com.sellsphere.client.product;
+
+import com.sellsphere.common.entity.Brand;
+import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.Product;
+import com.sellsphere.common.entity.ProductDetail;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ProductServiceTest {
+
+    @Mock
+    private ProductRepository productRepository;
+
+    @InjectMocks
+    private ProductService productService;
+
+    @Test
+    void givenProductPageRequest_whenListProducts_thenShouldReturnProductPageResponse() {
+        Product product1 = createProduct(1, "Product1", "Brand1", BigDecimal.valueOf(200), 10, "Red", "M");
+        Product product2 = createProduct(1, "Product1", "Brand1", BigDecimal.valueOf(300), 10, "Red", "M");
+        List<Product> productList = Arrays.asList(product1, product2);
+
+        Page<Product> productPage = new PageImpl<>(productList, PageRequest.of(0, 9), 2);
+
+        // Mock the repository calls
+        when(productRepository.findAll(any(Specification.class), any(PageRequest.class))).thenReturn(productPage);
+        doReturn(Optional.of(product1)).doReturn(Optional.of(product2)).when(productRepository).findOne(any(Specification.class));
+
+        // Create the product page request
+        ProductPageRequest productPageRequest = new ProductPageRequest();
+        productPageRequest.setCategoryId(1);
+        productPageRequest.setKeyword("keyword");
+        productPageRequest.setFilter(new String[]{"Color,Red", "Size,M"});
+        productPageRequest.setSortBy("LOWEST");
+        productPageRequest.setPageNum(0);
+        productPageRequest.setMinPrice(BigDecimal.valueOf(100));
+        productPageRequest.setMaxPrice(BigDecimal.valueOf(1000));
+
+        // Call the method to test
+        ProductPageResponse response = productService.listProducts(productPageRequest);
+
+        // Assert the response
+        assertNotNull(response);
+        assertEquals(2, response.getContent().size());
+        assertEquals(0, response.getPage());
+        assertEquals(2, response.getTotalElements());
+        assertEquals(1, response.getTotalPages());
+        assertEquals(BigDecimal.valueOf(180.00).setScale(2), response.getMinPrice());
+        assertEquals(BigDecimal.valueOf(270.00).setScale(2), response.getMaxPrice());
+
+        // Verify that the repository methods were called with correct parameters
+        verify(productRepository).findAll(any(Specification.class), any(PageRequest.class));
+        verify(productRepository, times(2)).findOne(any(Specification.class));
+    }
+
+    @Test
+    void givenFilterCriteria_whenCalculateAvailableFilterCounts_thenShouldReturnCorrectCounts() {
+        // Creating products
+        Product product1 = createProduct(1, "Product1", "Brand1", BigDecimal.valueOf(200), 10, "Red", "M");
+        Product product5 = createProduct(5, "Product5", "Brand1", BigDecimal.valueOf(400), 30, "Red", "M");
+
+        // Products that match the filter criteria
+        List<Product> filteredProducts = Arrays.asList(product1, product5);
+
+        // Mock the repository call to return the filtered products
+        when(productRepository.findAll(any(Specification.class))).thenReturn(filteredProducts);
+
+        // Define the filter criteria
+        String keyword = "keyword";
+        Integer categoryId = 1;
+        String[] filter = new String[]{"Color,Red", "Size,M"};
+        BigDecimal minPrice = BigDecimal.valueOf(100);
+        BigDecimal maxPrice = BigDecimal.valueOf(1000);
+
+        // Call the method to test
+        Map<String, Map<String, Long>> counts = productService.calculateAvailableFilterCounts(keyword, categoryId, filter, minPrice, maxPrice);
+
+        // Assert the counts
+        assertNotNull(counts);
+
+        // Verify counts for the filtered products
+        assertEquals(2, counts.get("Brand").get("Brand1"));
+        assertNull(counts.get("Brand").get("Brand2"));
+        assertEquals(2, counts.get("Color").get("Red"));
+        assertNull(counts.get("Color").get("Blue"));
+        assertEquals(2, counts.get("Size").get("M"));
+        assertNull(counts.get("Size").get("L"));
+        assertNull(counts.get("Size").get("S"));
+        assertNull(counts.get("Size").get("XL"));
+        assertNull(counts.get("Color").get("Green"));
+    }
+
+
+    @Test
+    void givenFilterMapRequest_whenCalculateAllFiltersCounts_thenShouldReturnExpectedMapWithCorrectOrder() {
+        Product product1 = createProduct(1, "Product1", "Brand1", BigDecimal.valueOf(200), 10, "Red", "M");
+        Product product2 = createProduct(2, "Product2", "Brand1", BigDecimal.valueOf(300), 20, "Blue", "L");
+        Product product3 = createProduct(3, "Product3", "Brand2", BigDecimal.valueOf(400), 30, "Red", "S");
+        Product product4 = createProduct(4, "Product4", "Brand2", BigDecimal.valueOf(400), 30, "Green", "XL");
+        Product product5 = createProduct(5, "Product5", "Brand1", BigDecimal.valueOf(400), 30, "Red", "M");
+
+        List<Product> filteredProducts = Arrays.asList(product1, product5);
+        List<Product> allProducts = Arrays.asList(product1, product2, product3, product4, product5);
+
+        doReturn(filteredProducts).doReturn(allProducts).when(productRepository).findAll(any(Specification.class));
+
+        FilterMapCountRequest mapRequest = new FilterMapCountRequest();
+        mapRequest.setCategoryId(1);
+        mapRequest.setKeyword("keyword");
+        mapRequest.setFilter(new String[]{"Color,Red", "Size,M"});
+        mapRequest.setMinPrice(BigDecimal.valueOf(100));
+        mapRequest.setMaxPrice(BigDecimal.valueOf(1000));
+
+        Map<String, Map<String, Long>> counts = productService.calculateAllFilterCounts(mapRequest);
+
+        assertNotNull(counts);
+
+        // Verify counts for existing filters
+        assertEquals(2, counts.get("Brand").get("Brand1"));
+        assertEquals(0, counts.get("Brand").get("Brand2"));
+        assertEquals(2, counts.get("Color").get("Red"));
+        assertEquals(0, counts.get("Color").get("Blue"));
+        assertEquals(2, counts.get("Size").get("M"));
+        assertEquals(0, counts.get("Size").get("L"));
+        assertEquals(0, counts.get("Size").get("S"));
+
+        assertEquals(0, counts.get("Color").get("Green"));
+        assertEquals(0, counts.get("Size").get("XL"));
+
+        // Verify sorting
+        List<Map.Entry<String, Map<String, Long>>> sortedEntries = new ArrayList<>(counts.entrySet());
+        sortedEntries.sort(Map.Entry.comparingByKey());
+
+        // Check that entries are sorted by name
+        assertEquals("Brand", sortedEntries.get(0).getKey());
+        assertEquals("Color", sortedEntries.get(1).getKey());
+        assertEquals("Size", sortedEntries.get(2).getKey());
+
+        // Check that values under each product detail name are sorted
+        Map<String, Long> sortedBrandValues = new LinkedHashMap<>(counts.get("Brand"));
+        List<String> sortedBrandKeys = new ArrayList<>(sortedBrandValues.keySet());
+        assertEquals("Brand1", sortedBrandKeys.get(0));
+        assertEquals("Brand2", sortedBrandKeys.get(1));
+
+        Map<String, Long> sortedColorValues = new LinkedHashMap<>(counts.get("Color"));
+        List<String> sortedColorKeys = new ArrayList<>(sortedColorValues.keySet());
+        assertEquals("Red", sortedColorKeys.get(0));
+        assertEquals("Blue", sortedColorKeys.get(1));
+        assertEquals("Green", sortedColorKeys.get(2));
+
+        Map<String, Long> sortedSizeValues = new LinkedHashMap<>(counts.get("Size"));
+        List<String> sortedSizeKeys = new ArrayList<>(sortedSizeValues.keySet());
+        assertEquals("M", sortedSizeKeys.get(0));
+        assertEquals("L", sortedSizeKeys.get(1));
+        assertEquals("S", sortedSizeKeys.get(2));
+        assertEquals("XL", sortedSizeKeys.get(3));
+    }
+
+    private Product createProduct(int id, String name, String brandName, BigDecimal price, int discountPercent, String color, String size) {
+        Brand brand = new Brand();
+        brand.setName(brandName);
+
+        Category category = new Category();
+        category.setName("laptops");
+        category.setId(1);
+
+        Product product = new Product();
+        product.setId(id);
+        product.setName(name);
+        product.setBrand(brand);
+        product.setPrice(price);
+        product.setDiscountPercent(BigDecimal.valueOf(discountPercent));
+
+        ProductDetail detailColor = new ProductDetail();
+        detailColor.setName("Color");
+        detailColor.setValue(color);
+        detailColor.setProduct(product);
+
+        ProductDetail detailSize = new ProductDetail();
+        detailSize.setName("Size");
+        detailSize.setValue(size);
+        detailSize.setProduct(product);
+
+        product.setDetails(Arrays.asList(detailColor, detailSize));
+
+        product.setCategory(category);
+        return product;
+    }
+
+}
