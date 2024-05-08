@@ -145,8 +145,8 @@ class FilterView {
             $lowerPrice.val(minPrice);
             $upperPrice.val(maxPrice);
 
-            $("#lower").attr("max", maxPrice);
-            $("#upper").attr("max", maxPrice).val(maxPrice);
+            $("#lower").attr("min", minPrice).attr("max", maxPrice).val(minPrice);
+            $("#upper").attr("min", minPrice).attr("max", maxPrice).val(maxPrice);
         }
     }
 
