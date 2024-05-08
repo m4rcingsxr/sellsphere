@@ -2,21 +2,23 @@ package com.sellsphere.client.product;
 
 import com.sellsphere.client.category.CategoryRepository;
 import com.sellsphere.common.entity.Category;
-import jakarta.validation.ConstraintViolation;
+import com.sellsphere.common.entity.CategoryNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.MethodParameter;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.ServletWebRequest;
 
-import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,65 +30,95 @@ class ProductFilterArgumentResolverTest {
     @Mock
     private CategoryRepository categoryRepository;
 
-    @Mock
-    private Validator validator;
-
     @InjectMocks
     private ProductFilterArgumentResolver resolver;
 
-    private NativeWebRequest webRequest;
-    private MockHttpServletRequest servletRequest;
-
-
-    @Test
-    void givenValidQueryParameters_whenResolveArgument_thenShouldReturnCorrectProductPageRequest() throws Exception {
-        servletRequest.setRequestURI("/products");
-        servletRequest.setParameter("pageNum", "1");
-        servletRequest.setParameter("minPrice", "10.0");
-        servletRequest.setParameter("maxPrice", "100.0");
-
-        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(new Category()));
-        when(validator.validate(any(ProductPageRequest.class))).thenReturn(Collections.emptySet());
-
-        ProductPageRequest result = (ProductPageRequest) resolver.resolveArgument(null, null, webRequest, null);
-
-        assertNotNull(result);
-        assertEquals(1, result.getPageNum());
-        assertEquals(BigDecimal.valueOf(10.0), result.getMinPrice());
-        assertEquals(BigDecimal.valueOf(100.0), result.getMaxPrice());
+    @BeforeEach
+    void setUp() {
+        resolver = new ProductFilterArgumentResolver(categoryRepository);
     }
 
     @Test
-    void givenValidQueryParameters_whenResolveArgument_thenShouldReturnCorrectMapCountRequest() throws Exception {
-        servletRequest.setRequestURI("/filter_counts");
-        servletRequest.setParameter("minPrice", "5.0");
-        servletRequest.setParameter("maxPrice", "50.0");
+    void shouldSupportProductFilterAnnotation() {
+        MethodParameter parameter = mock(MethodParameter.class);
+        when(parameter.getParameterAnnotation(ProductFilter.class)).thenReturn(mock(ProductFilter.class));
 
-        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(new Category()));
-        when(validator.validate(any(FilterMapCountRequest.class))).thenReturn(Collections.emptySet());
-
-        FilterMapCountRequest result = (FilterMapCountRequest) resolver.resolveArgument(null, null, webRequest, null);
-
-        assertNotNull(result);
-        assertEquals(BigDecimal.valueOf(5.0), result.getMinPrice());
-        assertEquals(BigDecimal.valueOf(50.0), result.getMaxPrice());
+        assertTrue(resolver.supportsParameter(parameter));
     }
 
     @Test
-    void givenNotValidParameters_whenResolveArgument_thenShouldThrowExceptionWithExpectedViolations() throws Exception {
-        servletRequest.setRequestURI("/products");
-        servletRequest.setParameter("pageNum", "1");
+    void shouldNotSupportWithoutProductFilterAnnotation() {
+        MethodParameter parameter = mock(MethodParameter.class);
 
-        ConstraintViolation<ProductPageRequest> violation = mock(ConstraintViolation.class);
-        Set<ConstraintViolation<ProductPageRequest>> violations = Collections.singleton(violation);
+        assertFalse(resolver.supportsParameter(parameter));
+    }
 
-        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(new Category()));
-        when(validator.validate(any(ProductPageRequest.class))).thenReturn(violations);
+    @Test
+    void shouldResolveArgumentForProductPageRequest() throws Exception {
+        NativeWebRequest webRequest = prepareWebRequest("products");
+        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(mockCategory(1)));
 
-        ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () ->
-                resolver.resolveArgument(null, null, webRequest, null)
-        );
+        ProductPageRequest pageRequest = (ProductPageRequest) resolver.resolveArgument(mock(MethodParameter.class), null, webRequest, null);
 
-        assertEquals(violations, exception.getConstraintViolations());
+        assertNotNull(pageRequest);
+        assertEquals("someAlias", pageRequest.getCategoryAlias());
+        assertEquals(1, pageRequest.getCategoryId());
+    }
+
+    @Test
+    void shouldResolveArgumentForFilterMapCountRequest() throws Exception {
+        NativeWebRequest webRequest = prepareWebRequest("filter_counts");
+        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(mockCategory(1)));
+
+        FilterMapCountRequest mapRequest = (FilterMapCountRequest) resolver.resolveArgument(mock(MethodParameter.class), null, webRequest, null);
+
+        assertNotNull(mapRequest);
+        assertEquals("someAlias", mapRequest.getCategoryAlias());
+        assertEquals(1, mapRequest.getCategoryId());
+    }
+
+    @Test
+    void shouldThrowConstraintViolationExceptionForInvalidProductPageRequest() {
+        NativeWebRequest webRequest = prepareInvalidWebRequest("products");
+
+        assertThrows(ConstraintViolationException.class, () -> resolver.resolveArgument(mock(MethodParameter.class), null, webRequest, null));
+    }
+
+    @Test
+    void shouldThrowConstraintViolationExceptionForInvalidFilterMapCountRequest() {
+        NativeWebRequest webRequest = prepareInvalidWebRequest("filter_counts");
+
+        assertThrows(ConstraintViolationException.class, () -> resolver.resolveArgument(mock(
+                MethodParameter.class), null, webRequest, null));
+    }
+
+    @Test
+    void shouldThrowCategoryNotFoundException() throws Exception {
+        NativeWebRequest webRequest = prepareWebRequest("products");
+        lenient().when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(CategoryNotFoundException.class, () -> resolver.resolveArgument(mock(MethodParameter.class), null, webRequest, null));
+    }
+
+    private NativeWebRequest prepareWebRequest(String endpoint) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI(endpoint);
+        request.setParameter("category_alias", "someAlias");
+        request.setParameter("pageNum", "1");
+
+        return new ServletWebRequest(request);
+    }
+
+    private NativeWebRequest prepareInvalidWebRequest(String endpoint) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI(endpoint);
+
+        return new ServletWebRequest(request);
+    }
+
+    private Category mockCategory(int id) {
+        Category category = new Category();
+        category.setId(id);
+        return category;
     }
 }
