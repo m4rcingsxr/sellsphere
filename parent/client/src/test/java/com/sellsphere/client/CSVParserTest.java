@@ -1,4 +1,4 @@
-package com.sellsphere.client.product;
+package com.sellsphere.client;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
