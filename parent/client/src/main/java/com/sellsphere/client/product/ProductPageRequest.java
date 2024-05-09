@@ -21,6 +21,7 @@ public class ProductPageRequest {
 
     private String keyword;
 
+    @NotNull(message = "Sort by is required")
     private String sortBy;
 
     @NotNull(message = "Page number is required")
