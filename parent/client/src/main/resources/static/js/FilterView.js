@@ -44,21 +44,14 @@ class FilterView {
     }
 
     toggleFilters() {
-        $("#products").toggleClass("d-none");
-        $("#allFilters").toggleClass("d-none");
-        $(".viewProducts").toggleClass("d-none");
-        $("#showAllFilters").toggleClass("d-none");
-        $("#filters").toggleClass("d-none");
-        $("#allFilterNames").toggleClass("d-none");
+        $("#products, #allFilters, .viewProducts, #showAllFilters, #filters, #allFilterNames").toggleClass("d-none");
     }
 
     renderAllFilterNames(countMap) {
-        let allNamesHtml = '';
-        for (const [name, values] of Object.entries(countMap)) {
-            allNamesHtml += `
-                 <a href="#allFilterNames${name}" class="list-group-item list-group-item-action bg-body-tertiary list-group-item-secondary filter-name">${name}</a>
-            `;
-        }
+        const allNamesHtml = Object.keys(countMap).map(name => `
+            <a href="#allFilterNames${name}" class="list-group-item list-group-item-action bg-body-tertiary list-group-item-secondary filter-name">${name}</a>
+        `).join('');
+
         $("#allFilterNames").empty().append(allNamesHtml);
     }
 
@@ -74,7 +67,7 @@ class FilterView {
             }
         }
 
-        document.getElementById('filters').innerHTML = filtersHtml;
+        $('#filters').html(filtersHtml);
     }
 
     generateProductFilterHtml(name, values, filters) {
@@ -96,11 +89,8 @@ class FilterView {
     }
 
     renderAllFilters(countMap) {
-        let filtersHtml = '';
-        for (const [name, values] of Object.entries(countMap)) {
-            filtersHtml += this.generateListGroupItemHtmlForAllFilters(name, values);
-        }
-        document.getElementById('allFilters').innerHTML = filtersHtml;
+        const filtersHtml = Object.entries(countMap).map(([name, values]) => this.generateListGroupItemHtmlForAllFilters(name, values)).join('');
+        $('#allFilters').html(filtersHtml);
     }
 
     generateListGroupItemHtmlForAllFilters(name, values) {
@@ -141,7 +131,9 @@ class FilterView {
     setPriceBoundaries(minPrice, maxPrice) {
         const $lowerPrice = $("#lowerPrice");
         const $upperPrice = $("#upperPrice");
+
         if(minPrice && maxPrice && !$upperPrice.val() && !$lowerPrice.val()) {
+
             $lowerPrice.val(minPrice);
             $upperPrice.val(maxPrice);
 
@@ -150,77 +142,108 @@ class FilterView {
         }
     }
 
+
     renderPagination(productsPage) {
         const currentPage = Number(productsPage.page) + 1;
         const totalPages = productsPage.totalPages;
-
         const $pagination = $("#pagination");
 
         let html = ``;
 
         if (totalPages > 1) {
-            html += `
-        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-            <a class="page-link page" href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-    `;
-
-            if (totalPages <= 5) {
-                for (let i = 1; i <= totalPages; i++) {
-                    html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link page" href="#">${i}</a></li>`;
-                }
-            } else {
-                if (currentPage <= 3) {
-                    for (let i = 1; i <= 4; i++) {
-                        html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link page" href="#">${i}</a></li>`;
-                    }
-                    html += `<li class="page-item"><a class="page-link">
-                            <span class="select-page">...</span>
-                            <input type="number" class="form-control page-input"/>
-                        </a></li>`;
-                    html += `<li class="page-item"><a class="page-link page" href="#">${totalPages}</a></li>`;
-                } else if (currentPage >= totalPages - 2) {
-                    html += `<li class="page-item"><a class="page-link page" href="#">1</a></li>`;
-                    html += `<li class="page-item"><a class="page-link">
-                            <span class="select-page">...</span>
-                            <input type="number" class="form-control page-input"/>
-                        </a></li>`;
-                    for (let i = totalPages - 3; i <= totalPages; i++) {
-                        html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link page" href="#">${i}</a></li>`;
-                    }
-                } else {
-                    html += `<li class="page-item"><a class="page-link page" href="#">1</a></li>`;
-                    if (currentPage - 1 > 2) {
-                        html += `<li class="page-item"><a class="page-link">
-                            <span class="select-page">...</span>
-                            <input type="number" class="form-control page-input"/>
-                        </a></li>`;
-                    }
-                    for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-                        html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link page" href="#">${i}</a></li>`;
-                    }
-                    if (currentPage + 1 < totalPages - 1) {
-                        html += `<li class="page-item"><a class="page-link">
-                            <span class="select-page">...</span>
-                            <input type="number" class="form-control page-input"/>
-                        </a></li>`;
-                    }
-                    html += `<li class="page-item"><a class="page-link page" href="#">${totalPages}</a></li>`;
-                }
-            }
-
-            html += `
-        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-            <a class="page-link page" href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-    `;
+            html += this.generatePageNavItem('Previous', currentPage === 1, '&laquo;');
+            html += this.generatePageNumbers(currentPage, totalPages);
+            html += this.generatePageNavItem('Next', currentPage === totalPages, '&raquo;');
         }
 
         $pagination.html(html);
+    }
+
+    generatePageNavItem(label, isDisabled, symbol) {
+        return `
+            <li class="page-item ${isDisabled ? 'disabled' : ''}">
+                <a class="page-link page" href="#" aria-label="${label}">
+                    <span aria-hidden="true">${symbol}</span>
+                </a>
+            </li>
+        `;
+    }
+
+    generatePageNumbers(currentPage, totalPages) {
+        let html = ``;
+
+        if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) {
+                html += this.generatePageItem(i, currentPage === i);
+            }
+        } else {
+            html += this.generateDynamicPageItems(currentPage, totalPages);
+        }
+
+        return html;
+    }
+
+    generatePageItem(page, isActive) {
+        return `<li class="page-item ${isActive ? 'active' : ''}"><a class="page-link page" href="#">${page}</a></li>`;
+    }
+
+    generateDynamicPageItems(currentPage, totalPages) {
+        let html = ``;
+
+        if (currentPage <= 3) {
+            html += this.generateInitialPageItems(4, currentPage);
+            html += this.generateEllipsisAndPageInput();
+            html += this.generatePageItem(totalPages, false);
+        } else if (currentPage >= totalPages - 2) {
+            html += this.generatePageItem(1, false);
+            html += this.generateEllipsisAndPageInput();
+            html += this.generateFinalPageItems(totalPages, currentPage);
+        } else {
+            html += this.generatePageItem(1, false);
+            if (currentPage - 1 > 2) {
+                html += this.generateEllipsisAndPageInput();
+            }
+            html += this.generateMiddlePageItems(currentPage);
+            if (currentPage + 1 < totalPages - 1) {
+                html += this.generateEllipsisAndPageInput();
+            }
+            html += this.generatePageItem(totalPages, false);
+        }
+
+        return html;
+    }
+
+    generateInitialPageItems(upToPage, currentPage) {
+        let html = ``;
+        for (let i = 1; i <= upToPage; i++) {
+            html += this.generatePageItem(i, currentPage === i);
+        }
+        return html;
+    }
+
+    generateFinalPageItems(totalPages, currentPage) {
+        let html = ``;
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+            html += this.generatePageItem(i, currentPage === i);
+        }
+        return html;
+    }
+
+    generateMiddlePageItems(currentPage) {
+        let html = ``;
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+            html += this.generatePageItem(i, currentPage === i);
+        }
+        return html;
+    }
+
+    generateEllipsisAndPageInput() {
+        return `
+            <li class="page-item"><a class="page-link">
+                <span class="select-page">...</span>
+                <input type="number" class="form-control page-input"/>
+            </a></li>
+        `;
     }
 
 
