@@ -122,8 +122,10 @@
     };
 
     $(function () {
-        const model = new FilterModel();
-        const controller = new FilterController(model);
+        const view = new FilterView();
+        const model = new FilterModel(view);
+        const controller = new FilterController(model, view);
+
         controller.init();
 
         initializeRangeSlider('lower', 'upper', 'lowerPrice', 'upperPrice');

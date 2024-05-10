@@ -2,12 +2,12 @@
 
 class FilterView {
 
-    static renderProducts(productsPage) {
+    renderProducts(productsPage) {
         const $products = $("#products").empty();
         productsPage.content.forEach(product => $products.append(this.generateProductHtml(product)));
     }
 
-    static generateProductHtml(product) {
+    generateProductHtml(product) {
         const formattedDiscountPrice = formatPriceUtil.formatPrice(product.discountPrice);
         const formattedPrice = formatPriceUtil.formatPrice(product.price);
         const productDetails = Array.isArray(product.details) ? product.details.slice(0, 3) : [];
@@ -43,7 +43,7 @@ class FilterView {
         `;
     }
 
-    static toggleFilters() {
+    toggleFilters() {
         $("#products").toggleClass("d-none");
         $("#allFilters").toggleClass("d-none");
         $(".viewProducts").toggleClass("d-none");
@@ -52,7 +52,7 @@ class FilterView {
         $("#allFilterNames").toggleClass("d-none");
     }
 
-    static renderAllFilterNames(countMap) {
+    renderAllFilterNames(countMap) {
         let allNamesHtml = '';
         for (const [name, values] of Object.entries(countMap)) {
             allNamesHtml += `
@@ -62,7 +62,7 @@ class FilterView {
         $("#allFilterNames").empty().append(allNamesHtml);
     }
 
-    static renderProductFilters(countMap, filters) {
+    renderProductFilters(countMap, filters) {
         let filtersHtml = '';
         let filterCount = 0;
         const filterNames = filters.map(f => f.split(',')[0]);
@@ -77,7 +77,7 @@ class FilterView {
         document.getElementById('filters').innerHTML = filtersHtml;
     }
 
-    static generateProductFilterHtml(name, values, filters) {
+    generateProductFilterHtml(name, values, filters) {
         const filterSet = new Set(filters);
 
         return `
@@ -95,7 +95,7 @@ class FilterView {
         `;
     }
 
-    static renderAllFilters(countMap) {
+    renderAllFilters(countMap) {
         let filtersHtml = '';
         for (const [name, values] of Object.entries(countMap)) {
             filtersHtml += this.generateListGroupItemHtmlForAllFilters(name, values);
@@ -103,7 +103,7 @@ class FilterView {
         document.getElementById('allFilters').innerHTML = filtersHtml;
     }
 
-    static generateListGroupItemHtmlForAllFilters(name, values) {
+    generateListGroupItemHtmlForAllFilters(name, values) {
         return `
             <li id="allFilterNames${name}" class="list-group-item p-4">
                 <span class="fw-bolder">${name}</span>
@@ -123,7 +123,7 @@ class FilterView {
         `;
     }
 
-    static checkFilters(filters) {
+    checkFilters(filters) {
         const filterCheckboxes = document.querySelectorAll('.form-check-input.filter');
 
         filterCheckboxes.forEach(checkbox => {
@@ -138,7 +138,7 @@ class FilterView {
         });
     }
 
-    static setPriceBoundaries(minPrice, maxPrice) {
+    setPriceBoundaries(minPrice, maxPrice) {
         const $lowerPrice = $("#lowerPrice");
         const $upperPrice = $("#upperPrice");
         if(minPrice && maxPrice && !$upperPrice.val() && !$lowerPrice.val()) {
@@ -150,7 +150,7 @@ class FilterView {
         }
     }
 
-    static renderPagination(productsPage) {
+    renderPagination(productsPage) {
         const currentPage = Number(productsPage.page) + 1;
         const totalPages = productsPage.totalPages;
 

@@ -1,6 +1,10 @@
 "use strict";
 
 class FilterModel {
+    constructor(view) {
+        this.view = view;
+    }
+
     extractFiltersFromUrl(url) {
         const urlParams = new URLSearchParams(new URL(url).search);
         return [...urlParams.entries()].filter(([key]) => key === 'filter').map(([, value]) => value);
@@ -11,9 +15,9 @@ class FilterModel {
             showFullScreenSpinner();
             const formattedFilters = this.formatFiltersToIncludeCommaValues(filters);
             const countMap = await this.fetchFilterCounts(formattedFilters);
-            FilterView.renderProductFilters(countMap, filters);
-            FilterView.renderAllFilters(countMap);
-            FilterView.renderAllFilterNames(countMap);
+            this.view.renderProductFilters(countMap, filters);
+            this.view.renderAllFilters(countMap);
+            this.view.renderAllFilterNames(countMap);
         } catch (error) {
             throw error;
         } finally {
@@ -46,10 +50,10 @@ class FilterModel {
         try {
             const formattedFilters = this.formatFiltersToIncludeCommaValues(filters);
             const productsPage = await this.fetchProductsPage(formattedFilters, pageNum, minPrice, maxPrice);
-            FilterView.renderProducts(productsPage);
+            this.view.renderProducts(productsPage);
 
-            FilterView.setPriceBoundaries(productsPage.minPrice, productsPage.maxPrice);
-            FilterView.renderPagination(productsPage);
+            this.view.setPriceBoundaries(productsPage.minPrice, productsPage.maxPrice);
+            this.view.renderPagination(productsPage);
 
         } catch (error) {
             throw error;
@@ -60,9 +64,9 @@ class FilterModel {
     async updateFilterDisplay(filters, minPrice, maxPrice) {
         try {
             const countMap = await this.fetchFilterCounts(filters, minPrice, maxPrice);
-            FilterView.renderAllFilters(countMap);
-            FilterView.renderProductFilters(countMap, filters);
-            FilterView.checkFilters(filters);
+            this.view.renderAllFilters(countMap);
+            this.view.renderProductFilters(countMap, filters);
+            this.view.checkFilters(filters);
         } catch (error) {
             throw error;
         }

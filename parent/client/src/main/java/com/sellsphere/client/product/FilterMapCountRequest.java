@@ -1,6 +1,5 @@
 package com.sellsphere.client.product;
 
-import jakarta.validation.constraints.DecimalMin;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
