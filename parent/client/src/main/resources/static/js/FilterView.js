@@ -1,11 +1,26 @@
 "use strict";
 
+/**
+ * View class for managing the rendering of products, filters, pagination, and UI toggling.
+ * This class handles updating the DOM based on changes in the filters, displaying products,
+ * and managing the UI elements related to filtering and pagination.
+ */
 class FilterView {
 
+    /**
+     * Renders the products on the page.
+     * @param {Object} productsPage - The page of products to render.
+     */
     renderProducts(productsPage) {
         const $products = $("#products").empty();
         productsPage.content.forEach(product => $products.append(this.generateProductHtml(product)));
     }
+
+    /**
+     * Generates the HTML for a single product.
+     * @param {Object} product - The product to generate HTML for.
+     * @returns {string} - The HTML string for the product.
+     */
 
     generateProductHtml(product) {
         const formattedDiscountPrice = formatPriceUtil.formatPrice(product.discountPrice);
@@ -43,10 +58,17 @@ class FilterView {
         `;
     }
 
+    /**
+     * Toggles the visibility of filter and product sections.
+     */
     toggleFilters() {
         $("#products, #allFilters, .viewProducts, #showAllFilters, #filters, #allFilterNames").toggleClass("d-none");
     }
 
+    /**
+     * Renders all filter names based on the provided count map.
+     * @param {Object} countMap - The map of filter counts.
+     */
     renderAllFilterNames(countMap) {
         const allNamesHtml = Object.keys(countMap).map(name => `
             <a href="#allFilterNames${name}" class="list-group-item list-group-item-action bg-body-tertiary list-group-item-secondary filter-name">${name}</a>
@@ -55,6 +77,11 @@ class FilterView {
         $("#allFilterNames").empty().append(allNamesHtml);
     }
 
+    /**
+     * Renders product filters based on the provided count map and selected filters.
+     * @param {Object} countMap - The map of filter counts.
+     * @param {Array} filters - The selected filters.
+     */
     renderProductFilters(countMap, filters) {
         let filtersHtml = '';
         let filterCount = 0;
@@ -70,6 +97,13 @@ class FilterView {
         $('#filters').html(filtersHtml);
     }
 
+    /**
+     * Generates the HTML for a single product filter.
+     * @param {string} name - The name of the filter.
+     * @param {Object} values - The values and counts for the filter.
+     * @param {Array} filters - The selected filters.
+     * @returns {string} - The HTML string for the filter.
+     */
     generateProductFilterHtml(name, values, filters) {
         const filterSet = new Set(filters);
 
@@ -88,11 +122,21 @@ class FilterView {
         `;
     }
 
+    /**
+     * Renders all filters based on the provided count map.
+     * @param {Object} countMap - The map of filter counts.
+     */
     renderAllFilters(countMap) {
         const filtersHtml = Object.entries(countMap).map(([name, values]) => this.generateListGroupItemHtmlForAllFilters(name, values)).join('');
         $('#allFilters').html(filtersHtml);
     }
 
+    /**
+     * Generates the HTML for a list group item containing all filter values.
+     * @param {string} name - The name of the filter.
+     * @param {Object} values - The values and counts for the filter.
+     * @returns {string} - The HTML string for the list group item.
+     */
     generateListGroupItemHtmlForAllFilters(name, values) {
         return `
             <li id="allFilterNames${name}" class="list-group-item p-4">
@@ -113,6 +157,10 @@ class FilterView {
         `;
     }
 
+    /**
+     * Checks the filters and updates their checked status based on the selected filters.
+     * @param {Array} filters - The selected filters.
+     */
     checkFilters(filters) {
         const filterCheckboxes = document.querySelectorAll('.form-check-input.filter');
 
@@ -128,6 +176,11 @@ class FilterView {
         });
     }
 
+    /**
+     * Sets the price boundaries for the filter inputs.
+     * @param {number} minPrice - The minimum price value.
+     * @param {number} maxPrice - The maximum price value.
+     */
     setPriceBoundaries(minPrice, maxPrice) {
         const $lowerPrice = $("#lowerPrice");
         const $upperPrice = $("#upperPrice");
@@ -142,7 +195,10 @@ class FilterView {
         }
     }
 
-
+    /**
+     * Renders the pagination controls for the products.
+     * @param {Object} productsPage - The page of products to render pagination for.
+     */
     renderPagination(productsPage) {
         const currentPage = Number(productsPage.page) + 1;
         const totalPages = productsPage.totalPages;
@@ -151,18 +207,18 @@ class FilterView {
         let html = ``;
 
         if (totalPages > 1) {
-            html += this.generatePageNavItem('Previous', currentPage === 1, '&laquo;');
+            html += this.generatePageNavItem("first", currentPage === 1, '&laquo;', );
             html += this.generatePageNumbers(currentPage, totalPages);
-            html += this.generatePageNavItem('Next', currentPage === totalPages, '&raquo;');
+            html += this.generatePageNavItem("last", currentPage === totalPages, '&raquo;');
         }
 
         $pagination.html(html);
     }
 
-    generatePageNavItem(label, isDisabled, symbol) {
+    generatePageNavItem(id, isDisabled, symbol) {
         return `
             <li class="page-item ${isDisabled ? 'disabled' : ''}">
-                <a class="page-link page" href="#" aria-label="${label}">
+                <a class="page-link" href="#"  id="${id}">
                     <span aria-hidden="true">${symbol}</span>
                 </a>
             </li>

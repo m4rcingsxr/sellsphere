@@ -1,16 +1,29 @@
 "use strict";
 
+/**
+ * Controller class for managing filter interactions and updates.
+ * This class handles initializing filters, updating the view based on filter changes,
+ * and handling pagination and sorting events.
+ */
 class FilterController {
     constructor(model, view) {
         this.model = model;
         this.view = view;
     }
 
+    /**
+     * Initializes the controller by loading filters from the URL and setting up event listeners.
+     */
     init() {
         this.loadFiltersFromUrl();
         this.initEventListeners();
     }
 
+    /**
+     * Loads filters from the URL and fetches filter counts.
+     * On success, it updates the view with the current filters and hides the spinner.
+     * On failure, it shows an error modal.
+     */
     loadFiltersFromUrl() {
         const filters = this.model.extractFiltersFromUrl(window.location.href);
         this.model.fetchAndHandleFilterCounts(filters)
@@ -53,16 +66,30 @@ class FilterController {
     initPaginationListeners() {
         $("#pagination").on("click", ".page", event => {
             const pageNum = Number($(event.target).text()) - 1;
-            this.handlePageChange(event.target, pageNum);
+            this.handlePageChange(pageNum);
         });
 
         $("#pagination").on("change", ".page-input", event => {
             const pageNum = $(event.target).val() - 1;
-            this.handlePageChange(event.target, pageNum);
+            this.handlePageChange(pageNum);
         });
+
+        $("#pagination").on("click", "#first", event => {
+            event.preventDefault();
+            this.handlePageChange(0);
+        })
+
+        $("#pagination").on("click", "#last", event => {
+            event.preventDefault();
+            this.handlePageChange(this.model.totalPages - 1);
+        })
     }
 
-    handleFilterChange() {
+    /**
+     * Handles filter changes by updating the view and re-fetching the products based on the new filters.
+     * @param {HTMLElement} target - The target element that triggered the filter change.
+     */
+    handleFilterChange(target) {
         showFullScreenSpinner();
         this.model.synchronizeSingleFilterState(target);
 
@@ -75,9 +102,19 @@ class FilterController {
             .finally(() => hideFullScreenSpinner());
     }
 
-    handlePageChange(target, pageNum) {
+    /**
+     * Handles page changes by updating the view and re-fetching the products based on the new page number.
+     * @param {number} pageNum - The new page number to fetch.
+     */
+    handlePageChange(pageNum) {
+        if (pageNum < 0 || pageNum > this.model.totalPages - 1) {
+            showErrorModal({
+                status: 400,
+                message: `${pageNum > this.model.totalPages - 1 ? `Page number cannot be greater than ${this.model.totalPages}` : 'Page number must be greater than 0'}`
+            });
+        }
+
         showFullScreenSpinner();
-        this.model.synchronizeSingleFilterState(target);
 
         const minPrice = Number($("#lowerPrice").val());
         const maxPrice = Number($("#upperPrice").val());

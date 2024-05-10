@@ -50,7 +50,14 @@ const showModalDialog = (modalId, title, content, contentType = 'text', btnURL) 
  * @param {Object} errorResponse - The error response object.
  */
 const showErrorModal = (errorResponse) => {
-    const date = parseTimestampToDate(errorResponse.timestamp);
+    let timestamp;
+    if(errorResponse.timestamp) {
+        timestamp = errorResponse.timestamp;
+    } else {
+        timestamp = Date.now();
+    }
+
+    const date = parseTimestampToDate(timestamp);
     $("#errorModal .modal-footer").text(date);
 
     const userFriendlyMessage = handleErrorResponse(errorResponse.status, errorResponse.message);

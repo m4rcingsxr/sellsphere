@@ -2,6 +2,8 @@
 
 class FilterModel {
     constructor(view) {
+        this.totalPages = 0;
+        this.currentPage = 0;
         this.view = view;
     }
 
@@ -13,7 +15,7 @@ class FilterModel {
     async fetchAndHandleFilterCounts(filters) {
         try {
             showFullScreenSpinner();
-            const formattedFilters = this.formatFiltersToIncludeCommaValues(filters);
+            const formattedFilters = this.formatFilters(filters);
             const countMap = await this.fetchFilterCounts(formattedFilters);
             this.view.renderProductFilters(countMap, filters);
             this.view.renderAllFilters(countMap);
@@ -27,7 +29,7 @@ class FilterModel {
 
     async handleFilterChange(filters, pageNum, minPrice, maxPrice) {
         try {
-            await this.fetchAndHandleProducts(filters, pageNum, minPrice, maxPrice);
+            await this.fetchAndDisplayProducts(filters, pageNum, minPrice, maxPrice);
             await this.updateFilterDisplay(filters, minPrice, maxPrice);
             console.info("Successfully handled filter change");
         } catch (error) {
@@ -46,12 +48,15 @@ class FilterModel {
         }
     }
 
-    async fetchAndHandleProducts(filters, pageNum, minPrice, maxPrice) {
+    async fetchAndDisplayProducts(filters, pageNum, minPrice, maxPrice) {
         try {
-            const formattedFilters = this.formatFiltersToIncludeCommaValues(filters);
+            const formattedFilters = this.formatFilters(filters);
             const productsPage = await this.fetchProductsPage(formattedFilters, pageNum, minPrice, maxPrice);
-            this.view.renderProducts(productsPage);
 
+            this.totalPages = productsPage.totalPages;
+            this.currentPage = productsPage.page;
+
+            this.view.renderProducts(productsPage);
             this.view.setPriceBoundaries(productsPage.minPrice, productsPage.maxPrice);
             this.view.renderPagination(productsPage);
 
@@ -72,7 +77,7 @@ class FilterModel {
         }
     }
 
-    formatFiltersToIncludeCommaValues(filters) {
+    formatFilters(filters) {
         if (filters != null) {
             return filters.map(filter => {
                 const [name, value] = filter.split(/,(.+)/);
