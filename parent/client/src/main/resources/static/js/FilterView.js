@@ -28,7 +28,7 @@ class FilterView {
         const productDetails = Array.isArray(product.details) ? product.details.slice(0, 3) : [];
 
         return `
-            <div class="col-sm-4">
+            <div class="col-md-4">
                 <div class="product-carousel-card p-2 overflow-visible rounded-2 position-relative">
                     <a href="${MODULE_URL}p/${product.alias}" class="product-carousel-img-container mt-4 ">
                         <img src="${product.mainImage}" class="card-img-top" alt="${product.name}">
@@ -62,7 +62,7 @@ class FilterView {
      * Toggles the visibility of filter and product sections.
      */
     toggleFilters() {
-        $("#products, #allFilters, .viewProducts, #showAllFilters, #filters, #allFilterNames").toggleClass("d-none");
+        $("#products, #allFilters, .viewProducts, #showAllFilters, #filters, #allFilterNames, #pagination").toggleClass("d-none");
     }
 
     /**
