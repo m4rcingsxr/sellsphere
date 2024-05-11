@@ -18,3 +18,9 @@ footer {
   flex-shrink: 0;
   width: 100%;
 }
+
+.subheading-small {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}

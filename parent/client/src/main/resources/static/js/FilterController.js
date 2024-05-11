@@ -38,6 +38,7 @@ class FilterController {
         this.initPriceRangeListeners();
         this.initSortByListener();
         this.initPaginationListeners();
+        this.initRemoveActiveFilterListener();
     }
 
     initFilterListeners() {
@@ -85,17 +86,33 @@ class FilterController {
         })
     }
 
+    initRemoveActiveFilterListener() {
+        $("#activeFilters").on("click", ".remove-filter", event => {
+            this.view.removeActiveFilter(event.currentTarget);
+
+            const $target = $(event.currentTarget);
+
+            const checkboxValue = $target.data("filter-value");
+            const checkbox = document.querySelector(`#filters input[value="${encodeURIComponent(checkboxValue)}"]`);
+
+            this.handleFilterChange(checkbox);
+        })
+    }
+
     /**
      * Handles filter changes by updating the view and re-fetching the products based on the new filters.
      * @param {HTMLElement} target - The target element that triggered the filter change.
      */
-    handleFilterChange(target) {
+    handleFilterChange(target ) {
         showFullScreenSpinner();
         this.model.synchronizeSingleFilterState(target);
 
         const minPrice = Number($("#lowerPrice").val());
         const maxPrice = Number($("#upperPrice").val());
         const filters = this.model.gatherProductSelectedFilters();
+        const groupedFilters = this.model.groupFilters(filters);
+
+        this.view.renderActiveFilters(groupedFilters);
 
         this.model.handleFilterChange(filters, 0, minPrice, maxPrice)
             .catch(error => showErrorModal(error.response))

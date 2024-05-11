@@ -31,7 +31,7 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-3 bg-body-tertiary rounded-3 d-flex flex-column align-self-start gap-3">
-                <div id="filters" class="p-3 side-filter-container">
+                <div id="filters" class="p-3">
 
                 </div>
 
@@ -46,8 +46,23 @@
                     <a href="#" class="btn w-100 btn-outline-primary" id="showAllFilters">Show all filters</a>
                 </div>
             </div>
+
             <div class="col-sm-9 p-3">
-                <div class="row mb-5">
+                <div class="row mb-5 g-3">
+
+                    <div class="col-sm-12 mx-4" id="activeFilters">
+                        <div class="d-flex gap-3 align-items-center">
+                            <h6 class="subheading-small m-0">Active filters</h6>
+
+                            <div class="d-flex gap-4 align-items-center flex-wrap" id="filterBadges">
+
+                            </div>
+                        </div>
+
+                        <hr/>
+                    </div>
+
+
                     <div class="col-sm-4">
                         <div class="multi-range custom-range">
                             <input type="range" min="0" max="50" value="5" class="custom-slider" id="lower">
@@ -59,6 +74,7 @@
                             <input class="form-control" type="number" step="1" id="upperPrice"/>
                         </div>
                     </div>
+
                     <div class="col-sm-4 offset-sm-4">
                         <select class="form-control" id="sortBy">
                             <option value="DEFAULT">default sorting</option>
@@ -69,10 +85,21 @@
                             <option value="QUESTIONS">by number of questions</option>
                         </select>
                     </div>
+
                 </div>
 
                 <div class="row g-5" id="products">
 
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-9 offset-sm-3">
+                        <nav class="d-flex">
+                            <ul class="pagination justify-content-center" id="pagination">
+
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
 
                 <ul class="list-group d-none" id="allFilters">
@@ -82,13 +109,6 @@
 
             </div>
         </div>
-
-        <!-- dispaly if length of page > 0        -->
-        <nav>
-            <ul class="pagination" id="pagination">
-
-            </ul>
-        </nav>
 
     </div>
 </main>

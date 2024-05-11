@@ -144,4 +144,20 @@ class FilterModel {
 
         return `${baseUrl}?${params.toString()}`;
     }
+
+    /**
+     * Groups filters by name and collects corresponding values into arrays.
+     * @param {Array} filters - The array of filters in the format [name,value, name,value, ...].
+     * @returns {Object} - The grouped filters as an object with names as keys and arrays of values.
+     */
+    groupFilters(filters) {
+        return filters.reduce((acc, filter) => {
+            const [name, value] = filter.split(',');
+            if (!acc[name]) {
+                acc[name] = [];
+            }
+            acc[name].push(value);
+            return acc;
+        }, {});
+    }
 }

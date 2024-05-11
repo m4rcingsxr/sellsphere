@@ -106,17 +106,31 @@ class FilterView {
      */
     generateProductFilterHtml(name, values, filters) {
         const filterSet = new Set(filters);
+        const filterEntries = Object.entries(values);
 
         return `
             <div>
                 <span class="fw-bolder">${name}</span>
                 <div class="d-flex flex-column gap-1 mt-2">
-                    ${Object.entries(values).map(([value, count]) => `
+                    ${filterEntries.slice(0, 5).map(([value, count]) => `
                         <div class="form-check">
                             <input class="form-check-input filter" type="checkbox" data-name="${name}" value="${encodeURIComponent(value)}" id="${value}" ${count > 0 ? '' : 'disabled'} ${filterSet.has(`${name},${value}`) ? 'checked' : ''}>
                             <label class="form-check-label" for="${value}">(${count}) ${value}</label>
                         </div>
                     `).join('')}
+                    ${filterEntries.length > 5 ? `
+                        <div class="collapse " id="${name}-collapse">
+                                ${filterEntries.slice(5).map(([value, count]) => `
+                                    <div class="form-check">
+                                        <input class="form-check-input filter" type="checkbox" data-name="${name}" value="${encodeURIComponent(value)}" id="${value}" ${count > 0 ? '' : 'disabled'} ${filterSet.has(`${name},${value}`) ? 'checked' : ''}>
+                                        <label class="form-check-label" for="${value}">(${count}) ${value}</label>
+                                    </div>
+                                `).join('')}
+                        </div>
+                        <a href="#" class="link-dark link-underline-opacity-0 link-underline-opacity-50-hover py-1 px-4"  data-bs-toggle="collapse" data-bs-target="#${name}-collapse" aria-expanded="false" aria-controls="${name}-collapse">
+                            Show More
+                        </a>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -185,7 +199,7 @@ class FilterView {
         const $lowerPrice = $("#lowerPrice");
         const $upperPrice = $("#upperPrice");
 
-        if(minPrice && maxPrice && !$upperPrice.val() && !$lowerPrice.val()) {
+        if (minPrice && maxPrice && !$upperPrice.val() && !$lowerPrice.val()) {
 
             $lowerPrice.val(minPrice);
             $upperPrice.val(maxPrice);
@@ -207,7 +221,7 @@ class FilterView {
         let html = ``;
 
         if (totalPages > 1) {
-            html += this.generatePageNavItem("first", currentPage === 1, '&laquo;', );
+            html += this.generatePageNavItem("first", currentPage === 1, '&laquo;',);
             html += this.generatePageNumbers(currentPage, totalPages);
             html += this.generatePageNavItem("last", currentPage === totalPages, '&raquo;');
         }
@@ -300,6 +314,81 @@ class FilterView {
                 <input type="number" class="form-control page-input"/>
             </a></li>
         `;
+    }
+
+    /**
+     * Renders the active filters as badges.
+     * @param {Object} groupedFilters - The grouped filters as an object with names as keys and arrays of values.
+     */
+    renderActiveFilters(groupedFilters) {
+        if (Object.keys(groupedFilters).length > 0) {
+
+            $("#activeFilters").removeClass("d-none");
+
+            const $badges = $("#filterBadges");
+            $badges.empty();
+
+            for (const [name, values] of Object.entries(groupedFilters)) {
+                $badges.append(this._getActiveFilterHtml(name, values));
+            }
+        }
+
+    }
+
+    /**
+     * Generates the HTML for a group of active filters.
+     * @param {string} name - The name of the filter.
+     * @param {Array} values - The values of the filter.
+     * @returns {string} - The HTML string for the group of active filters.
+     */
+    _getActiveFilterHtml(name, values) {
+        return `
+            <div class="d-flex gap-1 align-items-center">
+                <div class="fs-7 pe-3">${name}:</div>
+                ${values.map(value => this._getActiveFilterBadgeHtml(value)).join('')}
+            </div>
+        `;
+    }
+
+    /**
+     * Generates the HTML for a single active filter badge.
+     * @param {string} value - The value of the filter.
+     * @returns {string} - The HTML string for the filter badge.
+     */
+    _getActiveFilterBadgeHtml(value) {
+        return `
+            <span class="badge d-flex p-2 align-items-center text-bg-secondary rounded-pill">
+                <span class="px-1">${value}</span>
+                <a href="#" class="text-white ms-2 remove-filter" data-filter-value="${value}"><i class="bi bi-x-lg"></i></a>
+            </span>
+        `;
+    }
+
+    removeActiveFilter(target) {
+        const $target = $(target);
+
+
+        if ($target.closest("div").children().length === 2) {
+            $target.closest("div").remove();
+        } else {
+            $target.closest("span").remove();
+        }
+
+        const checkboxValue = $target.data("filter-value");
+
+        // fetch one of the checkboxes
+        const checkbox = document.querySelector(`#filters input[value="${encodeURIComponent(checkboxValue)}"]`);
+
+        // Uncheck the checkbox if found and trigger a change event
+        if (checkbox) {
+            checkbox.checked = false;
+            $(checkbox).trigger('change');
+        }
+
+        // check if hide active filter container is required
+        if ($("#activeFilters div").children().length === 2) {
+            $("#activeFilters").addClass("d-none")
+        }
     }
 
 
