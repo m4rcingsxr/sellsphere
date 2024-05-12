@@ -1,6 +1,7 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.common.entity.Setting;
+import com.sellsphere.common.entity.SettingManager;
 
 import java.util.List;
 

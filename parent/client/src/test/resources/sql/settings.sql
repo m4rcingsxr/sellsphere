@@ -1,15 +1,3 @@
-DROP TABLE IF EXISTS settings;
-
-create table settings
-(
-    setting_key varchar(128)  not null
-        primary key,
-    value       varchar(1024) not null,
-    category    varchar(45)   not null
-);
-
-
-
 INSERT INTO settings (setting_key, value, category)
 VALUES ('SITE_LOGO', '/site-logo/DummyLogo.png', 'GENERAL'),
        ('SITE_NAME', 'DummySite', 'GENERAL'),

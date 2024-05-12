@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.Setter;
  * Represents a currency entity with name, symbol, and code.
  * This entity is used to store currency information in the database.
  */
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
@@ -48,5 +50,12 @@ public class Currency extends IdentifiedEntity {
     @Column(name = "code", nullable = false)
     @NotNull(message = "Currency code is mandatory")
     private String code;
+
+    public Currency(Integer id, String name, String symbol, String code) {
+        this.id = id;
+        this.name = name;
+        this.symbol = symbol;
+        this.code = code;
+    }
 
 }

@@ -1,6 +1,5 @@
-package com.sellsphere.admin.setting;
+package com.sellsphere.common.entity;
 
-import com.sellsphere.common.entity.Setting;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
