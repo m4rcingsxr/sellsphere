@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{common :: common_head('(403) Access denied')}"></th:block>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/error.css}"/>
+</head>
+<body class="error-body">
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="error-container">
+        <h1 class="error-code">
+            403
+        </h1>
+        <h2 class="error-heading">OOPS! ACCESS DENIED</h2>
+        <p class="error-message">We are sorry, but you do not have permission to access this page.</p>
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+</body>
+</html>
