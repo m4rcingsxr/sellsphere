@@ -1,6 +1,7 @@
 package com.sellsphere.client.setting;
 
 
+import com.sellsphere.client.util.FilterUtil;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Setting;
 import jakarta.servlet.*;
@@ -24,11 +25,6 @@ public class SettingFilter extends GenericFilter {
 
     private final SettingService settingService;
 
-    private static final List<String> RESOURCE_EXTENSIONS = Arrays.asList(
-            ".css", ".js", ".jpg", ".jpeg", ".png", ".gif", ".ico", ".svg", ".woff", ".woff2",
-            ".ttf", ".eot", ".otf", ".json", ".xml", ".html", ".pdf", ".mp4", ".mp3"
-    );
-
     /**
      * Filters requests to load general settings unless the request is for a
      * static resource.
@@ -43,7 +39,7 @@ public class SettingFilter extends GenericFilter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest servletRequest = (HttpServletRequest) request;
-        boolean allowedUrl = isRequestForResource(servletRequest);
+        boolean allowedUrl = FilterUtil.isRequestForResource(servletRequest);
 
         if (!allowedUrl) {
             loadGeneralSettings(request);
@@ -60,16 +56,6 @@ public class SettingFilter extends GenericFilter {
     }
 
 
-    private boolean isRequestForResource(HttpServletRequest request) {
-        String url = request.getRequestURL().toString();
 
-        for (String allowedExtension : RESOURCE_EXTENSIONS) {
-            if (url.endsWith(allowedExtension)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
 }

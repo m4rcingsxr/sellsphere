@@ -11,6 +11,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -44,9 +45,9 @@ public class ProductController {
         return PRODUCTS_PATH;
     }
 
-    @GetMapping("/p/search/{keyword}")
+    @GetMapping("/p/search")
     public String viewProductsByKeyword(
-            @PathVariable(value = "keyword") String keyword,
+            @RequestParam(value = "keyword") String keyword,
             Model model
     ) {
         model.addAttribute("keyword", keyword);

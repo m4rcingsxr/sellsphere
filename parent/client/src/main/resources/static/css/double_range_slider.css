@@ -1,24 +1,22 @@
 .custom-range {
   position: relative;
   height: 50px;
-  width: 100%; /* Ensure the container takes 100% of its parent */
-  padding: 0 10px; /* Add horizontal padding to the container */
+  width: 100%;
+  padding: 0 10px;
 }
 
 .custom-range .custom-slider {
-  padding: 0; /* Remove padding from the slider itself */
+  padding: 0;
   box-sizing: border-box;
   appearance: none;
-  width: calc(100% - 20px); /* Account for the padding added to the container */
+  width: calc(100% - 20px);
   margin: 0;
-  /* Add some L/R padding to ensure box shadow of handle is shown */
-  overflow: hidden;
+  overflow: visible;
   border: 0;
   border-radius: 1px;
   outline: none;
   background: linear-gradient(grey, grey) no-repeat center;
-  /* Use a linear gradient to generate only the 2px height background */
-  background-size: calc(100% - 20px) 2px; /* Account for the padding added to the container */
+  background-size: calc(100% - 20px) 2px;
   background-position: center;
   pointer-events: none;
 }
@@ -35,7 +33,6 @@
   background-color: #fff;
   position: relative;
   margin: 5px 0;
-  /* Add some margin to ensure box shadow is shown */
   cursor: pointer;
   appearance: none;
   pointer-events: all;
@@ -60,7 +57,7 @@
 
 .multi-range .custom-slider {
   position: absolute;
-  width: calc(100% - 20px); /* Account for the padding added to the container */
+  width: calc(100% - 20px);
 }
 
 .multi-range .custom-slider:nth-child(1)::-webkit-slider-thumb::before {

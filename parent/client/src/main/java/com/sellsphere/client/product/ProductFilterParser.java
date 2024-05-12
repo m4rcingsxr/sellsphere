@@ -1,6 +1,6 @@
 package com.sellsphere.client.product;
 
-import com.sellsphere.client.CSVParser;
+import com.sellsphere.client.util.CSVParser;
 import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;

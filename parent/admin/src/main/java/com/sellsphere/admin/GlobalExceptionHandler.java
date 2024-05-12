@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public String handleForbiddenException(NoResourceFoundException ex) {
+    public String handleNoResourceFoundException(NoResourceFoundException ex) {
         log.error(ex.getMessage(), ex);
 
         return "error/404";

@@ -1,4 +1,4 @@
-package com.sellsphere.client;
+package com.sellsphere.client.util;
 
 import lombok.experimental.UtilityClass;
 

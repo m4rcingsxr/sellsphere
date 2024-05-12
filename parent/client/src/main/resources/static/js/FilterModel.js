@@ -126,7 +126,6 @@ class FilterModel {
         }
         filters?.forEach(filter => params.append("filter", filter));
 
-
         if (minPrice && maxPrice) {
             params.append("minPrice", minPrice);
             params.append("maxPrice", maxPrice);
@@ -134,9 +133,12 @@ class FilterModel {
 
         const url = new URL(window.location.href);
         const pathname = url.pathname;
-        if (pathname.includes('/c/')) {
+        const keywordParam = url.searchParams.get('keyword');
+        if (keywordParam) {
+            params.append("keyword", keywordParam);
+        } else if (pathname.includes('/c/')) {
             params.append("category_alias", decodeURIComponent(pathname.split('/c/')[1].split('/')[0]));
-        } else if (pathname.includes('/p/search/')) {
+        } else if (pathname.includes('/p/search')) {
             params.append("keyword", decodeURIComponent(pathname.split('/p/search/')[1].split('/')[0]));
         } else {
             throw new Error("Not supported URL. Supported['/c/{category_alias}','/p/search/{keyword}']");

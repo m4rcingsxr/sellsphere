@@ -1,5 +1,6 @@
 package com.sellsphere.client;
 
+import com.sellsphere.client.util.CSVParser;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
