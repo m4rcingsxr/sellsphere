@@ -55,6 +55,15 @@
     </div>
 </th:block>
 
+<!-- CONFIRM PASSWORD -->
+<th:block th:fragment="confirm_password_input(id)">
+    <label class="col-sm-4 col-form-label">Confirm password</label>
+    <div class="col-sm-8">
+        <input name="confirmedPassword" type="password" class="form-control"
+               th:placeholder="${id != null ? 'Leave the field blank to keep the old password' : ''}"/>
+    </div>
+</th:block>
+
 <!-- NUMBER INPUT -->
 <th:block th:fragment="number_input(label, fieldName, step, readonly)">
     <label class="col-sm-4 col-form-label" th:text="${label}"></label>

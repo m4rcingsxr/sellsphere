@@ -2,6 +2,8 @@ package com.sellsphere.admin.customer;
 
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
+import com.sellsphere.admin.setting.CountryRepository;
+import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Customer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -26,6 +29,9 @@ class CustomerControllerTest {
 
     @MockBean
     private CustomerService customerService;
+
+    @MockBean
+    private CountryRepository countryRepository;
 
     @Test
     void givenNoParameters_whenListFirstPage_thenRedirectToDefaultSortedPage() throws Exception {
@@ -74,5 +80,41 @@ class CustomerControllerTest {
                 .andExpect(model().attribute("customerList", Arrays.asList(customer1, customer2)));
 
         verify(customerService, times(1)).listPage(anyInt(), any(PagingAndSortingHelper.class));
+    }
+
+    @Test
+    void givenCustomerId_whenShowCustomerForm_thenReturnCustomerFormView() throws Exception {
+        // Given
+        Integer customerId = 1;
+        Customer customer = new Customer();
+        customer.setId(customerId);
+        customer.setFirstName("John");
+        customer.setLastName("Doe");
+        customer.setEmail("john.doe@example.com");
+
+        Country country1 = new Country();
+        country1.setId(1);
+        country1.setName("United States");
+
+        Country country2 = new Country();
+        country2.setId(2);
+        country2.setName("Canada");
+
+        List<Country> countryList = Arrays.asList(country1, country2);
+
+        when(customerService.get(customerId)).thenReturn(customer);
+        when(countryRepository.findAllByOrderByName()).thenReturn(countryList);
+
+        // When & Then
+        mockMvc.perform(get("/customers/edit/{id}", customerId))
+                .andExpect(status().isOk())
+                .andExpect(view().name("customer/customer_form"))
+                .andExpect(model().attributeExists("countryList"))
+                .andExpect(model().attributeExists("customer"))
+                .andExpect(model().attribute("countryList", countryList))
+                .andExpect(model().attribute("customer", customer));
+
+        verify(customerService, times(1)).get(customerId);
+        verify(countryRepository, times(1)).findAllByOrderByName();
     }
 }

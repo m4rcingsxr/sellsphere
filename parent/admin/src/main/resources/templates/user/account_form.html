@@ -23,12 +23,7 @@
                     <th:block th:replace="~{form_fragments :: text_input('Last name', 'lastName', false)}"></th:block>
 
                     <th:block th:replace="~{form_fragments :: password_input(${user.id})}"></th:block>
-
-                    <label class="col-sm-4 col-form-label">Confirm password</label>
-                    <div class="col-sm-8">
-                        <input name="confirmedPassword" type="password" class="form-control"
-                               th:placeholder="${user.id != null ? 'Leave the field blank to keep the old password' : ''}"/>
-                    </div>
+                    <th:block th:replace="~{form_fragments :: confirm_password_input(${user.id})}"></th:block>
 
                     <label class="col-sm-4 col-form-label">Roles</label>
                     <div class="col-sm-8">

@@ -13,7 +13,7 @@
         <div th:replace="~{common :: alerts()}"></div>
 
         <!-- Export       -->
-        <ul th:replace="~{navigations :: export_nav('customers', true)}"></ul>
+        <ul th:replace="~{navigations :: export_nav('customers', false)}"></ul>
 
         <!-- Search Bar -->
         <form th:replace="~{list_fragments :: search_bar('/customers/page/0', 'Search for the customer', 'email', ${keyword}, ${totalItems}, null)}"></form>
@@ -40,10 +40,10 @@
                     <a th:replace="~{list_fragments :: status(${customer.enabled}, |/products/${customer.id}/enabled/${!customer.enabled}|)}"></a>
                 </td>
                 <td class="pb-4">
-                    <div class="d-flex flex-column gap-3 align-items-center">
-                        <a th:replace="~{list_fragments :: detail_entity(|/customers/delete/${customer.id}|)}"></a>
-                        <a th:insert="~{list_fragments :: delete_entity(|/customers/edit/${customer.id}|)}"></a>
-                        <a th:insert="~{list_fragments :: edit_entity(|/customers/details/${customer.id}|)}"></a>
+                    <div class="d-flex flex-column gap-4 align-items-center">
+                        <a th:replace="~{list_fragments :: detail_entity(|/customers/details/${customer.id}|)}"></a>
+                        <a th:replace="~{list_fragments :: delete_entity(|/customers/delete/${customer.id}|)}"></a>
+                        <a th:replace="~{list_fragments :: edit_entity(|/customers/edit/${customer.id}|)}"></a>
                     </div>
                 </td>
             </tr>
