@@ -21,11 +21,19 @@ function handleInitialStateLoadForCountries() {
 }
 
 function initListeners() {
+    initAddressChangeListener();
+    initCountryChangeListener();
+    initAddressPrimaryChangeListener();
+}
+
+function initAddressChangeListener() {
     $("#addresses").on("change", function () {
         const addressId = this.value;
         handleAddressesVisibilityChange(addressId);
     });
+}
 
+function initCountryChangeListener() {
     $('[id^="addresses"][id*=".country"]').on('change', function () {
 
         const addressId = $(this).data("address-id");
@@ -33,6 +41,18 @@ function initListeners() {
 
         handleCountryChange(countryId, addressId);
     });
+}
+
+function initAddressPrimaryChangeListener() {
+
+    $('[id^="addresses"][id*=".primary"]').on("change", function() {
+        const checkboxId = $(this).attr("id");
+        $('[id^="addresses"][id*=".primary"]').each(function() {
+            if(checkboxId !== $(this).attr("id")) {
+                this.checked = false;
+            }
+        })
+    })
 }
 
 function handleAddressesVisibilityChange(addressId) {
