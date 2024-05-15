@@ -67,13 +67,14 @@ public class Address extends IdentifiedEntity{
      * The city of the address.
      */
     @NotNull(message = "City is required")
-    @Size(max = 45, message = "City cannot exceed 64 characters")
+    @Size(max = 45, message = "City cannot exceed 45 characters")
     @Column(name = "city", length = 45, nullable = false)
     private String city;
 
     /**
      * The state or region of the address (optional).
      */
+    @Size(max = 45, message = "City cannot exceed 45 characters")
     @Column(name = "state", length = 45, nullable = true)
     private String state;
 

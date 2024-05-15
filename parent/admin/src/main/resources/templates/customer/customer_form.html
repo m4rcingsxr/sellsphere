@@ -62,7 +62,7 @@
                             </select>
                         </div>
 
-                        <label class="col-form-label col-sm-4">Datalist example</label>
+                        <label class="col-form-label col-sm-4">State</label>
                         <div class="col-sm-8">
                             <input class="form-control" th:list="${'states' + address.id}"
                                    placeholder="Type to search...">
@@ -89,6 +89,154 @@
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
     const MAX_FILE_SIZE = "0";
+
+    const validationRules = {
+        email: {
+            required: true,
+            email: true,
+            remote: {
+                url: `${MODULE_URL}customers/check_uniqueness`,
+                type: "post",
+                data: {
+                    email: function () {
+                        return $('input[name="email"]').val();
+                    },
+                    _csrf: function () {
+                        return $('input[name="_csrf"]').val();
+                    },
+                    id: function () {
+                        return $('input[name="id"]').val();
+                    },
+                },
+                error: function (jqXHR) {
+                    handleRemoteValidationError(jqXHR);
+                }
+            }
+        },
+        password: {
+            passwordRequired: true,
+            mypassword: true,
+        },
+        confirmedPassword: {
+            passwordMatch: true,
+            passwordRequired: true,
+            mypassword: true,
+        },
+        firstName: {
+            required: true,
+            maxlength: 45,
+        },
+        lastName: {
+            required: true,
+            maxlength: 45,
+        }
+    }
+
+    const validationMessages = {
+        email: {
+            required: "An email address is required for account creation and recovery.",
+            email: "The email address entered doesn't look right. Please check it for typos.",
+            remote: "The email address you entered is already associated with an account. If it belongs to you, please log in."
+        },
+        password: {
+            passwordRequired: "A password is required to secure your account.",
+            minlength: "Your password must be at least 8 characters long to meet our security requirements.",
+            maxlength: "Your password cannot exceed 72 characters. Please choose a shorter password.",
+            mypassword: "Your password must be 8-72 characters long and include at least one uppercase letter and one digit."
+        },
+        confirmedPassword: {
+            passwordMatch: "Passwords do not match.",
+            passwordRequired: "A confirmed password is required.",
+            mypassword: "Your confirmed password must be 8-72 characters long and include at least one uppercase letter and one digit."
+        },
+        firstName: {
+            required: 'First Name is required',
+            maxlength: 'First Name length can not exceed 45 characters',
+        },
+        lastName: {
+            required: 'First Name is required',
+            maxlength: 'First Name length can not exceed 45 characters',
+        }
+    };
+
+    const dynamicRules = [
+        {
+            selector: "input[name^='addresses'][name$='.firstName']",
+            rules: {
+                required: true,
+                maxlength: 45,
+                messages: {
+                    required: "Please enter first name of recipient.",
+                    maxlength: "Recipient first name cannot exceed 45 characters."
+                }
+            }
+        },
+        {
+            selector: "input[name^='addresses'][name$='.lastName']",
+            rules: {
+                required: true,
+                maxlength: 45,
+                messages: {
+                    required: "Please enter last name of recipient.",
+                    maxlength: "Recipient last name cannot exceed 45 characters."
+                }
+            }
+        },
+        {
+            selector: "input[name^='addresses'][name$='.phoneNumber']",
+            rules: {
+                required: true,
+                maxlength: 15,
+                messages: {
+                    required: "Please enter phone number of recipient.",
+                    maxlength: "Recipient phone number cannot exceed 15 characters."
+                }
+            }
+        },
+        {
+            selector: "input[name^='addresses'][name$='.addressLine1']",
+            rules: {
+                required: true,
+                maxlength: 45,
+                messages: {
+                    required: "Please enter address line 1 of recipient.",
+                    maxlength: "Recipient address line 1 cannot exceed 64 characters."
+                }
+            }
+        },
+        {
+            selector: "input[name^='addresses'][name$='.state']",
+            rules: {
+                required: false,
+                maxlength: 45,
+                messages: {
+                    maxlength: "Recipient state cannot exceed 45 characters."
+                }
+            }
+        },
+        {
+            selector: "input[name^='addresses'][name$='.city']",
+            rules: {
+                required: true,
+                maxlength: 45,
+                messages: {
+                    required: "Please enter city of recipient.",
+                    maxlength: "Recipient city cannot exceed 45 characters."
+                }
+            }
+        },
+        {
+            selector: "input[name^='addresses'][name$='.postalCode']",
+            rules: {
+                required: true,
+                maxlength: 45,
+                messages: {
+                    required: "Please enter postal code of recipient.",
+                    maxlength: "Recipient postal code cannot exceed 10 characters."
+                }
+            }
+        }
+    ];
 </script>
 </body>
 </html>

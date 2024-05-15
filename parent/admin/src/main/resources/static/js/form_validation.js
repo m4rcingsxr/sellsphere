@@ -177,6 +177,7 @@ function errorPlacementHandler(error, element) {
 
 /**
  * Dynamically applies validation rules.
+ * When element does not exist or multiple element exist with same name pattern.
  */
 function applyDynamicValidationRules() {
     dynamicRules.forEach(config => {
