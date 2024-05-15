@@ -4,6 +4,7 @@ package com.sellsphere.admin.customer;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.admin.setting.CountryRepository;
+import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
@@ -12,9 +13,8 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -92,4 +92,25 @@ public class CustomerController {
         return "customer/customer_form";
     }
 
+    // TODO: add validation rule to check whether primary address is assigned (1)
+    /**
+     * Processes the form submission for updating an existing customer.
+     *
+     * @param customer The {@link Customer} object populated from the form data.
+     * @param ra       A {@link RedirectAttributes} object for passing
+     *                 attributes to the redirect target.
+     * @return A redirection string to the edited customer's in customers page.
+     * @throws CustomerNotFoundException If the update operation cannot
+     * proceed due to the customer not being found.
+     */
+    @PostMapping("/customers/update")
+    public String updateCustomer(@ModelAttribute("customer") Customer customer,
+                                 RedirectAttributes ra)
+            throws CustomerNotFoundException {
+        customerService.save(customer);
+
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Customer successfully updated");
+
+        return DEFAULT_REDIRECT_URL + "&keyword=" + customer.getEmail().split("@")[0];
+    }
 }

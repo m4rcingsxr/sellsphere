@@ -7,7 +7,7 @@
 <main class="content">
     <div class="container mt-4">
         <h1 class="text-center" th:text="${'Edit Customer [ID:' + customer.id + ']'}"></h1>
-        <form id="mainForm" th:action="@{/users/save}" method="POST" th:object="${customer}">
+        <form id="mainForm" th:action="@{/customers/update}" method="POST" th:object="${customer}">
 
             <div class="mx-auto mt-5">
                 <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
