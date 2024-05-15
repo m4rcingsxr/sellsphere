@@ -1,6 +1,7 @@
 package com.sellsphere.admin.customer;
 
 
+import com.sellsphere.admin.ValidationHelper;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.admin.setting.CountryRepository;
@@ -8,10 +9,12 @@ import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -29,6 +32,7 @@ public class CustomerController {
 
     public static final String DEFAULT_REDIRECT_URL = "redirect:/customers" +
             "/page/0?sortField=firstName&sortDir=asc";
+    private static final String CUSTOMER_FORM = "customer/customer_form";
 
     private final CustomerService customerService;
     private final CountryRepository countryRepository;
@@ -83,16 +87,15 @@ public class CustomerController {
     @GetMapping("/customers/edit/{id}")
     public String showCustomerForm(@PathVariable("id") Integer id, Model model)
             throws CustomerNotFoundException {
-        List<Country> countryList = countryRepository.findAllByOrderByName();
-        Customer customer = customerService.get(id);
+        prepareModelAttributesForCustomerForm(model);
 
-        model.addAttribute("countryList", countryList);
+        Customer customer = customerService.get(id);
         model.addAttribute("customer", customer);
 
-        return "customer/customer_form";
+
+        return CUSTOMER_FORM;
     }
 
-    // TODO: add validation rule to check whether primary address is assigned (1)
     /**
      * Processes the form submission for updating an existing customer.
      *
@@ -104,13 +107,27 @@ public class CustomerController {
      * proceed due to the customer not being found.
      */
     @PostMapping("/customers/update")
-    public String updateCustomer(@ModelAttribute("customer") Customer customer,
+    public String updateCustomer(@Valid @ModelAttribute("customer") Customer customer,
+                                 BindingResult bindingResult, Model model,
                                  RedirectAttributes ra)
             throws CustomerNotFoundException {
+        ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.customer");
+        validationHelper.validatePassword(customer.getPassword(), customer.getId());
+
+        if(!validationHelper.validate()) {
+            prepareModelAttributesForCustomerForm(model);
+            return CUSTOMER_FORM;
+        }
+
         customerService.save(customer);
 
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Customer successfully updated");
-
         return DEFAULT_REDIRECT_URL + "&keyword=" + customer.getEmail().split("@")[0];
+    }
+
+    private void prepareModelAttributesForCustomerForm(Model model) {
+        List<Country> countryList = countryRepository.findAllByOrderByName();
+        model.addAttribute("countryList", countryList);
+
     }
 }

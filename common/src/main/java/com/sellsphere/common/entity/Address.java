@@ -1,6 +1,7 @@
 package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,24 +28,32 @@ public class Address extends IdentifiedEntity{
     /**
      * The first name of the recipient.
      */
+    @NotNull(message = "First name is required")
+    @Size(max = 45, message = "First name cannot exceed 45 characters")
     @Column(name = "first_name", length = 45, nullable = false)
     private String firstName;
 
     /**
      * The last name of the recipient.
      */
+    @NotNull(message = "Last name is required")
+    @Size(max = 45, message = "Last name cannot exceed 45 characters")
     @Column(name = "last_name", length = 45, nullable = false)
     private String lastName;
 
     /**
      * The phone number of the recipient.
      */
+    @NotNull(message = "Phone number is required")
+    @Size(max = 15, message = "Phone number cannot exceed 15 characters")
     @Column(name = "phone_number", length = 15, nullable = false)
     private String phoneNumber;
 
     /**
      * The first line of the address.
      */
+    @NotNull(message = "Address Line 1 is required")
+    @Size(max = 64, message = "Address Line 1 cannot exceed 64 characters")
     @Column(name = "address_line_1", length = 64, nullable = false)
     private String addressLine1;
 
@@ -57,6 +66,8 @@ public class Address extends IdentifiedEntity{
     /**
      * The city of the address.
      */
+    @NotNull(message = "City is required")
+    @Size(max = 45, message = "City cannot exceed 64 characters")
     @Column(name = "city", length = 45, nullable = false)
     private String city;
 
@@ -69,6 +80,7 @@ public class Address extends IdentifiedEntity{
     /**
      * The country associated with the address.
      */
+    @NotNull(message = "Country is required")
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.REFRESH})
     @JoinColumn(name = "country_id", nullable = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
@@ -77,6 +89,9 @@ public class Address extends IdentifiedEntity{
     /**
      * The postal code of the address.
      */
+    @NotNull(message = "Postal code is required")
+    @NotBlank(message = "Postal code cannot be blank")
+    @Size(max = 10, message = "Postal code cannot exceed 10 characters")
     @Column(name = "postal_code", length = 10, nullable = false)
     private String postalCode;
 

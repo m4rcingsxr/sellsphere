@@ -31,6 +31,7 @@
                             <option th:value="${address.id}" th:each="address : *{addresses}"
                                     th:text="${address.fullAddress}"></option>
                         </select>
+                        <span th:replace="~{form_fragments :: field_error('addresses')}"></span>
                     </div>
 
                     <div th:id="${'addressContainer' + address.id}" class="col-sm-8 offset-sm-4 g-3 row d-none"

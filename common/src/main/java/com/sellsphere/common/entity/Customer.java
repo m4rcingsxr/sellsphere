@@ -1,6 +1,8 @@
 package com.sellsphere.common.entity;
 
+import com.sellsphere.common.entity.constraints.ValidPrimaryAddress;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,8 +19,10 @@ import java.util.Objects;
 
 /**
  * Represents a customer client that will log in as a client.
- * This entity will also be used by Keycloak authentication server for authentication and authorization.
+ * This entity will also be used by Keycloak authentication server for authentication and
+ * authorization.
  */
+@ValidPrimaryAddress
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -39,8 +43,6 @@ public class Customer extends IdentifiedEntity {
     /**
      * The password for the customer's account.
      */
-    @NotNull(message = "Password must not be null")
-    @Size(min = 8, max = 64, message = "Password must be between 8 and 64 characters")
     @Column(name = "customer_password", length = 64, nullable = false)
     private String password;
 
@@ -81,7 +83,9 @@ public class Customer extends IdentifiedEntity {
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Valid
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch =
+            FetchType.EAGER)
     @OrderBy("primary desc")
     private List<Address> addresses = new ArrayList<>();
 
@@ -109,8 +113,12 @@ public class Customer extends IdentifiedEntity {
     public final boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ?
+                ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() :
+                o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ?
+                ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() :
+                this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
         Customer customer = (Customer) o;
         return getId() != null && Objects.equals(getId(), customer.getId());
@@ -118,7 +126,8 @@ public class Customer extends IdentifiedEntity {
 
     @Override
     public final int hashCode() {
-        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+        return this instanceof HibernateProxy ?
+                ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 
 }
