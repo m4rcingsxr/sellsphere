@@ -1,5 +1,6 @@
 package com.sellsphere.admin.customer;
 
+import com.sellsphere.common.entity.CustomerNotFoundException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -10,10 +11,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc(addFilters = false)
 @SpringBootTest
@@ -39,6 +40,22 @@ class CustomerRestControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(true));
+    }
+
+    private static final String DEFAULT_REDIRECT_URL = "/customers/page/0?sortField=firstName&sortDir=asc";
+    private static final String SUCCESS_MESSAGE = "Customer successfully removed.";
+
+    @Test
+    void givenCustomerId_whenDeleteCustomer_thenRedirectToCustomerListWithSuccessMessage() throws Exception {
+        Integer customerId = 1;
+
+        doNothing().when(customerService).delete(customerId);
+
+        mvc.perform(get("/customers/delete/{id}", customerId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attribute("successMessage", SUCCESS_MESSAGE))
+                .andExpect(redirectedUrl(DEFAULT_REDIRECT_URL));
     }
 
 }

@@ -125,6 +125,30 @@ public class CustomerController {
         return DEFAULT_REDIRECT_URL + "&keyword=" + customer.getEmail().split("@")[0];
     }
 
+    /**
+     * Deletes a customer based on the provided ID and redirects to the
+     * customer list page.
+     *
+     * @param id The ID of the customer to delete.
+     * @param ra A {@link RedirectAttributes} object for passing success
+     *           message.
+     * @return A redirection string to the customers list page.
+     * @throws CustomerNotFoundException If the customer with the specified
+     * ID is not found.
+     */
+    @GetMapping("/customers/delete/{id}")
+    public String deleteCustomer(@PathVariable("id") Integer id,
+                                 RedirectAttributes ra)
+            throws CustomerNotFoundException {
+        customerService.delete(id);
+
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                             "Customer successfully removed."
+        );
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
     private void prepareModelAttributesForCustomerForm(Model model) {
         List<Country> countryList = countryRepository.findAllByOrderByName();
         model.addAttribute("countryList", countryList);
