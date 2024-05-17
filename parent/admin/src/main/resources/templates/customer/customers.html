@@ -37,7 +37,7 @@
                 <td th:text="${customer.lastName}"></td>
                 <td th:text="${customer.email}"></td>
                 <td>
-                    <a th:replace="~{list_fragments :: status(${customer.enabled}, |/products/${customer.id}/enabled/${!customer.enabled}|)}"></a>
+                    <a th:replace="~{list_fragments :: status(${customer.enabled}, |/customers/${customer.id}/enabled/${!customer.enabled}|)}"></a>
                 </td>
                 <td class="pb-4">
                     <div class="d-flex flex-column gap-4 align-items-center">

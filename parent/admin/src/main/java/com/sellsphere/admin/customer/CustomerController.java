@@ -149,6 +149,35 @@ public class CustomerController {
         return DEFAULT_REDIRECT_URL;
     }
 
+    /**
+     * Updates the enabled status of a customer and redirects to the customer
+     * list page.
+     *
+     * @param id                 The ID of the customer whose status is to be
+     *                          updated.
+     * @param enabled            The new enabled status for the customer.
+     * @param redirectAttributes A {@link RedirectAttributes} object for
+     *                           passing status update message.
+     * @return A redirection string to the customers list page.
+     * @throws CustomerNotFoundException If the customer with the specified
+     * ID is not found.
+     */
+    @GetMapping("/customers/{id}/enabled/{status}")
+    public String updateCustomerEnabledStatus(@PathVariable("id") Integer id,
+                                              @PathVariable("status") boolean enabled,
+                                              RedirectAttributes redirectAttributes)
+            throws CustomerNotFoundException {
+
+        customerService.updateCustomerEnabledStatus(id, enabled);
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
+                                             "The Customer ID " + id + " has " +
+                                                     "been " + (enabled ?
+                                                     "enabled" : "disabled")
+        );
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
     private void prepareModelAttributesForCustomerForm(Model model) {
         List<Country> countryList = countryRepository.findAllByOrderByName();
         model.addAttribute("countryList", countryList);

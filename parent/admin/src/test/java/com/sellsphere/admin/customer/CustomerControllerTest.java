@@ -3,13 +3,16 @@ package com.sellsphere.admin.customer;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.setting.CountryRepository;
+import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Customer;
+import com.sellsphere.common.entity.CustomerNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -116,5 +119,46 @@ class CustomerControllerTest {
 
         verify(customerService, times(1)).get(customerId);
         verify(countryRepository, times(1)).findAllByOrderByName();
+    }
+
+    @Test
+    void givenCustomerIdAndStatusEnabled_whenUpdateCustomerEnabledStatus_thenRedirectToCustomerListWithSuccessMessage() throws Exception {
+        Integer customerId = 1;
+        boolean enabled = true;
+
+        doNothing().when(customerService).updateCustomerEnabledStatus(customerId, enabled);
+
+        mockMvc.perform(get("/customers/{id}/enabled/{status}", customerId, enabled)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists(Constants.SUCCESS_MESSAGE))
+                .andExpect(redirectedUrl(CustomerController.DEFAULT_REDIRECT_URL.replace("redirect:" , "")));
+    }
+
+    @Test
+    void givenCustomerIdAndStatusDisabled_whenUpdateCustomerEnabledStatus_thenRedirectToCustomerListWithSuccessMessage() throws Exception {
+        Integer customerId = 1;
+        boolean enabled = false;
+
+        doNothing().when(customerService).updateCustomerEnabledStatus(customerId, enabled);
+
+        mockMvc.perform(get("/customers/{id}/enabled/{status}", customerId, enabled)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(CustomerController.DEFAULT_REDIRECT_URL.replace("redirect:" , "")));
+    }
+
+    @Test
+    void givenNonExistingCustomerId_whenUpdateCustomerEnabledStatus_thenThrowCustomerNotFoundException() throws Exception {
+        Integer customerId = 999;
+        boolean enabled = true;
+
+        doThrow(new CustomerNotFoundException("Customer not found")).when(customerService).updateCustomerEnabledStatus(customerId, enabled);
+
+        // Performing the GET request and verifying the response
+        mockMvc.perform(get("/customers/{id}/enabled/{status}", customerId, enabled)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(CustomerController.DEFAULT_REDIRECT_URL.replace("redirect:" , "")));;
     }
 }
