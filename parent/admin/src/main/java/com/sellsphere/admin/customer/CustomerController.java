@@ -178,6 +178,25 @@ public class CustomerController {
         return DEFAULT_REDIRECT_URL;
     }
 
+    /**
+     * Displays the details of a customer in a modal.
+     *
+     * @param id    The ID of the customer whose details are to be displayed.
+     * @param model The Spring MVC {@link Model} object for passing data to
+     *              the view.
+     * @return The path to the customer detail modal view.
+     * @throws CustomerNotFoundException If the customer with the specified
+     * ID is not found.
+     */
+    @GetMapping("/customers/details/{id}")
+    public String customerDetails(@PathVariable("id") Integer id, Model model)
+            throws CustomerNotFoundException {
+        Customer customer = customerService.get(id);
+        model.addAttribute("customer", customer);
+
+        return "customer/customer_details";
+    }
+
     private void prepareModelAttributesForCustomerForm(Model model) {
         List<Country> countryList = countryRepository.findAllByOrderByName();
         model.addAttribute("countryList", countryList);

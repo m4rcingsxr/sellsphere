@@ -161,4 +161,34 @@ class CustomerControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(CustomerController.DEFAULT_REDIRECT_URL.replace("redirect:" , "")));;
     }
+
+    @Test
+    void givenCustomerId_whenCustomerDetails_thenReturnCustomerDetailsView() throws Exception {
+        Integer customerId = 1;
+        Customer customer = new Customer();
+        customer.setId(customerId);
+        customer.setFirstName("John Doe");
+        customer.setEmail("john.doe@example.com");
+
+        when(customerService.get(customerId)).thenReturn(customer);
+
+        mockMvc.perform(get("/customers/details/{id}", customerId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("customer"))
+                .andExpect(model().attribute("customer", customer))
+                .andExpect(view().name("customer/customer_details"));
+    }
+
+    @Test
+    void givenNonExistingCustomerId_whenCustomerDetails_thenThrowCustomerNotFoundException() throws Exception {
+        Integer customerId = 999;
+
+        doThrow(new CustomerNotFoundException("Customer not found")).when(customerService).get(customerId);
+
+        mockMvc.perform(get("/customers/details/{id}", customerId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(flash().attributeExists(Constants.ERROR_MESSAGE))
+                .andExpect(status().is3xxRedirection());
+    }
 }
