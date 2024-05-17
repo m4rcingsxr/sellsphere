@@ -2,6 +2,7 @@ package com.sellsphere.admin;
 
 import com.sellsphere.admin.brand.BrandController;
 import com.sellsphere.admin.category.CategoryController;
+import com.sellsphere.admin.customer.CustomerController;
 import com.sellsphere.admin.product.ProductController;
 import com.sellsphere.admin.user.UserController;
 import com.sellsphere.common.entity.*;
@@ -68,6 +69,14 @@ public class GlobalExceptionHandler {
         return ProductController.DEFAULT_REDIRECT_URL;
     }
 
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public String handleCustomerNotFoundException(CustomerNotFoundException ex,
+                                                  RedirectAttributes ra) {
+        log.warn(ex.getMessage(), ex);
+
+        ra.addFlashAttribute(Constants.ERROR_MESSAGE, ex.getMessage());
+        return CustomerController.DEFAULT_REDIRECT_URL;
+    }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public String handleNoResourceFoundException(NoResourceFoundException ex) {

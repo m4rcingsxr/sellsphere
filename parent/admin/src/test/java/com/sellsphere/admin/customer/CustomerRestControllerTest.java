@@ -58,4 +58,18 @@ class CustomerRestControllerTest {
                 .andExpect(redirectedUrl(DEFAULT_REDIRECT_URL));
     }
 
+    @Test
+    void givenNonExistingCustomerId_whenDeleteCustomer_thenThrowCustomerNotFoundException() throws Exception {
+        Integer customerId = 999;
+
+        doThrow(new CustomerNotFoundException("Customer not found")).when(customerService).delete(customerId);
+
+        mvc.perform(get("/customers/delete/{id}", customerId)
+                            .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(DEFAULT_REDIRECT_URL));
+    }
+
+
+
 }
