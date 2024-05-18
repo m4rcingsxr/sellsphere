@@ -5,7 +5,7 @@
 
 @media (min-width: 993px) {
   .hideable-md {
-    display: table-cell; /* or appropriate display type for table cells */
+    display: table-cell;
   }
 }
 
@@ -20,7 +20,7 @@
     display: none;
   }
   .large {
-    display: table; /* or appropriate display type */
+    display: table;
   }
 }
 

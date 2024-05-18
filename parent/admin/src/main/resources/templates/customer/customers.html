@@ -49,7 +49,80 @@
             </tr>
             </tbody>
         </table>
+
+        <!-- Small -->
+        <div class="small">
+            <ul class="list-group list-group-flush">
+                <li th:each="customer : ${customerList}" class="list-group-item p-4">
+
+                    <div class="row">
+
+                        <div class="row col-sm-10">
+                            <div class="col-6">
+                                <div class="fw-light">Email</div>
+                                <div th:text="${customer.email}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">First name</div>
+                                <div th:text="${customer.firstName}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">Last name</div>
+                                <div th:text="${customer.lastName}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">Enabled</div>
+                                <a th:replace="~{list_fragments :: status(${customer.enabled}, |/customers/${customer.id}/enabled/${!customer.enabled}|)}"></a>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2 d-flex flex-column gap-4 align-items-center justify-content-center">
+                            <a th:replace="~{list_fragments :: detail_entity(|/customers/details/${customer.id}|)}"></a>
+                            <a th:replace="~{list_fragments :: delete_entity(|/customers/delete/${customer.id}|)}"></a>
+                            <a th:replace="~{list_fragments :: edit_entity(|/customers/edit/${customer.id}|)}"></a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="x-small">
+            <ul class="list-group list-group-flush">
+                <li th:each="customer : ${customerList}" class="list-group-item p-4">
+
+                    <div class="row">
+                        <div class="row col-sm-10">
+                            <div class="col-12">
+                                <div class="fw-light">Email</div>
+                                <div th:text="${customer.email}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">First name</div>
+                                <div th:text="${customer.firstName}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">Last name</div>
+                                <div th:text="${customer.lastName}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-light">Enabled</div>
+                                <a th:replace="~{list_fragments :: status(${customer.enabled}, |/customers/${customer.id}/enabled/${!customer.enabled}|)}"></a>
+                            </div>
+                            <div class="col-6">
+                                <div class="gap-4 align-items-center justify-content-center mt-3">
+                                    <a th:replace="~{list_fragments :: detail_entity(|/customers/details/${customer.id}|)}"></a>
+                                    <a th:replace="~{list_fragments :: delete_entity(|/customers/delete/${customer.id}|)}"></a>
+                                    <a th:replace="~{list_fragments :: edit_entity(|/customers/edit/${customer.id}|)}"></a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
+
 
     <!-- Pagination -->
     <nav th:replace="~{list_fragments :: large_pagination('/customers/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
