@@ -1,6 +1,6 @@
 -- Laptops & Acer
 insert into products ( name, alias, short_description, full_description, created_time, enabled, in_stock, cost, price, discount_percent, length, width, height, weight, main_image, category_id, brand_id)
-values  ( 'ASUS TUF FX505DT Gaming Laptop- 15.6", 120Hz Full HD, AMD Ryzen 5 R5-3550H Processor, GeForce GTX 1650 Graphics, 8GB DDR4, 256GB PCIe SSD, RGB Keyboard, Windows 10 64-bit - FX505DT-AH51', 'ASUS_TUF_FX505DT_Gaming_Laptop-_15.6",_120Hz_Full_HD,_AMD_Ryzen_5_R5-3550H_Processor,_GeForce_GTX_1650_Graphics,_8GB_DDR4,_256GB_PCIe_SSD,_RGB_Keyboard,_Windows_10_64-bit_-_FX505DT-AH51', '<ul>
+values  ( 'ASUS TUF FX505DT Gaming Laptop- 15.6", 120Hz Full HD, AMD Ryzen 5 R5-3550H Processor, GeForce GTX 1650 Graphics, 8GB DDR4, 256GB PCIe SSD, RGB Keyboard, Windows 10 64-bit - FX505DT-AH51', 'ASUS_TUF_FX505DT_Gaming_Laptop-_15.6"', '<ul>
 <li class="a-spacing-mini"><span class="a-list-item">Nvidia GeForce GTX 1650 4GB graphics (base: 1395MHz, Boost: 1560MHz, TDP: 50W)</span></li>
 <li class="a-spacing-mini"><span class="a-list-item">Quad-core AMD Ryzen 5 r5-3550h processor</span></li>
 <li class="a-spacing-mini"><span class="a-list-item">15.6&rdquo; 120Hz full HD (1920x1080) IPS-type display</span></li>

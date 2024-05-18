@@ -3,6 +3,8 @@ package com.sellsphere.client.product;
 import com.sellsphere.client.category.CategoryService;
 import com.sellsphere.common.entity.Category;
 import com.sellsphere.common.entity.CategoryNotFoundException;
+import com.sellsphere.common.entity.Product;
+import com.sellsphere.common.entity.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
@@ -22,6 +24,7 @@ public class ProductController {
     public static final String PRODUCTS_PATH = "product/products";
 
     private final CategoryService categoryService;
+    private final ProductService productService;
 
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
@@ -54,5 +57,21 @@ public class ProductController {
         return PRODUCTS_PATH;
     }
 
+    @GetMapping("/p/{product_alias}")
+    public String viewProduct(@PathVariable("product_alias") String productAlias, Model model)
+            throws ProductNotFoundException {
+        Product product = productService.findByAlias(productAlias);
+        List<Category> categoryParentList = categoryService.getCategoryParents(product.getCategory());
+
+        model.addAttribute("product", product);
+        model.addAttribute("categoryParentList", categoryParentList);
+
+        Category categoryProduct = new Category();
+        categoryProduct.setName(product.getName());
+
+        categoryParentList.add(categoryProduct);
+
+        return "product/product_detail";
+    }
 
 }

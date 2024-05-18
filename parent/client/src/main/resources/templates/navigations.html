@@ -57,14 +57,14 @@
 </header>
 
 <nav th:if="${categoryParentList != null}"  th:fragment="breadcrumbCategory(listCategoryParents)" aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb">
+    <ol class="breadcrumb text-ellipsis d-flex flex-nowrap">
         <li class="breadcrumb-item">
             <a th:href="@{/}">Home</a>
         </li>
         <th:block th:each="category, status : ${listCategoryParents}">
             <li th:if="${!status.last}" class="breadcrumb-item"><a th:href="@{'/c/' + ${category.alias}}"
                                                                    th:text="${category.name}"></a></li>
-            <li th:if="${status.last}" class="breadcrumb-item active" th:text="${category.name}"></li>
+            <li th:if="${status.last}" class="breadcrumb-item active text-ellipsis w-75" th:text="${category.name}"></li>
         </th:block>
     </ol>
 </nav>

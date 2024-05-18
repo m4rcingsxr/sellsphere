@@ -3,12 +3,14 @@ package com.sellsphere.client.product;
 import com.sellsphere.common.entity.BasicProductDto;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetail;
+import com.sellsphere.common.entity.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -25,6 +27,9 @@ public class ProductService {
     private static final int PAGE_SIZE = 9;
     private final ProductRepository productRepository;
 
+    public Product findByAlias(String alias) throws ProductNotFoundException {
+        return productRepository.findByAlias(alias).orElseThrow(ProductNotFoundException::new);
+    }
 
     /**
      * Lists products based on the provided product page request.

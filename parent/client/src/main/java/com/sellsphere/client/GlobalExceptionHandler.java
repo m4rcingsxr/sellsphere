@@ -1,10 +1,7 @@
 package com.sellsphere.client;
 
 import com.sellsphere.client.address.AddressController;
-import com.sellsphere.common.entity.AddressNotFoundException;
-import com.sellsphere.common.entity.Constants;
-import com.sellsphere.common.entity.CustomerNotFoundException;
-import com.sellsphere.common.entity.ForbiddenException;
+import com.sellsphere.common.entity.*;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -50,8 +47,8 @@ public class GlobalExceptionHandler {
         return AddressController.ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    public String handleForbiddenException(NoResourceFoundException ex) {
+    @ExceptionHandler({NoResourceFoundException.class, ProductNotFoundException.class})
+    public String handleForbiddenException(Exception ex) {
         log.error(ex.getMessage(), ex);
 
         return "error/404";
