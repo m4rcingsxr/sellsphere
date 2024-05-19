@@ -2,13 +2,17 @@
 
 function initEditor(editorId) {
     const editorSettings = {
-        skin: "sellsphere", // Custom skin
-        content_css: "sellsphere", // Custom CSS
-        plugins: ['autosave', 'fullscreen', 'image', 'code', 'lists'], // Plugins to include
-        toolbar: 'undo | redo | blocks | numlist bullist | formatselect | fontselect | bold italic strikethrough forecolor backcolor formatpainter | alignleft aligncenter alignright alignjustify | numlist | fullscreen | image | code', // Toolbar configuration
-        fullscreen_native: true, // Enable native fullscreen
-        images_upload_handler: uploadImageHandler, // Custom image upload handler
-        setup: setupEditor // Setup function to run when the editor is initialized
+        skin: "sellsphere",
+        content_css: "sellsphere",
+        plugins: ['template','autosave','visualblocks', 'fullscreen', 'image', 'code', 'lists'],
+        toolbar: 'undo | redo | template | blocks | visualblocks | numlist bullist | formatselect | fontselect | bold italic strikethrough forecolor backcolor formatpainter | alignleft aligncenter alignright alignjustify | numlist | fullscreen | image | code | 2-col-container',
+        fullscreen_native: true,
+        image_dimensions: false,
+        image_class_list: [
+            {title: 'Responsive', value: 'img-fluid full-description-image'}
+        ],
+        images_upload_handler: uploadImageHandler,
+        setup: setupEditor
     };
 
     tinymce.init({
@@ -83,6 +87,23 @@ function setupEditor(editor) {
         // Handle changes in images when the content changes
         handleImageChanges(editor, initialImages);
     });
+
+    editor.ui.registry.addButton('2-col-container', {
+        text: 'Insert Row',
+        onAction: function () {
+            const content = `
+                <div class="row">
+                    <div class="col-sm-6">
+                        Column 1 content...
+                    </div>
+                    <div class="col-sm-6">
+                        Column 2 content...
+                    </div>
+                </div>
+            `;
+            editor.insertContent(content);
+        }
+    });
 }
 
 /**
@@ -141,5 +162,16 @@ function deleteImage(src) {
         }
     }).catch(error => {
         console.error('Delete image failed due to a fetch error: ' + error.message);
+    });
+}
+
+/**
+ * Adds the 'img-fluid' class to all images in the editor.
+ * @param {Editor} editor - The TinyMCE editor instance.
+ */
+function addFluidClassToImages(editor) {
+    const images = editor.getDoc().querySelectorAll('img');
+    images.forEach(img => {
+        img.classList.add('img-fluid');
     });
 }

@@ -1,5 +1,5 @@
 INSERT INTO users (email, enabled, first_name, last_name, user_password, main_image)
-VALUES ('admin@example.com', 1, 'John', 'Doe', '$2a$12$vXac1Mhc53UqUQXP6QV43ewUbyiKBMtOV/9.dJ1wU8yhIxQJEEnuy', 'john_doe.jpg'),
+VALUES ('admin@example.com', 1, 'John', 'Doe', '$2a$12$GtMRozUsL6C/2J5CIc8teeebj7HhkO.OiPlbT51jp2UMe.zWiG1Cq', 'john_doe.jpg'),
        ('jane.doe@example.com', 1, 'Jane', 'Doe', '$2a$12$F8T7zDCYG/L78t/YpCJnfeYeyiCWpQn.5c6ps31qP5pZU8PyJyOtu', 'jane_doe.jpg'),
        ('alice@example.com', 0, 'Alice', 'Smith', '$2a$12$fdgvTe/1nMI02zDGQY8sse9tY0ND6fhPT7wZ.41zsbqRnU5eemVGm', 'alice_smith.jpg'),
        ('bob@example.com', 1, 'Bob', 'Johnson', '$2a$12$EuRYn5OABykvieaONIQrcuJhXADwONbcYvqVlaUDVrqz4n2MsS6l6', 'bob_johnson.jpg'),

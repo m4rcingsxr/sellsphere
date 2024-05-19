@@ -1,49 +1,59 @@
-<div th:fragment="general()" class="row p-4">
-    <div class="col-sm-4 position-relative">
-        <section
-                th:replace="~{common :: splide_product_images_carousel('main-carousel', ${product.images})}"></section>
-        <section
-                th:replace="~{common :: splide_product_images_carousel('thumbnail-carousel', ${product.images})}"></section>
-
-        <div class="position-absolute top-0 start-0">
-            <span class="badge bg-warning-subtle" th:text="${product.brand.name}"></span>
-        </div>
-    </div>
-
-    <div class="col-sm-7 offset-sm-1">
+<div th:fragment="general()" class="p-4">
+    <section>
         <div class="row">
-            <div class="col-sm-8">
-                <h4 th:text="${product.name}"></h4>
+            <div class="col-sm-4 position-relative">
+                <section
+                        th:replace="~{common :: splide_product_images_carousel('main-carousel', ${product.images})}"></section>
+                <section
+                        th:replace="~{common :: splide_product_images_carousel('thumbnail-carousel', ${product.images})}"></section>
+
+                <div class="position-absolute top-0 start-0">
+                    <span class="badge bg-warning-subtle" th:text="${product.brand.name}"></span>
+                </div>
             </div>
 
+            <div class="col-sm-7 offset-sm-1">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <h4 th:text="${product.name}"></h4>
+                    </div>
 
-            <div th:if="${product.inStock}" class="col-sm-3 offset-sm-1 px-0">
-                <div th:replace="~{:: quantity()}"></div>
+
+                    <div th:if="${product.inStock}" class="col-sm-3 offset-sm-1 px-0">
+                        <div th:replace="~{:: quantity()}"></div>
 
 
-                <button type="button" class="btn btn-primary w-100" style="height: 50px"><i
-                        class="bi bi-cart pe-2"></i>
-                    Add to cart
-                </button>
+                        <button type="button" class="btn btn-primary w-100" style="height: 50px"><i
+                                class="bi bi-cart pe-2"></i>
+                            Add to cart
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 align-items-center mt-auto">
+
+                    <div th:replace="~{common :: product_price(${product.discountPrice}, ${product.discountPercent}, ${product.price})}"></div>
+
+                    <a href="#"><i class="bi bi-bookmark-heart-fill fs-2 text-primary"></i></a>
+
+                    <i th:if="${product.inStock}" class="ms-auto bi bi-check2-circle fs-6 text-success">
+                        Available to order
+                    </i>
+                    <span th:if="${!product.inStock}" class="ms-auto text-danger-emphasis">Not available</span>
+                </div>
+
+                <div class="mt-4 border shadow-sm rounded-2 p-3">
+                    <h6 class="px-3">About this item</h6>
+                    <div th:utext="${product.shortDescription}"></div>
+                </div>
+
             </div>
         </div>
+    </section>
 
-        <div class="d-flex gap-3 align-items-center mt-3">
+    <hr class="my-5"/>
 
-            <div th:replace="~{common :: product_price(${product.discountPrice}, ${product.discountPercent}, ${product.price})}"></div>
-
-            <a href="#"><i class="bi bi-bookmark-heart-fill fs-2 text-primary"></i></a>
-
-            <i th:if="${product.inStock}" class="ms-auto bi bi-check2-circle fs-6 text-success">
-                Available to order
-            </i>
-            <span th:if="${!product.inStock}" class="ms-auto text-danger-emphasis">Not available</span>
-        </div>
-
-
-        <div class="mt-4 border shadow-sm rounded-2 p-3" th:utext="${product.shortDescription}"></div>
-
-    </div>
+    <div th:utext="${product.fullDescription}"></div>
 
 </div>
 
