@@ -53,7 +53,46 @@
 
     <hr class="my-5"/>
 
-    <div th:utext="${product.fullDescription}"></div>
+    <section>
+        <div th:utext="${product.fullDescription}"></div>
+    </section>
+
+    <section>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="row">
+                    <div class="col-12 m-0 p-0">
+                        <h6 class="py-2">Technical Details</h6>
+                    </div>
+                    <th:block th:each="detail,stat : ${product.details}">
+                        <div th:classappend="${stat.last ? 'border-bottom' : ''}"
+                             class="col-6 bg-body-tertiary p-2 border-top border-1 fs-7" th:text="${detail.name}"></div>
+                        <div th:classappend="${stat.last ? 'border-bottom' : ''}"
+                             class="col-6 p-2 border-top border-1 fs-7"
+                             th:text="${detail.value}"></div>
+                    </th:block>
+                </div>
+            </div>
+
+            <div class="offset-sm-1 col-sm-5">
+                <div class="row">
+                    <div class="col-12 m-0 p-0">
+                        <h6 class="py-2">Additional Information</h6>
+                    </div>
+
+                    <div class="col-6 bg-body-tertiary p-2 border-top border-1 fs-7">Brand</div>
+                    <div class="col-6 p-2 border-top border-1 fs-7"
+                         th:text="${product.brand.name}"></div>
+
+                    <div class="col-6 bg-body-tertiary p-2 border-top border-1 fs-7">Customer Reviews</div>
+                    <div class="col-6 p-2 border-top border-1 fs-7"></div>
+
+                    <div class="col-6 bg-body-tertiary p-2 border-top border-bottom border-1 fs-7">Customer Questions</div>
+                    <div class="col-6 p-2 border-top border-bottom border-1 fs-7"></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </div>
 

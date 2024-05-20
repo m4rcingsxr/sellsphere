@@ -4,6 +4,7 @@ import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.CountryNotFoundException;
 import com.sellsphere.common.entity.ErrorResponse;
 import com.sellsphere.common.entity.StateNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @ControllerAdvice(annotations = RestController.class)
 @Order(1)
+@Slf4j
 public class RestResponseEntityExceptionHandler {
 
     @ExceptionHandler({BrandNotFoundException.class, CountryNotFoundException.class,
@@ -36,6 +38,8 @@ public class RestResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error(e.getMessage(), e);
+
         ErrorResponse errorResponse = new ErrorResponse("An unexpected error occurred.",
                                                         HttpStatus.INTERNAL_SERVER_ERROR.value()
         );

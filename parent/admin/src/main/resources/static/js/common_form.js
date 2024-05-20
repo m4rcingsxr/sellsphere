@@ -24,7 +24,7 @@ const handleFileChange = async (event) => {
     if (file && file.size <= MAX_FILE_SIZE) {
         try {
             showSpinner();
-            const compressedFile = await compressImage(file, WIDTH, HEIGHT, QUALITY);
+            const compressedFile = await compressImage(file, QUALITY, WIDTH, HEIGHT);
             updateFileInput(compressedFile);
             previewCompressedImage(compressedFile);
         } catch (error) {

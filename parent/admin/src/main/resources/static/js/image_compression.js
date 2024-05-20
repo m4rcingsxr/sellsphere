@@ -6,9 +6,15 @@
  * @param {number} quality - The quality level for the compressed image.
  * @returns {Promise<File>} The compressed image file.
  */
-async function compressImage(file, width, height, quality) {
+async function compressImage(file, quality, width= undefined, height=undefined) {
     try {
-        const data = { file, width, height, quality };
+        const data = { file, quality };
+
+        if(width && height) {
+            data.width = width;
+            data.height = height;
+        }
+
         const compressedImageBlob = await ajaxUtil.postBlob(`${MODULE_URL}upload`, data);
         return new File([compressedImageBlob], file.name, { type: "image/jpeg" });
     } catch (error) {

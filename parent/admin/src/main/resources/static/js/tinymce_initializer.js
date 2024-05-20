@@ -27,36 +27,39 @@ function initEditor(editorId) {
  * @param {Function} progress - The progress function.
  * @returns {Promise<string>} - A promise that resolves to the image URL.
  */
-function uploadImageHandler(blobInfo, progress) {
-    return new Promise((resolve, reject) => {
+async function uploadImageHandler(blobInfo, progress) {
+    try {
+        const file = new File([blobInfo.blob()], blobInfo.filename(), { type: blobInfo.blob().type });
+
+        const compressedFile = await compressImage(file, 1.0);
         const formData = new FormData();
         const saltedFilename = generateSaltedFilename(blobInfo.filename());
-        formData.append('file', blobInfo.blob(), saltedFilename);
+        formData.append('file', compressedFile, saltedFilename);
 
-        fetch(`${MODULE_URL}editor/upload`, {
+        const response = await fetch(`${MODULE_URL}editor/upload`, {
             method: 'POST',
             body: formData,
             credentials: 'same-origin',
             headers: {
                 'X-CSRF-TOKEN': $("input[name='_csrf']").val(),
             }
-        }).then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    reject('HTTP Error: ' + response.status + ' - ' + text);
-                });
-            }
-            return response.json();
-        }).then(json => {
-            if (!json || typeof json.location !== 'string') {
-                reject('Invalid JSON: ' + JSON.stringify(json));
-            } else {
-                resolve(json.location);
-            }
-        }).catch(error => {
-            reject('Image upload failed due to a fetch error: ' + error.message);
         });
-    });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error('HTTP Error: ' + response.status + ' - ' + text);
+        }
+
+        const json = await response.json();
+        if (!json || typeof json.location !== 'string') {
+            throw new Error('Invalid JSON: ' + JSON.stringify(json));
+        }
+
+        return json.location;
+    } catch (error) {
+        console.error('Image upload failed:', error.message);
+        throw error;
+    }
 }
 
 /**
@@ -70,6 +73,7 @@ function generateSaltedFilename(filename) {
     const name = filename.substring(0, filename.lastIndexOf('.'));
     return `${name}_${timestamp}${extension}`;
 }
+
 
 /**
  * Sets up the TinyMCE editor with initial image handling logic.
@@ -162,16 +166,5 @@ function deleteImage(src) {
         }
     }).catch(error => {
         console.error('Delete image failed due to a fetch error: ' + error.message);
-    });
-}
-
-/**
- * Adds the 'img-fluid' class to all images in the editor.
- * @param {Editor} editor - The TinyMCE editor instance.
- */
-function addFluidClassToImages(editor) {
-    const images = editor.getDoc().querySelectorAll('img');
-    images.forEach(img => {
-        img.classList.add('img-fluid');
     });
 }

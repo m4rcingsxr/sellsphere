@@ -42,7 +42,7 @@ async function extraImageHandler(event) {
     if (file && file.size <= MAX_FILE_SIZE) {
         try {
             showSpinnerForExtraImage(container);
-            const compressedFile = await compressImage(file, WIDTH, HEIGHT, QUALITY);
+            const compressedFile = await compressImage(file, QUALITY, WIDTH, HEIGHT);
             const reader = new FileReader();
             reader.onload = e => {
                 const html = getImageSectionHtml(compressedFile.name, e.target.result, imageCurrentIndex);

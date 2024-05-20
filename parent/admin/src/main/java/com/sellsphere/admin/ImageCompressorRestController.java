@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * REST controller for handling image upload and compression.
@@ -33,8 +34,8 @@ public class ImageCompressorRestController {
     @PostMapping("/upload")
     public ResponseEntity<byte[]> handleFileUpload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("width") int width,
-            @RequestParam("height") int height,
+            @RequestParam(value = "width", required = false) Integer width,
+            @RequestParam(value = "height", required = false) Integer height,
             @RequestParam("quality") float quality) throws IOException {
 
         if (file.isEmpty()) {
@@ -58,12 +59,18 @@ public class ImageCompressorRestController {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         try {
-            // Resize and compress the image to the provided width, height, and quality
-            Thumbnails.of(file.getInputStream())
-                    .size(width, height)
+            Thumbnails.Builder<?> thumbnailBuilder = Thumbnails.of(file.getInputStream())
                     .outputFormat("jpg") // Output format will be JPG for consistency
-                    .outputQuality(quality) // Adjust the output quality as provided
-                    .toOutputStream(byteArrayOutputStream);
+                    .outputQuality(quality); // Adjust the output quality as provided
+
+            // Apply resizing only if width and height are provided
+            if (width != null && height != null) {
+                thumbnailBuilder.size(width, height);
+            } else {
+                thumbnailBuilder.scale(1.0);
+            }
+
+            thumbnailBuilder.toOutputStream(byteArrayOutputStream);
         } catch (IOException e) {
             throw new IOException("Failed to process the image file.", e);
         }
@@ -82,26 +89,4 @@ public class ImageCompressorRestController {
     }
 
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
-        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<ErrorResponse> handleIOException(IOException e) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                "Internal server error occurred while processing the image.",
-                HttpStatus.INTERNAL_SERVER_ERROR.value()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        ErrorResponse errorResponse = new ErrorResponse("An unexpected error occurred.",
-                                                        HttpStatus.INTERNAL_SERVER_ERROR.value()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 }
