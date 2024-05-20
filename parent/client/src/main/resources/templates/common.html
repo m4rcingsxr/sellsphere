@@ -58,8 +58,8 @@
 <section th:fragment="splide_product_images_carousel(id, imageList)" th:id="${id}" class="splide">
     <div class="splide__track">
         <ul class="splide__list">
-            <li th:each="image : ${imageList}" class="splide__slide">
-                <img th:src="${image.extraImagePath}">
+            <li th:each="image : ${imageList}" class="splide__slide position-relative">
+                <img th:src="${image.extraImagePath}" th:data-src="${image.extraImagePath}" class="lazy">
             </li>
         </ul>
     </div>

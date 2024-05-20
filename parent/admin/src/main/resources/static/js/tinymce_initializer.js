@@ -5,11 +5,11 @@ function initEditor(editorId) {
         skin: "sellsphere",
         content_css: "sellsphere",
         plugins: ['template','autosave','visualblocks', 'fullscreen', 'image', 'code', 'lists'],
-        toolbar: 'undo | redo | template | blocks | visualblocks | numlist bullist | formatselect | fontselect | bold italic strikethrough forecolor backcolor formatpainter | alignleft aligncenter alignright alignjustify | numlist | fullscreen | image | code | 2-col-container',
+        toolbar: 'undo | redo | visualblocks | numlist bullist | formatselect | fontselect | bold italic strikethrough forecolor backcolor formatpainter | alignleft aligncenter alignright alignjustify | numlist | fullscreen | image | code | 2-col-container',
         fullscreen_native: true,
         image_dimensions: false,
         image_class_list: [
-            {title: 'Responsive', value: 'img-fluid full-description-image'}
+            {title: 'Responsive', value: 'img-fluid full-description-image lazy'}
         ],
         images_upload_handler: uploadImageHandler,
         setup: setupEditor
@@ -87,7 +87,26 @@ function setupEditor(editor) {
         gatherInitialImages(editor, initialImages);
     });
 
-    editor.on('NodeChange', function () {
+    editor.on('NodeChange', function (e) {
+        if (e.element.tagName === "IMG") {
+            let img = e.element;
+            if (!img.getAttribute('data-original')) {
+                let src = img.getAttribute("src");
+                img.setAttribute("data-src", src);
+
+                // Wrap the image in a container with a spinner
+                let wrapper = document.createElement("div");
+                wrapper.classList.add("position-relative");
+                img.parentNode.insertBefore(wrapper, img);
+                wrapper.appendChild(img);
+
+                // After the image has been inserted, set it back to the original source
+                img.onload = () => {
+                    img.setAttribute("src", originalSrc);
+                };
+            }
+        }
+
         // Handle changes in images when the content changes
         handleImageChanges(editor, initialImages);
     });
