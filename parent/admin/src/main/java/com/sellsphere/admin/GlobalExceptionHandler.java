@@ -8,6 +8,7 @@ import com.sellsphere.admin.user.UserController;
 import com.sellsphere.common.entity.*;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Controller;
@@ -23,7 +24,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  * It captures exceptions thrown by any controller and handles them in a centralized manner,
  * typically by logging the error and redirecting to a specific page with an error message.
  */
-@Log4j2
+@Slf4j
 @ControllerAdvice(annotations = Controller.class)
 @Order(2)
 public class GlobalExceptionHandler {

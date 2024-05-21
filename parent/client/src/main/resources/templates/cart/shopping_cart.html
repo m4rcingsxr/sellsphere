@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <th:block th:replace="~{common :: common_head('Shopping Cart')}"></th:block>
+</head>
+
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+</body>
+</html>

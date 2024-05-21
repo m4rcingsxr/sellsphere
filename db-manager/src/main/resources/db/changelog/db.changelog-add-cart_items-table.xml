@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+
+    <changeSet id="1720444099569-1" author="Marcin Seweryn">
+        <createTable tableName="cart_items">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_cart_items"/>
+            </column>
+            <column name="customer_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="cart_items" constraintName="FK_CART_ITEMS_ON_CUSTOMER" referencedColumnNames="id" referencedTableName="customers"/>
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="cart_items" constraintName="FK_CART_ITEMS_ON_PRODUCT" referencedColumnNames="id" referencedTableName="products"/>
+    </changeSet>
+
+</databaseChangeLog>
