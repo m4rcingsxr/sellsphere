@@ -1,5 +1,5 @@
 <div th:fragment="general()" class="p-4">
-    <section style="height: 100vh">
+    <section style="height: 70vh">
         <div class="row">
             <div class="col-sm-4 position-relative">
                 <section
@@ -57,6 +57,8 @@
         <div th:utext="${product.fullDescription}"></div>
     </section>
 
+    <hr class="my-5"/>
+
     <section>
         <div class="row">
             <div class="col-sm-6">
@@ -98,12 +100,13 @@
 
 <div class="input-group mb-3" th:if="${product.inStock}" th:fragment="quantity()" id="quantity"
      style="height: 50px">
-    <button class="btn btn-outline-secondary border-dark-subtle border-end-0" type="button" id="button-minus">
-        <i class="bi bi-dash"></i>
+    <button class="btn border-dark-subtle border-end-0" type="button" id="button-minus">
+        <i class="bi bi-dash opacity-25"></i>
     </button>
-    <input type="number" step="1"
+    <input type="number" step="1" id="quantity-input"
            class="form-control text-center border-dark-subtle border-start-0 border-end-0 border-1" value="1">
-    <button class="btn btn-outline-secondary border-dark-subtle border-1 border-start-0" type="button" id="button-plus">
+    <button class="btn border-dark-subtle border-1 border-start-0" type="button" id="button-plus">
         <i class="bi bi-plus"></i>
     </button>
 </div>
+
