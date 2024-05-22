@@ -31,6 +31,10 @@ public class ProductService {
         return productRepository.findByAlias(alias).orElseThrow(ProductNotFoundException::new);
     }
 
+    public Product findById(Integer id) throws ProductNotFoundException {
+        return productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
+    }
+
     /**
      * Lists products based on the provided product page request.
      *

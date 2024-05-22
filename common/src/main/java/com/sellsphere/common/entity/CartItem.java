@@ -3,12 +3,16 @@ package com.sellsphere.common.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "cart_items")
 public class CartItem extends IdentifiedEntity {
@@ -27,8 +31,16 @@ public class CartItem extends IdentifiedEntity {
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    @Transient
-    private double shippingCost;
+    public CartItem(Integer customerId, Integer productId, Integer quantity) {
+        Customer customer = new Customer();
+        customer.setId(customerId);
+        Product product = new Product();
+        product.setId(productId);
+
+        this.customer = customer;
+        this.product = product;
+        this.quantity = quantity;
+    }
 
     @Transient
     public BigDecimal getSubtotal() {
