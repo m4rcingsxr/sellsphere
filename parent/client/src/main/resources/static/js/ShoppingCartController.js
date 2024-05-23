@@ -17,7 +17,8 @@ class ShoppingCartController {
 
     initializeAddToCartWithQuantityListener() {
         $(".add-to-cart-quantity").on('click', event => {
-
+            this.model.addItem(event);
+            this.view.updateNavigationQuantity(this.model.data.length);
         });
     }
 

@@ -1,5 +1,3 @@
-"use strict";
-
 $(function() {
     initListeners();
 })
@@ -9,13 +7,14 @@ function initListeners() {
 }
 
 function initQuantityButtonListener() {
-    $("#button-minus, #button-plus").on("click", function() {
-        const $input = $("#quantity-input");
+    $(".quantity .quantity-minus, .quantity .quantity-plus").on("click", function() {
+        const $container = $(this).closest('.quantity');
+        const $input = $container.find('.quantity-input');
         const value = Number($input.val());
-        const $minusIcon = $("#button-minus i");
-        const $plusIcon = $("#button-plus i");
+        const $minusIcon = $container.find(".quantity-minus i");
+        const $plusIcon = $container.find(".quantity-plus i");
 
-        if(this.id === 'button-minus') {
+        if($(this).hasClass('quantity-minus')) {
             if(value === 1) {
                 return;
             }
@@ -36,6 +35,5 @@ function initQuantityButtonListener() {
                 $plusIcon.addClass("opacity-25");
             }
         }
-
-    })
+    });
 }
