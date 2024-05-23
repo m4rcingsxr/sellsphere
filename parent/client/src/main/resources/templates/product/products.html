@@ -121,29 +121,13 @@
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
-<script type="text/javascript" th:src="@{/js/FormatPriceUtil.js}"></script>
 <script type="text/javascript" th:src="@{/js/FilterModel.js}"></script>
 <script type="text/javascript" th:src="@{/js/FilterController.js}"></script>
 <script type="text/javascript" th:src="@{/js/FilterView.js}"></script>
 <script type="text/javascript" th:src="@{/js/double_range_slider.js}"></script>
+
+<script th:replace="~{common :: configurations()}"></script>
 <script type="text/javascript">
-    const MODULE_URL = "[[@{/}]]";
-
-    const currencySymbolPosition = '[[${CURRENCY_SYMBOL_POSITION}]]';
-    const currencySymbol = '[[${CURRENCY_SYMBOL}]]';
-    const thousandsPointType = '[[${THOUSANDS_POINT_TYPE}]]';
-    const decimalDigits = '[[${DECIMAL_DIGITS}]]';
-    const decimalPointType = '[[${DECIMAL_POINT_TYPE}]]';
-
-
-    const currencySettings = {
-        currencySymbolPosition,
-        currencySymbol,
-        thousandsPointType,
-        decimalDigits,
-        decimalPointType
-    };
-
     $(function () {
         const view = new FilterView();
         const model = new FilterModel(view);

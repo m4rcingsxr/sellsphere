@@ -12,6 +12,7 @@ html, body {
 
 .content {
   flex: 1 0 auto;
+  min-width: 60vh;
 }
 
 footer {

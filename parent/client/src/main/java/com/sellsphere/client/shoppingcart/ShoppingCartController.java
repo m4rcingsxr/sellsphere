@@ -3,6 +3,7 @@ package com.sellsphere.client.shoppingcart;
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
+import com.sellsphere.common.entity.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

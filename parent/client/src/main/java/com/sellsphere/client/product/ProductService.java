@@ -271,4 +271,7 @@ public class ProductService {
         return false;
     }
 
+    public List<Product> getProductsByIds(List<Integer> productIds) {
+        return this.productRepository.findAllById(productIds);
+    }
 }

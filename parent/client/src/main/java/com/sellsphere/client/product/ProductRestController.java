@@ -1,1 +1,38 @@
-package com.sellsphere.client.product;import jakarta.validation.Valid;import lombok.RequiredArgsConstructor;import org.springframework.http.ResponseEntity;import org.springframework.web.bind.annotation.GetMapping;import org.springframework.web.bind.annotation.RequestMapping;import org.springframework.web.bind.annotation.RestController;import java.util.Map;/** * REST controller for handling product-related requests with filtering capabilities. * This controller provides endpoints for retrieving filtered products and filter counts. * * The filters are specified in the following formats: * - Single filter: filter=name,'value, description with commas' * - Multiple filters: filter=name1,value1&filter=name2,value2 */@RestController@RequestMapping("/filter")@RequiredArgsConstructorpublic class ProductRestController {    private final ProductService productService;    /**     * Retrieves a page of filtered products based on the provided request parameters.     * The filtering criteria are validated by a custom argument resolver.     *     * @param pageRequest the request object containing filtering, sorting, and pagination information.     * @return a ResponseEntity containing the ProductPageResponse with the filtered products and pagination details.     */    @GetMapping("/products")    public ResponseEntity<ProductPageResponse> pageFilteredProducts(            @ProductFilter ProductPageRequest pageRequest    ) {        ProductPageResponse page = productService.listProducts(pageRequest);        return ResponseEntity.ok(page);    }    /**     * Retrieves the counts of all available filters based on the provided request parameters.     * The filtering criteria are validated by a custom argument resolver.     *     * @param mapRequest the request object containing filtering criteria.     * @return a ResponseEntity containing a map with the counts of all available filters.     */    @GetMapping("/filter_counts")    public ResponseEntity<Map<String, Map<String, Long>>> getFilterMapCount(            @Valid @ProductFilter FilterMapCountRequest mapRequest    ) {        Map<String, Map<String, Long>> allFilterCounts = productService.calculateAllFilterCounts(mapRequest);        return ResponseEntity.ok(allFilterCounts);    }}
+package com.sellsphere.client.product;
+
+import com.sellsphere.common.entity.BasicProductDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/products")
+@RequiredArgsConstructor
+public class ProductRestController {
+
+    private final ProductService productService;
+
+    @InitBinder
+    public void initBinder(WebDataBinder dataBinder) {
+        dataBinder.registerCustomEditor(String.class,
+                                        new StringTrimmerEditor(true)
+        );
+    }
+
+    /**
+     * Retrieves a list of products based on their IDs.
+     *
+     * @param productIds the IDs of the products to retrieve
+     * @return a list of ProductDTO objects
+     */
+    @PostMapping("/products")
+    public ResponseEntity<List<BasicProductDto>> getProductsByIds(
+            @RequestBody List<Integer> productIds) {
+        return ResponseEntity.ok(productService.getProductsByIds(productIds).stream().map(
+                BasicProductDto::new).toList());
+    }
+}

@@ -14,6 +14,7 @@
     <link rel="stylesheet" th:href="@{/css/general.css}">
     <link rel="stylesheet" th:href="@{/css/media_queries.css}">
 
+
     <!-- Font awesome   -->
     <link rel="stylesheet" th:href="@{/node_modules/@fortawesome/fontawesome-free/css/all.css}">
 
@@ -30,6 +31,13 @@
     <script type="text/javascript" th:src="@{/js/ajax_util.js}"></script>
     <script type="text/javascript" th:src="@{/js/common.js}"></script>
 
+    <!-- Format price based on price settings   -->
+    <script type="text/javascript" th:src="@{/js/FormatPriceUtil.js}"></script>
+
+    <!-- Shopping cart       -->
+    <script type="text/javascript" th:src="@{/js/ShoppingCartController.js}"></script>
+    <script type="text/javascript" th:src="@{/js/ShoppingCartModel.js}"></script>
+    <script type="text/javascript" th:src="@{/js/ShoppingCartView.js}"></script>
 </th:block>
 
 <th:block th:fragment="swiper()">
@@ -74,3 +82,23 @@
           th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></span>
 </div>
 
+
+<script type="text/javascript" th:fragment="configurations()">
+    const MODULE_URL = "[[@{/}]]";
+    const LOGGED_IN = "[[${#authorization.expression('isAuthenticated()')}]]" === "true";
+
+    const currencySymbolPosition = '[[${CURRENCY_SYMBOL_POSITION}]]';
+    const currencySymbol = '[[${CURRENCY_SYMBOL}]]';
+    const thousandsPointType = '[[${THOUSANDS_POINT_TYPE}]]';
+    const decimalDigits = '[[${DECIMAL_DIGITS}]]';
+    const decimalPointType = '[[${DECIMAL_POINT_TYPE}]]';
+
+
+    const currencySettings = {
+        currencySymbolPosition,
+        currencySymbol,
+        thousandsPointType,
+        decimalDigits,
+        decimalPointType
+    }
+</script>
