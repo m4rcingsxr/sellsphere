@@ -95,7 +95,7 @@ const ajaxUtil = {
         const headers = {
             'Content-Type': 'application/json'
         };
-
+        
         if (csrfToken) {
             headers['X-CSRF-TOKEN'] = csrfToken;
         }
@@ -114,7 +114,6 @@ const ajaxUtil = {
         }
 
         return await response.json();
-
     },
 
     /**

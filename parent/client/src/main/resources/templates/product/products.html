@@ -129,14 +129,21 @@
 <script th:replace="~{common :: configurations()}"></script>
 <script type="text/javascript">
     $(function () {
-        const view = new FilterView();
-        const model = new FilterModel(view);
-        const controller = new FilterController(model, view);
+        const filterView = new FilterView();
+        const filterModel = new FilterModel(filterView);
+        const filterController = new FilterController(filterModel, filterView);
 
-        controller.init();
+        filterController.init();
+
+        const cartView = new ShoppingCartView();
+        const cartModel = new ShoppingCartModel();
+        const cartController = new ShoppingCartController(cartModel, cartView);
+
+        cartController.initializeAddToCartListener();
 
         initializeRangeSlider('lower', 'upper', 'lowerPrice', 'upperPrice');
     })
+
 </script>
 </body>
 </html>

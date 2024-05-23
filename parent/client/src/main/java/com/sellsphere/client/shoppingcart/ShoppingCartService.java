@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service class for handling shopping cart operations.
@@ -43,20 +44,19 @@ public class ShoppingCartService {
      */
     public void addProduct(Customer customer, Product product, Integer quantity)
             throws CartItemNotFoundException {
-        CartItem cartItem = cartItemRepository.findByCustomerAndProduct(customer, product).orElseThrow(
-                CartItemNotFoundException::new);
+        Optional<CartItem> cartItem = cartItemRepository.findByCustomerAndProduct(customer, product);
 
         if(quantity < 1 || quantity > MAX_QUANTITY_PER_PRODUCT) {
             throw new IllegalStateException("Max product quantity is " + MAX_QUANTITY_PER_PRODUCT);
         }
 
-        if(cartItem != null) {
-            cartItem.setQuantity(quantity);
+        if(cartItem.isPresent()) {
+            cartItem.get().setQuantity(quantity);
         } else {
-            cartItem = new CartItem(customer, product, quantity);
+            cartItem = Optional.of(new CartItem(customer, product, quantity));
         }
 
-        cartItemRepository.save(cartItem);
+        cartItemRepository.save(cartItem.get());
     }
 
     /**
