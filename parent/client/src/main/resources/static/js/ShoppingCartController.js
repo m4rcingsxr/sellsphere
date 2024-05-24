@@ -16,8 +16,13 @@ class ShoppingCartController {
     }
 
     initializeAddToCartWithQuantityListener() {
-        $(".add-to-cart-quantity").on('click', event => {
+        $(".container").on('click', '.add-to-cart-quantity', event => {
+            const $target = $(event.currentTarget);
+            const productId = Number($target.data("product-id"));
+            const quantity = Number($target.parent().find(".quantity-input").val());
 
+            this.model.addItem(productId, quantity);
+            this.view.updateNavigationQuantity(this.model.data.length);
         });
     }
 

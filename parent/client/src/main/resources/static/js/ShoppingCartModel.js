@@ -27,34 +27,39 @@ class ShoppingCartModel {
     }
 
     // target must have product-id as dataset attribute
-    addItem(productId) {
+    addItem(productId, quantity = 1) {
         console.debug("[ShoppingCartModel.addItem()]");
         console.debug("[LOGGED IN]: ", LOGGED_IN);
         console.debug("[PRODUCTS]: ", this.products);
         console.debug("[START DATA]: ", this.data);
         console.debug("[productId]: ", productId);
+        console.debug("[quantity]: ", quantity);
+
+        // Ensure the quantity is a positive integer
+        if (quantity <= 0) {
+            console.error('Quantity must be a positive integer.');
+            return;
+        }
 
         let productIndex = this.data.findIndex(item => item.productId === productId);
 
         if (productIndex !== -1) {
-
             // If item already exists, increase its quantity
-            if (this.data[productIndex].quantity === this.maxQuantityCartItem) {
-
+            const newQuantity = this.data[productIndex].quantity + quantity;
+            if (newQuantity > this.maxQuantityCartItem) {
                 console.info(`The quantity of one product[${productId}] cannot exceed ${this.maxQuantityCartItem}`);
                 return;
             }
 
-            this.data[productIndex].quantity++;
+            this.data[productIndex].quantity = newQuantity;
         } else {
-
-            // If item doesn't exist, add it to the cart with quantity 1
+            // If item doesn't exist, add it to the cart with the specified quantity
             if (this.data.length >= this.maxProductsCart) {
                 console.info(`Max ${this.maxProductsCart} products in cart`);
                 return;
             }
 
-            this.data.push({productId: productId, quantity: 1});
+            this.data.push({ productId: productId, quantity: quantity });
             productIndex = this.data.length - 1;
         }
 
@@ -72,6 +77,7 @@ class ShoppingCartModel {
         console.debug("[END DATA]: ", this.data);
         this.updateLocalStorage();
     }
+
 
     async _updateDBCart(productId, quantity) {
         try {
