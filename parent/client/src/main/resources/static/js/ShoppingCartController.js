@@ -7,13 +7,24 @@ class ShoppingCartController {
         this.synchronizeLocalAndRemoteState();
     }
 
+    initialize() {
+        if (this.model.data.length !== 0) {
+            this.model.initializeProducts()
+                .then(() => {
+                    this.view.renderProducts(this.model.products, this.model.data);
+                });
+        } else {
+            // hide shopping cart
+        }
+    }
+
     synchronizeLocalAndRemoteState() {
         if (window.location.href.endsWith("?continue")) {
             this.model.merge()
                 .then()
                 .catch(error => {
                     console.error(error);
-                    this.view.updateNavigationQuantity(this.model.data.length)
+                    this.updateNavigationQuantity();
 
                     console.debug("Successfully merged products in cart")
                     showErrorModal(error.response);
@@ -28,7 +39,7 @@ class ShoppingCartController {
             const quantity = Number($target.parent().find(".quantity-input").val());
 
             this.model.addItem(productId, quantity);
-            this.view.updateNavigationQuantity(this.model.data.length);
+            this.updateNavigationQuantity();
         });
     }
 
@@ -37,7 +48,12 @@ class ShoppingCartController {
         $("#products").on('click', '.add-to-cart', event => {
             const productId = Number($(event.currentTarget).data("product-id"));
             this.model.addItem(productId);
-            this.view.updateNavigationQuantity(this.model.data.length);
+            this.updateNavigationQuantity();
         });
     }
+
+    updateNavigationQuantity() {
+        this.view.updateNavigationQuantity(this.model.data.length);
+    }
+
 }

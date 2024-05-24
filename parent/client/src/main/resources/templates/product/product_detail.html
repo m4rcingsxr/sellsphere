@@ -49,15 +49,6 @@
 <script type="text/javascript" th:src="@{/js/product_details.js}"></script>
 
 <script th:replace="~{common :: configurations()}"></script>
-<script type="text/javascript">
-    $(function () {
-        const cartView = new ShoppingCartView();
-        const cartModel = new ShoppingCartModel();
-        const cartController = new ShoppingCartController(cartModel, cartView);
-
-        cartController.initializeAddToCartWithQuantityListener();
-    })
-
-</script>
+<script th:replace="~{common :: cart_initialization()}"></script>
 </body>
 </html>

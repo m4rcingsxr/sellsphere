@@ -127,23 +127,17 @@
 <script type="text/javascript" th:src="@{/js/double_range_slider.js}"></script>
 
 <script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
+
 <script type="text/javascript">
     $(function () {
         const filterView = new FilterView();
         const filterModel = new FilterModel(filterView);
         const filterController = new FilterController(filterModel, filterView);
-
         filterController.init();
-
-        const cartView = new ShoppingCartView();
-        const cartModel = new ShoppingCartModel();
-        const cartController = new ShoppingCartController(cartModel, cartView);
-
-        cartController.initializeAddToCartListener();
 
         initializeRangeSlider('lower', 'upper', 'lowerPrice', 'upperPrice');
     })
-
 </script>
 </body>
 </html>

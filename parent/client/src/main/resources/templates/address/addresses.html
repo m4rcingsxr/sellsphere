@@ -164,10 +164,10 @@
 <div th:replace="~{address/address_fragments :: deleteAddressModal()}"></div>
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
-
 <script type="text/javascript" th:src="@{/js/addresses.js}"></script>
-<script type="text/javascript">
-    const MODULE_URL = '[[@{/}]]';
-</script>
+
+
+<script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
 </body>
 </html>

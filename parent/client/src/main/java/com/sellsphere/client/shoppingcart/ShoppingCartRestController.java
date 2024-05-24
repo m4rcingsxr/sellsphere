@@ -108,7 +108,7 @@ public class ShoppingCartRestController {
      * @throws CustomerNotFoundException if the customer is not found
      */
     @PostMapping("/set")
-    public void setCart(Principal principal,
+    public ResponseEntity<Void> setCart(Principal principal,
                         @RequestBody List<CartItemDto> cart)
             throws CustomerNotFoundException {
         String email = principal.getName();
@@ -125,6 +125,7 @@ public class ShoppingCartRestController {
                         )).toList();
 
         cartService.saveAll(newCart);
+        return ResponseEntity.ok().build();
     }
 
 }

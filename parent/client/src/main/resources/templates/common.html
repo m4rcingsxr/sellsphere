@@ -35,9 +35,9 @@
     <script type="text/javascript" th:src="@{/js/FormatPriceUtil.js}"></script>
 
     <!-- Shopping cart       -->
-    <script type="text/javascript" th:src="@{/js/ShoppingCartController.js}"></script>
-    <script type="text/javascript" th:src="@{/js/ShoppingCartModel.js}"></script>
-    <script type="text/javascript" th:src="@{/js/ShoppingCartView.js}"></script>
+    <script  type="text/javascript" th:src="@{/js/ShoppingCartModel.js}"></script>
+    <script  type="text/javascript" th:src="@{/js/ShoppingCartView.js}"></script>
+    <script  type="text/javascript" th:src="@{/js/ShoppingCartController.js}"></script>
 </th:block>
 
 <th:block th:fragment="swiper()">
@@ -101,4 +101,14 @@
         decimalDigits,
         decimalPointType
     }
+</script>
+
+<script type="text/javascript" th:fragment="cart_initialization()">
+    const cartController = new ShoppingCartController(new ShoppingCartModel(), new ShoppingCartView());
+
+    $(function() {
+        cartController.updateNavigationQuantity();
+        cartController.initializeAddToCartWithQuantityListener();
+        cartController.initializeAddToCartListener()
+    })
 </script>

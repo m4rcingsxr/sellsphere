@@ -4,6 +4,7 @@ import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.common.entity.CartItemNotFoundException;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.Product;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -83,6 +84,7 @@ public class ShoppingCartService {
      *
      * @param customer the customer to delete cart items for
      */
+    @Transactional
     public void deleteByCustomer(Customer customer) {
         cartItemRepository.deleteAllByCustomer(customer);
     }

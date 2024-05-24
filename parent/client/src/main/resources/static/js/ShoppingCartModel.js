@@ -2,8 +2,8 @@ class ShoppingCartModel {
 
     maxQuantityCartItem = 5;
     maxProductsCart = 25;
-    cartBaseUrl = MODULE_URL + "cart/";
-    productBaseUrl = MODULE_URL + "products/";
+    cartBaseUrl = MODULE_URL + "cart";
+    productBaseUrl = MODULE_URL + "products";
 
     constructor() {
         this.data = JSON.parse(localStorage.getItem('cart')) || [];
@@ -81,7 +81,7 @@ class ShoppingCartModel {
 
     async addCartItemToDb(productId, quantity) {
         try {
-            const url = `${this.cartBaseUrl}add/${productId}/${quantity}`;
+            const url = `${this.cartBaseUrl}/add/${productId}/${quantity}`;
             await ajaxUtil.post(url, {});
             console.debug(`[ShoppingCartModel._updateDBCart] : Product id[${productId}] quantity[${quantity}] updated in DB cart successfully`);
         } catch (error) {
@@ -97,7 +97,7 @@ class ShoppingCartModel {
     async merge() {
         try {
             // Fetch the current state of the cart from the database
-            const cart = await ajaxUtil.get(`${this.cartBaseUrl}items`);
+            const cart = await ajaxUtil.get(`${this.cartBaseUrl}/items`);
 
             // Create a map for the local storage cart items for easy access
             const localCartMap = new Map(this.data.map(item => [item.productId, item]));
@@ -134,10 +134,9 @@ class ShoppingCartModel {
 
     async setCart(cart) {
         try {
-            const data = cart;
-            const url = `${this.cartBaseUrl}set`;
+            const url = `${this.cartBaseUrl}/set`;
 
-            await ajaxUtil.post(url, data);
+            await ajaxUtil.post(url, this.data);
 
             console.debug(`[ShoppingCartModel._setCart] : Cart [${cart}] set as DB cart successfully`);
         } catch (error) {

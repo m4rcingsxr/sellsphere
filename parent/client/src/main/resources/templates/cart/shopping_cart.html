@@ -30,74 +30,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>
-                            <div class="d-flex gap-3 align-items-center">
-                                <img src="https://fastly.picsum.photos/id/740/200/300.jpg?hmac=xGwbWP1ZuaeJBMwh-M84vhuZJwd9V9chUBV1IK6-fbk"
-                                     class="img-fluid product-image lazy">
-                                <div class="text-truncate" style="max-width: 150px;">
-                                    <a href="#" class="link-dark text-decoration-none text-truncate">Lorem Lorem
-                                        LoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLorem</a>
-                                    <p class="text-muted mb-0">detail1: value1</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="align-middle">Price</td>
-                        <td class="align-middle">
-                            <div class="input-group mb-3 quantity" style="max-width: 120px;">
-                                <button class="btn border-dark-subtle border-end-0 quantity-minus add-to-cart-quantity" type="button" data-product-id="1">
-                                    <i class="bi bi-dash opacity-25"></i>
-                                </button>
-                                <input type="text"
-                                       class="form-control text-center border-dark-subtle border-start-0 border-end-0 border-1 quantity-input"
-                                       value="1">
-                                <button class="btn border-dark-subtle border-1 border-start-0 quantity-plus add-to-cart-quantity"
-                                        type="button"  data-product-id="1">
-                                    <i class="bi bi-plus"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td class="align-middle">
-                            quantity * price
-                        </td>
-                        <td class="align-middle">
-                            <a href="#" class="link-dark"><i class="bi bi-x-lg"></i></a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="d-flex gap-3 align-items-center">
-                                <img src="https://fastly.picsum.photos/id/740/200/300.jpg?hmac=xGwbWP1ZuaeJBMwh-M84vhuZJwd9V9chUBV1IK6-fbk"
-                                     class="img-fluid product-image lazy">
-                                <div class="text-truncate" style="max-width: 150px;">
-                                    <a href="#" class="link-dark text-decoration-none text-truncate">Lorem Lorem
-                                        LoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLorem</a>
-                                    <p class="text-muted mb-0">detail1: value1</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="align-middle">Price</td>
-                        <td class="align-middle">
-                            <div class="input-group mb-3 quantity" style="max-width: 120px;">
-                                <button class="btn border-dark-subtle border-end-0 quantity-minus" type="button">
-                                    <i class="bi bi-dash opacity-25"></i>
-                                </button>
-                                <input type="text"
-                                       class="form-control text-center border-dark-subtle border-start-0 border-end-0 border-1 quantity-input"
-                                       value="1">
-                                <button class="btn border-dark-subtle border-1 border-start-0 quantity-plus"
-                                        type="button">
-                                    <i class="bi bi-plus"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td class="align-middle">
-                            quantity * price
-                        </td>
-                        <td class="align-middle">
-                            <a href="#" class="link-dark"><i class="bi bi-x-lg"></i></a>
-                        </td>
-                    </tr>
+
                     </tbody>
                 </table>
 
@@ -152,16 +85,12 @@
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
 <script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
 
 <script>
     $(function () {
-        const cartView = new ShoppingCartView();
-        const cartModel = new ShoppingCartModel();
-        const cartController = new ShoppingCartController(cartModel, cartView);
-
-        cartController.initializeAddToCartWithQuantityListener();
+        cartController.initialize();
     })
-
 </script>
 </body>
 </html>

@@ -1,10 +1,14 @@
 <html lang="en">
 <head th:replace="~{common :: head('Main page')}"></head>
 <body>
-    <header th:replace="~{navigations :: header()}"></header>
-    <main class="content">
+<header th:replace="~{navigations :: header()}"></header>
+<main class="content">
 
-    </main>
-    <footer th:replace="~{navigations :: footer()}"></footer>
+</main>
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+<script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
 </body>
 </html>
