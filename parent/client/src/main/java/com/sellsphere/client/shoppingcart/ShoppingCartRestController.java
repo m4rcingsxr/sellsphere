@@ -4,10 +4,10 @@ import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.product.ProductService;
 import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,9 +29,9 @@ public class ShoppingCartRestController {
      * Throws exceptions if the customer or product is not found,
      * or if the quantity exceeds the limit.
      *
-     * @param productId  the ID of the product to add
-     * @param quantity   the quantity of the product to add
-     * @param principal  the authenticated user's principal
+     * @param productId the ID of the product to add
+     * @param quantity  the quantity of the product to add
+     * @param principal the authenticated user's principal
      * @throws CustomerNotFoundException if the customer is not found
      * @throws ProductNotFoundException  if the product is not found
      */
@@ -88,17 +88,15 @@ public class ShoppingCartRestController {
      * @throws CustomerNotFoundException if the customer is not found
      */
     @GetMapping("/items")
-    public List<CartItemDto> getCartItems(
+    public ResponseEntity<List<CartItemDto>> getCartItems(
             Principal principal)
             throws CustomerNotFoundException {
-        if (principal != null) {
-            String email = principal.getName();
-            Customer customer = customerService.getByEmail(email);
+        String email = principal.getName();
+        Customer customer = customerService.getByEmail(email);
 
-            return cartService.findAllByCustomer(customer).stream().map(CartItemDto::new).toList();
-        } else {
-            return Collections.emptyList();
-        }
+        List<CartItemDto> list = cartService
+                .findAllByCustomer(customer).stream().map(CartItemDto::new).toList();
+        return ResponseEntity.ok(list);
     }
 
     /**
@@ -124,7 +122,7 @@ public class ShoppingCartRestController {
                                 customer.getId(),
                                 cartItemDTO.getProductId(),
                                 cartItemDTO.getQuantity()
-                )).toList();
+                        )).toList();
 
         cartService.saveAll(newCart);
     }

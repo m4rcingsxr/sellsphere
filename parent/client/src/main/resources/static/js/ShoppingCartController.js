@@ -8,10 +8,16 @@ class ShoppingCartController {
     }
 
     synchronizeLocalAndRemoteState() {
-        if(LOGGED_IN) {
+        if (window.location.href.endsWith("?continue")) {
+            this.model.merge()
+                .then()
+                .catch(error => {
+                    console.error(error);
+                    this.view.updateNavigationQuantity(this.model.data.length)
 
-        } else {
-
+                    console.debug("Successfully merged products in cart")
+                    showErrorModal(error.response);
+                });
         }
     }
 

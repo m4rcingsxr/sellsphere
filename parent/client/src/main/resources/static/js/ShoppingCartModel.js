@@ -59,12 +59,12 @@ class ShoppingCartModel {
                 return;
             }
 
-            this.data.push({ productId: productId, quantity: quantity });
+            this.data.push({productId: productId, quantity: quantity});
             productIndex = this.data.length - 1;
         }
 
         if (LOGGED_IN) {
-            this._updateDBCart(this.data[productIndex].productId, this.data[productIndex].quantity)
+            this.addCartItemToDb(this.data[productIndex].productId, this.data[productIndex].quantity)
                 .then(() => {
                     console.debug('[ShoppingCartModel.addItem] : DB cart updated successfully');
                 })
@@ -79,7 +79,7 @@ class ShoppingCartModel {
     }
 
 
-    async _updateDBCart(productId, quantity) {
+    async addCartItemToDb(productId, quantity) {
         try {
             const url = `${this.cartBaseUrl}add/${productId}/${quantity}`;
             await ajaxUtil.post(url, {});
@@ -92,5 +92,56 @@ class ShoppingCartModel {
 
     updateLocalStorage() {
         localStorage.setItem('cart', JSON.stringify(this.data));
+    }
+
+    async merge() {
+        try {
+            // Fetch the current state of the cart from the database
+            const cart = await ajaxUtil.get(`${this.cartBaseUrl}items`);
+
+            // Create a map for the local storage cart items for easy access
+            const localCartMap = new Map(this.data.map(item => [item.productId, item]));
+
+            // Iterate through the DB cart and merge with local storage cart
+            for (let cartItem of cart) {
+                const localCartItem = localCartMap.get(cartItem.productId);
+
+                if (localCartItem) {
+                    // If the item exists in local storage, merge quantities
+                    cartItem.quantity = Math.min(cartItem.quantity + localCartItem.quantity, this.maxQuantityCartItem);
+                    localCartMap.delete(cartItem.productId); // Remove the item from the map once merged
+                }
+            }
+
+            // Add remaining items from local storage that were not in the DB cart
+            for (let localCartItem of localCartMap.values()) {
+                if (cart.length >= this.maxProductsCart) {
+                    console.info(`Max ${this.maxProductsCart} products in cart reached`);
+                    break;
+                }
+                cart.push(localCartItem);
+            }
+
+            // Update the local storage and DB cart with the merged data
+            this.data = cart;
+            this.updateLocalStorage();
+            await this.setCart(cart);
+
+        } catch (error) {
+            console.error(`[ShoppingCartModel.merge] : Error merging cart items:`, error);
+        }
+    }
+
+    async setCart(cart) {
+        try {
+            const data = cart;
+            const url = `${this.cartBaseUrl}set`;
+
+            await ajaxUtil.post(url, data);
+
+            console.debug(`[ShoppingCartModel._setCart] : Cart [${cart}] set as DB cart successfully`);
+        } catch (error) {
+            console.error(`[ShoppingCartModel._setCart] : Error setting cart [${cart}]:`, error);
+        }
     }
 }
