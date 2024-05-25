@@ -1,5 +1,6 @@
 class ShoppingCartView {
-    constructor() {}
+    constructor() {
+    }
 
     updateNavigationQuantity(itemCount) {
         $("#quantity-count").text(itemCount);
@@ -26,7 +27,7 @@ class ShoppingCartView {
         const totalPrice = localProduct.quantity * product.discountPrice;
 
         return `
-            <tr>
+            <tr id="product-container${product.id}">
                 <td>
                     <div class="d-flex gap-3 align-items-center">
                         <img src="${product.mainImagePath}" class="img-fluid product-image lazy">
@@ -39,11 +40,11 @@ class ShoppingCartView {
                 <td class="align-middle">${formatPriceUtil.formatPrice(product.discountPrice)}</td>
                 <td class="align-middle">
                     <div class="input-group mb-3 quantity" style="max-width: 120px;">
-                        <button class="btn border-dark-subtle border-end-0 quantity-minus" type="button">
+                        <button class="btn border-dark-subtle border-end-0 quantity-minus" type="button" data-product-id="${product.id}">
                             <i class="bi bi-dash opacity-25"></i>
                         </button>
                         <input type="text" class="form-control text-center border-dark-subtle border-start-0 border-end-0 border-1 quantity-input" value="${localProduct.quantity}">
-                        <button class="btn border-dark-subtle border-1 border-start-0 quantity-plus" type="button">
+                        <button class="btn border-dark-subtle border-1 border-start-0 quantity-plus" type="button" data-product-id="${product.id}">
                             <i class="bi bi-plus"></i>
                         </button>
                     </div>
@@ -52,9 +53,17 @@ class ShoppingCartView {
                     ${formatPriceUtil.formatPrice(totalPrice)}
                 </td>
                 <td class="align-middle">
-                    <a href="#" class="link-dark"><i class="bi bi-x-lg"></i></a>
+                    <a href="#" class="link-dark delete-cart-item" data-product-id="${product.id}"><i class="bi bi-x-lg"></i></a>
                 </td>
             </tr>
         `;
+    }
+
+    removeItem(productId) {
+        $(`#product-container${productId}`).remove();
+    }
+
+    clear() {
+        $("tbody").empty();
     }
 }

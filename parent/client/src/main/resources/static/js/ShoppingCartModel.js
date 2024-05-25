@@ -27,31 +27,47 @@ class ShoppingCartModel {
     }
 
     // target must have product-id as dataset attribute
-    addItem(productId, quantity = 1) {
+    addItem(productId, quantityChange = 1) {
         console.debug("[ShoppingCartModel.addItem()]");
         console.debug("[LOGGED IN]: ", LOGGED_IN);
         console.debug("[PRODUCTS]: ", this.products);
         console.debug("[START DATA]: ", this.data);
         console.debug("[productId]: ", productId);
-        console.debug("[quantity]: ", quantity);
+        console.debug("[quantityChange]: ", quantityChange);
 
-        // Ensure the quantity is a positive integer
-        if (quantity <= 0) {
-            console.error('Quantity must be a positive integer.');
+        // Ensure the quantityChange is either -1 or a positive integer from 1-5
+        if ((quantityChange < 1 || quantityChange > 5) && quantityChange !== -1) {
+            console.error('Quantity change must be a positive integer between 1 and 5, or -1.');
             return;
         }
 
         let productIndex = this.data.findIndex(item => item.productId === productId);
 
         if (productIndex !== -1) {
-            // If item already exists, increase its quantity
-            const newQuantity = this.data[productIndex].quantity + quantity;
-            if (newQuantity > this.maxQuantityCartItem) {
-                console.info(`The quantity of one product[${productId}] cannot exceed ${this.maxQuantityCartItem}`);
+            // If item already exists, adjust its quantity
+            let newQuantity = this.data[productIndex].quantity + quantityChange;
+
+            if (quantityChange === -1) {
+                newQuantity = this.data[productIndex].quantity - 1;
+            }
+
+            if (newQuantity > this.maxQuantityCartItem || newQuantity < 1) {
+                console.info(`The quantity of one product[${productId}] cannot exceed ${this.maxQuantityCartItem} or be less than 1`);
                 return;
             }
 
             this.data[productIndex].quantity = newQuantity;
+
+            if (LOGGED_IN) {
+                this.addCartItemToDb(this.data[productIndex].productId, this.data[productIndex].quantity)
+                    .then(() => {
+                        console.debug('[ShoppingCartModel.addItem] : DB cart updated successfully');
+                    })
+                    .catch(error => {
+                        console.error('[ShoppingCartModel.addItem] : Error updating database:', error);
+                        showErrorModal(error.response);
+                    });
+            }
         } else {
             // If item doesn't exist, add it to the cart with the specified quantity
             if (this.data.length >= this.maxProductsCart) {
@@ -59,25 +75,26 @@ class ShoppingCartModel {
                 return;
             }
 
-            this.data.push({productId: productId, quantity: quantity});
+            const initialQuantity = quantityChange === -1 ? 1 : quantityChange;
+            this.data.push({ productId: productId, quantity: initialQuantity });
             productIndex = this.data.length - 1;
+
+            if (LOGGED_IN) {
+                this.addCartItemToDb(this.data[productIndex].productId, this.data[productIndex].quantity)
+                    .then(() => {
+                        console.debug('[ShoppingCartModel.addItem] : DB cart updated successfully');
+                    })
+                    .catch(error => {
+                        console.error('[ShoppingCartModel.addItem] : Error updating database:', error);
+                        showErrorModal(error.response);
+                    });
+            }
         }
 
-        if (LOGGED_IN) {
-            this.addCartItemToDb(this.data[productIndex].productId, this.data[productIndex].quantity)
-                .then(() => {
-                    console.debug('[ShoppingCartModel.addItem] : DB cart updated successfully');
-                })
-                .catch(error => {
-                    console.error('[ShoppingCartModel.addItem] : Error updating database:', error);
-                    showErrorModal(error.response);
-                });
-        }
+        this.updateLocalStorage();
 
         console.debug("[END DATA]: ", this.data);
-        this.updateLocalStorage();
     }
-
 
     async addCartItemToDb(productId, quantity) {
         try {
@@ -97,38 +114,48 @@ class ShoppingCartModel {
     async merge() {
         try {
             // Fetch the current state of the cart from the database
-            const cart = await ajaxUtil.get(`${this.cartBaseUrl}/items`);
+            const dbCart = await ajaxUtil.get(`${this.cartBaseUrl}/items`);
 
             // Create a map for the local storage cart items for easy access
             const localCartMap = new Map(this.data.map(item => [item.productId, item]));
 
-            // Iterate through the DB cart and merge with local storage cart
-            for (let cartItem of cart) {
-                const localCartItem = localCartMap.get(cartItem.productId);
+            // List to hold the merged cart items
+            const mergedCart = [];
+
+            // Iterate through the DB cart and update quantities in the local storage cart
+            for (let dbCartItem of dbCart) {
+                const localCartItem = localCartMap.get(dbCartItem.productId);
 
                 if (localCartItem) {
-                    // If the item exists in local storage, merge quantities
-                    cartItem.quantity = Math.min(cartItem.quantity + localCartItem.quantity, this.maxQuantityCartItem);
-                    localCartMap.delete(cartItem.productId); // Remove the item from the map once merged
+                    // Replace the quantity in the local cart with the one from the db cart
+                    localCartItem.quantity = dbCartItem.quantity;
+                    mergedCart.push(localCartItem);
+                    localCartMap.delete(dbCartItem.productId); // Remove from the map once merged
+                } else {
+                    // Add the DB cart item to the merged cart
+                    mergedCart.push(dbCartItem);
                 }
             }
 
             // Add remaining items from local storage that were not in the DB cart
             for (let localCartItem of localCartMap.values()) {
-                if (cart.length >= this.maxProductsCart) {
+                if (mergedCart.length >= this.maxProductsCart) {
                     console.info(`Max ${this.maxProductsCart} products in cart reached`);
                     break;
                 }
-                cart.push(localCartItem);
+                mergedCart.push(localCartItem);
             }
 
             // Update the local storage and DB cart with the merged data
-            this.data = cart;
+            this.data = mergedCart;
             this.updateLocalStorage();
-            await this.setCart(cart);
+            await this.setCart(this.data);
+
+            console.debug(`[ShoppingCartModel.merge] : Cart quantities successfully merged with DB cart`);
 
         } catch (error) {
             console.error(`[ShoppingCartModel.merge] : Error merging cart items:`, error);
+            throw error;
         }
     }
 
@@ -143,4 +170,75 @@ class ShoppingCartModel {
             console.error(`[ShoppingCartModel._setCart] : Error setting cart [${cart}]:`, error);
         }
     }
+
+    removeItem(productId) {
+        const index = this.data.findIndex(item => Number(item.productId) === Number(productId));
+
+        if(index !== -1) {
+            this.data.splice(index, 1);
+            this.updateLocalStorage();
+        }
+
+        if (LOGGED_IN) {
+            this._removeProductFromRemote(productId)
+                .then(() => {
+                    console.debug("Successfully removed product id: " + productId);
+                })
+                .catch(error => {
+                    console.error('Error removed cart item from database:', error);
+                    showErrorModal(error.response);
+                })
+        }
+    }
+
+    async _removeProductFromRemote(productId) {
+        try {
+            await ajaxUtil.delete(`${this.cartBaseUrl}/delete/${productId}`);
+            console.debug(`[ShoppingCartModel._removeProductDBCart] : Product id[${productId}] removed from DB cart successfully`);
+        } catch (error) {
+            console.error(`[ShoppingCartModel._removeProductDBCart] : Error deleting product id[${productId}] from cart:`, error);
+            throw error;
+        }
+    }
+
+    async clear() {
+        if(this.data.length > 0) {
+            const tempData = this.data;
+            this.data = [];
+            this.updateLocalStorage();
+
+            if (LOGGED_IN) {
+                try {
+                    await this._clearDBCart();
+                } catch(error) {
+                    throw new Error();
+                } finally {
+                    // not done
+                    this.data = tempData;
+                }
+            }
+        }
+    }
+
+    async _clearDBCart() {
+        try {
+            await ajaxUtil.post(`${this.cartBaseUrl}/clear`);
+
+            console.debug('[ShoppingCartModel._clearDBCart] : Database cart cleared successfully');
+        } catch (error) {
+            console.error('[ShoppingCartModel._clearDBCart] : Error updating database:', error);
+            throw error;
+        }
+    }
+
+    increaseQuantity(productId) {
+        this.addItem(productId, 1);
+    }
+
+
+    decreaseQuantity(productId) {
+        this.addItem(productId, -1)
+    }
+
+
 }

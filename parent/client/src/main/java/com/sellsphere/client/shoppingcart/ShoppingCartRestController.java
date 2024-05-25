@@ -36,7 +36,7 @@ public class ShoppingCartRestController {
      * @throws ProductNotFoundException  if the product is not found
      */
     @PostMapping("/add/{productId}/{quantity}")
-    public void addProductToCart(@PathVariable("productId") Integer productId,
+    public ResponseEntity<Void> addProductToCart(@PathVariable("productId") Integer productId,
                                  @PathVariable("quantity") Integer quantity,
                                  Principal principal)
             throws CustomerNotFoundException, ProductNotFoundException, CartItemNotFoundException {
@@ -45,6 +45,8 @@ public class ShoppingCartRestController {
         Product product = productService.findById(productId);
 
         cartService.addProduct(customer, product, quantity);
+
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -54,12 +56,14 @@ public class ShoppingCartRestController {
      * @throws CustomerNotFoundException if the customer is not found
      */
     @PostMapping("/clear")
-    public void clearCart(Principal principal)
+    public ResponseEntity<Void> clearCart(Principal principal)
             throws CustomerNotFoundException {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);
 
         cartService.clearCart(customer);
+
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -70,7 +74,7 @@ public class ShoppingCartRestController {
      * @throws CustomerNotFoundException if the customer is not found
      */
     @DeleteMapping("/delete/{productId}")
-    public void deleteProductFromCart(
+    public ResponseEntity<Void> deleteProductFromCart(
             @PathVariable("productId") Integer productId,
             Principal principal)
             throws CustomerNotFoundException {
@@ -78,6 +82,7 @@ public class ShoppingCartRestController {
         Customer customer = customerService.getByEmail(email);
 
         cartService.deleteProduct(customer.getId(), productId);
+        return ResponseEntity.ok().build();
     }
 
     /**

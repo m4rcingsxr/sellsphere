@@ -17,6 +17,7 @@ import java.util.Optional;
  * deleting, and retrieving items for a customer.
  */
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class ShoppingCartService {
 
@@ -43,8 +44,7 @@ public class ShoppingCartService {
      * @param quantity the quantity of the product to add
      * @throws IllegalStateException if the quantity exceeds the maximum allowed
      */
-    public void addProduct(Customer customer, Product product, Integer quantity)
-            throws CartItemNotFoundException {
+    public void addProduct(Customer customer, Product product, Integer quantity) {
         Optional<CartItem> cartItem = cartItemRepository.findByCustomerAndProduct(customer, product);
 
         if(quantity < 1 || quantity > MAX_QUANTITY_PER_PRODUCT) {
@@ -84,7 +84,6 @@ public class ShoppingCartService {
      *
      * @param customer the customer to delete cart items for
      */
-    @Transactional
     public void deleteByCustomer(Customer customer) {
         cartItemRepository.deleteAllByCustomer(customer);
     }

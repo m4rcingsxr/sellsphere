@@ -87,15 +87,15 @@ const ajaxUtil = {
      *
      * @param {string} url - The URL to send the POST request to.
      * @param {Object} data - The data to include in the POST request body.
-     * @returns {Promise<Object>} A promise that resolves to the response data as a JSON object.
+     * @returns {Promise<Object|null>} A promise that resolves to the response data as a JSON object or null if no response body.
      * @throws {Error} If the POST request fails.
      */
-    async post(url, data) {
+    async post(url, data = {}) {
         const csrfToken = this.getCSRFToken();
         const headers = {
             'Content-Type': 'application/json'
         };
-        
+
         if (csrfToken) {
             headers['X-CSRF-TOKEN'] = csrfToken;
         }
@@ -113,8 +113,12 @@ const ajaxUtil = {
             throw error;
         }
 
-        return await response.json();
+        const responseBody = await response.text();
+
+        // If the response body is empty, return null
+        return responseBody ? JSON.parse(responseBody) : null;
     },
+
 
     /**
      * Performs a POST request to the specified URL with the provided data.
@@ -156,13 +160,14 @@ const ajaxUtil = {
     },
 
     /**
-     * Performs a DELETE request to the specified URL.
+     * Performs a DELETE request to the specified URL with the provided data.
      *
      * @param {string} url - The URL to send the DELETE request to.
+     * @param {Object} [data] - Optional data to include in the DELETE request body.
      * @returns {Promise<void>} A promise that resolves if the request is successful, or rejects if it fails.
      * @throws {Error} If the DELETE request fails.
      */
-    async delete(url) {
+    async delete(url, data) {
         const csrfToken = this.getCSRFToken();
         const headers = {
             'Content-Type': 'application/json'
@@ -172,10 +177,16 @@ const ajaxUtil = {
             headers['X-CSRF-TOKEN'] = csrfToken;
         }
 
-        const response = await fetch(url, {
+        const options = {
             method: 'DELETE',
             headers: headers
-        });
+        };
+
+        if (data) {
+            options.body = JSON.stringify(data);
+        }
+
+        const response = await fetch(url, options);
 
         if (!response.ok) {
             const errorResponse = await response.json();
