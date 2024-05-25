@@ -27,6 +27,8 @@ class ShoppingCartView {
             const html = this._generateProductRowHtml(product, localProduct);
             tableBody.append(html);
         });
+
+        setInitialButtonStates();
     }
 
     /**
@@ -60,7 +62,7 @@ class ShoppingCartView {
                 <td class="align-middle">
                     <div class="input-group mb-3 quantity" style="max-width: 120px;">
                         <button class="btn border-dark-subtle border-end-0 quantity-minus" type="button" data-product-id="${product.id}">
-                            <i class="bi bi-dash opacity-25"></i>
+                            <i class="bi bi-dash"></i>
                         </button>
                         <input type="text" class="form-control text-center border-dark-subtle border-start-0 border-end-0 border-1 quantity-input" value="${localProduct.quantity}">
                         <button class="btn border-dark-subtle border-1 border-start-0 quantity-plus" type="button" data-product-id="${product.id}">

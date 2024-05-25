@@ -4,6 +4,7 @@ $(function() {
 
 function initListeners() {
     initQuantityButtonListener();
+    setInitialButtonStates();
 }
 
 function initQuantityButtonListener() {
@@ -37,3 +38,23 @@ function initQuantityButtonListener() {
         }
     });
 }
+
+/**
+ * Sets the initial state of the quantity buttons based on the current input values.
+ */
+function setInitialButtonStates() {
+    $(".quantity").each(function() {
+        const $container = $(this);
+        const $input = $container.find('.quantity-input');
+        const value = Number($input.val());
+        const $minusIcon = $container.find(".quantity-minus i");
+        const $plusIcon = $container.find(".quantity-plus i");
+
+        if (value === 1) {
+            $minusIcon.addClass("opacity-25");
+        } else if (value === 5) {
+            $plusIcon.addClass("opacity-25");
+        }
+    });
+}
+
