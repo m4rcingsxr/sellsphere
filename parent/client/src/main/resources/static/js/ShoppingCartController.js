@@ -16,6 +16,14 @@ class ShoppingCartController {
                     this.initializeRemoveCartItemListener();
                     this.initializeClearCartListener();
                     this.initializeQuantityDecreaseAndIncreaseListeners();
+
+                    this.view.updateSubtotal(this.model.getSubtotal());
+                    this.view.updateSaving(this.model.getSaving());
+                    this.view.updateTotal(this.model.getTotal());
+
+                    // implement later
+                    this.view.updateTax(this.model.getTax());
+                    this.view.updateShipping(this.model.getShipping());
                 });
         } else {
             // hide shopping cart
@@ -67,6 +75,14 @@ class ShoppingCartController {
 
             this.view.removeItem(productId);
             this.view.updateNavigationQuantity(this.model.data.length);
+            this.view.updateSubtotal(this.model.getSubtotal());
+            this.view.updateSaving(this.model.getSaving());
+            this.view.updateTotal(this.model.getTotal());
+
+            // implement later
+            this.view.updateTax(this.model.getTax());
+            this.view.updateShipping(this.model.getShipping());
+
         })
 
     }
@@ -102,6 +118,15 @@ class ShoppingCartController {
                 this.model.increaseQuantity(productId);
             }
 
+            this.view.updateProductTotal(productId, this.model.getProductTotal(productId));
+
+            this.view.updateSubtotal(this.model.getSubtotal());
+            this.view.updateSaving(this.model.getSaving());
+            this.view.updateTotal(this.model.getTotal());
+
+            // implement later
+            this.view.updateTax(this.model.getTax());
+            this.view.updateShipping(this.model.getShipping());
         });
     }
 

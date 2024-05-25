@@ -240,5 +240,43 @@ class ShoppingCartModel {
         this.addItem(productId, -1)
     }
 
+    getSubtotal() {
+        return this.data.reduce((subtotal, item) => {
+            const product = this.products.find(p => p.id === item.productId);
+            return subtotal + (product ? product.price * item.quantity : 0);
+        }, 0);
+    }
+
+    getSaving() {
+        return this.data.reduce((saving, item) => {
+            const product = this.products.find(p => p.id === item.productId);
+            return saving + (product ? (product.price - product.discountPrice) * item.quantity : 0);
+        }, 0);
+    }
+
+    getProductTotal(productId) {
+        const product = this.products.find(p => p.id === productId);
+        const cartItem = this.data.find(item => item.productId === productId);
+
+        if (product && cartItem) {
+            return product.discountPrice * cartItem.quantity;
+        }
+
+        return 0;
+    }
+
+    getTotal() {
+        return this.getSubtotal() + this.getTax() + this.getShipping() - this.getSaving();
+    }
+
+
+    // implement later
+    getTax() {
+        return 0;
+    }
+
+    getShipping() {
+        return 0;
+    }
 
 }

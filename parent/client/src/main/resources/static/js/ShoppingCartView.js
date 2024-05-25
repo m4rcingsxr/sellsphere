@@ -37,7 +37,10 @@ class ShoppingCartView {
                         </div>
                     </div>
                 </td>
-                <td class="align-middle">${formatPriceUtil.formatPrice(product.discountPrice)}</td>
+                <td class="align-middle">
+                    <span>${formatPriceUtil.formatPrice(product.discountPrice)}</span>
+                    ${product.discountPercent > 0 ? `<span class="fw-lighter fs-7 text-decoration-line-through d-block">${formatPriceUtil.formatPrice(product.price)}</span>` : ''}
+                </td>
                 <td class="align-middle">
                     <div class="input-group mb-3 quantity" style="max-width: 120px;">
                         <button class="btn border-dark-subtle border-end-0 quantity-minus" type="button" data-product-id="${product.id}">
@@ -50,7 +53,9 @@ class ShoppingCartView {
                     </div>
                 </td>
                 <td class="align-middle">
-                    ${formatPriceUtil.formatPrice(totalPrice)}
+                    <span id="product-total${product.id}">
+                        ${formatPriceUtil.formatPrice(totalPrice)}
+                    </span>
                 </td>
                 <td class="align-middle">
                     <a href="#" class="link-dark delete-cart-item" data-product-id="${product.id}"><i class="bi bi-x-lg"></i></a>
@@ -64,6 +69,37 @@ class ShoppingCartView {
     }
 
     clear() {
+        this.updateSubtotal(0);
+        this.updateSaving(0);
+        this.updateTotal(0);
+
+        this.updateTax(0);
+        this.updateShipping(0);
+
         $("tbody").empty();
+    }
+
+    updateProductTotal(productId, total) {
+        $(`#product-total${productId}`).text(formatPriceUtil.formatPrice(total));
+    }
+
+    updateSubtotal(subtotal) {
+        $("#subtotal").text(formatPriceUtil.formatPrice(subtotal));
+    }
+
+    updateSaving(saving) {
+        $("#saving").text(formatPriceUtil.formatPrice(saving));
+    }
+
+    updateTax(tax) {
+        $("#tax").text(formatPriceUtil.formatPrice(tax));
+    }
+
+    updateShipping(shipping) {
+        $("#shipping").text(formatPriceUtil.formatPrice(shipping));
+    }
+
+    updateTotal(total) {
+        $("#total").text(formatPriceUtil.formatPrice(total));
     }
 }

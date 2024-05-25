@@ -73,12 +73,12 @@
     </div>
 </section>
 
-<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 fs-2">
+<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 fs-2 align-items-center">
 
     <strong th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(discountPrice, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></strong>
 
     <span th:if="${discountPercent > 0}"
-          class="fw-lighter text-decoration-line-through"
+          class="fw-lighter text-decoration-line-through fs-5"
           th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></span>
 </div>
 
