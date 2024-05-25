@@ -1,3 +1,6 @@
+/**
+ * Model for managing the shopping cart data.
+ */
 class ShoppingCartModel {
 
     maxQuantityCartItem = 5;
@@ -9,31 +12,31 @@ class ShoppingCartModel {
         this.data = JSON.parse(localStorage.getItem('cart')) || [];
     }
 
+    /**
+     * Initializes the products from the database.
+     */
     async initializeProducts() {
         try {
-            console.debug(`ShoppingCartModel.initializeProducts()`)
-            console.debug(`productBaseUrl : ${this.productBaseUrl}`)
-            console.debug(`data : ${this.data}`)
+            console.debug(`Initializing products from ${this.productBaseUrl}`);
 
             if (this.data.length > 0) {
                 const productIds = this.data.map(product => product.productId);
                 this.products = await ajaxUtil.post(`${this.productBaseUrl}`, productIds);
-                console.debug(`ShoppingCartModel.initializeProducts() : Product initialized`)
+                console.debug(`Products initialized successfully`);
             }
         } catch (error) {
-            console.error('error occurred while fetching products from db', error);
+            console.error('Error occurred while fetching products from db', error);
             throw error;
         }
     }
 
-    // target must have product-id as dataset attribute
-    addItem(productId, quantityChange = 1) {
-        console.debug("[ShoppingCartModel.addItem()]");
-        console.debug("[LOGGED IN]: ", LOGGED_IN);
-        console.debug("[PRODUCTS]: ", this.products);
-        console.debug("[START DATA]: ", this.data);
-        console.debug("[productId]: ", productId);
-        console.debug("[quantityChange]: ", quantityChange);
+    /**
+     * Adds an item to the cart with the specified quantity change.
+     * @param {number} productId - The ID of the product to add.
+     * @param {number} quantityChange - The quantity change (default is 1).
+     */
+    async addItem(productId, quantityChange = 1) {
+        console.debug(`Adding item to cart: productId=${productId}, quantityChange=${quantityChange}`);
 
         // Ensure the quantityChange is either -1 or a positive integer from 1-5
         if ((quantityChange < 1 || quantityChange > 5) && quantityChange !== -1) {
@@ -59,14 +62,7 @@ class ShoppingCartModel {
             this.data[productIndex].quantity = newQuantity;
 
             if (LOGGED_IN) {
-                this.addCartItemToDb(this.data[productIndex].productId, this.data[productIndex].quantity)
-                    .then(() => {
-                        console.debug('[ShoppingCartModel.addItem] : DB cart updated successfully');
-                    })
-                    .catch(error => {
-                        console.error('[ShoppingCartModel.addItem] : Error updating database:', error);
-                        showErrorModal(error.response);
-                    });
+                await this.updateCartItemInDb(this.data[productIndex].productId, this.data[productIndex].quantity);
             }
         } else {
             // If item doesn't exist, add it to the cart with the specified quantity
@@ -79,38 +75,34 @@ class ShoppingCartModel {
             this.data.push({ productId: productId, quantity: initialQuantity });
             productIndex = this.data.length - 1;
 
+
             if (LOGGED_IN) {
-                this.addCartItemToDb(this.data[productIndex].productId, this.data[productIndex].quantity)
-                    .then(() => {
-                        console.debug('[ShoppingCartModel.addItem] : DB cart updated successfully');
-                    })
-                    .catch(error => {
-                        console.error('[ShoppingCartModel.addItem] : Error updating database:', error);
-                        showErrorModal(error.response);
-                    });
+                await this.updateCartItemInDb(this.data[productIndex].productId, this.data[productIndex].quantity);
             }
         }
 
         this.updateLocalStorage();
-
-        console.debug("[END DATA]: ", this.data);
     }
 
-    async addCartItemToDb(productId, quantity) {
+    /**
+     * Updates the cart item quantity in the database.
+     * @param {number} productId - The ID of the product to update.
+     * @param {number} quantity - The new quantity of the product.
+     */
+    async updateCartItemInDb(productId, quantity) {
         try {
             const url = `${this.cartBaseUrl}/add/${productId}/${quantity}`;
             await ajaxUtil.post(url, {});
-            console.debug(`[ShoppingCartModel._updateDBCart] : Product id[${productId}] quantity[${quantity}] updated in DB cart successfully`);
+            console.debug(`Product id[${productId}] quantity[${quantity}] updated in DB cart successfully`);
         } catch (error) {
-            console.error(`[ShoppingCartModel._updateDBCart()] : Error adding product id[${productId}] quantity[${quantity}] to cart:`, error);
+            console.error(`Error adding product id[${productId}] quantity[${quantity}] to cart:`, error);
             throw error;
         }
     }
 
-    updateLocalStorage() {
-        localStorage.setItem('cart', JSON.stringify(this.data));
-    }
-
+    /**
+     * Merges the local cart state with the remote cart state.
+     */
     async merge() {
         try {
             // Fetch the current state of the cart from the database
@@ -151,7 +143,7 @@ class ShoppingCartModel {
             this.updateLocalStorage();
             await this.setCart(this.data);
 
-            console.debug(`[ShoppingCartModel.merge] : Cart quantities successfully merged with DB cart`);
+            console.debug(`Cart quantities successfully merged with DB cart`);
 
         } catch (error) {
             console.error(`[ShoppingCartModel.merge] : Error merging cart items:`, error);
@@ -159,19 +151,21 @@ class ShoppingCartModel {
         }
     }
 
+    /**
+     * Sets the cart in the database.
+     * @param {Array} cart - The cart data to set.
+     */
     async setCart(cart) {
         try {
             const url = `${this.cartBaseUrl}/set`;
-
             await ajaxUtil.post(url, this.data);
-
-            console.debug(`[ShoppingCartModel._setCart] : Cart [${cart}] set as DB cart successfully`);
+            console.debug(`Cart set as DB cart successfully`);
         } catch (error) {
-            console.error(`[ShoppingCartModel._setCart] : Error setting cart [${cart}]:`, error);
+            console.error(`Error setting cart:`, error);
         }
     }
 
-    removeItem(productId) {
+    async removeItem(productId) {
         const index = this.data.findIndex(item => Number(item.productId) === Number(productId));
 
         if(index !== -1) {
@@ -180,27 +174,27 @@ class ShoppingCartModel {
         }
 
         if (LOGGED_IN) {
-            this._removeProductFromRemote(productId)
-                .then(() => {
-                    console.debug("Successfully removed product id: " + productId);
-                })
-                .catch(error => {
-                    console.error('Error removed cart item from database:', error);
-                    showErrorModal(error.response);
-                })
+           await this.removeCartItemFromDb(productId);
         }
     }
 
-    async _removeProductFromRemote(productId) {
+    /**
+     * Removes a cart item from the database.
+     * @param {number} productId - The ID of the product to remove.
+     */
+    async removeCartItemFromDb(productId) {
         try {
             await ajaxUtil.delete(`${this.cartBaseUrl}/delete/${productId}`);
-            console.debug(`[ShoppingCartModel._removeProductDBCart] : Product id[${productId}] removed from DB cart successfully`);
+            console.debug(`Product id[${productId}] removed from DB cart successfully`);
         } catch (error) {
-            console.error(`[ShoppingCartModel._removeProductDBCart] : Error deleting product id[${productId}] from cart:`, error);
-            throw error;
+            console.error(`Error deleting product id[${productId}] from cart:`, error);
+            showErrorModal(error.response);
         }
     }
 
+    /**
+     * Clears the cart.
+     */
     async clear() {
         if(this.data.length > 0) {
             const tempData = this.data;
@@ -209,18 +203,19 @@ class ShoppingCartModel {
 
             if (LOGGED_IN) {
                 try {
-                    await this._clearDBCart();
+                    await this.clearDbCart();
                 } catch(error) {
-                    throw new Error();
-                } finally {
-                    // not done
                     this.data = tempData;
+                    throw new Error();
                 }
             }
         }
     }
 
-    async _clearDBCart() {
+    /**
+     * Clears the cart in the database.
+     */
+    async clearDbCart() {
         try {
             await ajaxUtil.post(`${this.cartBaseUrl}/clear`);
 
@@ -231,15 +226,30 @@ class ShoppingCartModel {
         }
     }
 
-    increaseQuantity(productId) {
-        this.addItem(productId, 1);
+    updateLocalStorage() {
+        localStorage.setItem('cart', JSON.stringify(this.data));
     }
 
-
-    decreaseQuantity(productId) {
-        this.addItem(productId, -1)
+    /**
+     * Increases the quantity of a product in the cart.
+     * @param {number} productId - The ID of the product to increase the quantity of.
+     */
+    async increaseQuantity(productId) {
+        await this.addItem(productId, 1);
     }
 
+    /**
+     * Decreases the quantity of a product in the cart.
+     * @param {number} productId - The ID of the product to decrease the quantity of.
+     */
+    async decreaseQuantity(productId) {
+        await this.addItem(productId, -1)
+    }
+
+    /**
+     * Gets the subtotal of the cart.
+     * @returns {number} - The subtotal of the cart.
+     */
     getSubtotal() {
         return this.data.reduce((subtotal, item) => {
             const product = this.products.find(p => p.id === item.productId);
@@ -247,6 +257,10 @@ class ShoppingCartModel {
         }, 0);
     }
 
+    /**
+     * Gets the savings of the cart.
+     * @returns {number} - The savings of the cart.
+     */
     getSaving() {
         return this.data.reduce((saving, item) => {
             const product = this.products.find(p => p.id === item.productId);
@@ -254,6 +268,11 @@ class ShoppingCartModel {
         }, 0);
     }
 
+    /**
+     * Gets the total price for a specific product in the cart.
+     * @param {number} productId - The ID of the product.
+     * @returns {number} - The total price for the product.
+     */
     getProductTotal(productId) {
         const product = this.products.find(p => p.id === productId);
         const cartItem = this.data.find(item => item.productId === productId);
@@ -265,18 +284,31 @@ class ShoppingCartModel {
         return 0;
     }
 
+    /**
+     * Gets the total price of the cart.
+     * @returns {number} - The total price of the cart.
+     */
     getTotal() {
         return this.getSubtotal() + this.getTax() + this.getShipping() - this.getSaving();
     }
 
 
-    // implement later
+    // TODO:
+    /**
+     * Gets the tax for the cart (placeholder).
+     * @returns {number} - The tax for the cart.
+     */
     getTax() {
         return 0;
     }
 
+    /**
+     * Gets the shipping cost for the cart (placeholder).
+     * @returns {number} - The shipping cost for the cart.
+     */
     getShipping() {
         return 0;
     }
+
 
 }
