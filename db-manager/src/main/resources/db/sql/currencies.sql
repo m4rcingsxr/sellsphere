@@ -1,14 +1,14 @@
-INSERT INTO currencies (NAME, SYMBOL, CODE)
-VALUES ('United States Dollar', '$', 'USD'),
-       ('British Pound', '£', 'GBP'),
-       ('Japanese Yen', '¥', 'JPY'),
-       ('Euro', '€', 'EUR'),
-       ('Russian Ruble', '₽', 'RUB'),
-       ('South Korean Won', '₩', 'KRW'),
-       ('Chinese Yuan', '¥', 'CNY'),
-       ('Brazilian Real', 'R$', 'BRL'),
-       ('Australian Dollar', '$', 'AUD'),
-       ('Canadian Dollar', '$', 'CAD'),
-       ('Vietnamese đồng', 'đ', 'VND'),
-       ('Indian Rupee', '₹', 'INR'),
-       ('Polish zloty', 'zł', 'PLN');
+INSERT INTO currencies (NAME, SYMBOL, CODE, unit_amount)
+VALUES ('United States Dollar', '$', 'usd', 100),
+       ('British Pound', '£', 'gbp', 100),
+       ('Japanese Yen', '¥', 'jpy', 1),
+       ('Euro', '€', 'eur', 100),
+       ('Russian Ruble', '₽', 'rub', 100),
+       ('South Korean Won', '₩', 'krw', 1),
+       ('Chinese Yuan', '¥', 'cny', 100),
+       ('Brazilian Real', 'R$', 'brl', 100),
+       ('Australian Dollar', '$', 'aud', 100),
+       ('Canadian Dollar', '$', 'cad', 100),
+       ('Vietnamese đồng', 'đ', 'vnd', 10),
+       ('Indian Rupee', '₹', 'inr', 100),
+       ('Polish zloty', 'zł', 'pln', 100);

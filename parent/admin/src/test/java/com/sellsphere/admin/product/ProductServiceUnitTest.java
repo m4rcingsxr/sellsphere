@@ -1,8 +1,11 @@
 package com.sellsphere.admin.product;
 
 import com.sellsphere.admin.S3Utility;
+import com.sellsphere.common.entity.CurrencyNotFoundException;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductNotFoundException;
+import com.sellsphere.common.entity.SettingNotFoundException;
+import com.stripe.exception.StripeException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -56,7 +59,9 @@ class ProductServiceUnitTest {
     }
 
     @Test
-    void givenNewProduct_whenSave_thenProductIsSavedAndImagesAreHandled() throws IOException {
+    void givenNewProduct_whenSave_thenProductIsSavedAndImagesAreHandled()
+            throws IOException, StripeException, SettingNotFoundException,
+            CurrencyNotFoundException {
         // Given
         Product product = new Product();
         product.setId(1);

@@ -1,5 +1,6 @@
 package com.sellsphere.admin.security;
 
+import com.sellsphere.StripeService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -104,6 +105,11 @@ public class WebSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public StripeService stripeService() {
+        return new StripeService();
     }
 
 }

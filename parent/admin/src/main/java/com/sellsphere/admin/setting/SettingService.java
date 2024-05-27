@@ -1,9 +1,7 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.admin.FileService;
-import com.sellsphere.common.entity.Currency;
-import com.sellsphere.common.entity.Setting;
-import com.sellsphere.common.entity.SettingCategory;
+import com.sellsphere.common.entity.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -12,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -39,6 +38,14 @@ public class SettingService {
 
     public List<Setting> listMailServerSettings() {
         return settingRepository.findAllByCategoryIn(List.of(SettingCategory.MAIL_SERVER));
+    }
+
+    public Currency getCurrentCurrency() throws SettingNotFoundException,
+            CurrencyNotFoundException {
+        String currencyId = settingRepository.findById("CURRENCY_ID").orElseThrow(
+                SettingNotFoundException::new).getValue();
+        return currencyRepository.findById(Integer.valueOf(currencyId)).orElseThrow(
+                CurrencyNotFoundException::new);
     }
 
     public void save(HttpServletRequest request, MultipartFile file) throws IOException {

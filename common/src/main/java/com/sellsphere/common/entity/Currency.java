@@ -51,6 +51,11 @@ public class Currency extends IdentifiedEntity {
     @NotNull(message = "Currency code is mandatory")
     private String code;
 
+    @Column(name = "unit_amount", nullable = false)
+    @NotNull(message = "Unit amount cannot be null")
+    private Long unitAmount;
+
+
     public Currency(Integer id, String name, String symbol, String code) {
         this.id = id;
         this.name = name;

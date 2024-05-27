@@ -27,7 +27,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "products")
 public class Product extends IdentifiedEntity {
-
+    
     /**
      * The name of the product.
      * This is a unique identifier that represents the product's name.
@@ -167,7 +167,7 @@ public class Product extends IdentifiedEntity {
      * The filename of the main image for the product.
      * This image is displayed as the primary visual representation of the product.
      */
-    @Column(name = "main_image", nullable = false)
+    @Column(name = "main_image")
     private String mainImage;
 
     /**
@@ -203,6 +203,9 @@ public class Product extends IdentifiedEntity {
     @OrderBy("name asc")
     @OneToMany(mappedBy = "product", cascade = {CascadeType.ALL}, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProductDetail> details = new ArrayList<>();
+
+    @Column(name = "price_id", nullable = false)
+    private String priceId;
 
     /**
      * Gets the path to the main image of the product.

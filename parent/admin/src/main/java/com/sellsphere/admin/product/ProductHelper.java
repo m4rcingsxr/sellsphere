@@ -5,6 +5,7 @@ import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetail;
 import com.sellsphere.common.entity.ProductImage;
 import lombok.experimental.UtilityClass;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,8 +30,12 @@ public class ProductHelper {
      * @param detailValues An array of detail values.
      * @throws IllegalStateException If the lengths of detailNames and detailValues arrays do not match.
      */
-    public static void addProductDetails(Product product, String[] detailNames,
-                                         String[] detailValues) {
+    public static void addProductDetails(Product product, @Nullable String[] detailNames,
+                                         @Nullable String[] detailValues) {
+        if(detailNames == null || detailValues == null) {
+            return;
+        }
+
         if (detailNames.length != detailValues.length) {
             throw new IllegalStateException(
                     "detail names and values arrays must have same length.");
@@ -111,3 +116,4 @@ public class ProductHelper {
     }
 
 }
+

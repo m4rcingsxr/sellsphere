@@ -53,7 +53,6 @@
                 <constraints nullable="false"/>
             </column>
             <column name="main_image" type="VARCHAR(255)">
-                <constraints nullable="false"/>
             </column>
             <column name="category_id" type="INT">
                 <constraints nullable="false"/>

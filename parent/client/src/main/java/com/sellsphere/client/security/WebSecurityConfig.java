@@ -28,6 +28,7 @@ public class WebSecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/customer/**").authenticated()
+                        .requestMatchers("/checkout/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .csrf(Customizer.withDefaults())

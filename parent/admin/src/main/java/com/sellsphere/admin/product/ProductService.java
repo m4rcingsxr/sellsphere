@@ -1,10 +1,12 @@
 package com.sellsphere.admin.product;
 
+import com.sellsphere.StripeService;
 import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
-import com.sellsphere.common.entity.Product;
-import com.sellsphere.common.entity.ProductNotFoundException;
+import com.sellsphere.admin.setting.SettingService;
+import com.sellsphere.common.entity.*;
+import com.stripe.exception.StripeException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,9 @@ public class ProductService {
     private static final int PRODUCTS_PER_PAGE = 12;
 
     private final ProductRepository productRepository;
+    private final StripeService stripeService;
+    private final SettingService settingService;
+
 
     /**
      * Retrieves a list of all products, sorted by the specified field and direction.
@@ -59,7 +64,8 @@ public class ProductService {
      *
      * @param id   The ID of the product being checked (null for new products).
      * @param name The name of the product to check for uniqueness.
-     * @return true if the name is unique or belongs to the product with the given ID; false otherwise.
+     * @return true if the name is unique or belongs to the product with the given ID; false
+     * otherwise.
      */
     public boolean isNameUnique(Integer id, String name) {
         return productRepository.findByName(name)
@@ -70,19 +76,26 @@ public class ProductService {
     /**
      * Saves a product entity, including handling its primary and extra images.
      *
-     * @param product          The Product entity to save.
-     * @param newPrimaryImage  The new primary image for the product.
-     * @param extraImages      Additional images for the product.
+     * @param product         The Product entity to save.
+     * @param newPrimaryImage The new primary image for the product.
+     * @param extraImages     Additional images for the product.
      * @return The saved Product entity.
      * @throws IOException If there is an error handling the images.
      */
     @Transactional
     public Product save(Product product, MultipartFile newPrimaryImage, MultipartFile[] extraImages)
-            throws IOException {
+            throws IOException, SettingNotFoundException,
+            CurrencyNotFoundException, StripeException {
+        Currency currentCurrency = settingService.getCurrentCurrency();
+
         updateProductDates(product);
         generateProductAlias(product);
 
         ProductHelper.addProductImages(product, extraImages);
+
+        var stripeProduct = stripeService.createProduct(product, currentCurrency);
+        String priceId = stripeProduct.getDefaultPrice();
+        product.setPriceId(priceId);
 
         Product savedProduct = productRepository.save(product);
 
