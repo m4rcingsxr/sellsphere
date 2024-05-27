@@ -29,8 +29,6 @@ public class Setting {
      */
     @Id
     @Column(name = "setting_key", nullable = false, length = 128)
-    @NotNull(message = "Key must not be null")
-    @Size(max = 128, message = "Key must be less than or equal to 128 characters")
     private String key;
 
     /**

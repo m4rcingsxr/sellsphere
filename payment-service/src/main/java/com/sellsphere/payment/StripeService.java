@@ -34,6 +34,7 @@ public class StripeService {
                                                 BigDecimal.valueOf(
                                                         currency.getUnitAmount())).longValue())
                                         .setCurrency(currency.getCode())
+//                                        .setTaxBehavior() set tax behavior based on retrieved setting
                                         .build()
                         )
                         .addExpand("default_price")
@@ -47,6 +48,17 @@ public class StripeService {
         SessionCreateParams.Builder builder = SessionCreateParams.builder()
                 .setUiMode(SessionCreateParams.UiMode.EMBEDDED)
                 .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
+//                .setCustomer
+//                        ("{{CUSTOMER_ID}}"
+//                        )
+//                .setCustomerUpdate
+//                        (
+//                                SessionCreateParams.CustomerUpdate.builder()
+//                                        .setAddress
+//                                                (SessionCreateParams.CustomerUpdate.Address.AUTO)
+//                                        .build()
+//                        )
                 .setReturnUrl(DOMAIN + "/checkout/return?session_id={CHECKOUT_SESSION_ID}")
                 .setAutomaticTax(
                         SessionCreateParams.AutomaticTax.builder()

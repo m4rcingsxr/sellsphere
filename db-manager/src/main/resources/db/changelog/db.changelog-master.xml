@@ -28,4 +28,6 @@
 
     <include file="db/changelog/db.changelog-update-currencies-table-26.05.2024.xml"/>
     <include file="db/changelog/db.changelog-update-products-table-26.05.2024.xml"/>
+
+    <include file="db/changelog/db.changelog-add-product-taxes-table.xml"/>
 </databaseChangeLog>
