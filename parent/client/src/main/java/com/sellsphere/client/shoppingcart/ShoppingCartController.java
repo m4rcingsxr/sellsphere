@@ -1,11 +1,8 @@
 package com.sellsphere.client.shoppingcart;
 
 import com.sellsphere.client.customer.CustomerService;
-import com.sellsphere.client.stripe.StripeService;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
-import com.sellsphere.common.entity.Product;
-import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,7 +21,6 @@ import java.security.Principal;
 public class ShoppingCartController {
 
     private final CustomerService customerService;
-    private final StripeService stripeService;
 
     /**
      * Displays the shopping cart view.
@@ -37,7 +33,7 @@ public class ShoppingCartController {
      */
     @GetMapping
     public String viewCart(Principal principal, Model model)
-            throws CustomerNotFoundException, StripeException {
+            throws CustomerNotFoundException {
 
         if (principal != null) {
             String email = principal.getName();
@@ -45,8 +41,6 @@ public class ShoppingCartController {
 
             model.addAttribute("addresses", customer.getAddresses());
         }
-
-        stripeService.synchronizePrices();
 
         return "cart/shopping_cart";
     }

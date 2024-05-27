@@ -1,6 +1,6 @@
 package com.sellsphere.admin.product;
 
-import com.sellsphere.StripeService;
+import com.sellsphere.payment.StripeService;
 import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;

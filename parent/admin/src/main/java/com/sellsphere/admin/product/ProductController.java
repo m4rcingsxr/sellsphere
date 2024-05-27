@@ -1,12 +1,10 @@
 package com.sellsphere.admin.product;
 
-import com.sellsphere.StripeService;
 import com.sellsphere.admin.ValidationHelper;
 import com.sellsphere.admin.brand.BrandService;
 import com.sellsphere.admin.export.ExportUtil;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
-import com.sellsphere.admin.setting.SettingService;
 import com.sellsphere.common.entity.*;
 import com.stripe.exception.StripeException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -101,8 +99,8 @@ public class ProductController {
                               @RequestParam(value = "extraImages", required = false) MultipartFile[] extraImages,
                               @RequestParam(value = "values", required = false) String[] detailValues,
                               @RequestParam(value = "names", required = false) String[] detailNames)
-            throws IOException, StripeException, SettingNotFoundException,
-            CurrencyNotFoundException {
+            throws IOException, SettingNotFoundException,
+            CurrencyNotFoundException, StripeException {
         ProductHelper.addProductDetails(product, detailNames, detailValues);
 
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.product");

@@ -1,6 +1,6 @@
 package com.sellsphere.admin.security;
 
-import com.sellsphere.StripeService;
+import com.sellsphere.payment.StripeService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;

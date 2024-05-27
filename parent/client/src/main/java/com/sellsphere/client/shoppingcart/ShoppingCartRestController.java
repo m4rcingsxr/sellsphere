@@ -39,7 +39,7 @@ public class ShoppingCartRestController {
     public ResponseEntity<Void> addProductToCart(@PathVariable("productId") Integer productId,
                                  @PathVariable("quantity") Integer quantity,
                                  Principal principal)
-            throws CustomerNotFoundException, ProductNotFoundException, CartItemNotFoundException {
+            throws CustomerNotFoundException, ProductNotFoundException {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);
         Product product = productService.findById(productId);

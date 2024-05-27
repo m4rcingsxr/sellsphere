@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <th:block th:replace="~{common :: common_head('Shopping Cart')}"></th:block>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script type="text/javascript" th:src="@{/js/checkout.js}"></script>
+</head>
+
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content mb-5">
+    <div class="container mt-4">
+        <div id="checkout">
+            <!-- Checkout will insert the payment form here -->
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+<script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
+
+</body>
+</html>
