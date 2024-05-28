@@ -1,6 +1,8 @@
 package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +26,7 @@ public class ProductTax {
     @Column(name = "id", nullable = false, length = 13)
     private String id;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false, length = 255, unique = true)
     private String name;
 
     @Enumerated(EnumType.STRING)

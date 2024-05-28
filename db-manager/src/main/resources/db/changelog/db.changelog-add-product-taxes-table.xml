@@ -11,7 +11,7 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_product_taxes"/>
             </column>
             <column name="name" type="VARCHAR(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
             <column name="type" type="VARCHAR(64)">
                 <constraints nullable="false"/>

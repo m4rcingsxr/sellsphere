@@ -16,6 +16,9 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" data-bs-target="#shipping-tab-pane" type="button" role="tab" aria-controls="shipping-tab-pane" aria-selected="false" >Shipping</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tax-tab" data-bs-toggle="tab" data-bs-target="#tax-tab-pane" type="button" role="tab" aria-controls="tax-tab-pane" aria-selected="false">Tax</button>
+        </li>
     </ul>
 
     <div class="tab-content" id="myTabContent">
@@ -24,5 +27,6 @@
         <div th:insert="~{product/product_images :: images_readonly()}" class="tab-pane fade" id="image-tab-pane" role="tabpanel" aria-labelledby="image-tab" tabindex="0"></div>
         <div th:insert="~{product/product_details :: details_readonly()}" class="tab-pane fade" id="detail-tab-pane" role="tabpanel" aria-labelledby="detail-tab" tabindex="0"></div>
         <div th:insert="~{product/product_shipping :: shipping_readonly()}" class="tab-pane fade" id="shipping-tab-pane" role="tabpanel" aria-labelledby="shipping-tab" tabindex="0"></div>
+        <div th:insert="~{product/product_tax :: tax_readonly()}" class="tab-pane fade" id="tax-tab-pane" role="tabpanel" aria-labelledby="tax-tab" tabindex="0"></div>
     </div>
 </form>

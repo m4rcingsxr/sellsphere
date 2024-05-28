@@ -7,6 +7,8 @@ $(function () {
 
     // Set up a listener for when the brand selection changes
     initializeBrandChangeListener();
+
+
 });
 
 /**

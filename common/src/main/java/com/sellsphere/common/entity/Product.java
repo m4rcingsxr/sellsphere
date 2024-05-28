@@ -1,6 +1,7 @@
 package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -204,8 +205,16 @@ public class Product extends IdentifiedEntity {
     @OneToMany(mappedBy = "product", cascade = {CascadeType.ALL}, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProductDetail> details = new ArrayList<>();
 
+    /**
+     * Stripe price id
+     */
     @Column(name = "price_id", nullable = false)
     private String priceId;
+
+    @NotNull(message = "Product tax must be provided")
+    @ManyToOne
+    @JoinColumn(name = "tax_id")
+    private ProductTax tax;
 
     /**
      * Gets the path to the main image of the product.

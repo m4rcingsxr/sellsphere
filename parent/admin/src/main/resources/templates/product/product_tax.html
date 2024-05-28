@@ -1,0 +1,33 @@
+<div th:fragment="tax()" class="p-4">
+    <div class="row g-3">
+        <label class="col-form-label col-sm-4">Tax category</label>
+        <div class="col-sm-8">
+            <select id="product-tax-category" class="form-control">
+                <option th:each="taxType : ${T(com.sellsphere.common.entity.TaxType).values()}"
+                        th:value="${taxType}"
+                        th:text="${taxType}">Tax Type
+                </option>
+            </select>
+        </div>
+
+        <label class="form-label col-form-label col-sm-4">Product tax</label>
+        <div class="col-sm-8">
+            <select th:field="*{tax}">
+            </select>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="tax_readonly()" class="p-4">
+    <div class="row g-2">
+        <label class="col-form-label col-sm-4">Tax name</label>
+        <div class="col-sm-8">
+            <input type="text" readonly class="form-control-plaintext" th:value="${product.tax.name}">
+        </div>
+
+        <label class="col-form-label col-sm-4">Tax description</label>
+        <div class="col-sm-8">
+            <input type="text" readonly class="form-control-plaintext" th:value="${product.tax.description}">
+        </div>
+    </div>
+</div>

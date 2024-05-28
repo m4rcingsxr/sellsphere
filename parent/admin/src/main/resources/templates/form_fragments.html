@@ -6,6 +6,9 @@
     <th:block th:replace="~{:: common_head(title)}"></th:block>
     <script type="text/javascript" th:src="@{/node_modules/tinymce/tinymce.js}"></script>
     <script type="text/javascript" th:src="@{/js/tinymce_initializer.js}"></script>
+
+    <script type="text/javascript" th:src="@{/node_modules/select2/dist/js/select2.js}"></script>
+    <link rel="stylesheet" th:href="@{/node_modules/select2/dist/css/select2.css}"/>
 </head>
 
 <th:block th:fragment="common_head(title)">

@@ -28,6 +28,9 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" data-bs-target="#shipping-tab-pane" type="button" role="tab" aria-controls="shipping-tab-pane" aria-selected="false" >Shipping</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tax-tab" data-bs-toggle="tab" data-bs-target="#tax-tab-pane" type="button" role="tab" aria-controls="tax-tab-pane" aria-selected="false">Tax</button>
+                </li>
             </ul>
 
             <div class="tab-content" id="myTabContent">
@@ -36,6 +39,7 @@
                 <div th:insert="~{product/product_images :: images()}" class="tab-pane fade" id="image-tab-pane" role="tabpanel" aria-labelledby="image-tab" tabindex="0"></div>
                 <div th:insert="~{product/product_details :: details()}" class="tab-pane fade" id="detail-tab-pane" role="tabpanel" aria-labelledby="detail-tab" tabindex="0"></div>
                 <div th:insert="~{product/product_shipping :: shipping()}" class="tab-pane fade" id="shipping-tab-pane" role="tabpanel" aria-labelledby="shipping-tab" tabindex="0"></div>
+                <div th:insert="~{product/product_tax :: tax()}" class="tab-pane fade" id="tax-tab-pane" role="tabpanel" aria-labelledby="tax-tab" tabindex="0"></div>
             </div>
 
             <div th:replace="~{form_fragments :: form_buttons(${product})}"></div>
@@ -52,6 +56,7 @@
 <script type="text/javascript" th:src="@{/js/product_description.js}"></script>
 <script type="text/javascript" th:src="@{/js/product_images.js}"></script>
 <script type="text/javascript" th:src="@{/js/product_details.js}"></script>
+<script type="text/javascript" th:src="@{/js/product_tax.js}"></script>
 
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
