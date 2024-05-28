@@ -1,9 +1,12 @@
 package com.sellsphere.admin.product;
 
+import com.sellsphere.common.entity.ProductTax;
+import com.sellsphere.common.entity.TaxType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * A REST controller for handling product-related operations, specifically checking
@@ -11,9 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/products")
 public class RestProductController {
 
     private final ProductService productService;
+    private final ProductTaxRepository productTaxRepository;
 
     /**
      * Checks if a product name is unique.
@@ -27,11 +32,21 @@ public class RestProductController {
      * @param name The name of the product to check for uniqueness. This parameter is required.
      * @return {@code true} if the product name is unique, {@code false} otherwise.
      */
-    @PostMapping("/products/check_uniqueness")
+    @PostMapping("/check_uniqueness")
     public boolean isProductUnique(
             @RequestParam(value = "id", required = false) Integer id,
             @RequestParam("name") String name
     ) {
         return productService.isNameUnique(id, name);
     }
+
+    @GetMapping("/tax/{type}")
+    public ResponseEntity<List<ProductTax>> findByTaxType(@PathVariable("type") String type) {
+        TaxType taxType = TaxType.valueOf(type);
+
+        List<ProductTax> taxes = productTaxRepository.findByType(taxType);
+
+        return ResponseEntity.ok(taxes);
+    }
+
 }
