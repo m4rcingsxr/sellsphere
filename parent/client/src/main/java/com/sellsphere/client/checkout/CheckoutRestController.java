@@ -5,7 +5,7 @@ import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
-import com.sellsphere.payment.StripeService;
+import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class CheckoutRestController {
 
     private final CustomerService customerService;
-    private final StripeService stripeService;
+    private final StripeCheckoutService stripeService;
     private final CartItemRepository cartItemRepository;
 
     @PostMapping("/create_session")

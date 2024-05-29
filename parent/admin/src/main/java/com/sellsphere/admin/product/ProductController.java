@@ -115,7 +115,8 @@ public class ProductController {
 
         productService.save(product, newPrimaryImage, extraImages);
 
-        String successMessage = (product.getId() != null) ? "The product has been updated successfully."
+        String successMessage = (product.getId() != null) ?
+                "The product has been updated successfully."
                 : "A new product has been created successfully.";
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
 
@@ -166,7 +167,7 @@ public class ProductController {
     @GetMapping("/products/delete/{id}")
     public String deleteProduct(@PathVariable("id") Integer id,
                                 RedirectAttributes redirectAttributes)
-            throws ProductNotFoundException {
+            throws ProductNotFoundException, StripeException {
         productService.deleteProduct(id);
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
                                              "The product has been deleted successfully."
@@ -188,7 +189,7 @@ public class ProductController {
     public String updateProductEnabledStatus(@PathVariable("id") Integer id,
                                              @PathVariable("status") boolean enabled,
                                              RedirectAttributes redirectAttributes)
-            throws ProductNotFoundException {
+            throws ProductNotFoundException, StripeException {
         productService.updateProductEnabledStatus(id, enabled);
         String message = "The product ID " + id + " has been " + (enabled ? "enabled" : "disabled") + ".";
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, message);

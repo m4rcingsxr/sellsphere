@@ -1,6 +1,7 @@
 package com.sellsphere.admin.security;
 
-import com.sellsphere.payment.StripeService;
+import com.sellsphere.payment.StripeCheckoutService;
+import com.sellsphere.payment.StripeProductService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -108,8 +109,13 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public StripeService stripeService() {
-        return new StripeService();
+    public StripeCheckoutService stripeCheckoutService() {
+        return new StripeCheckoutService();
+    }
+
+    @Bean
+    public StripeProductService stripeProductService() {
+        return new StripeProductService();
     }
 
 }

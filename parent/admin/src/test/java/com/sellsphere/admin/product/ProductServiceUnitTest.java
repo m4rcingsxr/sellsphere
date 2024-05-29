@@ -151,7 +151,8 @@ class ProductServiceUnitTest {
     }
 
     @Test
-    void givenExistingProductId_whenDeleteProduct_thenShouldRemoveProductAndFiles() throws ProductNotFoundException {
+    void givenExistingProductId_whenDeleteProduct_thenShouldRemoveProductAndFiles()
+            throws ProductNotFoundException, StripeException {
 
         // Given
         Integer productId = 1;

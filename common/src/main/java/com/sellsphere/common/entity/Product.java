@@ -208,7 +208,7 @@ public class Product extends IdentifiedEntity {
     /**
      * Stripe price id
      */
-    @Column(name = "price_id", nullable = false)
+    @Column(name = "price_id")
     private String priceId;
 
     @NotNull(message = "Product tax must be provided")

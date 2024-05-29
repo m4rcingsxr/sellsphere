@@ -1,11 +1,11 @@
 package com.sellsphere.admin.product;
 
-import com.sellsphere.payment.StripeService;
 import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.setting.SettingService;
 import com.sellsphere.common.entity.*;
+import com.sellsphere.payment.StripeProductService;
 import com.stripe.exception.StripeException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class ProductService {
     private static final int PRODUCTS_PER_PAGE = 12;
 
     private final ProductRepository productRepository;
-    private final StripeService stripeService;
+    private final StripeProductService stripeService;
     private final SettingService settingService;
 
 
@@ -86,6 +86,7 @@ public class ProductService {
     public Product save(Product product, MultipartFile newPrimaryImage, MultipartFile[] extraImages)
             throws IOException, SettingNotFoundException,
             CurrencyNotFoundException, StripeException {
+        Integer existingId = product.getId();
         Currency currentCurrency = settingService.getCurrentCurrency();
 
         updateProductDates(product);
@@ -93,11 +94,14 @@ public class ProductService {
 
         ProductHelper.addProductImages(product, extraImages);
 
-        var stripeProduct = stripeService.createProduct(product, currentCurrency);
+        Product savedProduct = productRepository.save(product);
+
+        // price id might not be initialized - 1st create - same with product!
+        var stripeProduct = stripeService.saveProduct(existingId, savedProduct, currentCurrency);
         String priceId = stripeProduct.getDefaultPrice();
+
         product.setPriceId(priceId);
 
-        Product savedProduct = productRepository.save(product);
 
         ProductHelper.saveExtraImages(savedProduct, extraImages);
         ProductHelper.savePrimaryImage(savedProduct, newPrimaryImage);
@@ -138,9 +142,11 @@ public class ProductService {
      * @param id The ID of the product to delete.
      * @throws ProductNotFoundException If no product is found with the provided ID.
      */
-    public void deleteProduct(Integer id) throws ProductNotFoundException {
+    public void deleteProduct(Integer id) throws ProductNotFoundException, StripeException {
         Product product = get(id);
         S3Utility.removeFolder("product-photos/" + product.getId());
+
+        stripeService.changeProductArchiveStatus(String.valueOf(id), false);
 
         productRepository.delete(product);
     }
@@ -153,10 +159,12 @@ public class ProductService {
      * @throws ProductNotFoundException If no product is found with the provided ID.
      */
     public void updateProductEnabledStatus(Integer id, boolean status)
-            throws ProductNotFoundException {
+            throws ProductNotFoundException, StripeException {
         Product product = productRepository.findById(id).orElseThrow(
                 ProductNotFoundException::new);
         product.setEnabled(status);
+
+        stripeService.changeProductArchiveStatus(String.valueOf(id), true);
         productRepository.save(product);
     }
 }
