@@ -1,6 +1,7 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.common.entity.Constants;
+import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Currency;
 import com.sellsphere.common.entity.Setting;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,14 +22,16 @@ import java.util.List;
 public class SettingController {
 
     private final SettingService settingService;
+    private final CountryRepository countryRepository;
 
     @GetMapping("/settings")
     public String showSettingForm(Model model) {
         List<Setting> settingList = settingService.listAllSettings();
-        List<Currency> currencyList = settingService.listAllCurrencies();
+        List<Country> countryList = countryRepository.findAll();
 
         prepareModelForSettings(model, settingList);
-        model.addAttribute("currencyList", currencyList);
+
+        model.addAttribute("countryList", countryList);
 
         return "setting/settings";
     }

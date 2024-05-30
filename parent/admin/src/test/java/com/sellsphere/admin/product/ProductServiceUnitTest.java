@@ -186,7 +186,8 @@ class ProductServiceUnitTest {
     }
 
     @Test
-    void givenExistingProductId_whenUpdateProductEnabledStatus_thenStatusIsUpdated() throws ProductNotFoundException {
+    void givenExistingProductId_whenUpdateProductEnabledStatus_thenStatusIsUpdated()
+            throws ProductNotFoundException, StripeException {
         // Given
         Integer existingProductId = 1;
         boolean newStatus = false;

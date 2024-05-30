@@ -1,14 +1,14 @@
 package com.sellsphere.common.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 /**
  * Represents a currency entity with name, symbol, and code.
@@ -55,6 +55,9 @@ public class Currency extends IdentifiedEntity {
     @NotNull(message = "Unit amount cannot be null")
     private Long unitAmount;
 
+    @OneToMany(mappedBy = "currency")
+    @OrderBy("name asc")
+    List<Country> countries;
 
     public Currency(Integer id, String name, String symbol, String code) {
         this.id = id;

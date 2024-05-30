@@ -44,6 +44,12 @@
                             aria-controls="mail-template-tab-pane" aria-selected="true">Mail template
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="payment-tab" data-bs-toggle="tab"
+                            data-bs-target="#payment-tab-pane" type="button" role="tab"
+                            aria-controls="payment-tab-pane" aria-selected="true">Payment settings
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="myTabContent">
@@ -57,6 +63,8 @@
                      id="mail-server-tab-pane" role="tabpanel" aria-labelledby="mail-server-tab" tabindex="0"></div>
                 <div th:insert="~{setting/mail_template_settings :: mail_template()}" class="tab-pane fade"
                      id="mail-template-tab-pane" role="tabpanel" aria-labelledby="mail-template-tab" tabindex="0"></div>
+                <div th:insert="~{setting/payment_settings :: payment()}" class="tab-pane fade"
+                     id="payment-tab-pane" role="tabpanel" aria-labelledby="payment-tab" tabindex="0"></div>
             </div>
         </form>
 
@@ -71,6 +79,7 @@
 <script type="text/javascript" th:src="@{/js/settings_country.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_state.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_mail_template.js}"></script>
+<script type="text/javascript" th:src="@{/js/settings_payment.js}"></script>
 <script type="text/javascript">
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const WIDTH = 700;

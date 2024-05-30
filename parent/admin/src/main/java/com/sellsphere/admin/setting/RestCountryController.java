@@ -1,15 +1,15 @@
 package com.sellsphere.admin.setting;
 
-import com.sellsphere.common.entity.Country;
-import com.sellsphere.common.entity.CountryDTO;
-import com.sellsphere.common.entity.CountryNotFoundException;
+import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.formula.functions.Count;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * RestCountryController is a REST controller for managing Country entities.
@@ -20,6 +20,10 @@ import java.util.List;
 public class RestCountryController {
 
     private final CountryRepository countryRepository;
+    private final SettingRepository settingRepository;
+
+    private final SettingService settingService;
+
 
     /**
      * Lists all countries sorted by name in ascending order.
@@ -78,5 +82,27 @@ public class RestCountryController {
 
         Country savedCountry = countryRepository.save(country);
         return ResponseEntity.ok(new CountryDTO(savedCountry));
+    }
+
+    @PostMapping("/countries/support")
+    public ResponseEntity<Void> setAsSupported(@RequestBody List<String> countriesId) {
+        String supportedCountries = String.join(",", countriesId);
+
+        Setting setting = new Setting();
+        setting.setKey("SUPPORTED_COUNTRY");
+        setting.setValue(supportedCountries);
+        setting.setCategory(SettingCategory.PAYMENT);
+
+        settingRepository.save(setting);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/countries/support")
+    public ResponseEntity<List<CountryDTO>> getSupportedCountries() {
+        List<CountryDTO> supportedCountries = settingService.getSupportedCountries().stream().map(
+                CountryDTO::new).toList();
+
+        return ResponseEntity.ok(supportedCountries);
     }
 }

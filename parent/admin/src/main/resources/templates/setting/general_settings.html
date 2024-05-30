@@ -3,14 +3,18 @@
     <div class="row g-3">
         <th:block th:replace="~{form_fragments :: label_input('Site name', '', 'SITE_NAME', ${SITE_NAME})}"></th:block>
         <th:block th:replace="~{form_fragments :: label_input('Copyright', '', 'COPYRIGHT', ${COPYRIGHT})}"></th:block>
-        <th:block th:replace="~{form_fragments :: file_input('Site logo', 'newImage', ${S3_BASE_URI} + ${SITE_LOGO})}"></th:block>
+        <th:block
+                th:replace="~{form_fragments :: file_input('Site logo', 'newImage', ${S3_BASE_URI} + ${SITE_LOGO})}"></th:block>
 
-        <label class="col-sm-4 col-form-label">Currency Type:</label>
+        <label class="col-sm-4 col-form-label">Currency Type:
+            <a href="#" id="tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom"
+               data-bs-title="Available currencies depend on selected supported countries for the payment"><i
+                    class="fa-regular fa-circle-question"></i></a>
+        </label>
         <div class="col-sm-8">
-            <select name="CURRENCY_ID" class="form-control">
-                <option th:each="currency : ${currencyList}" th:value="${currency.id}"
-                        th:selected="(${currency.id} == ${CURRENCY_ID})" th:text="${currency.name + ' (' + currency.code + ')'}">
-                </option>
+            <input type="hidden" id="current-currency" th:value="${CURRENCY_ID}"/>
+            <select name="CURRENCY_ID" class="form-control" id="currency">
+
             </select>
         </div>
 

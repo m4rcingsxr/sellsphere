@@ -50,10 +50,7 @@ VALUES ('ORDER_CONFIRMATION_CONTENT',
         'MAIL_TEMPLATES');
 
 INSERT INTO settings (setting_key, value, category)
-VALUES ('PAYPAL_BASE_URL', 'https://api-m.sandbox.paypal.com', 'PAYMENT');
+VALUES ('TAX', 'INCLUDED', 'PAYMENT');
+
 INSERT INTO settings (setting_key, value, category)
-VALUES ('PAYPAL_CLIENT_ID', 'ATnDkmSdX0y7ke4iKdePsBPOGzF-jarFAqIW0Wq86m_vv90wFtx5xjCWPJRTEh51IBp_44nDF5rlYnqr',
-        'PAYMENT');
-INSERT INTO settings (setting_key, value, category)
-VALUES ('PAYPAL_CLIENT_SECRET', 'EAcfB7qSwCfknyP9OX4b4efRwMeR75IMWy-PsjbXuv4_V7GE1EhsFVXEUBiSlTHijQjSVkQ9qKnAdKze',
-        'PAYMENT');
+VALUES ('SUPPORTED_COUNTRY', '1,2,3,4,5', 'PAYMENT');

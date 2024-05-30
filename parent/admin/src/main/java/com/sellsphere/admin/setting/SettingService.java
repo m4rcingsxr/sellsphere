@@ -17,7 +17,7 @@ import java.util.Optional;
 public class SettingService {
 
     private final SettingRepository settingRepository;
-
+    private final CountryRepository countryRepository;
     private final CurrencyRepository currencyRepository;
 
     public List<Currency> listAllCurrencies() {
@@ -40,6 +40,10 @@ public class SettingService {
         return settingRepository.findAllByCategoryIn(List.of(SettingCategory.MAIL_SERVER));
     }
 
+    public List<Setting> listPaymentSettings() {
+        return settingRepository.findAllByCategoryIn(List.of(SettingCategory.PAYMENT));
+    }
+
     public Currency getCurrentCurrency() throws SettingNotFoundException,
             CurrencyNotFoundException {
         String currencyId = settingRepository.findById("CURRENCY_ID").orElseThrow(
@@ -57,6 +61,13 @@ public class SettingService {
         updateSettingValuesFromForm(request, generalSettingManager.getSettings());
         updateSettingValuesFromForm(request, listMailServerSettings());
         updateSettingValuesFromForm(request, listMailTemplateSettings());
+    }
+
+    public List<Country> getSupportedCountries() {
+        List<Setting> paymentSettings = listPaymentSettings();
+        PaymentSettingManager paymentManager = new PaymentSettingManager(paymentSettings);
+
+        return countryRepository.findAllById(paymentManager.getSupportedCountries());
     }
 
     protected GeneralSettingManager populateGeneralSettingManager() {
@@ -91,5 +102,6 @@ public class SettingService {
 
         settingRepository.saveAll(settings);
     }
+
 
 }

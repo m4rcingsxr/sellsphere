@@ -6,7 +6,6 @@ $(function() {
 })
 
 function initTooltip() {
-    const tooltip = new bootstrap.Tooltip('#tooltip', {
-        boundary: document.body
-    })
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 }
