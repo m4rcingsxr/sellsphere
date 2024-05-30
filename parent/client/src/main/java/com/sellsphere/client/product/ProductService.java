@@ -59,14 +59,12 @@ public class ProductService {
         Page<Product> productPage = productRepository.findAll(spec, pageRequest);
 
         // Find the minimum and maximum discount prices within the filtered products.
-        Optional<Product> minProduct = productRepository.findOne(
+        List<Product> minProduct = productRepository.findAll(
                 ProductSpecification.minDiscountPrice(productPageRequest.getCategoryId(),
-                                                      productPageRequest.getKeyword(), spec
-                ));
-        Optional<Product> maxProduct = productRepository.findOne(
+                                                      productPageRequest.getKeyword(), spec));
+        List<Product> maxProduct = productRepository.findAll(
                 ProductSpecification.maxDiscountPrice(productPageRequest.getCategoryId(),
-                                                      productPageRequest.getKeyword(), spec
-                ));
+                                                      productPageRequest.getKeyword(), spec));
 
         // Build and return the response containing the products and additional pagination and
         // price details.
@@ -74,9 +72,9 @@ public class ProductService {
                 productPage.map(BasicProductDto::new).toList()).page(
                 productPageRequest.getPageNum()).totalElements(
                 productPage.getTotalElements()).totalPages(productPage.getTotalPages()).minPrice(
-                minProduct.map(Product::getDiscountPrice).orElse(
+                Optional.of(maxProduct.get(0)).map(Product::getDiscountPrice).orElse(
                         productPageRequest.getMinPrice())).maxPrice(
-                maxProduct.map(Product::getDiscountPrice).orElse(
+                Optional.of(minProduct.get(0)).map(Product::getDiscountPrice).orElse(
                         productPageRequest.getMinPrice())).build();
     }
 

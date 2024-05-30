@@ -44,6 +44,10 @@ public class SettingService {
         return settingRepository.findAllByCategoryIn(List.of(SettingCategory.PAYMENT));
     }
 
+    public Setting getTaxBehavior() throws SettingNotFoundException {
+        return settingRepository.findById("TAX").orElseThrow(SettingNotFoundException::new);
+    }
+
     public Currency getCurrentCurrency() throws SettingNotFoundException,
             CurrencyNotFoundException {
         String currencyId = settingRepository.findById("CURRENCY_ID").orElseThrow(
@@ -61,6 +65,7 @@ public class SettingService {
         updateSettingValuesFromForm(request, generalSettingManager.getSettings());
         updateSettingValuesFromForm(request, listMailServerSettings());
         updateSettingValuesFromForm(request, listMailTemplateSettings());
+        updateSettingValuesFromForm(request, listPaymentSettings());
     }
 
     public List<Country> getSupportedCountries() {

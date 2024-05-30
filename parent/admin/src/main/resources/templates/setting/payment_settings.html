@@ -3,8 +3,8 @@
         <label class="col-form-label col-sm-4">Include Tax in prices</label>
         <div class="col-sm-8">
             <select class="form-control" name="TAX">
-                <option value="INCLUDED">INCLUDED</option>
-                <option value="EXCLUDED">EXCLUDED</option>
+                <option value="INCLUSIVE" th:selected="(${TAX} == 'INCLUSIVE')">INCLUSIVE</option>
+                <option value="EXCLUSIVE" th:selected="(${TAX} == 'EXCLUSIVE')">EXCLUSIVE</option>
             </select>
         </div>
 
@@ -15,7 +15,7 @@
         </label>
 
         <div class="col-sm-8">
-            <select id="supported-countries" name="SUPPORTED_COUNTRY" multiple size="20"
+            <select id="supported-countries" multiple size="20"
                     style="width: 100% !important;">
                 <option th:each="country : ${countryList}" th:value="${country.id}" th:text="${country.name}"></option>
             </select>

@@ -96,8 +96,9 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        // price id might not be initialized - 1st create - same with product!
-        var stripeProduct = stripeService.saveProduct(existingId, savedProduct, currentCurrency);
+        Setting taxBehavior = settingService.getTaxBehavior();
+
+        var stripeProduct = stripeService.saveProduct(existingId, savedProduct, currentCurrency, taxBehavior.getValue());
         String priceId = stripeProduct.getDefaultPrice();
 
         product.setPriceId(priceId);

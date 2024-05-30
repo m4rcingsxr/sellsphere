@@ -1,10 +1,11 @@
 package com.sellsphere.client.checkout;
 
 import com.sellsphere.client.customer.CustomerService;
+import com.sellsphere.client.setting.CountryRepository;
+import com.sellsphere.client.setting.SettingRepository;
+import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.CartItemRepository;
-import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.common.entity.Customer;
-import com.sellsphere.common.entity.CustomerNotFoundException;
+import com.sellsphere.common.entity.*;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +27,26 @@ public class CheckoutRestController {
     private final CustomerService customerService;
     private final StripeCheckoutService stripeService;
     private final CartItemRepository cartItemRepository;
+    private final SettingService settingService;
+    private final SettingRepository settingRepository;
+    private final CountryRepository countryRepository;
 
     @PostMapping("/create_session")
     public ResponseEntity<Map<String, String>> createCheckoutSession(Principal principal)
-            throws CustomerNotFoundException, StripeException {
+            throws CustomerNotFoundException, StripeException, CurrencyNotFoundException,
+            SettingNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
 
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
 
-        Session session = stripeService.createCheckoutSession(cart);
+        String currencyCode = settingService.getCurrencyCode();
+
+        Setting setting = settingRepository.findById("SUPPORTED_COUNTRY").orElseThrow(SettingNotFoundException::new);
+        List<Integer> supportedCountryIds = Arrays.stream(setting.getValue().split(",")).map(
+                Integer::valueOf).toList();
+        List<Country> supportedCountries = countryRepository.findAllById(supportedCountryIds);
+
+        Session session = stripeService.createCheckoutSession(cart, currencyCode, supportedCountries);
 
         Map<String, String> map = new HashMap();
         map.put("clientSecret", session.getRawJsonObject().getAsJsonPrimitive("client_secret").getAsString());
