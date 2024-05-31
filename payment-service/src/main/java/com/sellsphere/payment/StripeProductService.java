@@ -9,8 +9,6 @@ import com.stripe.param.ProductUpdateParams;
 
 import java.math.BigDecimal;
 
-import static com.sellsphere.payment.Constants.API_KEY;
-
 /**
  * The {@code StripeProductService} class provides methods for interacting with Stripe's API
  * to create and update products and their prices.
@@ -21,7 +19,7 @@ import static com.sellsphere.payment.Constants.API_KEY;
 public class StripeProductService {
 
     static {
-        Stripe.apiKey = API_KEY;
+        StripeConfig.init();
     }
 
     /**

@@ -1,5 +1,5 @@
 "use strict"
-const stripe = Stripe("pk_test_51PbVfkJrJARv0MdlEH5DxX7JRUSYQ93fy1eXxlucq712MqQLY6FrLIWceaT5Pc14faRUhvFrRFGe201s2dbHXPEg00bGFEsYtI");
+const stripe = Stripe("pk_test_51PbnPoAx8ZpOoq6Y2e0LqnQAZamnRJ6rBeShPoZVd7up9My5tepRm9Vhowv6qGue29a8aDz4r0YT5BkN3XnqQPrR00yMU9sery");
 
 $(function() {
     initializeCheckout();
