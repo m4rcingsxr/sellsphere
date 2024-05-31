@@ -8,7 +8,9 @@ import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
+import com.stripe.model.tax.Calculation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +33,33 @@ public class CheckoutRestController {
     private final SettingRepository settingRepository;
     private final CountryRepository countryRepository;
 
+    @PostMapping("/calculate-tax")
+    public ResponseEntity<Map<String, Long>> calculateTax(@RequestBody com.stripe.model.Address address, Principal principal)
+            throws StripeException, CustomerNotFoundException {
+        Customer customer = getAuthenticatedCustomer(principal);
+        List<CartItem> cart = cartItemRepository.findByCustomer(customer);
+
+
+        Calculation calculation = stripeService.calculateTax(cart, address);
+        Map<String, Long> map = new HashMap<>();
+
+        map.put("amount_total", calculation.getAmountTotal());
+        map.put("tax_amount_inclusive", calculation.getTaxAmountInclusive());
+
+        return ResponseEntity.ok(map);
+    }
+
+
+    @PostMapping("/create-payment-intent")
+    public ResponseEntity<Map<String, String>> createPaymentIntent() throws StripeException {
+        PaymentIntent paymentIntent = stripeService.createPaymentIntent();
+
+        Map<String, String> map = new HashMap();
+        map.put("clientSecret", paymentIntent.getClientSecret());
+
+        return ResponseEntity.ok(map);
+    }
+
     @PostMapping("/create_session")
     public ResponseEntity<Map<String, String>> createCheckoutSession(Principal principal)
             throws CustomerNotFoundException, StripeException, CurrencyNotFoundException,
@@ -39,29 +68,34 @@ public class CheckoutRestController {
 
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
 
-        String currencyCode = settingService.getCurrencyCode();
-
-        Setting setting = settingRepository.findById("SUPPORTED_COUNTRY").orElseThrow(SettingNotFoundException::new);
+        Setting setting = settingRepository.findById("SUPPORTED_COUNTRY").orElseThrow(
+                SettingNotFoundException::new);
         List<Integer> supportedCountryIds = Arrays.stream(setting.getValue().split(",")).map(
                 Integer::valueOf).toList();
         List<Country> supportedCountries = countryRepository.findAllById(supportedCountryIds);
 
-        Session session = stripeService.createCheckoutSession(cart, currencyCode, supportedCountries);
+        Session session = stripeService.createCheckoutSession(cart, supportedCountries);
 
         Map<String, String> map = new HashMap();
-        map.put("clientSecret", session.getRawJsonObject().getAsJsonPrimitive("client_secret").getAsString());
+        map.put("clientSecret",
+                session.getRawJsonObject().getAsJsonPrimitive("client_secret").getAsString()
+        );
 
         return ResponseEntity.ok(map);
     }
 
     @GetMapping("/session_status")
-    public ResponseEntity<Map<String, String>> getSessionStatus(@RequestParam("session_id") String sessionId)
+    public ResponseEntity<Map<String, String>> getSessionStatus(
+            @RequestParam("session_id") String sessionId)
             throws StripeException {
         Session session = Session.retrieve(sessionId);
 
         Map<String, String> map = new HashMap<>();
         map.put("status", session.getRawJsonObject().getAsJsonPrimitive("status").getAsString());
-        map.put("customer_email", session.getRawJsonObject().getAsJsonObject("customer_details").getAsJsonPrimitive("email").getAsString());
+        map.put("customer_email",
+                session.getRawJsonObject().getAsJsonObject("customer_details").getAsJsonPrimitive(
+                        "email").getAsString()
+        );
 
         return ResponseEntity.ok(map);
     }

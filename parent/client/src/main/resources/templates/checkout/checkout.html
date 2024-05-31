@@ -1,3 +1,4 @@
+<!-- HTTPS required for stripe live mode -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
@@ -11,6 +12,23 @@
 
 <main class="content mb-5">
     <div class="container mt-4">
+        <form id="address-form">
+            <h3>Address</h3>
+            <div id="address-element">
+                <!-- Elements will create form elements here -->
+            </div>
+        </form>
+
+        <form id="payment-form">
+            <div id="payment-element">
+                <!-- Elements will create form elements here -->
+            </div>
+            <button class="btn btn-primary" id="submit">Pay</button>
+            <div id="error-message">
+                <!-- Display error message to your customers here -->
+            </div>
+        </form>
+
         <div id="checkout">
             <!-- Checkout will insert the payment form here -->
         </div>
