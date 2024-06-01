@@ -65,7 +65,7 @@ class ProductServiceUnitTest {
         // Given
         Product product = new Product();
         product.setId(1);
-        product.setName("Test Product");
+        product.setName("com.sellsphere.admin.Test Product");
         product.setAlias("test_product");
         product.setCreatedTime(LocalDateTime.now());
 
@@ -88,7 +88,7 @@ class ProductServiceUnitTest {
 
             // Then
             assertNotNull(savedProduct);
-            assertEquals("Test Product", savedProduct.getName());
+            assertEquals("com.sellsphere.admin.Test Product", savedProduct.getName());
             assertEquals("test_product", savedProduct.getAlias());
 
             verify(productRepository, times(1)).save(product);

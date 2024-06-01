@@ -2,10 +2,14 @@ package com.sellsphere.client.checkout;
 
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.setting.CountryRepository;
+import com.sellsphere.client.setting.CurrencyRepository;
 import com.sellsphere.client.setting.SettingRepository;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
+import com.sellsphere.easyship.ApiService;
+import com.sellsphere.easyship.payload.AddressDtoMin;
+import com.sellsphere.payment.PaymentRequest;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -32,27 +36,47 @@ public class CheckoutRestController {
     private final SettingService settingService;
     private final SettingRepository settingRepository;
     private final CountryRepository countryRepository;
+    private final CurrencyRepository currencyRepository;
+    private final ApiService apiService;
 
-    @PostMapping("/calculate-tax")
-    public ResponseEntity<Map<String, Long>> calculateTax(@RequestBody com.stripe.model.Address address, Principal principal)
-            throws StripeException, CustomerNotFoundException {
+    @PostMapping("/calculate")
+    public ResponseEntity<CheckoutResponse> calculate(@RequestBody(required = false) CalculateTaxRequest request, Principal principal)
+            throws StripeException, CustomerNotFoundException, CurrencyNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
 
+        String currencyCode = settingService.getCurrencyCode();
+        Currency currency = currencyRepository.findByCode(currencyCode).orElseThrow(CurrencyNotFoundException::new);
 
-        Calculation calculation = stripeService.calculateTax(cart, address);
-        Map<String, Long> map = new HashMap<>();
+        var checkoutResponseBuilder = CheckoutResponse.builder();
 
-        map.put("amount_total", calculation.getAmountTotal());
-        map.put("tax_amount_inclusive", calculation.getTaxAmountInclusive());
+        if(request != null) {
+            Calculation calculation = stripeService.calculateTax(cart, request.getAddress(),  request.getShippingCost(), currency);
+            checkoutResponseBuilder
+                    .amountTotal(calculation.getAmountTotal())
+                    .taxAmountInclusive(calculation.getTaxAmountInclusive())
+                    .shippingCost(calculation.getShippingCost())
+                    .customerDetails(calculation.getCustomerDetails());
+        } else {
+            checkoutResponseBuilder.amountTotal(stripeService.getAmountTotal(cart));
+        }
 
-        return ResponseEntity.ok(map);
+
+        checkoutResponseBuilder.currencyCode(currency.getCode());
+        checkoutResponseBuilder.unitAmount(currency.getUnitAmount());
+        checkoutResponseBuilder.currencySymbol(currency.getSymbol());
+        checkoutResponseBuilder.products(
+                cart.stream().map(CartItem::getProduct).map(BasicProductDto::new).toList()
+        );
+
+        return ResponseEntity.ok(checkoutResponseBuilder.build());
     }
 
 
     @PostMapping("/create-payment-intent")
-    public ResponseEntity<Map<String, String>> createPaymentIntent() throws StripeException {
-        PaymentIntent paymentIntent = stripeService.createPaymentIntent();
+    public ResponseEntity<Map<String, String>> createPaymentIntent(@RequestBody PaymentRequest request)
+            throws StripeException, CurrencyNotFoundException {
+        PaymentIntent paymentIntent = stripeService.createPaymentIntent(request.getAmountTotal(), request.getCurrencyCode(), request.getCustomerDetails());
 
         Map<String, String> map = new HashMap();
         map.put("clientSecret", paymentIntent.getClientSecret());

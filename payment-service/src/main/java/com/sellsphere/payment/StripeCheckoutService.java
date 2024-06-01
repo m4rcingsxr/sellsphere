@@ -2,6 +2,7 @@ package com.sellsphere.payment;
 
 import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.common.entity.Country;
+import com.sellsphere.common.entity.Currency;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Address;
 import com.stripe.model.PaymentIntent;
@@ -93,16 +94,16 @@ public class StripeCheckoutService {
         return Session.create(params);
     }
 
-    // defer initialization to final user pay -  provide final shipping when user click pay
-    public PaymentIntent createPaymentIntent() throws StripeException {
+    public PaymentIntent createPaymentIntent(long amountTotal, String currencyCode, Calculation.CustomerDetails customerDetails) throws StripeException {
+        var address = customerDetails.getAddress();
         PaymentIntentCreateParams params =
                 PaymentIntentCreateParams.builder()
-//                        .setReceiptEmail(customer.getEmail()) - receipt -  Stripe sends a receipt to that address regardless of your Customer emails settings.
+//                        .setReceiptEmail(customer.getEmail()) - receipt -  Stripe sends a
+//                        receipt to that address regardless of your Customer emails settings.
                         // customize receipt https://docs.stripe.com/receipts?payment-ui=direct-api
-                        .setAmount
-                                (1099L)
+                        .setAmount(amountTotal)
                         .setCurrency
-                                ("eur")
+                                (currencyCode)
                         .setAutomaticPaymentMethods
                                 (
                                         PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled
@@ -117,55 +118,86 @@ public class StripeCheckoutService {
     // calculate it every time address is changed
     // provide correct currency - user can dynamically change it
     // verify if address is correct
-    public Calculation calculateTax(List<CartItem> cart, Address address) throws StripeException {
+    public Calculation calculateTax(List<CartItem> cart, Address address, BigDecimal shippingCost, Currency currency)
+            throws StripeException {
         var params = CalculationCreateParams.builder();
 
         for (CartItem cartItem : cart) {
             params.setCurrency
-                            ("eur")
-//                    .setShippingCost() // set shippingm cost for each item - require shipping rate which will be from easy post
+                            (currency.getCode())
                     .addLineItem
                             (
                                     CalculationCreateParams.LineItem.builder()
                                             .setAmount
                                                     (cartItem.getProduct().getDiscountPrice().multiply(
-                                                            BigDecimal.valueOf(100)).longValue()) // static 100 for now
+                                                            BigDecimal.valueOf(
+                                                                    currency.getUnitAmount())).longValue())
                                             .setTaxBehavior
                                                     (CalculationCreateParams.LineItem.TaxBehavior.INCLUSIVE)
-                                            .setReference(String.valueOf(cartItem.getProduct().getId()))
+                                            .setReference(
+                                                    String.valueOf(cartItem.getProduct().getId()))
                                             .setTaxCode
                                                     (cartItem.getProduct().getTax().getId())
                                             .build()
-                            )
-                    .setCustomerDetails
-                            (
-                                    CalculationCreateParams.CustomerDetails.builder()
-                                            .setAddress
-                                                    (
-                                                            CalculationCreateParams.CustomerDetails.Address.builder()
-                                                                    .setCountry
-                                                                            (address.getCountry())
-                                                                    .setCity(address.getCity())
-                                                                    .setLine1(address.getLine1())
-                                                                    .setLine1(address.getLine2())
-                                                                    .setPostalCode(address.getPostalCode())
-
-                                                                    .build()
-                                                    )
-                                            .setAddressSource
-                                                    (CalculationCreateParams.CustomerDetails.AddressSource.SHIPPING)
-                                            .build()
                             ).build();
+            params.setShippingCost(
+                    CalculationCreateParams.ShippingCost.builder()
+                            .setTaxCode("txcd_92010001")
+                            .setTaxBehavior(
+                                    CalculationCreateParams.ShippingCost.TaxBehavior.INCLUSIVE)
+                            .setAmount(shippingCost.multiply(BigDecimal.valueOf(currency.getUnitAmount())).longValue())
+                            .build()
+            ).setCustomerDetails
+                    (
+                            CalculationCreateParams.CustomerDetails.builder()
+                                    .setAddress
+                                            (
+                                                    CalculationCreateParams.CustomerDetails.Address.builder()
+                                                            .setCountry
+                                                                    (address.getCountry())
+                                                            .setCity(address.getCity())
+                                                            .setLine1(address.getLine1())
+                                                            .setLine1(address.getLine2())
+                                                            .setPostalCode(
+                                                                    address.getPostalCode())
+
+                                                            .build()
+                                            )
+                                    .setAddressSource
+                                            (CalculationCreateParams.CustomerDetails.AddressSource.SHIPPING)
+                                    .build());
         }
 
         return Calculation.create(params.build());
+    }
+
+    public long getAmountTotal(List<CartItem> cart) {
+        long total = 0;
+        for (CartItem cartItem : cart) {
+            total += CalculationCreateParams.LineItem.builder()
+                    .setAmount
+                            (cartItem.getProduct().getDiscountPrice().multiply(
+                                    BigDecimal.valueOf(
+                                            100)).longValue())
+                    // 100 for now
+                    .setTaxBehavior
+                            (CalculationCreateParams.LineItem.TaxBehavior.INCLUSIVE)
+                    .setReference(
+                            String.valueOf(cartItem.getProduct().getId()))
+                    .setTaxCode
+                            (cartItem.getProduct().getTax().getId())
+                    .build().getAmount();
+        }
+
+        return total;
     }
 
     // method to change currency based on location
 
     // FINISH TAX:
     // after the order is submitted create tax transaction
-    // Listen for the payment_intent.succeeded webhook event. Retrieve the calculation ID from the PaymentIntent metadata.
+    // Listen for the payment_intent.succeeded webhook event. Retrieve the calculation ID from
+    // the PaymentIntent metadata.
     // must store payment intent
     // store transaction it so later we can record refunds - store it in metadata paymentintent
 

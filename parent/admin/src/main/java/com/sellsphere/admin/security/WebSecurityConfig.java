@@ -1,5 +1,10 @@
 package com.sellsphere.admin.security;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.sellsphere.easyship.ApiService;
+import com.sellsphere.easyship.ApiServiceImpl;
+import com.sellsphere.easyship.AppModule;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.sellsphere.payment.StripeProductService;
 import org.springframework.context.annotation.Bean;
@@ -116,6 +121,12 @@ public class WebSecurityConfig {
     @Bean
     public StripeProductService stripeProductService() {
         return new StripeProductService();
+    }
+
+    @Bean
+    public ApiService easyshipService() {
+        Injector injector = Guice.createInjector(new AppModule());
+        return injector.getInstance(ApiService.class);
     }
 
 }

@@ -4,33 +4,128 @@
 <head>
     <th:block th:replace="~{common :: common_head('Shopping Cart')}"></th:block>
     <script src="https://js.stripe.com/v3/"></script>
-    <script type="text/javascript" th:src="@{/js/checkout.js}"></script>
+    <script type="text/javascript" th:src="@{/js/CheckoutModel.js}"></script>
+    <script type="text/javascript" th:src="@{/js/CheckoutView.js}"></script>
+    <script type="text/javascript" th:src="@{/js/CheckoutController.js}"></script>
 </head>
 
 <body>
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="content mb-5">
-    <div class="container mt-4">
-        <form id="address-form">
-            <h3>Address</h3>
-            <div id="address-element">
-                <!-- Elements will create form elements here -->
-            </div>
-        </form>
+<main class="content mt-4">
+    <div id="checkout">
+        <!-- Checkout will insert the payment form here -->
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-8">
+                <div class="accordion" id="accordionFlushExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseOne" aria-expanded="false"
+                                    aria-controls="flush-collapseOne">
+                                Address
+                            </button>
+                        </h2>
+                        <div id="flush-collapseOne" class="accordion-collapse collapse show"
+                             data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body">
+                                <form id="address-form">
+                                    <div id="address-element">
+                                        <!-- Elements will create form elements here -->
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseTwo" aria-expanded="false"
+                                    aria-controls="flush-collapseTwo">
+                                Payment
+                            </button>
+                        </h2>
+                        <div id="flush-collapseTwo" class="accordion-collapse collapse"
+                             data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body">
+                                <form id="payment-form">
+                                    <div id="payment-element">
+                                        <!-- Elements will create form elements here -->
+                                    </div>
+                                    <button class="btn btn-primary" id="submit">Pay</button>
+                                    <div id="error-message">
+                                        <!-- Display error message to your customers here -->
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseThree" aria-expanded="false"
+                                    aria-controls="flush-collapseThree">
+                                Summary
+                            </button>
+                        </h2>
+                        <div id="flush-collapseThree" class="accordion-collapse collapse"
+                             data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body">
+                                <div id="summary">
 
-        <form id="payment-form">
-            <div id="payment-element">
-                <!-- Elements will create form elements here -->
-            </div>
-            <button class="btn btn-primary" id="submit">Pay</button>
-            <div id="error-message">
-                <!-- Display error message to your customers here -->
-            </div>
-        </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <div id="checkout">
-            <!-- Checkout will insert the payment form here -->
+
+            </div>
+
+            <div class="col-sm-4 align-items-start">
+
+                <div class="d-flex flex-column gap-2 border border-1 shadow-sm rounded-2 p-4">
+                    <h3 class="total fw-bold">123</h3>
+
+                    <div id="products" class="d-flex flex-column gap-2">
+
+                    </div>
+
+
+                    <hr class="text-dark-emphasis"/>
+
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bolder">Subtotal</span>
+                        <span id="subtotal">123</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="">Shipping</span>
+                        <span id="shipping">123</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-lighter">Shipping tax</span>
+                        <span id="shipping-tax">123</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-lighter">Tax</span>
+                        <span id="tax">123</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="">Total tax</span>
+                        <span id="total-tax">123</span>
+                    </div>
+
+                    <hr class="text-dark-emphasis"/>
+
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bolder">Total due</span>
+                        <span class="total">123</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </main>
@@ -41,5 +136,15 @@
 <script th:replace="~{common :: configurations()}"></script>
 <script th:replace="~{common :: cart_initialization()}"></script>
 
+<script type="text/javascript">
+    $(function () {
+        const view = new CheckoutView();
+        const model = new CheckoutModel();
+        const controller = new CheckoutController(model, view);
+
+        controller.initializeElements();
+        controller.initSubmitPaymentEventListener();
+    });
+</script>
 </body>
 </html>

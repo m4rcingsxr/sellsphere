@@ -9,9 +9,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AddressResponse {
-
-    private List<AddressDto> addresses;
+@ToString
+public class RatesResponse {
     private Meta meta;
-
+    private List<Rate> rates;
 }

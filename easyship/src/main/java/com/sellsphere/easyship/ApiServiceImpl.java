@@ -1,14 +1,16 @@
 package com.sellsphere.easyship;
 
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.sellsphere.common.entity.Address;
+import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.easyship.payload.AddressDto;
+import com.sellsphere.easyship.payload.AddressDtoMin;
 import com.sellsphere.easyship.payload.AddressResponse;
+import com.sellsphere.easyship.payload.RatesResponse;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -35,51 +37,62 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
-    public String getRates() {
+    public RatesResponse getRates(AddressDtoMin recipient, List<CartItem> cart) {
         WebTarget target = client.target(BASE_URL).path("/rates");
 
         JsonObject jsonPayload = new JsonObject();
 
         JsonObject courierSelection = new JsonObject();
         courierSelection.addProperty("apply_shipping_rules", true);
-        courierSelection.addProperty("show_courier_logo_url", false);
+        courierSelection.addProperty("show_courier_logo_url", true);
         jsonPayload.add("courier_selection", courierSelection);
 
         JsonObject destinationAddress = new JsonObject();
-        destinationAddress.addProperty("country_alpha2", "PL");
-        destinationAddress.addProperty("city", "Warsaw");  // Replace with actual city
-        destinationAddress.addProperty("postal_code", "00-001");  // Replace with actual postal code
+        destinationAddress.addProperty("country_alpha2", recipient.getCountryAlpha2());
+        destinationAddress.addProperty("city", recipient.getCity());
+        destinationAddress.addProperty("postal_code", recipient.getPostalCode());
+        destinationAddress.addProperty("line_1", recipient.getLine1());
+        destinationAddress.addProperty("line_2", recipient.getLine2());
+        destinationAddress.addProperty("state", recipient.getState());
         jsonPayload.add("destination_address", destinationAddress);
 
+        // Hard coded origin address
         JsonObject originAddress = new JsonObject();
-        originAddress.addProperty("country_alpha2", "BE");  // Replace with actual origin country code
-        originAddress.addProperty("city", "Antwerp");  // Replace with actual origin city
-        originAddress.addProperty("postal_code", "1000");  // Replace with actual origin postal code
+        originAddress.addProperty("country_alpha2", "BE");
+        originAddress.addProperty("city", "Antwerp");
+        originAddress.addProperty("postal_code", "1000");
         jsonPayload.add("origin_address", originAddress);
 
         jsonPayload.addProperty("incoterms", "DDU");
 
+        // Insurance option
         JsonObject insurance = new JsonObject();
         insurance.addProperty("is_insured", false);
         jsonPayload.add("insurance", insurance);
 
         JsonArray parcelsArray = new JsonArray();
-        JsonObject parcel = new JsonObject();
-        JsonArray itemsArray = new JsonArray();
-        JsonObject item = new JsonObject();
-        item.addProperty("quantity", 1);
-        item.addProperty("actual_weight", 1.0);  // Replace with actual weight
-        item.addProperty("declared_currency", "EUR");  // Replace with actual currency
-        item.addProperty("declared_customs_value", 10.0);  // Replace with actual customs value
-        JsonObject dimensions = new JsonObject();
-        dimensions.addProperty("length", 10.0);  // Replace with actual length
-        dimensions.addProperty("width", 10.0);  // Replace with actual width
-        dimensions.addProperty("height", 10.0);  // Replace with actual height
-        item.add("dimensions", dimensions);
-        item.addProperty("hs_code", 1);  // Replace with actual category
-        itemsArray.add(item);
-        parcel.add("items", itemsArray);
-        parcelsArray.add(parcel);
+        for (CartItem cartItem : cart) {
+            JsonObject parcel = new JsonObject();
+            JsonArray itemsArray = new JsonArray();
+
+            JsonObject item = new JsonObject();
+            item.addProperty("quantity", cartItem.getQuantity());
+            item.addProperty("actual_weight", cartItem.getProduct().getWeight().doubleValue());
+            item.addProperty("declared_currency", "EUR");
+            item.addProperty("declared_customs_value", cartItem.getProduct().getPrice().doubleValue());
+
+            JsonObject dimensions = new JsonObject();
+            dimensions.addProperty("length", cartItem.getProduct().getLength().doubleValue());
+            dimensions.addProperty("width", cartItem.getProduct().getWidth().doubleValue());
+            dimensions.addProperty("height", cartItem.getProduct().getHeight().doubleValue());
+            item.add("dimensions", dimensions);
+
+            item.addProperty("hs_code", 1); // Replace with actual HS code if available
+
+            itemsArray.add(item);
+            parcel.add("items", itemsArray);
+            parcelsArray.add(parcel);
+        }
         jsonPayload.add("parcels", parcelsArray);
 
         JsonObject shippingSettings = new JsonObject();
@@ -91,6 +104,8 @@ public class ApiServiceImpl implements ApiService {
 
         String payload = gson.toJson(jsonPayload);
 
+        System.out.println(payload);
+
         Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON)
                 .header("Authorization", BEARER_TOKEN)
                 .header("User-Agent", "Mozilla/5.0")
@@ -98,8 +113,18 @@ public class ApiServiceImpl implements ApiService {
 
         Response response = invocationBuilder.post(Entity.entity(payload, MediaType.APPLICATION_JSON));
 
-        return processResponse(response);
+        return getRatesResponseFromResponse(response);
     }
+
+    private RatesResponse getRatesResponseFromResponse(Response response) {
+        if (response.getStatus() == 200 || response.getStatus() == 201) {
+            String jsonResponse = response.readEntity(String.class);
+            return gson.fromJson(jsonResponse, RatesResponse.class);
+        } else {
+            String error = response.readEntity(String.class);
+            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+        }
+        }
 
     @Override
     public String getAccount() {
@@ -182,6 +207,7 @@ public class ApiServiceImpl implements ApiService {
         }
     }
 
+
     private List<AddressDto> getAddressesFromResponse(Response response) {
         if (response.getStatus() == 200) {
             String jsonResponse = response.readEntity(String.class);
@@ -197,7 +223,11 @@ public class ApiServiceImpl implements ApiService {
     private String processResponse(Response response) {
         if (response.getStatus() == 200 || response.getStatus() == 201) {
             String result = response.readEntity(String.class);
-            return result;
+            // Parse the JSON response
+            JsonElement jsonElement = JsonParser.parseString(result);
+
+            // Convert the JSON element to a pretty-printed string
+            return gson.toJson(jsonElement);
         } else {
             String error = response.readEntity(String.class);
             throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);

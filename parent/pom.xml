@@ -109,6 +109,12 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.sellsphere</groupId>
+            <artifactId>easyship</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>

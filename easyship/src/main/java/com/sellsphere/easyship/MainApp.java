@@ -8,40 +8,7 @@ import com.sellsphere.easyship.payload.AddressDto;
 public class MainApp {
 
 
-    public static void main(String[] args) {
-        Injector injector = Guice.createInjector(new AppModule());
-        ApiService apiService = injector.getInstance(ApiService.class);
 
-        String response = apiService.getRates();
-        System.out.println("Rates Response: " + response);
-//
-        getAccount(apiService);
-        createAccount(apiService,
-                AddressDto.builder()
-                        .city("Antwerp")
-                        .line1("14, Bosstraat")
-                        .companyName("SellSphere")
-                        .countryAlpha2("BE")
-                        .contactPhone("730921452")
-                        .contactName("Marcin Seweryn")
-                        .contactEmail("marcinsewerynn@gmail.com")
-                        .postalCode("9880")
-                        .defaultFor(AddressDto.DefaultFor.builder()
-                                            .sender(true)
-                                            .returnAddress(true)
-                                            .build())
-                        .build());
-    }
-
-    public static void getAccount(ApiService apiService) {
-        String account = apiService.getAccount();
-        System.out.println("Account: " + account);
-    }
-
-    public static void createAccount(ApiService apiService, AddressDto addressDto) {
-        String senderAddress = apiService.updateSender(addressDto);
-        System.out.println(senderAddress);
-    }
 
 
 }

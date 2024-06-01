@@ -57,7 +57,7 @@ class CountryRepositoryTest {
 
         // Given
         Country country = new Country();
-        country.setName("Test Country");
+        country.setName("com.sellsphere.admin.Test Country");
         country.setCode("TST");
 
         // When
@@ -66,7 +66,7 @@ class CountryRepositoryTest {
         // Then
         assertNotNull(savedCountry, "Saved country should not be null");
         assertNotNull(savedCountry.getId(), "Saved country should have an ID");
-        assertEquals("Test Country", savedCountry.getName(), "Country name should be 'Test Country'");
+        assertEquals("com.sellsphere.admin.Test Country", savedCountry.getName(), "Country name should be 'com.sellsphere.admin.Test Country'");
         assertEquals("TST", savedCountry.getCode(), "Country code should be 'TST'");
     }
 

@@ -90,7 +90,7 @@ const ajaxUtil = {
      * @returns {Promise<Object|null>} A promise that resolves to the response data as a JSON object or null if no response body.
      * @throws {Error} If the POST request fails.
      */
-    async post(url, data = {}) {
+    async post(url, data = null) {
         const csrfToken = this.getCSRFToken();
         const headers = {
             'Content-Type': 'application/json'
@@ -100,11 +100,13 @@ const ajaxUtil = {
             headers['X-CSRF-TOKEN'] = csrfToken;
         }
 
-        const response = await fetch(url, {
+        const options = {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(data)
-        });
+        };
+
+        const response = await fetch(url, options);
 
         if (!response.ok) {
             const errorResponse = await response.json();

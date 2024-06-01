@@ -116,7 +116,7 @@ class ProductControllerIntegrationTest {
         // Create a product entity for the test
         Product product = new Product();
         product.setId(1);
-        product.setName("Test Product");
+        product.setName("com.sellsphere.admin.Test Product");
         product.setAlias("test_product");
         product.setShortDescription("Short description");
         product.setFullDescription("Full description");
@@ -154,7 +154,7 @@ class ProductControllerIntegrationTest {
                                     .file(extraImage1)
                                     .file(extraImage2)
                                     .with(csrf())
-                                    .param("name", "Test Product")
+                                    .param("name", "com.sellsphere.admin.Test Product")
                                     .param("alias", "test_product")
                                     .param("shortDescription", "Short description")
                                     .param("fullDescription", "Full description")

@@ -51,7 +51,7 @@ class CurrencyRepositoryTest {
     void givenNewCurrency_whenSave_thenShouldSaveNewCurrency() {
         // Given
         Currency currency = new Currency();
-        currency.setName("Test Currency");
+        currency.setName("com.sellsphere.admin.Test Currency");
         currency.setSymbol("T$");
         currency.setCode("TST");
 
@@ -61,7 +61,7 @@ class CurrencyRepositoryTest {
         // Then
         assertNotNull(savedCurrency, "Saved currency should not be null");
         assertNotNull(savedCurrency.getId(), "Saved currency should have an ID");
-        assertEquals("Test Currency", savedCurrency.getName(), "Currency name should be 'Test Currency'");
+        assertEquals("com.sellsphere.admin.Test Currency", savedCurrency.getName(), "Currency name should be 'com.sellsphere.admin.Test Currency'");
         assertEquals("T$", savedCurrency.getSymbol(), "Currency symbol should be 'T$'");
         assertEquals("TST", savedCurrency.getCode(), "Currency code should be 'TST'");
     }

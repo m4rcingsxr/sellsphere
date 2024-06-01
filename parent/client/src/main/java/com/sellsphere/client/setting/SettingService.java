@@ -1,13 +1,11 @@
 package com.sellsphere.client.setting;
 
-import com.sellsphere.common.entity.Currency;
-import com.sellsphere.common.entity.CurrencyNotFoundException;
-import com.sellsphere.common.entity.PaymentSettingManager;
-import com.sellsphere.common.entity.Setting;
+import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.sellsphere.common.entity.SettingCategory.*;
 
@@ -21,6 +19,7 @@ public class SettingService {
 
     private final SettingRepository repository;
     private final CurrencyRepository currencyRepository;
+    private final CountryRepository countryRepository;
 
     /**
      * Retrieves general settings.
@@ -64,4 +63,17 @@ public class SettingService {
 
         return currency.getCode();
     }
+
+    public List<Country> getSupportedCountries() {
+        List<Setting> paymentSettings = listPaymentSettings();
+        PaymentSettingManager paymentManager = new PaymentSettingManager(paymentSettings);
+
+        return countryRepository.findAllById(paymentManager.getSupportedCountries());
+    }
+
+    public List<Setting> listPaymentSettings() {
+        return repository.findAllByCategory(SettingCategory.PAYMENT);
+    }
+
+
 }

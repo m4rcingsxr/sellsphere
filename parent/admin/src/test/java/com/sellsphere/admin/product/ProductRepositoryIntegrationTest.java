@@ -38,10 +38,10 @@ class ProductRepositoryIntegrationTest {
     void givenProduct_WhenSave_ThenProductIsPersisted() {
         // Given
         Product product = new Product();
-        product.setName("Test Product");
+        product.setName("com.sellsphere.admin.Test Product");
         product.setAlias("testProduct");
-        product.setShortDescription("Test Short Description");
-        product.setFullDescription("Test Full Description");
+        product.setShortDescription("com.sellsphere.admin.Test Short Description");
+        product.setFullDescription("com.sellsphere.admin.Test Full Description");
         product.setCreatedTime(LocalDateTime.now());
         product.setEnabled(true);
         product.setInStock(true);
@@ -62,7 +62,7 @@ class ProductRepositoryIntegrationTest {
         // Then
         assertNotNull(savedProduct);
         assertNotNull(savedProduct.getId());
-        assertEquals("Test Product", savedProduct.getName());
+        assertEquals("com.sellsphere.admin.Test Product", savedProduct.getName());
     }
 
     @Test
@@ -150,10 +150,10 @@ class ProductRepositoryIntegrationTest {
     void givenProductDetailsAndImages_WhenCascadePersist_ThenEntitiesArePersisted() {
         // Given
         Product product = new Product();
-        product.setName("Test Product");
+        product.setName("com.sellsphere.admin.Test Product");
         product.setAlias("testProduct");
-        product.setShortDescription("Test Short Description");
-        product.setFullDescription("Test Full Description");
+        product.setShortDescription("com.sellsphere.admin.Test Short Description");
+        product.setFullDescription("com.sellsphere.admin.Test Full Description");
         product.setCreatedTime(LocalDateTime.now());
         product.setEnabled(true);
         product.setInStock(true);

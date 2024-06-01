@@ -3655,7 +3655,7 @@ instanceKlass org/junit/jupiter/engine/discovery/predicates/IsNestedTestClass
 instanceKlass org/junit/jupiter/engine/discovery/predicates/IsPotentialTestContainer
 instanceKlass org/junit/jupiter/api/TestTemplate
 instanceKlass org/junit/jupiter/api/TestFactory
-instanceKlass org/junit/jupiter/api/Test
+instanceKlass org/junit/jupiter/api/com.sellsphere.admin.Test
 instanceKlass org/junit/jupiter/engine/discovery/predicates/IsTestableMethod
 instanceKlass org/junit/jupiter/engine/discovery/predicates/IsTestClassWithTests
 instanceKlass org/junit/platform/engine/support/discovery/EngineDiscoveryRequestResolver$Builder

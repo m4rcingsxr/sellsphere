@@ -43,7 +43,7 @@ class RestProductControllerIntegrationTest {
     void givenProductName_whenCheckUniqueness_thenReturnResult() throws Exception {
         // Given
         Integer productId = 1;
-        String productName = "Test Product";
+        String productName = "com.sellsphere.admin.Test Product";
 
         when(productService.isNameUnique(productId, productName)).thenReturn(true);
 
