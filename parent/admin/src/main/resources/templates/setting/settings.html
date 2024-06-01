@@ -50,6 +50,12 @@
                             aria-controls="payment-tab-pane" aria-selected="true">Payment settings
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="shipping-tab" data-bs-toggle="tab"
+                            data-bs-target="#shipping-tab-pane" type="button" role="tab"
+                            aria-controls="shipping-tab-pane" aria-selected="true">Shipping settings
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="myTabContent">
@@ -65,6 +71,8 @@
                      id="mail-template-tab-pane" role="tabpanel" aria-labelledby="mail-template-tab" tabindex="0"></div>
                 <div th:insert="~{setting/payment_settings :: payment()}" class="tab-pane fade"
                      id="payment-tab-pane" role="tabpanel" aria-labelledby="payment-tab" tabindex="0"></div>
+                <div th:insert="~{setting/shipping_settings :: shipping()}" class="tab-pane fade"
+                     id="shipping-tab-pane" role="tabpanel" aria-labelledby="shipping-tab" tabindex="0"></div>
             </div>
         </form>
 

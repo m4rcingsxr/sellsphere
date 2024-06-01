@@ -172,6 +172,4 @@ public class StripeCheckoutService {
     // Refunds
     // https://docs.stripe.com/tax/custom#reversals - refund tax transaction - or partially refund!
 
-
-
 }

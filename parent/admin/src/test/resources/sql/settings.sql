@@ -49,3 +49,6 @@ INSERT INTO settings (setting_key, value, category)
 VALUES ('PAYPAL_BASE_URL', 'https://api-m.sandbox.paypal.com', 'PAYMENT'),
        ('PAYPAL_CLIENT_ID', 'dummy_client_id', 'PAYMENT'),
        ('PAYPAL_CLIENT_SECRET', 'dummy_client_secret', 'PAYMENT');
+
+INSERT INTO settings (setting_key, value, category)
+VALUES ('EASYSHIP_SENDER_ADDRESS_ID', '75eea134-87b8-4a25-92a2-a79613854fcb', 'SHIPPING')
