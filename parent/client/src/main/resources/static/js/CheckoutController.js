@@ -1,5 +1,4 @@
 // todo : select as 1st primary address always - if any address exist
-// todo : on change update view and payment element - to crate payment intent later
 
 
 class CheckoutController {
@@ -48,9 +47,11 @@ class CheckoutController {
                     stripeAddress.country = addresses[0].countryAlpha2;
                     delete stripeAddress.countryAlpha2;
 
+
                     return this.model.fetchShippingRates(addresses[0])
                         .then(ratesResponse => {
                             const rates = ratesResponse.rates;
+                            this.model.ratesResponse = ratesResponse;
 
                             const bestRate = rates.reduce((lowest, rate) => {
                                 return (rate.costRank < lowest.costRank) ? rate : lowest;
@@ -103,7 +104,7 @@ class CheckoutController {
     _initializeAddressElement(options) {
         return new Promise((resolve, reject) => {
             try {
-                this.addressElement =  this.elements.create('address', options);
+                this.addressElement = this.elements.create('address', options);
                 this.addressElement.mount('#address-element');
                 this._initializeChangeAddressEventListener();
                 resolve();
@@ -113,7 +114,7 @@ class CheckoutController {
         });
     }
 
-    _initializePaymentElement(currencyCode = undefined, amount = undefined) {
+    _initializePaymentElement() {
         return new Promise((resolve, reject) => {
             try {
                 const options = {
@@ -122,11 +123,6 @@ class CheckoutController {
                         defaultCollapsed: false,
                     }
                 };
-
-                if(amount && currencyCode) {
-                    options.currency = currencyCode;
-                    options.amount = amount;
-                }
 
                 this.paymentElement = this.elements.create('payment', options);
                 this.paymentElement.mount('#payment-element');
@@ -139,7 +135,7 @@ class CheckoutController {
 
     _initializeChangeAddressEventListener() {
         this.addressElement.on('change', async event => {
-            if(event.complete) {
+            if (event.complete) {
                 const address = event.value.address;
 
                 address.postalCode = address.postal_code;
@@ -147,8 +143,10 @@ class CheckoutController {
 
                 console.log(address);
 
-                const rateResponse = await this.model.fetchShippingRates(address);
-                const rates = rateResponse.rates;
+                const ratesResponse = await this.model.fetchShippingRates(address);
+                const rates = ratesResponse.rates;
+
+                this.model.ratesResponse = ratesResponse;
 
                 const bestRate = rates.reduce((lowest, rate) => {
                     return (rate.costRank < lowest.costRank) ? rate : lowest;
@@ -158,12 +156,15 @@ class CheckoutController {
                 const shippingCost = bestRate.totalCharge;
 
 
-
                 const calcResponse = await this.model.fetchCalculations(address, shippingCost);
                 this.model.calculationResponse = calcResponse;
                 this.view.renderSummary(calcResponse);
 
-                // update payment element
+                this.elements.update({
+                    mode: 'payment',
+                    amount: calcResponse.amountTotal,
+                    currency: calcResponse.currencyCode.toLowerCase(),
+                });
 
             }
         })
@@ -206,7 +207,7 @@ class CheckoutController {
 
             // Confirm the PaymentIntent using the details collected by the Payment Element
             const {error} = await this.stripe.confirmPayment({
-                elements : this.elements,
+                elements: this.elements,
                 clientSecret: clientSecret,
                 confirmParams: {
                     return_url: `http://localhost:8081${MODULE_URL}checkout/return`,
@@ -223,5 +224,122 @@ class CheckoutController {
                 // site first to authorize the payment, then redirected to the `return_url`.
             }
         });
+    }
+
+    initPaymentBtnAccordionListener() {
+        $("#payment-btn").on("click", event => {
+            event.preventDefault();
+
+            if (this.model.calculationResponse?.customerDetails?.address) {
+                const paymentAccordion = new bootstrap.Collapse('#checkout-payment-accordion', {
+                    toggle: true
+                });
+                paymentAccordion.show();
+            } else {
+                console.warn("specify address first!");
+            }
+        });
+    }
+
+
+    initSummaryBtnListener() {
+        $("#summary-button").on("click", event => {
+            event.preventDefault();
+
+            if (this.model.calculationResponse?.customerDetails?.address) {
+                const summaryAccordion = new bootstrap.Collapse('#checkout-summary-accordion', {
+                    toggle: true
+                });
+
+                this._loadSummaryAccordion();
+                summaryAccordion.show();
+            } else {
+                console.warn("specify address first!");
+            }
+        });
+    }
+
+    _loadSummaryAccordion() {
+        const $summary = $("#summary");
+        $summary.empty();
+
+        const cart = this.model.calculationResponse.cart;
+        console.log(cart);
+
+        let products = "";
+        cart.forEach((item) => {
+            products += `
+                <div class="row">
+                    <div class="col-sm-4">
+                        <img src="${item.product.mainImagePath}" alt="${item.product.name}" class="img-fluid"/>
+                    </div>
+                    <div class="col-sm-8">
+                        <h5>${item.product.name}</h5>
+                        <p>Quantity: ${item.quantity}</p>
+                        <span>${item.product.discountPrice}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        let rates = "";
+        this.model.ratesResponse.rates.forEach((rate, index) => {
+            console.log(index, rate);
+            rates += `
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault${index}" ${index === 0 ? 'checked' : ''} data-address-idx="${index}">
+                  <label class="form-check-label" for="flexRadioDefault${index}">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <img src="${rate.courierLogoUrl}" alt="courier logo" class="img-fluid"/>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="d-flex flex-column">
+                                <span class="text-success fs-7 fw-bolder">Delivery days ${rate.minDeliveryTime} - ${rate.maxDeliveryTime}</span>
+                                <span>${rate.courierName}</span>
+                                <span class="fs-7">(${rate.currency}) ${rate.totalCharge} - <span class="fw-lighter">Delivery</span></span>
+                            </div>
+                        </div>
+                    </div>
+                  </label>
+                </div>
+            `;
+        });
+
+
+        const html = `
+            <div class="row">
+                <div class="col-sm-8 row">
+                    ${products}
+                </div>
+                
+                <div class="col-sm-4 align-items-start">
+                    <span class="fw-bolder">Choose a delivery option:</span>
+                    <div class="d-flex flex-column gap-3 mt-2">
+                        ${rates}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        $summary.prepend(html);
+    }
+
+    initChangeCourierEvenListener() {
+        $("#summary").on("click", 'input[type="radio"]', async event => {
+            const rates = this.model.ratesResponse.rates;
+            const selectedRate = rates[event.target.dataset.addressIdx];
+
+            const currentAddress = this.model.calculationResponse.customerDetails.address;
+            this.model.calculationResponse = await this.model.fetchCalculations(currentAddress, selectedRate.totalCharge);
+
+            this.elements.update({
+                mode: 'payment',
+                amount: this.model.calculationResponse.amountTotal,
+                currency: this.model.calculationResponse.currencyCode.toLowerCase(),
+            });
+
+            this.view.renderSummary(this.model.calculationResponse);
+        })
     }
 }

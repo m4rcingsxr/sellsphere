@@ -65,8 +65,8 @@ public class CheckoutRestController {
         checkoutResponseBuilder.currencyCode(currency.getCode());
         checkoutResponseBuilder.unitAmount(currency.getUnitAmount());
         checkoutResponseBuilder.currencySymbol(currency.getSymbol());
-        checkoutResponseBuilder.products(
-                cart.stream().map(CartItem::getProduct).map(BasicProductDto::new).toList()
+        checkoutResponseBuilder.cart(
+                cart.stream().map(CartItemDto::new).toList()
         );
 
         return ResponseEntity.ok(checkoutResponseBuilder.build());

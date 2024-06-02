@@ -1,6 +1,7 @@
 package com.sellsphere.client.checkout;
 
 import com.sellsphere.common.entity.BasicProductDto;
+import com.sellsphere.common.entity.CartItem;
 import com.stripe.model.tax.Calculation;
 import lombok.*;
 
@@ -21,5 +22,5 @@ public class CheckoutResponse {
     private String currencyCode;
     private String currencySymbol;
 
-    private List<BasicProductDto> products;
+    private List<CartItemDto> cart;
 }

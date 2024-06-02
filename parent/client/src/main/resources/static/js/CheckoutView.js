@@ -16,20 +16,17 @@ class CheckoutView {
         const $subtotal = $("#subtotal");
         const $total = $(".total");
 
-
-        calcResponse.products.forEach(product => {
+        calcResponse.cart.forEach(cartItem => {
             const html = `
                      <div class="d-flex justify-content-between">
-                        <span class="">${product.name}</span>
-                        <span>(${calcResponse.currencySymbol}) ${product.discountPrice}</span>
+                        <span class="">${cartItem.product.name}</span>
+                        <span>(${calcResponse.currencySymbol}) ${cartItem.quantity * cartItem.product.discountPrice}</span>
                     </div>
                `;
             $products.append(html);
         });
 
-
         if(calcResponse.taxAmountInclusive) {
-            console.log(calcResponse);
             $total.text(`(${calcResponse.currencySymbol}) ${(calcResponse.amountTotal) / calcResponse.unitAmount}`);
             $subtotal.text(`(${calcResponse.currencySymbol}) ${(calcResponse.amountTotal - calcResponse.shippingCost.amount) / calcResponse.unitAmount}`);
 
