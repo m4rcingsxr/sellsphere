@@ -22,13 +22,13 @@
                 <div class="accordion" id="checkout-accordion">
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#checkout-accordion-collapseOne" aria-expanded="false"
-                                    aria-controls="checkout-accordion-collapseOne">
+                            <button id="address-accordion-btn" class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#checkout-address-accordion" aria-expanded="false"
+                                    aria-controls="checkout-address-accordion">
                                 Address
                             </button>
                         </h2>
-                        <div id="checkout-accordion-collapseOne" class="accordion-collapse collapse show"
+                        <div id="checkout-address-accordion" class="accordion-collapse collapse show"
                              data-bs-parent="#checkout-accordion">
                             <div class="accordion-body">
                                 <form id="address-form">
@@ -41,7 +41,7 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button id="payment-btn" class="accordion-button collapsed" type="button" data-bs-toggle="collapse">
+                            <button id="payment-accordion-btn" class="accordion-button collapsed" type="button" data-bs-toggle="collapse">
                                 Payment
                             </button>
                         </h2>
@@ -52,7 +52,6 @@
                                     <div id="payment-element">
                                         <!-- Elements will create form elements here -->
                                     </div>
-                                    <button class="btn btn-primary" id="submit">Pay</button>
                                     <div id="error-message">
                                         <!-- Display error message to your customers here -->
                                     </div>
@@ -119,6 +118,19 @@
                         <span class="fw-bolder">Total due</span>
                         <span class="total">123</span>
                     </div>
+
+                    <div class="d-flex mt-4">
+                        <button id="address-btn" class="btn btn-primary w-100 rounded-4">Continue to payment</button>
+                    </div>
+
+                    <div class="d-flex mt-4 d-none">
+                        <button id="payment-btn" class="btn btn-primary w-100 rounded-4">Review and shipping</button>
+                    </div>
+
+                    <div class="d-flex mt-4 d-none">
+                        <button id="place-order-btn" class=" btn btn-primary w-100 rounded-4">Place order</button>
+                    </div>
+
                 </div>
             </div>
 
@@ -141,8 +153,13 @@
         controller.initializeElements();
         controller.initSubmitPaymentEventListener();
         controller.initPaymentBtnAccordionListener();
-        controller.initSummaryBtnListener();
+        controller.initSummaryBtnAccordionListener();
         controller.initChangeCourierEvenListener();
+        controller.initContinueShipBtnListener();
+        controller.initContinuePaymentBtnListener();
+        controller.initPlaceOrderBtnListener()
+        controller.initAddressBtnAccordionListener();
+
     });
 </script>
 </body>

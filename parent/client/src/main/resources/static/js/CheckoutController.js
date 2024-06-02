@@ -170,19 +170,42 @@ class CheckoutController {
         })
     }
 
+    initPlaceOrderBtnListener() {
+        const placeOrderBtn = document.getElementById('place-order-btn');
+        if (placeOrderBtn) {
+            placeOrderBtn.addEventListener('click', event => {
+                event.preventDefault();
+                const form = document.getElementById('payment-form');
+                if (form) {
+                    form.dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}));
+                } else {
+                    console.error('Payment form not found.');
+                }
+            });
+        } else {
+            console.error('Place order button not found.');
+        }
+    }
+
     initSubmitPaymentEventListener() {
         const form = document.getElementById('payment-form');
-        const submitBtn = document.getElementById('submit');
+        const submitBtn = document.getElementById('place-order-btn');
+
+        if (!form || !submitBtn) {
+            console.error('Form or submit button not found.');
+            return;
+        }
 
         const handleError = (error) => {
             const messageContainer = document.querySelector('#error-message');
-            messageContainer.textContent = error.message;
+            if (messageContainer) {
+                messageContainer.textContent = error.message;
+            }
             submitBtn.disabled = false;
-        }
+        };
 
         form.addEventListener('submit', async (event) => {
-            // We don't want to let default form submission happen here,
-            // which would refresh the page.
+            // Prevent default form submission
             event.preventDefault();
 
             // Prevent multiple form submissions
@@ -200,36 +223,47 @@ class CheckoutController {
                 return;
             }
 
-            // Create the PaymentIntent and obtain clientSecret
-            const res = await this.model.createPaymentIntent();
+            try {
+                // Create the PaymentIntent and obtain clientSecret
+                const res = await this.model.createPaymentIntent();
+                const clientSecret = res.clientSecret;
 
-            const clientSecret = res.clientSecret;
+                // Confirm the PaymentIntent using the details collected by the Payment Element
+                const {error} = await this.stripe.confirmPayment({
+                    elements: this.elements,
+                    clientSecret: clientSecret,
+                    confirmParams: {
+                        return_url: `http://localhost:8081${MODULE_URL}checkout/return`,
+                    },
+                });
 
-            // Confirm the PaymentIntent using the details collected by the Payment Element
-            const {error} = await this.stripe.confirmPayment({
-                elements: this.elements,
-                clientSecret: clientSecret,
-                confirmParams: {
-                    return_url: `http://localhost:8081${MODULE_URL}checkout/return`,
-                },
-            });
-
-            if (error) {
-                // This point is only reached if there's an immediate error when
-                // confirming the payment. Show the error to your customer (for example, payment details incomplete)
+                if (error) {
+                    handleError(error);
+                }
+            } catch (error) {
                 handleError(error);
-            } else {
-                // Your customer is redirected to your `return_url`. For some payment
-                // methods like iDEAL, your customer is redirected to an intermediate
-                // site first to authorize the payment, then redirected to the `return_url`.
             }
         });
     }
 
+    initAddressBtnAccordionListener() {
+        $("#address-accordion-btn").on("click", event => {
+            $("#address-btn").parent().removeClass("d-none");
+            $("#place-order-btn").parent().addClass("d-none");
+            $("#payment-btn").parent().addClass("d-none");
+        })
+    }
+
+    // validate address
     initPaymentBtnAccordionListener() {
-        $("#payment-btn").on("click", event => {
+        $("#payment-accordion-btn").on("click", event => {
             event.preventDefault();
 
+            const $addressBtn = $("#address-btn");
+            $addressBtn.parent().addClass("d-none");
+            $("#place-order-btn").parent().addClass("d-none");
+
+            // validate address here
             if (this.model.calculationResponse?.customerDetails?.address) {
                 const paymentAccordion = new bootstrap.Collapse('#checkout-payment-accordion', {
                     toggle: true
@@ -238,13 +272,22 @@ class CheckoutController {
             } else {
                 console.warn("specify address first!");
             }
+
+            $("#payment-btn").parent().removeClass("d-none");
+
         });
     }
 
 
-    initSummaryBtnListener() {
+    initSummaryBtnAccordionListener() {
         $("#summary-button").on("click", event => {
             event.preventDefault();
+
+            const $paymentBtn = $("#payment-btn");
+            $paymentBtn.parent().addClass("d-none");
+            $("#address-btn").parent().addClass("d-none");
+
+            $("#place-order-btn").parent().removeClass("d-none");
 
             if (this.model.calculationResponse?.customerDetails?.address) {
                 const summaryAccordion = new bootstrap.Collapse('#checkout-summary-accordion', {
@@ -258,6 +301,48 @@ class CheckoutController {
             }
         });
     }
+
+    initContinueShipBtnListener() {
+        $("#address-btn").on("click", event => {
+            const $addressBtn = $("#address-btn");
+            $addressBtn.parent().addClass("d-none");
+            $("#place-order-btn").parent().addClass("d-none");
+
+            // validate address here
+            if (this.model.calculationResponse?.customerDetails?.address) {
+                const paymentAccordion = new bootstrap.Collapse('#checkout-payment-accordion', {
+                    toggle: true
+                });
+                paymentAccordion.show();
+            } else {
+                console.warn("specify address first!");
+            }
+
+            $("#payment-btn").parent().removeClass("d-none");
+        })
+    }
+
+    initContinuePaymentBtnListener() {
+        $("#payment-btn").on("click", event => {
+            const $paymentBtn = $("#payment-btn");
+            $paymentBtn.parent().addClass("d-none");
+            $("#address-btn").parent().addClass("d-none");
+
+            $("#place-order-btn").parent().removeClass("d-none");
+
+            if (this.model.calculationResponse?.customerDetails?.address) {
+                const summaryAccordion = new bootstrap.Collapse('#checkout-summary-accordion', {
+                    toggle: true
+                });
+
+                this._loadSummaryAccordion();
+                summaryAccordion.show();
+            } else {
+                console.warn("specify address first!");
+            }
+        });
+    }
+
 
     _loadSummaryAccordion() {
         const $summary = $("#summary");
