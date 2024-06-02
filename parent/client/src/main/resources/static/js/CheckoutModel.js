@@ -5,7 +5,23 @@ class CheckoutModel {
     }
 
     async fetchShippableAddresses() {
-        return await ajaxUtil.get(`${MODULE_URL}shipping/shippable-addresses`);
+        const addresses = await ajaxUtil.get(`${MODULE_URL}shipping/shippable-addresses`);
+
+        // const validatedAddresses = [];
+
+        // addresses.forEach(address => {
+        //     const isValid = await this.validateAddress({
+        //
+        //     });
+        //
+        //     if(isValid) {
+        //
+        //     } else {
+        //         // show address is not valid
+        //     }
+        // })
+
+        return addresses;
     }
 
     async fetchShippingRates(address) {
@@ -33,4 +49,17 @@ class CheckoutModel {
         });
     }
 
+    async validateAddress(request) {
+        try {
+            // Perform POST request
+            return await ajaxUtil.post(`${MODULE_URL}addresses/validate`, request);
+
+        } catch (error) {
+            console.error('Error validating address:', error);
+        }
+    }
+
 }
+
+
+

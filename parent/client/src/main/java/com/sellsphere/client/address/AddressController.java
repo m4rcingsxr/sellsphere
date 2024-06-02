@@ -58,7 +58,7 @@ public class AddressController {
 
         model.addAttribute("customer", customer);
         model.addAttribute("countryList", countryList);
-        model.addAttribute("address", new Address());
+        model.addAttribute("address", new AddressValidationRequest());
 
         return ADDRESSES_URL;
     }

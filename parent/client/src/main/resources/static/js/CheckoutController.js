@@ -134,40 +134,68 @@ class CheckoutController {
     }
 
     _initializeChangeAddressEventListener() {
+
+        // fix too many request - on every character change return not valid response
         this.addressElement.on('change', async event => {
             if (event.complete) {
+                console.log(event.target);
+
+                // validate address here
                 const address = event.value.address;
 
-                address.postalCode = address.postal_code;
-                address.countryAlpha2 = address.country;
+                const addressLines = [];
 
-                console.log(address);
+                if (address.line1) addressLines.push(address.line1);
+                if (address.line2) addressLines.push(address.line2);
 
-                const ratesResponse = await this.model.fetchShippingRates(address);
-                const rates = ratesResponse.rates;
-
-                this.model.ratesResponse = ratesResponse;
-
-                const bestRate = rates.reduce((lowest, rate) => {
-                    return (rate.costRank < lowest.costRank) ? rate : lowest;
-                }, rates[0]);
-
-                // Get the totalCharge from the best rate
-                const shippingCost = bestRate.totalCharge;
-
-
-                const calcResponse = await this.model.fetchCalculations(address, shippingCost);
-                this.model.calculationResponse = calcResponse;
-                this.view.renderSummary(calcResponse);
-
-                this.elements.update({
-                    mode: 'payment',
-                    amount: calcResponse.amountTotal,
-                    currency: calcResponse.currencyCode.toLowerCase(),
+                const isValid = await this.model.validateAddress({
+                    "address": {
+                        regionCode: address.country,
+                        postalCode:
+                        address.postal_code,
+                        locality:
+                        address.city,
+                        addressLines,
+                    }
                 });
 
+                if (isValid) {
+                    address.postalCode = address.postal_code;
+                    address.countryAlpha2 = address.country;
+
+                    console.log(address);
+
+                    const ratesResponse = await this.model.fetchShippingRates(address);
+                    const rates = ratesResponse.rates;
+
+                    this.model.ratesResponse = ratesResponse;
+
+                    const bestRate = rates.reduce((lowest, rate) => {
+                        return (rate.costRank < lowest.costRank) ? rate : lowest;
+                    }, rates[0]);
+
+                    // Get the totalCharge from the best rate
+                    const shippingCost = bestRate.totalCharge;
+
+                    const calcResponse = await this.model.fetchCalculations(address, shippingCost);
+                    this.model.calculationResponse = calcResponse;
+                    this.view.renderSummary(calcResponse);
+
+                    this.elements.update({
+                        mode: 'payment',
+                        amount: calcResponse.amountTotal,
+                        currency: calcResponse.currencyCode.toLowerCase(),
+                    });
+
+                    $("#address-btn").removeClass("d-none");
+                    $("#address-error").addClass("d-none");
+                } else {
+                    this.model.calculationResponse = undefined;
+                    $("#address-btn").addClass("d-none");
+                    $("#address-error").removeClass("d-none");
+                }
             }
-        })
+        });
     }
 
     initPlaceOrderBtnListener() {
@@ -254,27 +282,25 @@ class CheckoutController {
         })
     }
 
-    // validate address
     initPaymentBtnAccordionListener() {
         $("#payment-accordion-btn").on("click", event => {
             event.preventDefault();
 
-            const $addressBtn = $("#address-btn");
-            $addressBtn.parent().addClass("d-none");
-            $("#place-order-btn").parent().addClass("d-none");
-
-            // validate address here
             if (this.model.calculationResponse?.customerDetails?.address) {
+                const $addressBtn = $("#address-btn");
+                $addressBtn.parent().addClass("d-none");
+                $("#place-order-btn").parent().addClass("d-none");
+
                 const paymentAccordion = new bootstrap.Collapse('#checkout-payment-accordion', {
                     toggle: true
                 });
                 paymentAccordion.show();
+
+                $("#payment-btn").parent().removeClass("d-none");
+
             } else {
                 console.warn("specify address first!");
             }
-
-            $("#payment-btn").parent().removeClass("d-none");
-
         });
     }
 
@@ -283,13 +309,13 @@ class CheckoutController {
         $("#summary-button").on("click", event => {
             event.preventDefault();
 
-            const $paymentBtn = $("#payment-btn");
-            $paymentBtn.parent().addClass("d-none");
-            $("#address-btn").parent().addClass("d-none");
-
-            $("#place-order-btn").parent().removeClass("d-none");
-
             if (this.model.calculationResponse?.customerDetails?.address) {
+                const $paymentBtn = $("#payment-btn");
+                $paymentBtn.parent().addClass("d-none");
+                $("#address-btn").parent().addClass("d-none");
+
+                $("#place-order-btn").parent().removeClass("d-none");
+
                 const summaryAccordion = new bootstrap.Collapse('#checkout-summary-accordion', {
                     toggle: true
                 });
@@ -304,12 +330,14 @@ class CheckoutController {
 
     initContinueShipBtnListener() {
         $("#address-btn").on("click", event => {
-            const $addressBtn = $("#address-btn");
-            $addressBtn.parent().addClass("d-none");
-            $("#place-order-btn").parent().addClass("d-none");
 
-            // validate address here
             if (this.model.calculationResponse?.customerDetails?.address) {
+                const $addressBtn = $("#address-btn");
+                $addressBtn.parent().addClass("d-none");
+                $("#place-order-btn").parent().addClass("d-none");
+                $("#payment-btn").parent().removeClass("d-none");
+
+
                 const paymentAccordion = new bootstrap.Collapse('#checkout-payment-accordion', {
                     toggle: true
                 });
@@ -318,7 +346,6 @@ class CheckoutController {
                 console.warn("specify address first!");
             }
 
-            $("#payment-btn").parent().removeClass("d-none");
         })
     }
 
