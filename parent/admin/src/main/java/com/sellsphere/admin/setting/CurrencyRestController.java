@@ -12,8 +12,10 @@ public class CurrencyRestController {
 
     private final CurrencyRepository currencyRepository;
 
+    // available currencies for selected supported countries for shipment and taxes
     @PostMapping("/currencies")
     public ResponseEntity<List<CurrencyDto>> findByCountries(@RequestBody List<Integer> countries) {
+
         List<CurrencyDto> currenciesByCountryId = currencyRepository
                 .findAllByCountryIds(countries)
                 .stream()

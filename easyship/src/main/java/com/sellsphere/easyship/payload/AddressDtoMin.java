@@ -17,6 +17,8 @@ public class AddressDtoMin {
     @SerializedName("country_alpha2")
     private String countryAlpha2;
 
+    private String currencyCode;
+
     @SerializedName("postal_code")
     private String postalCode;
 

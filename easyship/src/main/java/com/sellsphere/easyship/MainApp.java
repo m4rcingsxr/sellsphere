@@ -37,7 +37,7 @@ public class MainApp {
 // courier_logo url - might be null
 // courier_name - human readable
 // ddp_handling_fee : A fee added by the courier when they pay import taxes and duties on the sender's behalf. Null is returned when there is an insufficient subscription tier for feature taxes and duties.
-// currency - of rate
+// currency_conversion - of rate
 
 // total charge - most important!
 

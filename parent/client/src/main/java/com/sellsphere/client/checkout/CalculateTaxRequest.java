@@ -17,5 +17,6 @@ public class CalculateTaxRequest {
 
     private Address address;
     private BigDecimal shippingCost;
+    private String currencyCode;
 
 }

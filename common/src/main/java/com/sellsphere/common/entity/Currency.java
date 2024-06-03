@@ -11,8 +11,8 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * Represents a currency entity with name, symbol, and code.
- * This entity is used to store currency information in the database.
+ * Represents a currency_conversion entity with name, symbol, and code.
+ * This entity is used to store currency_conversion information in the database.
  */
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,7 +23,7 @@ import java.util.List;
 public class Currency extends IdentifiedEntity {
 
     /**
-     * The name of the currency.
+     * The name of the currency_conversion.
      * This field is mandatory and must not exceed 128 characters.
      * Example: "US Dollar", "Euro"
      */
@@ -33,7 +33,7 @@ public class Currency extends IdentifiedEntity {
     private String name;
 
     /**
-     * The symbol of the currency.
+     * The symbol of the currency_conversion.
      * This field is mandatory and must not exceed 8 characters.
      * Example: "$", "€"
      */
@@ -43,7 +43,7 @@ public class Currency extends IdentifiedEntity {
     private String symbol;
 
     /**
-     * The code of the currency.
+     * The code of the currency_conversion.
      * This field is mandatory and follows the ISO 4217 standard.
      * Example: "USD", "EUR"
      */

@@ -32,11 +32,16 @@ class CheckoutModel {
         return await ajaxUtil.get(`${MODULE_URL}shipping/supported-countries`);
     }
 
-    async fetchCalculations(address = undefined, shippingCost = undefined) {
+    async fetchCalculations(address = undefined, shippingCost = undefined, currencyCode = undefined) {
         let request = null;
         if(address && shippingCost) {
             request = {address, shippingCost};
+
+            if(currencyCode) {
+                request.currencyCode = currencyCode;
+            }
         }
+
 
         return await ajaxUtil.post(`${MODULE_URL}checkout/calculate`, request);
     }
@@ -49,6 +54,23 @@ class CheckoutModel {
         });
     }
 
+    async fetchExchangeRatesForClientCountry(targetCurrency) {
+
+
+        return await ajaxUtil.post(`${MODULE_URL}exchange-rates/amount/${this.calculationResponse.amountTotal}/${this.calculationResponse.unitAmount}/currency/${this.calculationResponse.currencyCode}/${targetCurrency}`);
+    }
+
+    async fetchCountryForClientIp() {
+        const clientIpJson = await this.fetchClientIp();
+        const response = await clientIpJson.json();
+
+        return await ajaxUtil.post(`${MODULE_URL}countries/country-ip`, {ip : response.ip});
+    }
+
+    async fetchClientIp() {
+        return await fetch('https://api.ipify.org?format=json');
+    }
+
     async validateAddress(request) {
         try {
             // Perform POST request
@@ -59,6 +81,9 @@ class CheckoutModel {
         }
     }
 
+    async fetchCountryData(countryCode) {
+        return await ajaxUtil.get(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+    }
 }
 
 

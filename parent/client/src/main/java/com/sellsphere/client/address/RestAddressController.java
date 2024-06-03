@@ -62,10 +62,6 @@ public class RestAddressController {
             throw new RuntimeException("Failed to fetch the verification result");
         }
 
-//        List<String> invalidFields = addressService.getInvalidFields(response);
-//        response.setInvalidFields(invalidFields);
-//        return ResponseEntity.ok(response);
-
         return ResponseEntity.ok(addressService.isValid(response));
     }
 

@@ -121,11 +121,20 @@ class CheckoutController {
                     layout: {
                         type: 'tabs',
                         defaultCollapsed: false,
+                    },
+                    fields: {
+                        billingDetails: {
+                            name: 'auto',
+                            email: 'auto',
+                            phone: 'auto',
+                            address: 'auto',
+                        }
                     }
                 };
 
                 this.paymentElement = this.elements.create('payment', options);
                 this.paymentElement.mount('#payment-element');
+                this._initializeChangePaymentElementEventListener();
                 resolve();
             } catch (error) {
                 reject(error);
@@ -164,6 +173,7 @@ class CheckoutController {
                     address.countryAlpha2 = address.country;
 
                     console.log(address);
+                    address.currencyCode = this.model.calculationResponse.currencyCode;
 
                     const ratesResponse = await this.model.fetchShippingRates(address);
                     const rates = ratesResponse.rates;
@@ -196,6 +206,16 @@ class CheckoutController {
                 }
             }
         });
+    }
+
+    _initializeChangePaymentElementEventListener() {
+        this.paymentElement.on('change', async event => {
+            if (event.complete) {
+                this.model.payment = event;
+            } else {
+                this.model.payment = undefined;
+            }
+        })
     }
 
     initPlaceOrderBtnListener() {
@@ -309,7 +329,7 @@ class CheckoutController {
         $("#summary-button").on("click", event => {
             event.preventDefault();
 
-            if (this.model.calculationResponse?.customerDetails?.address) {
+            if (this.model.calculationResponse?.customerDetails?.address && this.model.payment) {
                 const $paymentBtn = $("#payment-btn");
                 $paymentBtn.parent().addClass("d-none");
                 $("#address-btn").parent().addClass("d-none");
@@ -322,6 +342,8 @@ class CheckoutController {
 
                 this._loadSummaryAccordion();
                 summaryAccordion.show();
+
+                $(".currencies").removeClass("d-none");
             } else {
                 console.warn("specify address first!");
             }
@@ -357,17 +379,57 @@ class CheckoutController {
 
             $("#place-order-btn").parent().removeClass("d-none");
 
-            if (this.model.calculationResponse?.customerDetails?.address) {
+            if (this.model.calculationResponse?.customerDetails?.address && this.model.payment) {
                 const summaryAccordion = new bootstrap.Collapse('#checkout-summary-accordion', {
                     toggle: true
                 });
 
                 this._loadSummaryAccordion();
                 summaryAccordion.show();
+
+                const $currencies = $(".currencies");
+                this.loadCurrencyData()
+                    .then(() => {
+
+                        $currencies.removeClass("d-none");
+                    });
             } else {
                 console.warn("specify address first!");
             }
         });
+    }
+
+    async loadCurrencyData() {
+        const country = await this.model.fetchCountryForClientIp();
+
+        const exchangeRateResponse = await this.model.fetchExchangeRatesForClientCountry(country.currencyCode);
+
+        const targetCurrency = country.currencyCode;
+        const baseCurrency = exchangeRateResponse.base;
+        const exchangeRate = exchangeRateResponse.result['rate'];
+        const convertedPrice = exchangeRateResponse.result[country.currencyCode];
+
+        const countryData = await this.model.fetchCountryData(country.code);
+
+        let img = "";
+        if(countryData[0]) {
+            const src = countryData[0].flags.png;
+            const alt = countryData[0].flags.alt;
+            img = `
+                <img src="${src}" alt="${alt}" class="img-fluid border border-1" style="max-width: 40px; max-height: 25px"/>
+            `;
+
+        }
+
+        // get currency price from rest api
+        $(".currencies").removeClass("d-none");
+        $("#presentment-currency").empty().removeClass("d-none").append(
+            `
+                ${img}<span class="fw-bolder total">(${country.currencySymbol}) ${convertedPrice}</span>
+            `
+        ).data("currency-code", targetCurrency);
+        $("#settlement-currency").data("currency-code", baseCurrency);
+        $("#exchange-rate").text(`1 ${baseCurrency} = ${exchangeRate} ${targetCurrency} (includes 2% conversion fee)`);
     }
 
 
@@ -453,5 +515,35 @@ class CheckoutController {
 
             this.view.renderSummary(this.model.calculationResponse);
         })
+    }
+
+    initChangeCurrencyBtn() {
+        $("#currencies").on("click", "a", async event => {
+            event.preventDefault();
+            const $currency = $(event.currentTarget);
+            const currencyCode = $currency.data("currency-code");
+
+
+            const address = Object.assign({}, this.model.calculationResponse.customerDetails.address);
+            address.countryAlpha2 = address.country;
+            address.currencyCode = currencyCode;
+
+            this.model.ratesResponse = await this.model.fetchShippingRates(address);
+            const rates = this.model.ratesResponse.rates;
+
+            this._loadSummaryAccordion();
+
+            const rateId = $(`input[type="radio"]:checked`).data("address-idx");
+            const selectedRate = rates[rateId];
+
+            this.model.fetchCalculations(this.model.calculationResponse.customerDetails.address, selectedRate.totalCharge, currencyCode)
+                .then(response => {
+                    this.model.calculationResponse = response;
+
+                    this.view.renderSummary(response);
+
+                });
+        });
+
     }
 }

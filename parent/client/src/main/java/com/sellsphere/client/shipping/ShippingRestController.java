@@ -1,6 +1,7 @@
 package com.sellsphere.client.shipping;
 
 import com.sellsphere.client.customer.CustomerService;
+import com.sellsphere.client.setting.CurrencyRepository;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
@@ -12,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,7 +28,7 @@ public class ShippingRestController {
     @PostMapping("/rates")
     public ResponseEntity<RatesResponse> getAvailableRates(@RequestBody AddressDtoMin addressDto,
                                                            Principal principal)
-            throws CustomerNotFoundException {
+            throws CustomerNotFoundException, CurrencyNotFoundException {
 
         // todo: validate addresses before getting rates
         Customer customer = getAuthenticatedCustomer(principal);
@@ -45,14 +45,14 @@ public class ShippingRestController {
         Customer customer = getAuthenticatedCustomer(principal);
         List<Address> addresses = customer.getAddresses();
 
-        return ResponseEntity.ok(addresses.stream().map(address ->
-                AddressDtoMin.builder().fullName(
-                        address.getFullName()).state(
-                        address.getState()).line1(address.getAddressLine1()).line2(
-                        address.getAddressLine2()).postalCode(address.getPostalCode()).city(
-                        address.getCity()).countryAlpha2(
-                        address.getCountry().getCode()).build()
-        ).toList());
+        return ResponseEntity.ok(addresses.stream().map(
+                address -> AddressDtoMin.builder().fullName(address.getFullName()).state(
+                                address.getState()).line1(address.getAddressLine1()).line2(
+                                address.getAddressLine2()).postalCode(address.getPostalCode()).city(
+                                address.getCity()).countryAlpha2(
+                                address.getCountry().getCode())
+                                    .currencyCode(
+                                address.getCountry().getCurrency().getCode()).build()).toList());
     }
 
     @GetMapping("/supported-countries")

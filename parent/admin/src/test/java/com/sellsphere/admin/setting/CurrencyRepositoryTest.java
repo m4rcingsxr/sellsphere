@@ -59,8 +59,8 @@ class CurrencyRepositoryTest {
         Currency savedCurrency = currencyRepository.save(currency);
 
         // Then
-        assertNotNull(savedCurrency, "Saved currency should not be null");
-        assertNotNull(savedCurrency.getId(), "Saved currency should have an ID");
+        assertNotNull(savedCurrency, "Saved currency_conversion should not be null");
+        assertNotNull(savedCurrency.getId(), "Saved currency_conversion should have an ID");
         assertEquals("com.sellsphere.admin.Test Currency", savedCurrency.getName(), "Currency name should be 'com.sellsphere.admin.Test Currency'");
         assertEquals("T$", savedCurrency.getSymbol(), "Currency symbol should be 'T$'");
         assertEquals("TST", savedCurrency.getCode(), "Currency code should be 'TST'");
@@ -89,7 +89,7 @@ class CurrencyRepositoryTest {
         assertNotNull(currencies, "The list of currencies should not be null");
         assertFalse(currencies.isEmpty(), "The list of currencies should not be empty");
         assertEquals(13, currencies.size(), "The number of currencies should be 13");
-        assertEquals("Australian Dollar", currencies.get(0).getName(), "The first currency should be 'Australian Dollar'");
-        assertEquals("Vietnamese đồng", currencies.get(currencies.size() - 1).getName(), "The last currency should be 'Vietnamese đồng'");
+        assertEquals("Australian Dollar", currencies.get(0).getName(), "The first currency_conversion should be 'Australian Dollar'");
+        assertEquals("Vietnamese đồng", currencies.get(currencies.size() - 1).getName(), "The last currency_conversion should be 'Vietnamese đồng'");
     }
 }

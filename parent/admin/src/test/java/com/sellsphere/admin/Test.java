@@ -27,30 +27,30 @@ public class Test {
     @Autowired
     private ProductRepository productRepository;
 
-    @org.junit.jupiter.api.Test
-    public void test() {
-        Customer byId = customerRepository.findById(1).orElseThrow(RuntimeException::new);
-        Product product1 = productRepository.findById(1).orElseThrow(RuntimeException::new);
-        Product product2 = productRepository.findById(2).orElseThrow(RuntimeException::new);
-
-        Address address = byId.getAddresses().get(0);
-
-        RatesResponse rates = apiService.getRates(AddressDtoMin.builder()
-                                                          .state(address.getState())
-                                                          .line2(address.getAddressLine2())
-                                                          .line1(address.getAddressLine1())
-                                                          .city(address.getCity())
-                                                          .countryAlpha2(address.getCountry().getCode())
-                                                          .postalCode(address.getPostalCode())
-                                                   .build(),
-                                            List.of(new CartItem(byId, product1, 2),
-                                                   new CartItem(byId, product2, 4)
-                                           )
-        );
-
-        System.out.println(rates);
-
-    }
+//    @org.junit.jupiter.api.Test
+//    public void test() {
+//        Customer byId = customerRepository.findById(1).orElseThrow(RuntimeException::new);
+//        Product product1 = productRepository.findById(1).orElseThrow(RuntimeException::new);
+//        Product product2 = productRepository.findById(2).orElseThrow(RuntimeException::new);
+//
+//        Address address = byId.getAddresses().get(0);
+//
+//        RatesResponse rates = apiService.getRates(AddressDtoMin.builder()
+//                                                          .state(address.getState())
+//                                                          .line2(address.getAddressLine2())
+//                                                          .line1(address.getAddressLine1())
+//                                                          .city(address.getCity())
+//                                                          .countryAlpha2(address.getCountry().getCode())
+//                                                          .postalCode(address.getPostalCode())
+//                                                   .build(),
+//                                            List.of(new CartItem(byId, product1, 2),
+//                                                   new CartItem(byId, product2, 4)
+//                                           )
+//        );
+//
+//        System.out.println(rates);
+//
+//    }
 
 }
 

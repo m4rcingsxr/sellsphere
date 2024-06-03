@@ -7,6 +7,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.Address;
 import com.sellsphere.common.entity.CartItem;
+import com.sellsphere.common.entity.Currency;
 import com.sellsphere.easyship.payload.AddressDto;
 import com.sellsphere.easyship.payload.AddressDtoMin;
 import com.sellsphere.easyship.payload.AddressResponse;
@@ -100,6 +101,7 @@ public class ApiServiceImpl implements ApiService {
         units.addProperty("dimensions", "cm");
         units.addProperty("weight", "kg");
         shippingSettings.add("units", units);
+        shippingSettings.addProperty("output_currency", "EUR");
         jsonPayload.add("shipping_settings", shippingSettings);
 
         String payload = gson.toJson(jsonPayload);

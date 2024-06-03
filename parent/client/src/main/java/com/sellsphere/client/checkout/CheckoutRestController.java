@@ -7,8 +7,6 @@ import com.sellsphere.client.setting.SettingRepository;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
-import com.sellsphere.easyship.ApiService;
-import com.sellsphere.easyship.payload.AddressDtoMin;
 import com.sellsphere.payment.PaymentRequest;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.StripeException;
@@ -19,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,21 +37,40 @@ public class CheckoutRestController {
     private final SettingRepository settingRepository;
     private final CountryRepository countryRepository;
     private final CurrencyRepository currencyRepository;
-    private final ApiService apiService;
 
     @PostMapping("/calculate")
-    public ResponseEntity<CheckoutResponse> calculate(@RequestBody(required = false) CalculateTaxRequest request, Principal principal)
+    public ResponseEntity<CheckoutResponse> calculate(
+            @RequestBody(required = false) CalculateTaxRequest request, Principal principal)
             throws StripeException, CustomerNotFoundException, CurrencyNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
 
-        String currencyCode = settingService.getCurrencyCode();
-        Currency currency = currencyRepository.findByCode(currencyCode).orElseThrow(CurrencyNotFoundException::new);
+        String baseCurrencyCode = settingService.getCurrencyCode();
+
+        String currencyCode = baseCurrencyCode;
+
+        if (request != null && request.getCurrencyCode() != null) {
+            currencyCode = request.getCurrencyCode();
+        }
+
+        Currency currency = currencyRepository.findByCode(currencyCode).orElseThrow(
+                CurrencyNotFoundException::new);
 
         var checkoutResponseBuilder = CheckoutResponse.builder();
 
-        if(request != null) {
-            Calculation calculation = stripeService.calculateTax(cart, request.getAddress(),  request.getShippingCost(), currency);
+        if (request != null) {
+            Calculation calculation = stripeService.calculateTax(cart, request.getAddress(),
+                                                                 request.getShippingCost(), baseCurrencyCode, currency
+            );
+
+            // handle 3 decimal currencies 5.124 KWD -> 5124 -> 5200/5300
+            if (currency.getUnitAmount() == 1000) {
+                BigDecimal value = BigDecimal.valueOf(calculation.getAmountTotal());
+                BigDecimal hundred = BigDecimal.valueOf(100);
+                BigDecimal divided = value.divide(hundred, 0, RoundingMode.HALF_UP);
+                calculation.setAmountTotal(divided.multiply(hundred).longValue());
+            }
+
             checkoutResponseBuilder
                     .amountTotal(calculation.getAmountTotal())
                     .taxAmountInclusive(calculation.getTaxAmountInclusive())
@@ -60,7 +79,6 @@ public class CheckoutRestController {
         } else {
             checkoutResponseBuilder.amountTotal(stripeService.getAmountTotal(cart));
         }
-
 
         checkoutResponseBuilder.currencyCode(currency.getCode());
         checkoutResponseBuilder.unitAmount(currency.getUnitAmount());
@@ -74,9 +92,13 @@ public class CheckoutRestController {
 
 
     @PostMapping("/create-payment-intent")
-    public ResponseEntity<Map<String, String>> createPaymentIntent(@RequestBody PaymentRequest request)
-            throws StripeException, CurrencyNotFoundException {
-        PaymentIntent paymentIntent = stripeService.createPaymentIntent(request.getAmountTotal(), request.getCurrencyCode(), request.getCustomerDetails());
+    public ResponseEntity<Map<String, String>> createPaymentIntent(
+            @RequestBody PaymentRequest request)
+            throws StripeException {
+        PaymentIntent paymentIntent = stripeService.createPaymentIntent(request.getAmountTotal(),
+                                                                        request.getCurrencyCode(),
+                                                                        request.getCustomerDetails()
+        );
 
         Map<String, String> map = new HashMap();
         map.put("clientSecret", paymentIntent.getClientSecret());
