@@ -98,36 +98,4 @@ public class AddressService {
         }
     }
 
-
-    public boolean isValid(AddressValidationResponse response) {
-        AddressValidationResponse.Result result = response.getResult();
-
-        if (result == null || result.getVerdict() == null || result.getAddress() == null) {
-            return false;
-        }
-
-        AddressValidationResponse.Result.Verdict verdict = result.getVerdict();
-        List<AddressValidationResponse.Result.Address.AddressComponent> components = result.getAddress().getAddressComponents();
-
-        boolean inputGranularityValid = verdict.getInputGranularity().equals("PREMISE") ||
-                (verdict.getInputGranularity().equals("SUB_PREMISE") &&
-                        verdict.getValidationGranularity().equals("PREMISE"));
-
-        boolean addressComplete = verdict.isAddressComplete();
-
-        if (!inputGranularityValid || !addressComplete) {
-            return false;
-        }
-
-        boolean hasUnconfirmedComponents = verdict.isHasUnconfirmedComponents();
-        if (hasUnconfirmedComponents) {
-            return components.stream()
-                    .allMatch(component -> component.getComponentType().equals("subpremise") &&
-                            component.getConfirmationLevel().equals("UNCONFIRMED_BUT_PLAUSIBLE") ||
-                            component.getConfirmationLevel().equals("CONFIRMED"));
-        }
-
-        return true;
-    }
-
 }

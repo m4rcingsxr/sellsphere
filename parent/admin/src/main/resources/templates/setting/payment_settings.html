@@ -8,18 +8,5 @@
             </select>
         </div>
 
-        <label class="col-form-label col-sm-4">
-            Allow payments in countries
-            <a href="#" id="tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom"
-               data-bs-html="true" data-bs-title="<p>You must register before collecting tax, read more about how to register tax <a href='https://docs.stripe.com/tax/supported-countries/european-union'>here</a></p>"><i class="fa-regular fa-circle-question"></i></a>
-        </label>
-
-        <div class="col-sm-8">
-            <select id="supported-countries" multiple size="20"
-                    style="width: 100% !important;">
-                <option th:each="country : ${countryList}" th:value="${country.id}" th:text="${country.name}"></option>
-            </select>
-        </div>
-
     </div>
 </div>

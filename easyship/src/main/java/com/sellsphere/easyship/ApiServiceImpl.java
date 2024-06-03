@@ -1,13 +1,10 @@
 package com.sellsphere.easyship;
 
-
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.sellsphere.common.entity.Address;
 import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.common.entity.Currency;
 import com.sellsphere.easyship.payload.AddressDto;
 import com.sellsphere.easyship.payload.AddressDtoMin;
 import com.sellsphere.easyship.payload.AddressResponse;

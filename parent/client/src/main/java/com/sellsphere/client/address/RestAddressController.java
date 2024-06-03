@@ -7,7 +7,6 @@ import com.sellsphere.easyship.payload.AddressDtoMin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.security.Principal;
 import java.util.List;
@@ -17,10 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RestAddressController {
 
-
-    private final String apiKey = System.getenv("GOOGLE_VALIDATION_KEY");
     private final CustomerService customerService;
-    private final AddressService addressService;
+    private final AddressValidationService validationService;
 
     @GetMapping
     public ResponseEntity<List<AddressDtoMin>> getAddresses(Principal principal)
@@ -35,34 +32,12 @@ public class RestAddressController {
     }
 
 
+    // simple validation true/false
     @PostMapping("/validate")
     public ResponseEntity<Boolean> validateAddress(
             @RequestBody AddressValidationRequest addressRequest) {
-        String url = "https://addressvalidation.googleapis.com/v1:validateAddress?key=" + apiKey;
-
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<AddressValidationRequest> requestEntity = new HttpEntity<>(addressRequest,
-                                                                              headers
-        );
-
-        ResponseEntity<AddressValidationResponse> responseEntity = restTemplate.exchange(url,
-                                                                                         HttpMethod.POST,
-                                                                                         requestEntity,
-                                                                                         AddressValidationResponse.class
-        );
-
-        AddressValidationResponse response = responseEntity.getBody();
-
-
-        if (response == null) {
-            throw new RuntimeException("Failed to fetch the verification result");
-        }
-
-        return ResponseEntity.ok(addressService.isValid(response));
+        boolean addressValid = validationService.isAddressValid(addressRequest);
+        return ResponseEntity.ok(addressValid);
     }
 
 

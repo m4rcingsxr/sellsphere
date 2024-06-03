@@ -83,11 +83,13 @@
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
+<script type="text/javascript" th:src="@{/js/tooltip.js}"></script>
+<script type="text/javascript" th:src="@{/js/settings_payment.js}"></script>
+<script type="text/javascript" th:src="@{/js/settings_overview.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_common.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_country.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_state.js}"></script>
 <script type="text/javascript" th:src="@{/js/settings_mail_template.js}"></script>
-<script type="text/javascript" th:src="@{/js/settings_payment.js}"></script>
 <script type="text/javascript">
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const WIDTH = 700;

@@ -7,7 +7,6 @@ class CheckoutController {
         this.model = model;
         this.view = view;
 
-        // Bind methods to ensure correct 'this' context
         this.initializeElements = this.initializeElements.bind(this);
         this._initializeStripeElements = this._initializeStripeElements.bind(this);
         this._initializeAddressElement = this._initializeAddressElement.bind(this);
