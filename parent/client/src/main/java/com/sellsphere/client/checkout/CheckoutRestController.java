@@ -9,6 +9,7 @@ import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.payment.PaymentRequest;
 import com.sellsphere.payment.StripeCheckoutService;
+import com.sellsphere.payment.payload.CalculationRequest;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
@@ -38,9 +39,10 @@ public class CheckoutRestController {
     private final CountryRepository countryRepository;
     private final CurrencyRepository currencyRepository;
 
+    // calculate for products and address
     @PostMapping("/calculate")
-    public ResponseEntity<CheckoutResponse> calculate(
-            @RequestBody(required = false) CalculateTaxRequest request, Principal principal)
+    public ResponseEntity<CheckoutResponse> calculateWithAddress(
+            @RequestBody CalculationRequest request, Principal principal)
             throws StripeException, CustomerNotFoundException, CurrencyNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
@@ -60,7 +62,8 @@ public class CheckoutRestController {
 
         if (request != null) {
             Calculation calculation = stripeService.calculateTax(cart, request.getAddress(),
-                                                                 request.getShippingCost(), baseCurrencyCode, currency
+                                                                 request.getShippingCost(),
+                                                                 baseCurrencyCode, currency, request.getExchangeRate()
             );
 
             // handle 3 decimal currencies 5.124 KWD -> 5124 -> 5200/5300
@@ -77,7 +80,7 @@ public class CheckoutRestController {
                     .shippingCost(calculation.getShippingCost())
                     .customerDetails(calculation.getCustomerDetails());
         } else {
-            checkoutResponseBuilder.amountTotal(stripeService.getAmountTotal(cart));
+            checkoutResponseBuilder.amountTotal(stripeService.getAmountTotal(cart, currency));
         }
 
         checkoutResponseBuilder.currencyCode(currency.getCode());
@@ -88,6 +91,28 @@ public class CheckoutRestController {
         );
 
         return ResponseEntity.ok(checkoutResponseBuilder.build());
+    }
+
+    // calculate only for the products - for base currency code
+    @PostMapping("/calculate-basic")
+    public ResponseEntity<CheckoutResponse> calculate(Principal principal)
+            throws CustomerNotFoundException, CurrencyNotFoundException {
+        Customer customer = getAuthenticatedCustomer(principal);
+        List<CartItem> cart = cartItemRepository.findByCustomer(customer);
+
+        String baseCurrencyCode = settingService.getCurrencyCode();
+        Currency currency = currencyRepository.findByCode(baseCurrencyCode)
+                .orElseThrow(CurrencyNotFoundException::new);
+
+        return ResponseEntity.ok(
+                CheckoutResponse.builder()
+                        .amountTotal(stripeService.getAmountTotal(cart, currency))
+                        .currencyCode(currency.getCode())
+                        .unitAmount(currency.getUnitAmount())
+                        .currencySymbol(currency.getSymbol())
+                        .cart(cart.stream().map(CartItemDto::new).toList())
+                        .build()
+        );
     }
 
 

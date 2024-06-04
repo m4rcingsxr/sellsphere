@@ -31,7 +31,7 @@ public class StripeProductService {
      *
      * @param existingProductId The ID of the existing product to be updated. Can be null.
      * @param newProduct        The new product details to be created in Stripe.
-     * @param currency          The currency_conversion information for setting the price.
+     * @param currency          The currencyconversion information for setting the price.
      * @return The created or updated Stripe {@code Product}.
      * @throws StripeException If an error occurs during the Stripe API interaction.
      */

@@ -5,10 +5,9 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.easyship.payload.AddressDto;
-import com.sellsphere.easyship.payload.AddressDtoMin;
-import com.sellsphere.easyship.payload.AddressResponse;
-import com.sellsphere.easyship.payload.RatesResponse;
+import com.sellsphere.easyship.payload.EasyshipAddressDTO;
+import com.sellsphere.easyship.payload.EasyshipAddressResponse;
+import com.sellsphere.easyship.payload.EasyshipRateResponse;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -35,8 +34,8 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
-    public RatesResponse getRates(AddressDtoMin recipient, List<CartItem> cart) {
-        WebTarget target = client.target(BASE_URL).path("/rates");
+    public EasyshipRateResponse getRates(Integer pageNum, EasyshipAddressDTO recipient, List<CartItem> cart) {
+        WebTarget target = client.target(BASE_URL).path("/rates").queryParam("page", pageNum).queryParam("sortBy", "cost_rank");
 
         JsonObject jsonPayload = new JsonObject();
 
@@ -103,8 +102,6 @@ public class ApiServiceImpl implements ApiService {
 
         String payload = gson.toJson(jsonPayload);
 
-        System.out.println(payload);
-
         Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON)
                 .header("Authorization", BEARER_TOKEN)
                 .header("User-Agent", "Mozilla/5.0")
@@ -115,10 +112,10 @@ public class ApiServiceImpl implements ApiService {
         return getRatesResponseFromResponse(response);
     }
 
-    private RatesResponse getRatesResponseFromResponse(Response response) {
+    private EasyshipRateResponse getRatesResponseFromResponse(Response response) {
         if (response.getStatus() == 200 || response.getStatus() == 201) {
             String jsonResponse = response.readEntity(String.class);
-            return gson.fromJson(jsonResponse, RatesResponse.class);
+            return gson.fromJson(jsonResponse, EasyshipRateResponse.class);
         } else {
             String error = response.readEntity(String.class);
             throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
@@ -141,7 +138,7 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
-    public String updateSender(AddressDto addressDto) {
+    public String updateSender(EasyshipAddressDTO addressDto) {
         int currentPage = 0;
         boolean senderFound = false;
         String nextPage = null;
@@ -158,10 +155,10 @@ public class ApiServiceImpl implements ApiService {
                     .header("Accept-Language", "en-US,en;q=0.5");
 
             Response getResponse = getInvocation.get();
-            AddressResponse addressResponse = getAddressPageResponse(getResponse);
+            EasyshipAddressResponse addressResponse = getAddressPageResponse(getResponse);
 
             // Check if a sender address exists in the current page
-            for (AddressDto address : addressResponse.getAddresses()) {
+            for (EasyshipAddressDTO address : addressResponse.getAddresses()) {
                 if (address.getDefaultFor().isSender()) {
                     // Delete the sender address
                     WebTarget deleteTarget = client.target(BASE_URL).path("/addresses/" + address.getId());
@@ -190,15 +187,15 @@ public class ApiServiceImpl implements ApiService {
                 .header("User-Agent", "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
-        String payload = gson.toJson(addressDto, AddressDto.class);
+        String payload = gson.toJson(addressDto, EasyshipAddressDTO.class);
         Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON));
         return processResponse(postResponse);
     }
 
-    private AddressResponse getAddressPageResponse(Response response) {
+    private EasyshipAddressResponse getAddressPageResponse(Response response) {
         if (response.getStatus() == 200) {
             String jsonResponse = response.readEntity(String.class);
-            Type listType = new TypeToken<AddressResponse>() {}.getType();
+            Type listType = new TypeToken<EasyshipAddressResponse>() {}.getType();
             return gson.fromJson(jsonResponse, listType);
         } else {
             String error = response.readEntity(String.class);
@@ -207,10 +204,10 @@ public class ApiServiceImpl implements ApiService {
     }
 
 
-    private List<AddressDto> getAddressesFromResponse(Response response) {
+    private List<EasyshipAddressDTO> getAddressesFromResponse(Response response) {
         if (response.getStatus() == 200) {
             String jsonResponse = response.readEntity(String.class);
-            Type listType = new TypeToken<List<AddressDto>>() {}.getType();
+            Type listType = new TypeToken<List<EasyshipAddressDTO>>() {}.getType();
             return gson.fromJson(jsonResponse, listType);
         } else {
             String error = response.readEntity(String.class);

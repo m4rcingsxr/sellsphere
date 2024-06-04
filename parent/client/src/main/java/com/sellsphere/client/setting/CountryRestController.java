@@ -1,6 +1,6 @@
 package com.sellsphere.client.setting;
 
-import com.sellsphere.client.currency_conversion.IpInfoResponse;
+import com.sellsphere.client.currencyconversion.IpInfoResponse;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.payload.CountryDTO;
 import com.sellsphere.common.entity.CountryNotFoundException;

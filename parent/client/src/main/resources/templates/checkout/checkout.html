@@ -23,8 +23,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button id="address-accordion-btn" class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#checkout-address-accordion" aria-expanded="false"
-                                    aria-controls="checkout-address-accordion">
+                                     aria-expanded="false">
                                 Address
                             </button>
                         </h2>
@@ -61,7 +60,7 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button id="summary-button"  class="accordion-button collapsed" type="button" data-bs-toggle="collapse">
+                            <button id="summary-accordion-btn"  class="accordion-button collapsed" type="button" data-bs-toggle="collapse">
                                 Summary
                             </button>
                         </h2>
@@ -80,74 +79,77 @@
             </div>
 
             <div class="col-sm-4 align-items-start">
+                <div  class="d-flex flex-column gap-2 border border-1 shadow-sm rounded-2 p-4">
 
-                <div class="d-flex flex-column gap-2 border border-1 shadow-sm rounded-2 p-4">
                     <h3 class="total fw-bold">123</h3>
 
-                    <div id="products" class="d-flex flex-column gap-2">
+                    <div id="products" class="d-flex flex-column gap-2"></div>
 
+                    <div id="summary-nav">
+
+                        <hr class="text-dark-emphasis"/>
+
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bolder">Subtotal</span>
+                            <span id="subtotal">123</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="">Shipping</span>
+                            <span id="shipping">123</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-lighter">Shipping tax</span>
+                            <span id="shipping-tax">123</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-lighter">Tax</span>
+                            <span id="tax">123</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="">Total tax</span>
+                            <span id="total-tax">123</span>
+                        </div>
+
+                        <hr class="text-dark-emphasis"/>
+
+                        <div id="currencies" class="d-flex gap-3 flex-wrap currencies">
+                            <a id="presentment-currency" class="d-none border border-1 rounded-2 d-flex p-3 gap-3 link-dark link-underline link-underline-opacity-0" href="#">
+
+                            </a>
+                            <!-- Prepend currencies here -->
+                            <a id="settlement-currency" class="border border-2 border-dark rounded-2 d-flex p-3 gap-3 link-dark link-underline link-underline-opacity-0 " href="#">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" class="img-fluid border border-1" style="max-width: 40px; max-height: 25px"/>
+                                <span id="settlement-total" class="fw-bolder"></span>
+                            </a>
+                        </div>
+                        <div class="currencies">
+                            <span class="text-light-emphasis fs-7" id="exchange-rate">1 EUR = 4.30 PLN (includes 2% conversion fee)</span>
+                        </div>
+
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <span class="fw-bolder">Total due</span>
+                            <span class="total">123</span>
+                        </div>
+
+                        <div class="d-flex mt-4 justify-content-center d-none">
+                            <button id="address-btn" class="btn btn-primary w-100 rounded-4">Continue to payment</button>
+                        </div>
+
+                        <div class="d-flex mt-4 d-none">
+                            <button id="payment-btn" class="btn btn-primary w-100 rounded-4">Review and shipping</button>
+                        </div>
+
+                        <div class="d-flex mt-4 d-none">
+                            <button id="place-order-btn" class=" btn btn-primary w-100 rounded-4">Place order</button>
+                        </div>
                     </div>
 
-
-                    <hr class="text-dark-emphasis"/>
-
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-bolder">Subtotal</span>
-                        <span id="subtotal">123</span>
+                    <div id="address-error" class="d-none">
+                        <span class="text-danger">Please provide correct address to continue</span>
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="">Shipping</span>
-                        <span id="shipping">123</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-lighter">Shipping tax</span>
-                        <span id="shipping-tax">123</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-lighter">Tax</span>
-                        <span id="tax">123</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="">Total tax</span>
-                        <span id="total-tax">123</span>
-                    </div>
-
-                    <hr class="text-dark-emphasis"/>
-
-                    <div id="currencies" class="d-flex gap-3 flex-wrap currencies">
-                        <a id="presentment-currency" class="d-none border border-1 rounded-2 d-flex p-3 gap-3 link-dark link-underline link-underline-opacity-0" href="#">
-
-                        </a>
-                        <!-- Prepend currencies here -->
-                        <a id="settlement-currency" class="border border-2 border-dark rounded-2 d-flex p-3 gap-3 link-dark link-underline link-underline-opacity-0 " href="#">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" class="img-fluid border border-1" style="max-width: 40px; max-height: 25px"/>
-                            <span id="settlement-total" class="fw-bolder"></span>
-                        </a>
-                    </div>
-                    <div class="currencies">
-                        <span class="text-light-emphasis fs-7" id="exchange-rate">1 EUR = 4.30 PLN (includes 2% conversion fee)</span>
-                    </div>
-
-
-                    <div class="d-flex justify-content-between mt-3">
-                        <span class="fw-bolder">Total due</span>
-                        <span class="total">123</span>
-                    </div>
-
-                    <div class="d-flex mt-4 justify-content-center">
-                        <button id="address-btn" class="btn btn-primary w-100 rounded-4 d-none">Continue to payment</button>
-                        <span id="address-error" class="text-danger text-center d-none">Please provide valid address</span>
-                    </div>
-
-                    <div class="d-flex mt-4 d-none">
-                        <button id="payment-btn" class="btn btn-primary w-100 rounded-4">Review and shipping</button>
-                    </div>
-
-                    <div class="d-flex mt-4 d-none">
-                        <button id="place-order-btn" class=" btn btn-primary w-100 rounded-4">Place order</button>
-                    </div>
-
                 </div>
+
             </div>
 
         </div>
@@ -165,18 +167,6 @@
         const view = new CheckoutView();
         const model = new CheckoutModel();
         window.controller = new CheckoutController(model, view);
-
-        controller.initializeElements();
-        controller.initSubmitPaymentEventListener();
-        controller.initPaymentBtnAccordionListener();
-        controller.initSummaryBtnAccordionListener();
-        controller.initChangeCourierEvenListener();
-        controller.initContinueShipBtnListener();
-        controller.initContinuePaymentBtnListener();
-        controller.initPlaceOrderBtnListener()
-        controller.initAddressBtnAccordionListener();
-        controller.initChangeCurrencyBtn();
-
     });
 </script>
 </body>

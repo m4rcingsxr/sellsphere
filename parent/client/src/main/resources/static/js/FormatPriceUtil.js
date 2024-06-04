@@ -7,7 +7,7 @@ const formatPriceUtil = {
 
         let formattedPrice = '';
 
-        // Add currency_conversion symbol before or after the price based on the currency_conversion symbol position
+        // Add currencyconversion symbol before or after the price based on the currencyconversion symbol position
         if (currencySettings.currencySymbolPosition === 'BEFORE_PRICE') {
             formattedPrice += currencySettings.currencySymbol;
         }
@@ -28,7 +28,7 @@ const formatPriceUtil = {
 
         formattedPrice += priceString;
 
-        // Add currency_conversion symbol after the price if required
+        // Add currencyconversion symbol after the price if required
         if (currencySettings.currencySymbolPosition === 'AFTER_PRICE') {
             formattedPrice += currencySettings.currencySymbol;
         }

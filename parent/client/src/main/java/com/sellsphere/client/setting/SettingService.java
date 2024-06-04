@@ -11,7 +11,7 @@ import static com.sellsphere.common.entity.SettingCategory.*;
 
 /**
  * Service class responsible for handling settings related operations.
- * This includes fetching general settings, email settings, payment settings, and currency_conversion information.
+ * This includes fetching general settings, email settings, payment settings, and currencyconversion information.
  */
 @Service
 @RequiredArgsConstructor
@@ -49,10 +49,10 @@ public class SettingService {
     }
 
     /**
-     * Retrieves the currency_conversion code based on the setting.
+     * Retrieves the currencyconversion code based on the setting.
      *
-     * @return the currency_conversion code
-     * @throws CurrencyNotFoundException if the currency_conversion is not found
+     * @return the currencyconversion code
+     * @throws CurrencyNotFoundException if the currencyconversion is not found
      */
     public String getCurrencyCode() throws CurrencyNotFoundException {
         Setting setting = repository.findByKey("CURRENCY_ID");

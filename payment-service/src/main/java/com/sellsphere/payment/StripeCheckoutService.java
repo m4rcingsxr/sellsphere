@@ -125,29 +125,17 @@ public class StripeCheckoutService {
 
     // cart, address, shipping cost - per item - calculate in this method
     // calculate it every time address is changed
-    // provide correct currency_conversion - user can dynamically change it
+    // provide correct currencyconversion - user can dynamically change it
     // verify if address is correct
     public Calculation calculateTax(List<CartItem> cart, Address address, BigDecimal shippingCost,
-                                    String baseCurrencyCode, Currency currency)
+                                    String baseCurrencyCode, Currency currency, BigDecimal proviedExchangeRate)
             throws StripeException {
         var params = CalculationCreateParams.builder();
 
         if (!baseCurrencyCode.equals(currency.getCode())) {
-            RestTemplate restTemplate = new RestTemplate();
-
-            // Use the new URL to get the exchange rate
-            String url = String.format("https://api.fastforex.io/fetch-multi?from=%s&to=%s&&api_key=%s",
-                                       baseCurrencyCode.toUpperCase(), currency.getCode().toUpperCase(), apiKey);
-
-            ExchangeRateResponse response = restTemplate.getForObject(url, ExchangeRateResponse.class);
-
-            assert response != null;
-            assert response.getResults() != null;
-            assert response.getResults().get(currency.getCode().toUpperCase()) != null;
 
             BigDecimal stripeExchangeFee = BigDecimal.valueOf(0.02);
-            BigDecimal exchangeRate = response.getResults().get(
-                    currency.getCode().toUpperCase()).multiply(
+            BigDecimal exchangeRate = proviedExchangeRate.multiply(
                     BigDecimal.ONE.add(stripeExchangeFee)).setScale(5, RoundingMode.HALF_UP);
 
             if(currency.getUnitAmount() == 1000) {
@@ -258,28 +246,24 @@ public class StripeCheckoutService {
         return Calculation.create(params.build());
     }
 
-    public long getAmountTotal(List<CartItem> cart) {
+    public long getAmountTotal(List<CartItem> cart, Currency currency) {
         long total = 0;
         for (CartItem cartItem : cart) {
             total += CalculationCreateParams.LineItem.builder()
-                    .setAmount
-                            (cartItem.getProduct().getDiscountPrice().multiply(
-                                    BigDecimal.valueOf(
-                                            100)).longValue())
-                    // 100 for now
-                    .setTaxBehavior
-                            (CalculationCreateParams.LineItem.TaxBehavior.INCLUSIVE)
-                    .setReference(
-                            String.valueOf(cartItem.getProduct().getId()))
-                    .setTaxCode
-                            (cartItem.getProduct().getTax().getId())
+                    .setAmount(
+                            cartItem.getProduct()
+                                    .getDiscountPrice()
+                                    .multiply(BigDecimal.valueOf(currency.getUnitAmount()))
+                                    .longValue()
+                    )
+                    .setTaxCode(cartItem.getProduct().getTax().getId())
                     .build().getAmount();
         }
 
         return total;
     }
 
-    // method to change currency_conversion based on location
+    // method to change currencyconversion based on location
 
     // FINISH TAX:
     // after the order is submitted create tax transaction

@@ -1,90 +1,79 @@
 class CheckoutModel {
-
     constructor() {
-
+        this.baseCalculation = null;
+        this.ratesResponse = null;
+        this.selectedCurrency = null;
     }
 
-    async fetchShippableAddresses() {
-        const addresses = await ajaxUtil.get(`${MODULE_URL}shipping/shippable-addresses`);
-
-        // const validatedAddresses = [];
-
-        // addresses.forEach(address => {
-        //     const isValid = await this.validateAddress({
-        //
-        //     });
-        //
-        //     if(isValid) {
-        //
-        //     } else {
-        //         // show address is not valid
-        //     }
-        // })
-
-        return addresses;
-    }
-
-    async fetchShippingRates(address) {
-        return await ajaxUtil.post(`${MODULE_URL}shipping/rates`, address);
-    }
-
-    async fetchShippableCountries() {
-        return await ajaxUtil.get(`${MODULE_URL}shipping/supported-countries`);
-    }
-
-    async fetchCalculations(address = undefined, shippingCost = undefined, currencyCode = undefined) {
-        let request = null;
-        if(address && shippingCost) {
-            request = {address, shippingCost};
-
-            if(currencyCode) {
-                request.currencyCode = currencyCode;
-            }
+    async getShippableCountries() {
+        try {
+            return await ajaxUtil.get(`${MODULE_URL}shipping/supported-countries`);
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
-
-
-        return await ajaxUtil.post(`${MODULE_URL}checkout/calculate`, request);
     }
 
-    async createPaymentIntent() {
-        return await ajaxUtil.post(`${MODULE_URL}checkout/create-payment-intent`, {
-            currencyCode : this.calculationResponse.currencyCode,
-            amountTotal : this.calculationResponse.amountTotal,
-            customerDetails : this.calculationResponse.customerDetails
-        });
+    async getCustomerAddresses() {
+        try {
+            return await ajaxUtil.get(`${MODULE_URL}addresses`);
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 
-    async fetchExchangeRatesForClientCountry(targetCurrency) {
-
-
-        return await ajaxUtil.post(`${MODULE_URL}exchange-rates/amount/${this.calculationResponse.amountTotal}/${this.calculationResponse.unitAmount}/currency/${this.calculationResponse.currencyCode}/${targetCurrency}`);
+    async getBasicCalculation() {
+        try {
+            return await ajaxUtil.post(`${MODULE_URL}checkout/calculate-basic`);
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 
-    async fetchCountryForClientIp() {
-        const clientIpJson = await this.fetchClientIp();
+    async getCalculation(request) {
+        try {
+            return await ajaxUtil.post(`${MODULE_URL}checkout/calculate`, request);
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async getShippingRates(address, page) {
+        try {
+            return await ajaxUtil.post(`${MODULE_URL}shipping/rates?page=${page}`, address);
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async validateAddress(addressRequest) {
+        try {
+            return await ajaxUtil.post(`${MODULE_URL}addresses/validate`, addressRequest);
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async getExchangeRatesForClientCountry(targetCurrency) {
+        return await ajaxUtil.post(`${MODULE_URL}exchange-rates/amount/${this.baseCalculation.amountTotal}/${this.baseCalculation.unitAmount}/currency/${this.baseCalculation.currencyCode}/${targetCurrency}`);
+    }
+
+    async getCountryForClientIp() {
+        const clientIpJson = await this.getClientIp();
         const response = await clientIpJson.json();
-
-        return await ajaxUtil.post(`${MODULE_URL}countries/country-ip`, {ip : response.ip});
+        return await ajaxUtil.post(`${MODULE_URL}countries/country-ip`, { ip: response.ip });
     }
 
-    async fetchClientIp() {
+    async getClientIp() {
         return await fetch('https://api.ipify.org?format=json');
     }
 
-    async validateAddress(request) {
-        try {
-            // Perform POST request
-            return await ajaxUtil.post(`${MODULE_URL}addresses/validate`, request);
-
-        } catch (error) {
-            console.error('Error validating address:', error);
-        }
-    }
-
-    async fetchCountryData(countryCode) {
+    async getCountryData(countryCode) {
         return await ajaxUtil.get(`https://restcountries.com/v3.1/alpha/${countryCode}`);
     }
 }
-
-
-

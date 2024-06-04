@@ -1,4 +1,4 @@
-package com.sellsphere.client.currency_conversion;
+package com.sellsphere.client.currencyconversion;
 
 import lombok.Getter;
 import lombok.Setter;
