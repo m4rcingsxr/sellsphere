@@ -1,6 +1,6 @@
 package com.sellsphere.client.product;
 
-import com.sellsphere.common.entity.BasicProductDto;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +29,9 @@ public class ProductRestController {
      * @return a list of ProductDTO objects
      */
     @PostMapping("/products")
-    public ResponseEntity<List<BasicProductDto>> getProductsByIds(
+    public ResponseEntity<List<BasicProductDTO>> getProductsByIds(
             @RequestBody List<Integer> productIds) {
         return ResponseEntity.ok(productService.getProductsByIds(productIds).stream().map(
-                BasicProductDto::new).toList());
+                BasicProductDTO::new).toList());
     }
 }

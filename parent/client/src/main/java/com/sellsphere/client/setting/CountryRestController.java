@@ -2,7 +2,7 @@ package com.sellsphere.client.setting;
 
 import com.sellsphere.client.currency_conversion.IpInfoResponse;
 import com.sellsphere.common.entity.Country;
-import com.sellsphere.common.entity.CountryDTO;
+import com.sellsphere.common.entity.payload.CountryDTO;
 import com.sellsphere.common.entity.CountryNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

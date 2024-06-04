@@ -1,5 +1,7 @@
-package com.sellsphere.common.entity;
+package com.sellsphere.common.entity.payload;
 
+import com.sellsphere.common.entity.Product;
+import com.sellsphere.common.entity.ProductDetailDto;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -16,7 +18,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BasicProductDto implements Serializable {
+public class BasicProductDTO implements Serializable {
 
     Integer id;
 
@@ -49,7 +51,7 @@ public class BasicProductDto implements Serializable {
 
     List<ProductDetailDto> details;
 
-    public BasicProductDto(Product other) {
+    public BasicProductDTO(Product other) {
         this.id = other.getId();
         this.name = other.getName();
         this.discountPrice = other.getDiscountPrice();

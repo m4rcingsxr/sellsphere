@@ -1,5 +1,6 @@
-package com.sellsphere.common.entity;
+package com.sellsphere.common.entity.payload;
 
+import com.sellsphere.common.entity.Country;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

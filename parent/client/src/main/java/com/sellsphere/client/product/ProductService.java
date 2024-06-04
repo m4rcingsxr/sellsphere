@@ -1,6 +1,6 @@
 package com.sellsphere.client.product;
 
-import com.sellsphere.common.entity.BasicProductDto;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetail;
 import com.sellsphere.common.entity.ProductNotFoundException;
@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -69,7 +68,7 @@ public class ProductService {
         // Build and return the response containing the products and additional pagination and
         // price details.
         return ProductPageResponse.builder().content(
-                productPage.map(BasicProductDto::new).toList()).page(
+                productPage.map(BasicProductDTO::new).toList()).page(
                 productPageRequest.getPageNum()).totalElements(
                 productPage.getTotalElements()).totalPages(productPage.getTotalPages()).minPrice(
                 Optional.of(maxProduct.get(0)).map(Product::getDiscountPrice).orElse(

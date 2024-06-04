@@ -1,6 +1,7 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.common.entity.*;
+import com.sellsphere.common.entity.payload.StateDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;

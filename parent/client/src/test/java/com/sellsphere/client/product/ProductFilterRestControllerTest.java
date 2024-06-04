@@ -1,7 +1,7 @@
 package com.sellsphere.client.product;
 
 import com.sellsphere.client.category.CategoryRepository;
-import com.sellsphere.common.entity.BasicProductDto;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.common.entity.Category;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +41,10 @@ class ProductFilterRestControllerTest {
         category.setId(1);
         when(categoryRepository.findByAliasAndEnabledIsTrue("category")).thenReturn(Optional.of(category));
 
-        BasicProductDto product1 = new BasicProductDto();
+        BasicProductDTO product1 = new BasicProductDTO();
         product1.setId(1);
         product1.setName("Product1");
-        BasicProductDto product2 = new BasicProductDto();
+        BasicProductDTO product2 = new BasicProductDTO();
         product2.setId(2);
         product2.setName("Product2");
 

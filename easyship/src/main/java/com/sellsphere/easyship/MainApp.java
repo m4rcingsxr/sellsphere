@@ -1,9 +1,5 @@
 package com.sellsphere.easyship;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.sellsphere.easyship.payload.AddressDto;
-
 
 public class MainApp {
 

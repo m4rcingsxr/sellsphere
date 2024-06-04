@@ -1,15 +1,14 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.common.entity.*;
+import com.sellsphere.common.entity.payload.CountryDTO;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.formula.functions.Count;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * RestCountryController is a REST controller for managing Country entities.

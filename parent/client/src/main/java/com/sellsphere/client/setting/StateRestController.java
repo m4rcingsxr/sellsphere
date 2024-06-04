@@ -2,7 +2,7 @@ package com.sellsphere.client.setting;
 
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.CountryNotFoundException;
-import com.sellsphere.common.entity.StateDTO;
+import com.sellsphere.common.entity.payload.StateDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

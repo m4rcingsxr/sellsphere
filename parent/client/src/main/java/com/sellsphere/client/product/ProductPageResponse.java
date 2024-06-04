@@ -1,6 +1,6 @@
 package com.sellsphere.client.product;
 
-import com.sellsphere.common.entity.BasicProductDto;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +20,6 @@ public class ProductPageResponse {
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
 
-    private List<BasicProductDto> content;
+    private List<BasicProductDTO> content;
 
 }

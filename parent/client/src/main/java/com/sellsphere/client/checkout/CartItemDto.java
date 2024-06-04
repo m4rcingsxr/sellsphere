@@ -1,6 +1,6 @@
 package com.sellsphere.client.checkout;
 
-import com.sellsphere.common.entity.BasicProductDto;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.common.entity.CartItem;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -16,14 +16,14 @@ import java.math.BigDecimal;
 public class CartItemDto implements Serializable {
 
     @NotNull(message = "Product is required")
-    private BasicProductDto product;
+    private BasicProductDTO product;
 
     private int quantity;
 
     private BigDecimal subtotal;
 
     public CartItemDto(CartItem cartItem) {
-        this.product = new BasicProductDto(cartItem.getProduct());
+        this.product = new BasicProductDTO(cartItem.getProduct());
         this.quantity = cartItem.getQuantity();
         this.subtotal = cartItem.getSubtotal();
     }

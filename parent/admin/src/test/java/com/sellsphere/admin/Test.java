@@ -2,18 +2,10 @@ package com.sellsphere.admin;
 
 import com.sellsphere.admin.customer.CustomerRepository;
 import com.sellsphere.admin.product.ProductRepository;
-import com.sellsphere.common.entity.Address;
-import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.common.entity.Customer;
-import com.sellsphere.common.entity.Product;
 import com.sellsphere.easyship.ApiService;
-import com.sellsphere.easyship.payload.AddressDtoMin;
-import com.sellsphere.easyship.payload.RatesResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-
-import java.util.List;
 
 @SpringBootTest
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts = {
