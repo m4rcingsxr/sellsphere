@@ -303,8 +303,11 @@ class CheckoutController {
             this.view.hideAddressButton();
             this.view.showPaymentButton();
             this.view.hidePlaceOrderButton();
+            this.view.hideCurrencies();
 
             this.initPaymentElement();
+
+            this.view.renderSummary(this.model.baseCalculation);
 
             const paymentAccordion = new bootstrap.Collapse("#checkout-payment-accordion", { toggle: true });
             paymentAccordion.show();
@@ -325,6 +328,9 @@ class CheckoutController {
             this.view.showAddressButton();
             this.view.hidePaymentButton();
             this.view.hidePlaceOrderButton();
+            this.view.hideCurrencies();
+
+            this.view.renderSummary(this.model.baseCalculation);
 
             const addressAccordion = new bootstrap.Collapse("#checkout-address-accordion", { toggle: true });
             addressAccordion.show();
@@ -345,6 +351,8 @@ class CheckoutController {
                 this.view.hideAddressButton();
                 this.view.hidePaymentButton();
                 this.view.showPlaceOrderButton();
+                this.view.showCurrencies();
+
 
                 const summaryAccordion = new bootstrap.Collapse("#checkout-summary-accordion", { toggle: true });
 
@@ -461,7 +469,7 @@ class CheckoutController {
                 });
 
                 this.view.renderSummary(newCalculation);
-                $("#exchange-rate").text(`1 ${this.model.baseCalculation.currencyCode} = ${exchangeRate} ${targetCurrency} (includes 2% conversion fee)`);
+                this.view.renderExchangeRate(this.model.baseCalculation.currencyCode, exchangeRate, targetCurrency);
             }
         });
     }
