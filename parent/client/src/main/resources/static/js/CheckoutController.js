@@ -1,5 +1,13 @@
+/**
+ * Controller for managing the checkout process.
+ */
 class CheckoutController {
 
+    /**
+     * Constructs the CheckoutController with the given model and view.
+     * @param {Object} model - The data model for the checkout process.
+     * @param {Object} view - The view for the checkout process.
+     */
     constructor(model, view) {
         console.info("Initializing CheckoutController");
         this.stripe = Stripe("pk_test_51PbnPoAx8ZpOoq6Y2e0LqnQAZamnRJ6rBeShPoZVd7up9My5tepRm9Vhowv6qGue29a8aDz4r0YT5BkN3XnqQPrR00yMU9sery");
@@ -13,12 +21,19 @@ class CheckoutController {
         this.init();
     }
 
+    /**
+     * Initializes the controller by setting up the address element and event listeners.
+     * @async
+     */
     async init() {
         console.info("Initializing controller");
         await this.initAddressElement();
         this.initEventListeners();
     }
 
+    /**
+     * Initializes all event listeners for the checkout process.
+     */
     initEventListeners() {
         console.debug("Initializing event listeners");
         this.initAddressChangeListener();
@@ -29,11 +44,20 @@ class CheckoutController {
         this.initChangeCurrencyButton();
     }
 
+    /**
+     * Initializes the event listener for address changes with debounced validation.
+     */
     initAddressChangeListener() {
         console.debug("Initializing address change event listener");
         this.addressElement.on("change", this.debounce(this.validateAddress.bind(this), 1000));
     }
 
+    /**
+     * Creates a debounced version of the provided function.
+     * @param {Function} fn - The function to debounce.
+     * @param {number} delay - The debounce delay in milliseconds.
+     * @returns {Function} - The debounced function.
+     */
     debounce(fn, delay) {
         let timeout;
         return function (...args) {
@@ -42,6 +66,11 @@ class CheckoutController {
         };
     }
 
+    /**
+     * Validates the address input.
+     * @async
+     * @param {Object} event - The change event from the address element.
+     */
     async validateAddress(event) {
         console.debug("Validating address", event);
         if (event.complete) {
@@ -64,6 +93,12 @@ class CheckoutController {
         }
     }
 
+    /**
+     * Creates an address validation request object.
+     * @param {Object} address - The address object.
+     * @param {Array} addressLines - The address lines array.
+     * @returns {Object} - The address validation request object.
+     */
     createAddressRequest(address, addressLines) {
         console.debug("Creating address validation request", address, addressLines);
         return {
@@ -76,6 +111,11 @@ class CheckoutController {
         };
     }
 
+    /**
+     * Handles actions when the address is validated successfully.
+     * @async
+     * @param {Object} address - The validated address.
+     */
     async handleValidAddress(address) {
         console.info("Handling valid address", address);
 
@@ -95,6 +135,11 @@ class CheckoutController {
         this.view.showAddressButton();
     }
 
+    /**
+     * Creates an easy ship address object.
+     * @param {Object} address - The address object.
+     * @returns {Object} - The easy ship address object.
+     */
     createEasyShipAddress(address) {
         console.debug("Creating easy ship address object", address);
         return {
@@ -107,6 +152,11 @@ class CheckoutController {
         };
     }
 
+    /**
+     * Validates the rates response and throws an error if necessary.
+     * @param {Object} ratesResponse - The rates response object.
+     * @param {Object} easyShipAddress - The easy ship address object.
+     */
     validateRatesResponse(ratesResponse, easyShipAddress) {
         console.debug("Validating rates response", ratesResponse);
         if (ratesResponse.length === 0) {
@@ -120,6 +170,11 @@ class CheckoutController {
         }
     }
 
+    /**
+     * Updates the model after the calculation is fetched.
+     * @param {Object} calculation - The calculation object.
+     * @param {Object} ratesResponse - The rates response object.
+     */
     updateModelAfterCalculation(calculation, ratesResponse) {
         console.debug("Updating model after calculation", calculation, ratesResponse);
         this.model.baseCalculation = calculation;
@@ -127,6 +182,10 @@ class CheckoutController {
         this.model.selectedCurrency = calculation.currencyCode;
     }
 
+    /**
+     * Initializes the Stripe address element.
+     * @async
+     */
     async initAddressElement() {
         console.info("Initializing address element");
 
@@ -138,6 +197,9 @@ class CheckoutController {
         this.view.renderProductSummary(calculation);
     }
 
+    /**
+     * Initializes the Stripe payment element.
+     */
     initPaymentElement() {
         console.info("Initializing payment element");
 
@@ -161,6 +223,10 @@ class CheckoutController {
         }
     }
 
+    /**
+     * Initializes or updates the Stripe elements with the given calculation.
+     * @param {Object} calculation - The calculation data.
+     */
     initStripeElements(calculation) {
         console.debug("Initializing Stripe elements", calculation);
         if (!this.elements) {
@@ -181,6 +247,10 @@ class CheckoutController {
         }
     }
 
+    /**
+     * Initializes the options for the Stripe address element.
+     * @async
+     */
     async initAddressOptions() {
         console.debug("Initializing address element options");
 
@@ -211,11 +281,19 @@ class CheckoutController {
         this.addressElement.mount("#address-element");
     }
 
+    /**
+     * Initializes the event listener for the continue to payment button.
+     */
     initContinueToPaymentButton() {
         console.debug("Initializing continue to payment button event listener");
         $("#address-btn, #payment-accordion-btn").on("click", this.handleContinueToPayment.bind(this));
     }
 
+    /**
+     * Handles the continue to payment action.
+     * @async
+     * @param {Object} event - The event object.
+     */
     async handleContinueToPayment(event) {
         event.preventDefault();
         console.info("Handling continue to payment action");
@@ -235,6 +313,9 @@ class CheckoutController {
         }
     }
 
+    /**
+     * Initializes the event listener for the address accordion button.
+     */
     initAddressAccordionButton() {
         console.debug("Initializing address accordion button event listener");
         $("#address-accordion-btn").on("click", event => {
@@ -250,6 +331,9 @@ class CheckoutController {
         });
     }
 
+    /**
+     * Initializes the event listener for the show summary button.
+     */
     initShowSummaryButton() {
         console.debug("Initializing show summary button event listener");
         $("#payment-btn, #summary-accordion-btn").on("click", async event => {
@@ -274,6 +358,9 @@ class CheckoutController {
         });
     }
 
+    /**
+     * Initializes the event listener for changing the courier.
+     */
     initChangeCourierListener() {
         console.debug("Initializing change courier event listener");
         $("#summary").on("click", 'input[type="radio"]', async event => {
@@ -315,6 +402,10 @@ class CheckoutController {
         });
     }
 
+    /**
+     * Loads the currency data and updates the view accordingly.
+     * @async
+     */
     async loadCurrencyData() {
         console.debug("Loading currency data");
 
@@ -333,6 +424,9 @@ class CheckoutController {
         this.view.renderExchangeRate(exchangeRateResponse.base, exchangeRate, targetCurrency);
     }
 
+    /**
+     * Initializes the event listener for changing the currency.
+     */
     initChangeCurrencyButton() {
         console.debug("Initializing change currency button event listener");
         $("#currencies").on("click", "a", async event => {

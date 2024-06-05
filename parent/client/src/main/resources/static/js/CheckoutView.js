@@ -1,5 +1,12 @@
+/**
+ * View for rendering the checkout process.
+ */
 class CheckoutView {
 
+    /**
+     * Renders the product summary.
+     * @param {Object} calculation - The calculation object containing product data.
+     */
     renderProductSummary(calculation) {
         const $products = $("#products");
         $products.empty();
@@ -15,6 +22,10 @@ class CheckoutView {
         });
     }
 
+    /**
+     * Renders the summary details.
+     * @param {Object} calculation - The calculation object.
+     */
     renderSummary(calculation) {
         console.log("Rendering summary details for calculation");
         const $shipping = $("#shipping");
@@ -32,42 +43,71 @@ class CheckoutView {
         $totalTax.text(`(${calculation.currencySymbol}) ${(calculation.taxAmountInclusive + calculation.shippingCost.amountTax) / calculation.unitAmount}`);
     }
 
+    /**
+     * Shows the summary view.
+     */
     showSummaryView() {
         console.log("Showing summary checkout details");
         $("#summary-nav, .total").removeClass("d-none");
         $("#address-error").addClass("d-none");
     }
 
+    /**
+     * Shows the address error view.
+     */
     showAddressError() {
         console.warn("Address validation failed, showing error element");
         $("#summary-nav, .total").addClass("d-none");
         $("#address-error").removeClass("d-none");
     }
 
+    /**
+     * Hides the address button.
+     */
     hideAddressButton() {
         $("#address-btn").parent().addClass("d-none");
     }
 
+    /**
+     * Shows the address button.
+     */
     showAddressButton() {
         $("#address-btn").parent().removeClass("d-none");
     }
 
+    /**
+     * Hides the place order button.
+     */
     hidePlaceOrderButton() {
         $("#place-order-btn").parent().addClass("d-none");
     }
 
+    /**
+     * Shows the place order button.
+     */
     showPlaceOrderButton() {
         $("#place-order-btn").parent().removeClass("d-none");
     }
 
+    /**
+     * Hides the payment button.
+     */
     hidePaymentButton() {
         $("#payment-btn").parent().addClass("d-none");
     }
 
+    /**
+     * Shows the payment button.
+     */
     showPaymentButton() {
         $("#payment-btn").parent().removeClass("d-none");
     }
 
+    /**
+     * Renders the summary data including products and shipping rates.
+     * @param {Object} calculation - The calculation object.
+     * @param {Object} ratesResponse - The rates response object.
+     */
     renderSummaryData(calculation, ratesResponse) {
         console.log("Rendering summary data..");
         const $summary = $("#summary");
@@ -129,16 +169,32 @@ class CheckoutView {
         $summary.append(html);
     }
 
+    /**
+     * Renders the settlement currency details.
+     * @param {Object} calculation - The calculation object.
+     */
     renderSettlementCurrency(calculation) {
         $("#settlement-currency").data("currency-code", calculation.currencyCode);
         $("#settlement-total").empty().text(`(${calculation.currencySymbol}) ${(calculation.amountTotal) / calculation.unitAmount}`);
     }
 
+    /**
+     * Renders the presentment total in the target currency.
+     * @param {Object} country - The country object.
+     * @param {Object} countryData - The country data object.
+     * @param {number} convertedPrice - The converted price in the target currency.
+     * @param {string} targetCurrency - The target currency code.
+     */
     renderPresentmentTotal(country, countryData, convertedPrice, targetCurrency) {
         const img = this.renderCountryFlag(countryData);
         $("#presentment-currency").empty().removeClass("d-none").append(`${img}<span class="fw-bolder" id="presentment-total">(${country.currencySymbol}) ${convertedPrice}</span>`).data("currency-code", targetCurrency);
     }
 
+    /**
+     * Renders the country flag.
+     * @param {Object} countryData - The country data object.
+     * @returns {string} - The HTML string for the country flag.
+     */
     renderCountryFlag(countryData) {
         let img = "";
         if (countryData[0]) {
@@ -149,14 +205,26 @@ class CheckoutView {
         return img;
     }
 
+    /**
+     * Renders the exchange rate.
+     * @param {string} baseCurrency - The base currency code.
+     * @param {number} exchangeRate - The exchange rate.
+     * @param {string} targetCurrency - The target currency code.
+     */
     renderExchangeRate(baseCurrency, exchangeRate, targetCurrency) {
         $("#exchange-rate").text(`1 ${baseCurrency} = ${exchangeRate} ${targetCurrency} (includes 2% conversion fee)`);
     }
 
+    /**
+     * Shows the currencies.
+     */
     showCurrencies() {
         $(".currencies").removeClass("d-none");
     }
 
+    /**
+     * Hides the currencies.
+     */
     hideCurrencies() {
         $(".currencies").addClass("d-none");
     }
