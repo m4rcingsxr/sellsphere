@@ -170,8 +170,8 @@ class CheckoutView {
      */
     renderSettlementCurrency(calculation) {
 
-        $("#settlement-currency").data("currency-code", calculation.currencyCode).attr("data-currency-code", calculation.currencyCode);;
-        $("#settlement-total").empty().text(`(${calculation.currencySymbol}) ${(calculation.amountTotal) / calculation.unitAmount}`);
+        $("#settlement-currency").data("currency-code", calculation.currencyCode).attr("data-currency-code", calculation.currencyCode);
+        ;$("#settlement-total").empty().text(`(${calculation.currencySymbol}) ${(calculation.amountTotal) / calculation.unitAmount}`);
     }
 
     /**

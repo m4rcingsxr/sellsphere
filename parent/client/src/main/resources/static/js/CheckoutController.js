@@ -3,11 +3,6 @@
  */
 class CheckoutController {
 
-    /**
-     * Constructs the CheckoutController with the given model and view.
-     * @param {Object} model - The data model for the checkout process.
-     * @param {Object} view - The view for the checkout process.
-     */
     constructor(model, view) {
         console.info("Initializing CheckoutController");
         this.stripe = Stripe("pk_test_51PbnPoAx8ZpOoq6Y2e0LqnQAZamnRJ6rBeShPoZVd7up9My5tepRm9Vhowv6qGue29a8aDz4r0YT5BkN3XnqQPrR00yMU9sery");
@@ -24,64 +19,50 @@ class CheckoutController {
     /**
      * Initializes the controller by setting up the address element and event listeners.
      * @async
+     * @returns {Promise<void>}
      */
     async init() {
         console.info("Initializing controller");
-        await this.initAddressElement();
-        this.initEventListeners();
+        try {
+            await this.initAddressElement();
+            this.initEventListeners();
+        } catch (error) {
+            console.error(error);
+            showErrorModal(error.response);
+        }
     }
 
     /**
      * Initializes all event listeners for the checkout process.
+     * @returns {void}
      */
     initEventListeners() {
         console.debug("Initializing event listeners");
-        this.initAddressChangeListener();
-        this.initContinueToPaymentButton();
-        this.initAddressAccordionButton();
-        this.initShowSummaryButton();
-        this.initChangeCourierListener();
-        this.initChangeCurrencyButton();
-    }
-
-    /**
-     * Initializes the event listener for address changes with debounced validation.
-     */
-    initAddressChangeListener() {
-        console.debug("Initializing address change event listener");
-        this.addressElement.on("change", this.debounce(this.validateAddress.bind(this), 1000));
-    }
-
-    /**
-     * Creates a debounced version of the provided function.
-     * @param {Function} fn - The function to debounce.
-     * @param {number} delay - The debounce delay in milliseconds.
-     * @returns {Function} - The debounced function.
-     */
-    debounce(fn, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => fn.apply(this, args), delay);
-        };
+        this.addressElement.on("change", debounce(this.validateAddress.bind(this), 1000));
+        $("#address-btn, #payment-accordion-btn").on("click", this.handleContinueToPayment.bind(this));
+        $("#address-accordion-btn").on("click", this.handleAddressAccordion.bind(this));
+        $("#payment-btn, #summary-accordion-btn").on("click", this.handleShowSummary.bind(this));
+        $("#summary").on("click", 'input[type="radio"]', this.handleChangeCourier.bind(this));
+        $("#currencies").on("click", "a", this.handleChangeCurrency.bind(this));
     }
 
     /**
      * Validates the address input.
      * @async
      * @param {Object} event - The change event from the address element.
+     * @returns {Promise<void>}
      */
     async validateAddress(event) {
         console.debug("Validating address", event);
-        if (event.complete) {
-            const address = event.value.address;
-            console.info("Address input complete, validating address", address);
+        if (!event.complete) return;
 
-            const addressLines = [address.line1, address.line2].filter(line => line);
-            const validateRequest = this.createAddressRequest(address, addressLines);
+        const { address } = event.value;
+        console.info("Address input complete, validating address", address);
 
+        const addressLines = [address.line1, address.line2].filter(Boolean);
+        const validateRequest = this.createAddressRequest(address, addressLines);
+        try {
             const isValid = await this.model.validateAddress(validateRequest);
-
             if (isValid) {
                 console.info("Address validated successfully", address);
                 await this.handleValidAddress(address);
@@ -90,13 +71,16 @@ class CheckoutController {
                 this.view.showAddressError();
                 this.view.hideAddressButton();
             }
+        } catch (error) {
+            console.error(error);
+            showErrorModal(error.response);
         }
     }
 
     /**
      * Creates an address validation request object.
      * @param {Object} address - The address object.
-     * @param {Array} addressLines - The address lines array.
+     * @param {Array<string>} addressLines - The address lines array.
      * @returns {Object} - The address validation request object.
      */
     createAddressRequest(address, addressLines) {
@@ -115,27 +99,32 @@ class CheckoutController {
      * Handles actions when the address is validated successfully.
      * @async
      * @param {Object} address - The validated address.
+     * @returns {Promise<void>}
      */
     async handleValidAddress(address) {
         console.info("Handling valid address", address);
 
         const easyShipAddress = this.createEasyShipAddress(address);
-        const ratesResponse = await this.model.getShippingRates(easyShipAddress, 0);
+        try {
+            const ratesResponse = await this.model.getShippingRates(easyShipAddress, 0);
 
-        this.validateRatesResponse(ratesResponse, easyShipAddress);
+            this.validateRatesResponse(ratesResponse, easyShipAddress);
 
-        const shippingCost = ratesResponse.rates[0].totalCharge;
-        const calculation = await this.model.getCalculation({ address, shippingCost });
+            const shippingCost = ratesResponse.rates[0].totalCharge;
+            const calculation = await this.model.getCalculation({ address, shippingCost });
 
-        this.updateModelAfterCalculation(calculation, ratesResponse);
-        await this.initStripeElements(calculation);
+            this.updateModelAfterCalculation(calculation, ratesResponse);
+            await this.initStripeElements(calculation);
 
-        // this idx is responsible for checking it back when go back to the summary tab
-        this.model.selectedRateIdx = undefined;
+            this.model.selectedRateIdx = undefined;
 
-        this.view.renderSummary(calculation);
-        this.view.showSummaryView();
-        this.view.showAddressButton();
+            this.view.renderSummary(calculation);
+            this.view.showSummaryView();
+            this.view.showAddressButton();
+        } catch (error) {
+            console.error(error);
+            showErrorModal(error.response);
+        }
     }
 
     /**
@@ -151,7 +140,7 @@ class CheckoutController {
             addressLine1: address.line1,
             addressLine2: address.line2,
             postalCode: address.postal_code,
-            state: address.state
+            state: address.state,
         };
     }
 
@@ -159,17 +148,15 @@ class CheckoutController {
      * Validates the rates response and throws an error if necessary.
      * @param {Object} ratesResponse - The rates response object.
      * @param {Object} easyShipAddress - The easy ship address object.
+     * @returns {void}
      */
     validateRatesResponse(ratesResponse, easyShipAddress) {
         console.debug("Validating rates response", ratesResponse);
         if (ratesResponse.length === 0) {
-            console.warn("No shipping rate available for address", easyShipAddress);
-            throw new Error("No shipping rate available for address: " + JSON.stringify(easyShipAddress));
+            throw new Error(`No shipping rate available for address: ${JSON.stringify(easyShipAddress)}`);
         }
-
         if (ratesResponse.rates[0].costRank !== 1.0) {
-            console.warn("Cost rank of 1st rate is not 1", ratesResponse);
-            throw new Error("Cost rank of 1st rate should always be 1: " + JSON.stringify(ratesResponse));
+            throw new Error(`Cost rank of 1st rate should always be 1: ${JSON.stringify(ratesResponse)}`);
         }
     }
 
@@ -177,6 +164,7 @@ class CheckoutController {
      * Updates the model after the calculation is fetched.
      * @param {Object} calculation - The calculation object.
      * @param {Object} ratesResponse - The rates response object.
+     * @returns {void}
      */
     updateModelAfterCalculation(calculation, ratesResponse) {
         console.debug("Updating model after calculation", calculation, ratesResponse);
@@ -188,12 +176,12 @@ class CheckoutController {
     /**
      * Initializes the Stripe address element.
      * @async
+     * @returns {Promise<void>}
      */
     async initAddressElement() {
         console.info("Initializing address element");
 
         const calculation = await this.model.getBasicCalculation();
-
         await this.initStripeElements(calculation);
         await this.initAddressOptions();
 
@@ -202,191 +190,178 @@ class CheckoutController {
 
     /**
      * Initializes the Stripe payment element.
+     * @returns {void}
      */
     initPaymentElement() {
         console.info("Initializing payment element");
-
-        const options = {
-            layout: {
-                type: "tabs",
-                defaultCollapsed: false,
-            }
-        };
+        const options = { layout: { type: "tabs", defaultCollapsed: false } };
 
         if (!this.paymentElement) {
             this.paymentElement = this.elements.create("payment", options);
             this.paymentElement.mount("#payment-element");
-
             this.paymentElement.on('change', event => {
                 console.info("Payment element change event detected", event);
                 this.paymentEvent = event;
             });
-        } else {
-            console.debug("Payment element already initialized");
         }
     }
 
     /**
      * Initializes or updates the Stripe elements with the given calculation.
      * @param {Object} calculation - The calculation data.
+     * @returns {void}
      */
     initStripeElements(calculation) {
         console.debug("Initializing Stripe elements", calculation);
-        if (!this.elements) {
-            this.elements = this.stripe.elements({
-                appearance: {
-                    theme: 'flat'
-                },
-                mode: 'payment',
-                amount: calculation.amountTotal,
-                currency: calculation.currencyCode.toLowerCase(),
-            });
-        } else {
-            console.debug("Updating Stripe elements", calculation);
-            this.elements.update({
-                amount: calculation.amountTotal,
-                currency: calculation.currencyCode.toLowerCase()
-            });
-        }
+        const options = {
+            appearance: { theme: 'flat' },
+            mode: 'payment',
+            amount: calculation.amountTotal,
+            currency: calculation.currencyCode.toLowerCase(),
+        };
+        this.elements = this.elements ? this.elements.update(options) : this.stripe.elements(options);
     }
 
     /**
      * Initializes the options for the Stripe address element.
      * @async
+     * @returns {Promise<void>}
      */
     async initAddressOptions() {
         console.debug("Initializing address element options");
 
-        const options = {
-            mode: 'shipping',
-        };
+        const options = { mode: 'shipping' };
+        try {
+            const shippableCountries = await this.model.getShippableCountries();
+            options.allowedCountries = shippableCountries.map(country => country.code);
 
-        const shippableCountries = await this.model.getShippableCountries();
-        options.allowedCountries = shippableCountries.map(country => country.code);
+            const addresses = await this.model.getCustomerAddresses();
+            if (addresses?.length > 0) {
+                options.contacts = addresses.map(address => ({
+                    name: address.fullName,
+                    address: {
+                        line1: address.addressLine1,
+                        line2: address.addressLine2,
+                        city: address.city,
+                        state: address.state,
+                        postal_code: address.postalCode,
+                        country: address.countryCode,
+                    },
+                }));
+            }
 
-        const addresses = await this.model.getCustomerAddresses();
-        if (addresses?.length > 0) {
-            console.info("Setting contacts for address element", addresses);
-            options.contacts = addresses.map(address => ({
-                name: address.fullName,
-                address: {
-                    line1: address.addressLine1,
-                    line2: address.addressLine2,
-                    city: address.city,
-                    state: address.state,
-                    postal_code: address.postalCode,
-                    country: address.countryCode,
-                },
-            }));
+            this.addressElement = this.elements.create('address', options);
+            this.addressElement.mount("#address-element");
+        } catch (error) {
+            console.error(error);
+            showErrorModal(error.response);
         }
-
-        this.addressElement = this.elements.create('address', options);
-        this.addressElement.mount("#address-element");
-    }
-
-    /**
-     * Initializes the event listener for the continue to payment button.
-     */
-    initContinueToPaymentButton() {
-        console.debug("Initializing continue to payment button event listener");
-        $("#address-btn, #payment-accordion-btn").on("click", this.handleContinueToPayment.bind(this));
     }
 
     /**
      * Handles the continue to payment action.
      * @async
      * @param {Object} event - The event object.
+     * @returns {Promise<void>}
      */
     async handleContinueToPayment(event) {
         event.preventDefault();
         console.info("Handling continue to payment action");
 
         if (this.model?.baseCalculation?.customerDetails?.address) {
-            console.debug("Address is defined, proceeding to payment step");
             this.view.hideAddressButton();
             this.view.showPaymentButton();
             this.view.hidePlaceOrderButton();
             this.view.hideCurrencies();
 
-            this.initPaymentElement();
+            try {
+                if (!this.elements) {
+                    const calculation = await this.model.getBasicCalculation();
+                    await this.initStripeElements(calculation);
+                }
 
-            this.view.renderSummary(this.model.baseCalculation);
-            this.view.renderProductSummaryNav(this.model.baseCalculation);
+                this.initPaymentElement();
+                this.view.renderSummary(this.model.baseCalculation);
+                this.view.renderProductSummaryNav(this.model.baseCalculation);
 
-
-            const paymentAccordion = new bootstrap.Collapse("#checkout-payment-accordion", { toggle: true });
-            paymentAccordion.show();
+                new bootstrap.Collapse("#checkout-payment-accordion", { toggle: true }).show();
+            } catch (error) {
+                console.error(error);
+                showErrorModal(error.response || new ErrorResponse(error.message, 500));
+            }
         } else {
             console.warn("Address must be defined before payment step");
         }
     }
 
     /**
-     * Initializes the event listener for the address accordion button.
+     * Handles the address accordion button click.
+     * @param {Object} event - The event object.
+     * @returns {void}
      */
-    initAddressAccordionButton() {
-        console.debug("Initializing address accordion button event listener");
-        $("#address-accordion-btn").on("click", event => {
-            event.preventDefault();
-            console.info("Address accordion button clicked");
+    handleAddressAccordion(event) {
+        event.preventDefault();
+        console.info("Address accordion button clicked");
 
-            this.view.showAddressButton();
+        this.view.showAddressButton();
+        this.view.hidePaymentButton();
+        this.view.hidePlaceOrderButton();
+        this.view.hideCurrencies();
+
+        this.view.renderSummary(this.model.baseCalculation);
+        this.view.renderProductSummaryNav(this.model.baseCalculation);
+
+        new bootstrap.Collapse("#checkout-address-accordion", { toggle: true }).show();
+    }
+
+    /**
+     * Handles the show summary button click.
+     * @async
+     * @param {Object} event - The event object.
+     * @returns {Promise<void>}
+     */
+    async handleShowSummary(event) {
+        event.preventDefault();
+        console.info("Show summary button clicked");
+
+        if (this.model.baseCalculation?.customerDetails?.address && this.paymentEvent?.complete) {
+            this.view.hideAddressButton();
             this.view.hidePaymentButton();
-            this.view.hidePlaceOrderButton();
-            this.view.hideCurrencies();
+            this.view.showPlaceOrderButton();
+            this.view.showCurrencies();
 
-            this.view.renderSummary(this.model.baseCalculation);
-            this.view.renderProductSummaryNav(this.model.baseCalculation);
+            new bootstrap.Collapse("#checkout-summary-accordion", { toggle: true }).show();
 
-            const addressAccordion = new bootstrap.Collapse("#checkout-address-accordion", { toggle: true });
-            addressAccordion.show();
-        });
-    }
+            this.view.renderSummaryData(this.model.baseCalculation, this.model.ratesResponse);
+            this.view.checkRateRadio(this.model.selectedRateIdx);
 
-    /**
-     * Initializes the event listener for the show summary button.
-     */
-    initShowSummaryButton() {
-        console.debug("Initializing show summary button event listener");
-        $("#payment-btn, #summary-accordion-btn").on("click", async event => {
-            event.preventDefault();
-            console.info("Show summary button clicked");
-
-            if (this.model.baseCalculation?.customerDetails?.address && this.paymentEvent.complete) {
-                console.debug("Address and payment step complete, proceeding to summary step");
-                this.view.hideAddressButton();
-                this.view.hidePaymentButton();
-                this.view.showPlaceOrderButton();
-                this.view.showCurrencies();
-
-                const summaryAccordion = new bootstrap.Collapse("#checkout-summary-accordion", { toggle: true });
-
-                this.view.renderSummaryData(this.model.baseCalculation, this.model.ratesResponse);
-                this.view.checkRateRadio(this.model.selectedRateIdx);
-
+            try {
                 await this.loadCurrencyData();
-
-                summaryAccordion.show();
-            } else {
-                console.warn("Address and payment step must be complete before summary step");
+            } catch (error) {
+                console.error(error);
+                showErrorModal(error.response);
             }
-        });
+        } else {
+            console.warn("Address and payment step must be complete before summary step");
+        }
     }
 
     /**
-     * Initializes the event listener for changing the courier.
+     * Handles the change courier event.
+     * @async
+     * @param {Object} event - The event object.
+     * @returns {Promise<void>}
      */
-    initChangeCourierListener() {
-        console.debug("Initializing change courier event listener");
-        $("#summary").on("click", 'input[type="radio"]', async event => {
-            console.info("Courier change detected", event);
+    async handleChangeCourier(event) {
+        console.info("Courier change detected", event);
 
-            this.model.selectedRateIdx = event.target.dataset.addressIdx;
+        this.model.selectedRateIdx = event.target.dataset.addressIdx;
 
-            const rates = this.model.ratesResponse.rates;
-            const selectedRate = rates[event.target.dataset.addressIdx];
-            const currentAddress = this.model.baseCalculation.customerDetails.address;
+        const rates = this.model.ratesResponse.rates;
+        const selectedRate = rates[event.target.dataset.addressIdx];
+        const currentAddress = this.model.baseCalculation.customerDetails.address;
 
+        try {
             const country = await this.model.getCountryForClientIp();
             const exchangeRateResponse = await this.model.getExchangeRatesForClientCountry(country.currencyCode);
 
@@ -403,83 +378,54 @@ class CheckoutController {
                 shippingCost: selectedRate.totalCharge,
             });
 
-            if (this.model.selectedCurrency === this.model.baseCalculation.currencyCode) {
-                this.initStripeElements(this.model.baseCalculation);
-            } else {
-                this.initStripeElements(targetCalculation);
-            }
+            const isSameCurrency = this.model.selectedCurrency === this.model.baseCalculation.currencyCode;
+            await this.initStripeElements(isSameCurrency ? this.model.baseCalculation : targetCalculation);
 
             await this.loadCurrencyData();
 
-            if (this.model.selectedCurrency !== this.model.baseCalculation.currencyCode) {
+            if (!isSameCurrency) {
                 this.view.renderSummary(targetCalculation);
                 this.view.renderProductSummaryNav(targetCalculation);
             } else {
                 this.view.renderSummary(this.model.baseCalculation);
                 this.view.renderProductSummaryNav(this.model.baseCalculation);
             }
-        });
+        } catch (error) {
+            console.error(error);
+            showErrorModal(error.response);
+        }
     }
 
     /**
-     * Loads the currency data and updates the view accordingly.
+     * Handles the change currency button click.
      * @async
+     * @param {Object} event - The event object.
+     * @returns {Promise<void>}
      */
-    async loadCurrencyData() {
-        console.debug("Loading currency data");
+    async handleChangeCurrency(event) {
+        event.preventDefault();
+        console.info("Currency change detected", event);
 
-        const country = await this.model.getCountryForClientIp();
-        const exchangeRateResponse = await this.model.getExchangeRatesForClientCountry(country.currencyCode);
+        const $currency = $(event.currentTarget);
+        const targetCurrency = $currency.data("currency-code");
 
-        const targetCurrency = country.currencyCode;
-        const exchangeRate = exchangeRateResponse.result["rate"];
-        const convertedPrice = exchangeRateResponse.result[country.currencyCode];
+        if (!this.model.selectedCurrency && targetCurrency === this.model.baseCalculation.currencyCode) return;
+        if (this.model.selectedCurrency === targetCurrency) return;
 
-        const countryData = await this.model.getCountryData(country.code);
+        const address = this.model.baseCalculation.customerDetails.address;
+        const rates = this.model.ratesResponse.rates;
+        const rateId = $(`input[type="radio"]:checked`).data("address-idx");
+        const selectedRate = rates[rateId];
 
-        this.view.showCurrencies();
-        this.view.renderPresentmentTotal(country, countryData, convertedPrice, targetCurrency);
-        this.view.renderSettlementCurrency(this.model.baseCalculation);
-        this.view.renderExchangeRate(exchangeRateResponse.base, exchangeRate, targetCurrency);
-    }
+        const currentCurrency = this.model.selectedCurrency;
+        this.model.selectedCurrency = targetCurrency;
 
-    /**
-     * Initializes the event listener for changing the currency.
-     */
-    initChangeCurrencyButton() {
-        console.debug("Initializing change currency button event listener");
-        $("#currencies").on("click", "a", async event => {
-            event.preventDefault();
-            console.info("Currency change detected", event);
-
-            const $currency = $(event.currentTarget);
-            const targetCurrency = $currency.data("currency-code");
-
-            if(!this.model.selectedCurrency && targetCurrency === this.model.baseCalculation.currencyCode) {
-                return;
-            }
-
-            if(this.model.selectedCurrency === targetCurrency) {
-                return;
-            }
-
-            const address = this.model.baseCalculation.customerDetails.address;
-            const rates = this.model.ratesResponse.rates;
-            const rateId = $(`input[type="radio"]:checked`).data("address-idx");
-            const selectedRate = rates[rateId];
-
-            const currentCurrency = this.model.selectedCurrency;
-
+        try {
             if (this.model.baseCalculation.currencyCode === targetCurrency) {
-                console.debug("Selected currency matches base calculation currency");
-                this.model.selectedCurrency = this.model.baseCalculation.currencyCode;
                 this.view.renderSummary(this.model.baseCalculation);
                 this.view.renderSummaryProducts(this.model.baseCalculation);
                 this.view.renderProductSummaryNav(this.model.baseCalculation);
             } else {
-                console.debug("Selected currency differs from base calculation currency, fetching new calculation");
-                this.model.selectedCurrency = targetCurrency;
-
                 const country = await this.model.getCountryForClientIp();
                 const exchangeRateResponse = await this.model.getExchangeRatesForClientCountry(country.currencyCode);
 
@@ -498,6 +444,37 @@ class CheckoutController {
             }
 
             this.view.selectCurrency(currentCurrency, targetCurrency);
-        });
+        } catch (error) {
+            console.error(error);
+            showErrorModal(error.response);
+        }
+    }
+
+    /**
+     * Loads the currency data and updates the view accordingly.
+     * @async
+     * @returns {Promise<void>}
+     */
+    async loadCurrencyData() {
+        console.debug("Loading currency data");
+        try {
+            const country = await this.model.getCountryForClientIp();
+            const exchangeRateResponse = await this.model.getExchangeRatesForClientCountry(country.currencyCode);
+
+            const targetCurrency = country.currencyCode;
+            const exchangeRate = exchangeRateResponse.result["rate"];
+            const convertedPrice = exchangeRateResponse.result[country.currencyCode];
+
+            const countryData = await this.model.getCountryData(country.code);
+
+            this.view.showCurrencies();
+            this.view.renderPresentmentTotal(country, countryData, convertedPrice, targetCurrency);
+            this.view.renderSettlementCurrency(this.model.baseCalculation);
+            this.view.renderExchangeRate(exchangeRateResponse.base, exchangeRate, targetCurrency);
+        } catch (error) {
+            console.error(error);
+            console.log(error.response);
+            showErrorModal(error.response);
+        }
     }
 }

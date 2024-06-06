@@ -12,7 +12,7 @@ class CheckoutModel {
 
     /**
      * Fetches the shippable countries.
-     * @returns {Promise<Object[]>} - A promise that resolves to an array of shippable countries.
+     * @returns {Promise<Object>} - A promise that resolves to an array of shippable countries.
      * @throws {Error} - If there is an error fetching the shippable countries.
      */
     async getShippableCountries() {
@@ -26,7 +26,7 @@ class CheckoutModel {
 
     /**
      * Fetches the customer addresses.
-     * @returns {Promise<Object[]>} - A promise that resolves to an array of customer addresses.
+     * @returns {Promise<Object>} - A promise that resolves to an array of customer addresses.
      * @throws {Error} - If there is an error fetching the customer addresses.
      */
     async getCustomerAddresses() {
@@ -90,12 +90,8 @@ class CheckoutModel {
      * @throws {Error} - If there is an error validating the address.
      */
     async validateAddress(addressRequest) {
-        try {
-            return await ajaxUtil.post(`${MODULE_URL}addresses/validate`, addressRequest);
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+        return await ajaxUtil.post(`${MODULE_URL}addresses/validate`, addressRequest);
+
     }
 
     /**
@@ -114,7 +110,7 @@ class CheckoutModel {
     async getCountryForClientIp() {
         const clientIpJson = await this.getClientIp();
         const response = await clientIpJson.json();
-        return await ajaxUtil.post(`${MODULE_URL}countries/country-ip`, { ip: response.ip });
+        return await ajaxUtil.post(`${MODULE_URL}countries/country-ip`, {ip: response.ip});
     }
 
     /**
