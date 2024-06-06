@@ -130,6 +130,9 @@ class CheckoutController {
         this.updateModelAfterCalculation(calculation, ratesResponse);
         await this.initStripeElements(calculation);
 
+        // this idx is responsible for checking it back when go back to the summary tab
+        this.model.selectedRateIdx = undefined;
+
         this.view.renderSummary(calculation);
         this.view.showSummaryView();
         this.view.showAddressButton();
@@ -194,7 +197,7 @@ class CheckoutController {
         await this.initStripeElements(calculation);
         await this.initAddressOptions();
 
-        this.view.renderProductSummary(calculation);
+        this.view.renderProductSummaryNav(calculation);
     }
 
     /**
@@ -308,6 +311,8 @@ class CheckoutController {
             this.initPaymentElement();
 
             this.view.renderSummary(this.model.baseCalculation);
+            this.view.renderProductSummaryNav(this.model.baseCalculation);
+
 
             const paymentAccordion = new bootstrap.Collapse("#checkout-payment-accordion", { toggle: true });
             paymentAccordion.show();
@@ -331,6 +336,7 @@ class CheckoutController {
             this.view.hideCurrencies();
 
             this.view.renderSummary(this.model.baseCalculation);
+            this.view.renderProductSummaryNav(this.model.baseCalculation);
 
             const addressAccordion = new bootstrap.Collapse("#checkout-address-accordion", { toggle: true });
             addressAccordion.show();
@@ -353,10 +359,11 @@ class CheckoutController {
                 this.view.showPlaceOrderButton();
                 this.view.showCurrencies();
 
-
                 const summaryAccordion = new bootstrap.Collapse("#checkout-summary-accordion", { toggle: true });
 
                 this.view.renderSummaryData(this.model.baseCalculation, this.model.ratesResponse);
+                this.view.checkRateRadio(this.model.selectedRateIdx);
+
                 await this.loadCurrencyData();
 
                 summaryAccordion.show();
@@ -373,6 +380,8 @@ class CheckoutController {
         console.debug("Initializing change courier event listener");
         $("#summary").on("click", 'input[type="radio"]', async event => {
             console.info("Courier change detected", event);
+
+            this.model.selectedRateIdx = event.target.dataset.addressIdx;
 
             const rates = this.model.ratesResponse.rates;
             const selectedRate = rates[event.target.dataset.addressIdx];
@@ -404,8 +413,10 @@ class CheckoutController {
 
             if (this.model.selectedCurrency !== this.model.baseCalculation.currencyCode) {
                 this.view.renderSummary(targetCalculation);
+                this.view.renderProductSummaryNav(targetCalculation);
             } else {
                 this.view.renderSummary(this.model.baseCalculation);
+                this.view.renderProductSummaryNav(this.model.baseCalculation);
             }
         });
     }
@@ -453,6 +464,8 @@ class CheckoutController {
                 console.debug("Selected currency matches base calculation currency");
                 this.model.selectedCurrency = this.model.baseCalculation.currencyCode;
                 this.view.renderSummary(this.model.baseCalculation);
+                this.view.renderSummaryProducts(this.model.baseCalculation);
+                this.view.renderProductSummaryNav(this.model.baseCalculation);
             } else {
                 console.debug("Selected currency differs from base calculation currency, fetching new calculation");
                 this.model.selectedCurrency = targetCurrency;
@@ -469,6 +482,8 @@ class CheckoutController {
                 });
 
                 this.view.renderSummary(newCalculation);
+                this.view.renderProductSummaryNav(newCalculation);
+                this.view.renderSummaryProducts(newCalculation);
                 this.view.renderExchangeRate(this.model.baseCalculation.currencyCode, exchangeRate, targetCurrency);
             }
         });

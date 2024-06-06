@@ -6,6 +6,8 @@ class CheckoutModel {
         this.baseCalculation = null;
         this.ratesResponse = null;
         this.selectedCurrency = null;
+        this.selectedRateIdx = null;
+
     }
 
     /**

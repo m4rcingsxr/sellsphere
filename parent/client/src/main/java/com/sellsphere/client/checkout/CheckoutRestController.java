@@ -7,6 +7,8 @@ import com.sellsphere.client.setting.SettingRepository;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
+import com.sellsphere.common.entity.payload.CartItemDTO;
 import com.sellsphere.payment.PaymentRequest;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.sellsphere.payment.payload.CalculationRequest;
@@ -63,7 +65,8 @@ public class CheckoutRestController {
         if (request != null) {
             Calculation calculation = stripeService.calculateTax(cart, request.getAddress(),
                                                                  request.getShippingCost(),
-                                                                 baseCurrencyCode, currency, request.getExchangeRate()
+                                                                 baseCurrencyCode, currency,
+                                                                 request.getExchangeRate()
             );
 
             // handle 3 decimal currencies 5.124 KWD -> 5124 -> 5200/5300
@@ -83,12 +86,32 @@ public class CheckoutRestController {
             checkoutResponseBuilder.amountTotal(stripeService.getAmountTotal(cart, currency));
         }
 
+
+
         checkoutResponseBuilder.currencyCode(currency.getCode());
         checkoutResponseBuilder.unitAmount(currency.getUnitAmount());
         checkoutResponseBuilder.currencySymbol(currency.getSymbol());
-        checkoutResponseBuilder.cart(
-                cart.stream().map(CartItemDto::new).toList()
-        );
+
+        if (baseCurrencyCode.equals(currency.getCode())) {
+            checkoutResponseBuilder.cart(cart.stream().map(CartItemDto::new).toList());
+        } else {
+            BigDecimal stripeExchangeFee = BigDecimal.valueOf(0.02);
+            BigDecimal exchangeRate = request.getExchangeRate().multiply(
+                    BigDecimal.ONE.add(stripeExchangeFee)).setScale(5, RoundingMode.HALF_UP);
+
+            checkoutResponseBuilder.cart(cart.stream().map(cartItem -> CartItemDto.builder().subtotal(
+                    cartItem.getSubtotal().multiply(exchangeRate)).quantity(
+                    cartItem.getQuantity()).product(
+                    BasicProductDTO.builder().alias(cartItem.getProduct().getAlias()).brandName(
+                            cartItem.getProduct().getBrand().getName()).categoryName(
+                            cartItem.getProduct().getCategory().getName()).name(
+                            cartItem.getProduct().getName()).price(
+                            cartItem.getProduct().getPrice().multiply(exchangeRate)).discountPrice(
+                            cartItem.getProduct().getDiscountPrice().multiply(exchangeRate)).inStock(
+                            cartItem.getProduct().isInStock()).mainImagePath(
+                            cartItem.getProduct().getMainImagePath()).discountPercent(
+                            cartItem.getProduct().getDiscountPercent()).build()).build()).toList());
+        }
 
         return ResponseEntity.ok(checkoutResponseBuilder.build());
     }

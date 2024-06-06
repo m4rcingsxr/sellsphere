@@ -7,7 +7,7 @@ class CheckoutView {
      * Renders the product summary.
      * @param {Object} calculation - The calculation object containing product data.
      */
-    renderProductSummary(calculation) {
+    renderProductSummaryNav(calculation) {
         const $products = $("#products");
         $products.empty();
 
@@ -110,25 +110,12 @@ class CheckoutView {
      */
     renderSummaryData(calculation, ratesResponse) {
         console.log("Rendering summary data..");
-        const $summary = $("#summary");
-        $summary.empty();
 
-        let products = "";
-        calculation.cart.forEach(item => {
-            products += `
-                <div class="row">
-                    <div class="col-sm-4">
-                        <img src="${item.product.mainImagePath}" alt="${item.product.name}" class="img-fluid"/>
-                    </div>
-                    <div class="col-sm-8">
-                        <h5>${item.product.name}</h5>
-                        <p>Quantity: ${item.quantity}</p>
-                        <span>${item.product.discountPrice}</span>
-                    </div>
-                </div>
-            `;
-        });
+        this.renderSummaryProducts(calculation);
+        this.renderSummaryRates(ratesResponse);
+    }
 
+    renderSummaryRates(ratesResponse) {
         let rates = "";
         ratesResponse.rates.forEach((rate, index) => {
             rates += `
@@ -152,21 +139,29 @@ class CheckoutView {
             `;
         });
 
-        const html = `
-            <div class="row">
-                <div class="col-sm-8 row">
-                    ${products}
-                </div>
-                <div class="col-sm-4 align-items-start">
-                    <span class="fw-bolder">Choose a delivery option:</span>
-                    <div class="d-flex flex-column gap-3 mt-2">
-                        ${rates}
+        $("#summary-rates").empty().append(rates);
+    }
+
+    renderSummaryProducts(calculation) {
+        let products = "";
+        calculation.cart.forEach(item => {
+            products += `
+                <div class="row">
+                    <div class="col-sm-4">
+                        <img src="${item.product.mainImagePath}" alt="${item.product.name}" class="img-fluid"/>
+                    </div>
+                    <div class="col-sm-8">
+                        <h5>${item.product.name}</h5>
+                        <p>Quantity: ${item.quantity}</p>
+                        <span>${item.product.discountPrice}</span>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        });
 
-        $summary.append(html);
+        $("#summary-products").empty().append(products);
+
+        return products;
     }
 
     /**
@@ -227,5 +222,9 @@ class CheckoutView {
      */
     hideCurrencies() {
         $(".currencies").addClass("d-none");
+    }
+
+    checkRateRadio(rateIdx) {
+        $(`input[data-address-idx="${rateIdx}"]`).prop('checked', true);
     }
 }
