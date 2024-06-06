@@ -1,0 +1,17 @@
+.currency:hover {
+  background-color: #e1e1e1;
+}
+
+.currency {
+  display: flex;
+  border: 0.2px solid #ececec;
+  border-radius: 0.25rem;
+  padding: 1rem;
+  gap: 1rem;
+  color: var(--bs-dark);
+  text-decoration: none;
+}
+
+.currency-checked {
+  border: 1px solid !important;
+}

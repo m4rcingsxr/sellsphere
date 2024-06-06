@@ -7,6 +7,8 @@
     <script type="text/javascript" th:src="@{/js/CheckoutModel.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutView.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutController.js}"></script>
+
+    <link rel="stylesheet" th:href="@{/css/checkout.css}" />
 </head>
 
 <body>
@@ -121,11 +123,11 @@
                         <hr class="text-dark-emphasis"/>
 
                         <div id="currencies" class="d-flex gap-3 flex-wrap currencies d-none">
-                            <a id="presentment-currency" class="d-none border border-1 rounded-2 d-flex p-3 gap-3 link-dark link-underline link-underline-opacity-0" href="#">
+                            <a id="presentment-currency" class="currency" href="#">
 
                             </a>
                             <!-- Prepend currencies here -->
-                            <a id="settlement-currency" class="border border-2 border-dark rounded-2 d-flex p-3 gap-3 link-dark link-underline link-underline-opacity-0 " href="#">
+                            <a id="settlement-currency" class="currency currency-checked" href="#">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" class="img-fluid border border-1" style="max-width: 40px; max-height: 25px"/>
                                 <span id="settlement-total" class="fw-bolder"></span>
                             </a>

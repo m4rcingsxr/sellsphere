@@ -169,7 +169,8 @@ class CheckoutView {
      * @param {Object} calculation - The calculation object.
      */
     renderSettlementCurrency(calculation) {
-        $("#settlement-currency").data("currency-code", calculation.currencyCode);
+
+        $("#settlement-currency").data("currency-code", calculation.currencyCode).attr("data-currency-code", calculation.currencyCode);;
         $("#settlement-total").empty().text(`(${calculation.currencySymbol}) ${(calculation.amountTotal) / calculation.unitAmount}`);
     }
 
@@ -182,7 +183,12 @@ class CheckoutView {
      */
     renderPresentmentTotal(country, countryData, convertedPrice, targetCurrency) {
         const img = this.renderCountryFlag(countryData);
-        $("#presentment-currency").empty().removeClass("d-none").append(`${img}<span class="fw-bolder" id="presentment-total">(${country.currencySymbol}) ${convertedPrice}</span>`).data("currency-code", targetCurrency);
+        $("#presentment-currency")
+            .empty()
+            .removeClass("d-none")
+            .append(`${img}<span class="fw-bolder" id="presentment-total">(${country.currencySymbol}) ${convertedPrice}</span>`)
+            .data("currency-code", targetCurrency)
+            .attr("data-currency-code", targetCurrency);
     }
 
     /**
@@ -226,5 +232,10 @@ class CheckoutView {
 
     checkRateRadio(rateIdx) {
         $(`input[data-address-idx="${rateIdx}"]`).prop('checked', true);
+    }
+
+    selectCurrency(previousCurrency, currentCurrency) {
+        $(`a[data-currency-code="${currentCurrency}"]`).addClass("currency-checked");
+        $(`a[data-currency-code="${previousCurrency}"]`).removeClass("currency-checked");
     }
 }

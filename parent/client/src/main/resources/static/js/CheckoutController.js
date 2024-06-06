@@ -455,10 +455,20 @@ class CheckoutController {
             const $currency = $(event.currentTarget);
             const targetCurrency = $currency.data("currency-code");
 
+            if(!this.model.selectedCurrency && targetCurrency === this.model.baseCalculation.currencyCode) {
+                return;
+            }
+
+            if(this.model.selectedCurrency === targetCurrency) {
+                return;
+            }
+
             const address = this.model.baseCalculation.customerDetails.address;
             const rates = this.model.ratesResponse.rates;
             const rateId = $(`input[type="radio"]:checked`).data("address-idx");
             const selectedRate = rates[rateId];
+
+            const currentCurrency = this.model.selectedCurrency;
 
             if (this.model.baseCalculation.currencyCode === targetCurrency) {
                 console.debug("Selected currency matches base calculation currency");
@@ -486,6 +496,8 @@ class CheckoutController {
                 this.view.renderSummaryProducts(newCalculation);
                 this.view.renderExchangeRate(this.model.baseCalculation.currencyCode, exchangeRate, targetCurrency);
             }
+
+            this.view.selectCurrency(currentCurrency, targetCurrency);
         });
     }
 }
