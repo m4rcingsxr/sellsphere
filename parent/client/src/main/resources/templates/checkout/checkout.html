@@ -82,6 +82,9 @@
                                             <span class="fw-bolder">Choose a delivery option:</span>
                                             <div id="summary-rates" class="d-flex flex-column gap-3">
                                             </div>
+                                            <div id="rate-pagination">
+
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -144,8 +147,19 @@
                                 <span id="settlement-total" class="fw-bolder"></span>
                             </a>
                         </div>
+
+                        <div id="currencies-load" class="d-flex gap-3 flex-wrap d-none">
+                            <div class="placeholder-wave" style="width: 45%;">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                            <div class="placeholder-wave" style="width: 45%;">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+
                         <div class="currencies d-none">
-                            <span class="text-light-emphasis fs-7" id="exchange-rate">1 EUR = 4.30 PLN (includes 2% conversion fee)</span>
+                            <span class="text-light-emphasis fs-7 d-block" id="exchange-rate">1 EUR = 4.30 PLN (includes 2% conversion fee)</span>
+                            <span class="fw-lighter fs-7">Exchange rate will be refreshed in: <span id="countdown"></span></span>
                         </div>
 
 

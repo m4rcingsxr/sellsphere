@@ -1,28 +1,30 @@
 package com.sellsphere.common.entity.payload;
 
 import com.sellsphere.common.entity.CartItem;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
+import java.io.Serializable;
+import java.math.BigDecimal;
+
 @AllArgsConstructor
-public class CartItemDTO {
+@NoArgsConstructor
+@Setter
+@Getter
+@Builder
+public class CartItemDTO implements Serializable {
 
-    @NotNull(message = "Product id is required")
-    @Min(value = 1, message = "Product id cannot be less than 1")
-    private int productId;
+    @NotNull(message = "Product is required")
+    private BasicProductDTO product;
 
-    @NotNull(message = "Quantity is required")
-    @Max(value = 5, message = "Maximum 5 same products in cart")
     private int quantity;
 
+    private BigDecimal subtotal;
+
     public CartItemDTO(CartItem cartItem) {
-        this.productId = cartItem.getProduct().getId();
+        this.product = new BasicProductDTO(cartItem.getProduct());
         this.quantity = cartItem.getQuantity();
+        this.subtotal = cartItem.getSubtotal();
     }
 
 }

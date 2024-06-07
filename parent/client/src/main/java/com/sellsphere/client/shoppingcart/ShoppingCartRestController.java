@@ -3,7 +3,7 @@ package com.sellsphere.client.shoppingcart;
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.product.ProductService;
 import com.sellsphere.common.entity.*;
-import com.sellsphere.common.entity.payload.CartItemDTO;
+import com.sellsphere.common.entity.payload.MinCartItemDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -94,14 +94,14 @@ public class ShoppingCartRestController {
      * @throws CustomerNotFoundException if the customer is not found
      */
     @GetMapping("/items")
-    public ResponseEntity<List<CartItemDTO>> getCartItems(
+    public ResponseEntity<List<MinCartItemDTO>> getCartItems(
             Principal principal)
             throws CustomerNotFoundException {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);
 
-        List<CartItemDTO> list = cartService
-                .findAllByCustomer(customer).stream().map(CartItemDTO::new).toList();
+        List<MinCartItemDTO> list = cartService
+                .findAllByCustomer(customer).stream().map(MinCartItemDTO::new).toList();
         return ResponseEntity.ok(list);
     }
 
@@ -115,7 +115,7 @@ public class ShoppingCartRestController {
      */
     @PostMapping("/set")
     public ResponseEntity<Void> setCart(Principal principal,
-                        @RequestBody List<CartItemDTO> cart)
+                        @RequestBody List<MinCartItemDTO> cart)
             throws CustomerNotFoundException {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);

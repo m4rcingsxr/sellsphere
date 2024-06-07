@@ -29,9 +29,12 @@ public class ShippingRestController {
     @PostMapping("/rates")
     public ResponseEntity<EasyshipRateResponse> getAvailableRates(
             @RequestBody AddressDTO addressDto,@RequestParam Integer page,
-            Principal principal) throws CustomerNotFoundException {
+            Principal principal) throws CustomerNotFoundException, CurrencyNotFoundException {
 
         Customer customer = getAuthenticatedCustomer(principal);
+
+        String currencyCode = settingService.getCurrencyCode();
+
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
         EasyshipRateResponse rates = apiService.getRates(
                 page,
@@ -44,8 +47,9 @@ public class ShippingRestController {
                         .contactName(addressDto.getFullName())
                         .contactPhone(addressDto.getPhoneNumber())
                         .countryAlpha2(addressDto.getCountryCode())
+                        .currencyCode(addressDto.getCurrencyCode())
                         .build(),
-                cart);
+                cart, currencyCode);
 
         return ResponseEntity.ok(rates);
     }

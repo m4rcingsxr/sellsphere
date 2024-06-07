@@ -1,9 +1,7 @@
-package com.sellsphere.payment;
+package com.sellsphere.payment.payload;
 
 import com.stripe.model.tax.Calculation;
 import lombok.*;
-
-import java.math.BigDecimal;
 
 @Getter
 @Setter

@@ -15,17 +15,13 @@ import java.security.Principal;
 public class CheckoutController {
 
     @GetMapping
-    public String checkout(Principal principal) throws CustomerNotFoundException, StripeException {
-
+    public String checkout() {
         return "checkout/checkout";
     }
 
     @GetMapping("/return")
     public String returnCheckout() {
-
         return "checkout/return";
     }
-
-
 
 }

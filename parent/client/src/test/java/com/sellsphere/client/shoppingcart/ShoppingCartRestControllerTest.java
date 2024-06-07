@@ -3,7 +3,7 @@ package com.sellsphere.client.shoppingcart;
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.product.ProductService;
 import com.sellsphere.common.entity.*;
-import com.sellsphere.common.entity.payload.CartItemDTO;
+import com.sellsphere.common.entity.payload.MinCartItemDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -139,7 +139,7 @@ class ShoppingCartRestControllerTest {
         customer.setId(1);
         when(customerService.getByEmail(anyString())).thenReturn(customer);
 
-        List<CartItemDTO> cartItemDtos = List.of(new CartItemDTO(1, 2));
+        List<MinCartItemDTO> cartItemDtos = List.of(new MinCartItemDTO(1, 2));
         String cartJson = "[{\"productId\":1,\"quantity\":2}]";
 
         // When & Then

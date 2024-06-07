@@ -7,7 +7,8 @@ class CheckoutModel {
         this.ratesResponse = null;
         this.selectedCurrency = null;
         this.selectedRateIdx = null;
-
+        this.exchangeRateResponse = null;
+        this.summaryAddress = null;
     }
 
     /**
@@ -45,7 +46,7 @@ class CheckoutModel {
      */
     async getBasicCalculation() {
         try {
-            return await ajaxUtil.post(`${MODULE_URL}checkout/calculate-basic`);
+            return await ajaxUtil.post(`${MODULE_URL}checkout/calculate-total`);
         } catch (error) {
             console.error(error);
             throw error;
@@ -60,7 +61,7 @@ class CheckoutModel {
      */
     async getCalculation(request) {
         try {
-            return await ajaxUtil.post(`${MODULE_URL}checkout/calculate`, request);
+            return await ajaxUtil.post(`${MODULE_URL}checkout/calculate-all`, request);
         } catch (error) {
             console.error(error);
             throw error;

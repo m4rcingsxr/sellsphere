@@ -14,9 +14,16 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CalculationRequest {
 
+    // required
     private Address address;
+
+    // required
     private BigDecimal shippingCost;
+
+    // required
     private String currencyCode;
+
+    // required on different code that base
     private BigDecimal exchangeRate;
 
 }

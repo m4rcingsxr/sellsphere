@@ -167,6 +167,14 @@ class CheckoutView {
         $("#payment-btn").parent().removeClass("d-none");
     }
 
+    showLoadCurrency() {
+        $("#currencies-load").removeClass("d-none");
+    }
+
+    hideLoadCurrency() {
+        $("#currencies-load").addClass("d-none");
+    }
+
     /**
      * Renders the summary data including products and shipping rates.
      * @param {Object} calculation - The calculation object.
@@ -240,19 +248,17 @@ class CheckoutView {
 
     /**
      * Renders the presentment total in the target currency.
-     * @param {Object} country - The country object.
      * @param {Object} countryData - The country data object.
-     * @param {number} convertedPrice - The converted price in the target currency.
-     * @param {string} targetCurrency - The target currency code.
      */
-    renderPresentmentTotal(country, countryData, convertedPrice, targetCurrency) {
+    renderPresentmentTotal(countryData,currencyCode, currencySymbol, convertedPrice) {
+
         const img = this.renderCountryFlag(countryData);
         $("#presentment-currency")
             .empty()
             .removeClass("d-none")
-            .append(`${img}<span class="fw-bolder" id="presentment-total">(${country.currencySymbol}) ${convertedPrice}</span>`)
-            .data("currency-code", targetCurrency)
-            .attr("data-currency-code", targetCurrency);
+            .append(`${img}<span class="fw-bolder" id="presentment-total">(${currencySymbol}) ${convertedPrice}</span>`)
+            .data("currency-code", currencyCode)
+            .attr("data-currency-code", currencyCode);
     }
 
     /**

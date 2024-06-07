@@ -12,17 +12,12 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class CalculationResponse {
-
     private long amountTotal;
     private long taxAmountInclusive;
-    private long unitAmount;
-
     private Calculation.CustomerDetails customerDetails;
     private Calculation.ShippingCost shippingCost;
-
+    private long unitAmount;
     private String currencyCode;
     private String currencySymbol;
-
     private List<CartItemDTO> cart;
-
 }

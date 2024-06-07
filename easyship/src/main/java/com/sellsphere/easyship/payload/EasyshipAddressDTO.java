@@ -43,6 +43,8 @@ public class EasyshipAddressDTO {
 
     private String state;
 
+    private String currencyCode;
+
 
     @Getter
     @Setter

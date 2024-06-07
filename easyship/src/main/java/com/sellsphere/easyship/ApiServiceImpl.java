@@ -34,7 +34,10 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
-    public EasyshipRateResponse getRates(Integer pageNum, EasyshipAddressDTO recipient, List<CartItem> cart) {
+    public EasyshipRateResponse getRates(Integer pageNum, EasyshipAddressDTO recipient,
+                                         List<CartItem> cart, String baseCurrencyCode) {
+        String outputCurrency = recipient.getCurrencyCode() == null ? baseCurrencyCode : recipient.getCurrencyCode();
+
         WebTarget target = client.target(BASE_URL).path("/rates").queryParam("page", pageNum).queryParam("sortBy", "cost_rank");
 
         JsonObject jsonPayload = new JsonObject();
@@ -97,7 +100,10 @@ public class ApiServiceImpl implements ApiService {
         units.addProperty("dimensions", "cm");
         units.addProperty("weight", "kg");
         shippingSettings.add("units", units);
-        shippingSettings.addProperty("output_currency", "EUR");
+
+
+
+        shippingSettings.addProperty("output_currency", outputCurrency);
         jsonPayload.add("shipping_settings", shippingSettings);
 
         String payload = gson.toJson(jsonPayload);

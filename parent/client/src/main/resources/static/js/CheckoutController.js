@@ -12,8 +12,10 @@ class CheckoutController {
         this.addressElement = null;
         this.paymentElement = null;
         this.paymentEvent = null;
+        this.targetCurrency = null;
 
         this.init();
+        this.startCurrencyUpdateListener();
     }
 
     /**
@@ -74,7 +76,7 @@ class CheckoutController {
 
         if (!event.complete) return;
 
-        const { address } = event.value;
+        const {address} = event.value;
         console.info("Address input complete, validating address", address);
 
         const addressLines = [address.line1, address.line2].filter(Boolean);
@@ -131,7 +133,7 @@ class CheckoutController {
             this.validateRatesResponse(ratesResponse, easyShipAddress);
 
             const shippingCost = ratesResponse.rates[0].totalCharge;
-            const calculation = await this.model.getCalculation({ address, shippingCost });
+            const calculation = await this.model.getCalculation({address, shippingCost});
 
             this.updateModelAfterCalculation(calculation, ratesResponse);
             await this.initStripeElements(calculation);
@@ -160,7 +162,7 @@ class CheckoutController {
      * @param {Object} address - The address object.
      * @returns {Object} - The easy ship address object.
      */
-    createEasyShipAddress(address) {
+    createEasyShipAddress(address, currencyCode = null) {
         console.debug("Creating easy ship address object", address);
         return {
             city: address.city,
@@ -169,6 +171,7 @@ class CheckoutController {
             addressLine2: address.line2,
             postalCode: address.postal_code,
             state: address.state,
+            currencyCode: currencyCode
         };
     }
 
@@ -222,7 +225,7 @@ class CheckoutController {
      */
     initPaymentElement() {
         console.info("Initializing payment element");
-        const options = { layout: { type: "tabs", defaultCollapsed: false } };
+        const options = {layout: {type: "tabs", defaultCollapsed: false}};
 
         if (!this.paymentElement) {
             this.paymentElement = this.elements.create("payment", options);
@@ -230,7 +233,7 @@ class CheckoutController {
             this.paymentElement.on('change', event => {
                 console.info("Payment element change event detected", event);
                 this.paymentEvent = event;
-                if(event.complete) {
+                if (event.complete) {
                     this.view.showPaymentButton();
                     this.view.hidePaymentLoadBtn();
                 } else {
@@ -246,10 +249,10 @@ class CheckoutController {
      * @param {Object} calculation - The calculation data.
      * @returns {void}
      */
-    initStripeElements(calculation) {
+    initStripeElements(calculation ) {
         console.debug("Initializing Stripe elements", calculation);
         const options = {
-            appearance: { theme: 'flat' },
+            appearance: {theme: 'flat'},
             mode: 'payment',
             amount: calculation.amountTotal,
             currency: calculation.currencyCode.toLowerCase(),
@@ -265,7 +268,7 @@ class CheckoutController {
     async initAddressOptions() {
         console.debug("Initializing address element options");
 
-        const options = { mode: 'shipping' };
+        const options = {mode: 'shipping'};
         try {
             const shippableCountries = await this.model.getShippableCountries();
             options.allowedCountries = shippableCountries.map(country => country.code);
@@ -302,11 +305,12 @@ class CheckoutController {
     async handleContinueToPayment(event) {
         event.preventDefault();
 
+        this.model.exchangeRateResponse = undefined;
 
         console.info("Handling continue to payment action");
 
         if (this.model?.baseCalculation?.customerDetails?.address) {
-            if(!this.paymentEvent?.complete) {
+            if (!this.paymentEvent?.complete) {
                 this.view.showPaymentLoadBtn();
                 this.view.hidePaymentButton();
             } else {
@@ -327,7 +331,7 @@ class CheckoutController {
                 this.view.renderSummary(this.model.baseCalculation);
                 this.view.renderProductSummaryNav(this.model.baseCalculation);
 
-                new bootstrap.Collapse("#checkout-payment-accordion", { toggle: true }).show();
+                new bootstrap.Collapse("#checkout-payment-accordion", {toggle: true}).show();
             } catch (error) {
                 console.error(error);
                 showErrorModal(error.response);
@@ -346,6 +350,8 @@ class CheckoutController {
         event.preventDefault();
         console.info("Address accordion button clicked");
 
+        this.model.exchangeRateResponse = undefined;
+
         this.view.showAddressButton();
         this.view.hidePaymentButton();
         this.view.hidePlaceOrderButton();
@@ -354,7 +360,7 @@ class CheckoutController {
         this.view.renderSummary(this.model.baseCalculation);
         this.view.renderProductSummaryNav(this.model.baseCalculation);
 
-        new bootstrap.Collapse("#checkout-address-accordion", { toggle: true }).show();
+        new bootstrap.Collapse("#checkout-address-accordion", {toggle: true}).show();
     }
 
     /**
@@ -368,22 +374,41 @@ class CheckoutController {
         console.info("Show summary button clicked");
 
         if (this.model.baseCalculation?.customerDetails?.address && this.paymentEvent?.complete) {
-            this.view.hideAddressButton();
-            this.view.hidePaymentButton();
-            this.view.showPlaceOrderButton();
-            this.view.showCurrencies();
 
-            new bootstrap.Collapse("#checkout-summary-accordion", { toggle: true }).show();
+            try {
+                this.view.showLoadCurrency();
+                await this.loadExchangeRate();
+
+                const rates = this.model.ratesResponse.rates;
+                const rateIdx = this.model.selectedRateIdx ? this.model.selectedRateIdx : 0;
+                const selectedRate = rates[rateIdx];
+                const currentAddress = this.model.baseCalculation.customerDetails.address;
+
+
+                const targetCalculation = await this.model.getCalculation({
+                    address: currentAddress,
+                    shippingCost: selectedRate.totalCharge,
+                    currencyCode: this.model.targetCurrency,
+                    exchangeRate: this.model.exchangeRateResponse.result["rate"]
+                });
+
+                await this.loadCurrencyView(targetCalculation);
+            } catch (error) {
+                console.error(error);
+                showErrorModal(error.response);
+            } finally {
+                this.view.hideLoadCurrency();
+            }
 
             this.view.renderSummaryData(this.model.baseCalculation, this.model.ratesResponse);
             this.view.checkRateRadio(this.model.selectedRateIdx);
 
-            try {
-                await this.loadCurrencyData();
-            } catch (error) {
-                console.error(error);
-                showErrorModal(error.response);
-            }
+
+            this.view.hideAddressButton();
+            this.view.hidePaymentButton();
+            this.view.showCurrencies();
+            this.view.showPlaceOrderButton();
+            new bootstrap.Collapse("#checkout-summary-accordion", {toggle: true}).show();
         } else {
             console.warn("Address and payment step must be complete before summary step");
         }
@@ -415,26 +440,26 @@ class CheckoutController {
         const currentAddress = this.model.baseCalculation.customerDetails.address;
 
         try {
-            const country = await this.model.getCountryForClientIp();
-            const exchangeRateResponse = await this.model.getExchangeRatesForClientCountry(country.currencyCode);
+            if (!this.model.exchangeRateResponse) throw new Error("Invalid state, exhcange rate must be defined to process this request");
 
-            const exchangeRate = exchangeRateResponse.result["rate"];
+
             const targetCalculation = await this.model.getCalculation({
                 address: currentAddress,
                 shippingCost: selectedRate.totalCharge,
-                currencyCode: this.model.selectedCurrency,
-                exchangeRate
+                currencyCode: this.model.targetCurrency,
+                exchangeRate: this.model.exchangeRateResponse.result["rate"]
             });
 
             this.model.baseCalculation = await this.model.getCalculation({
                 address: currentAddress,
                 shippingCost: selectedRate.totalCharge,
+                currencyCode: this.model.baseCalculation.currencyCode
             });
 
             const isSameCurrency = this.model.selectedCurrency === this.model.baseCalculation.currencyCode;
             await this.initStripeElements(isSameCurrency ? this.model.baseCalculation : targetCalculation);
 
-            await this.loadCurrencyData();
+            await this.loadCurrencyView(targetCalculation);
 
             if (!isSameCurrency) {
                 this.view.renderSummary(targetCalculation);
@@ -500,21 +525,21 @@ class CheckoutController {
                 this.view.renderSummaryProducts(this.model.baseCalculation);
                 this.view.renderProductSummaryNav(this.model.baseCalculation);
             } else {
-                const country = await this.model.getCountryForClientIp();
-                const exchangeRateResponse = await this.model.getExchangeRatesForClientCountry(country.currencyCode);
 
-                const exchangeRate = exchangeRateResponse.result["rate"];
+                const exchangeRateResponse = this.model.exchangeRateResponse;
+
+                if (!exchangeRateResponse) throw new Error("Invalid state, exhcange rate must be defined to process this request");
+
                 const newCalculation = await this.model.getCalculation({
                     address,
                     shippingCost: selectedRate.totalCharge,
                     currencyCode: targetCurrency,
-                    exchangeRate
+                    exchangeRate: exchangeRateResponse.result["rate"]
                 });
 
                 this.view.renderSummary(newCalculation);
                 this.view.renderProductSummaryNav(newCalculation);
                 this.view.renderSummaryProducts(newCalculation);
-                this.view.renderExchangeRate(this.model.baseCalculation.currencyCode, exchangeRate, targetCurrency);
             }
 
             this.view.selectCurrency(currentCurrency, targetCurrency);
@@ -535,30 +560,167 @@ class CheckoutController {
     }
 
     /**
-     * Loads the currency data and updates the view accordingly.
+     * Loads the currency data and updates the view accordingly. Only on new address or when exchange rate expire
      * @async
      * @returns {Promise<void>}
      */
-    async loadCurrencyData() {
+    async loadExchangeRate() {
         console.debug("Loading currency data");
+
         try {
             const country = await this.model.getCountryForClientIp();
+
             const exchangeRateResponse = await this.model.getExchangeRatesForClientCountry(country.currencyCode);
+            exchangeRateResponse.updated = new Date();
 
-            const targetCurrency = country.currencyCode;
-            const exchangeRate = exchangeRateResponse.result["rate"];
-            const convertedPrice = exchangeRateResponse.result[country.currencyCode];
+            this.model.exchangeRateResponse = exchangeRateResponse;
+            this.model.targetCurrency = country.currencyCode;
 
-            const countryData = await this.model.getCountryData(country.code);
-
-            this.view.showCurrencies();
-            this.view.renderPresentmentTotal(country, countryData, convertedPrice, targetCurrency);
-            this.view.renderSettlementCurrency(this.model.baseCalculation);
-            this.view.renderExchangeRate(exchangeRateResponse.base, exchangeRate, targetCurrency);
+            this.startCountdown(20 * 60 * 1000); // 20 min
         } catch (error) {
             console.error(error);
-            console.log(error.response);
             showErrorModal(error.response);
         }
+
+    }
+
+    async loadCurrencyView(targetCalculation) {
+        const country = await this.model.getCountryForClientIp();
+        const countryData = await this.model.getCountryData(country.code);
+
+        this.view.renderSettlementCurrency(this.model.baseCalculation);
+
+        this.view.renderPresentmentTotal(countryData, country.currencyCode, country.currencySymbol, (targetCalculation.amountTotal / targetCalculation.unitAmount));
+
+        this.view.renderExchangeRate(this.model.baseCalculation.currencyCode, this.model.exchangeRateResponse.result["rate"], country.currencyCode);
+        this.view.hideLoadCurrency();
+
+        this.view.showCurrencies();
+    }
+
+    /**
+     * Starts a listener that checks if 1 hour has passed since the last exchange rate update
+     * and invokes loadCurrencyData if necessary.
+     */
+    startCurrencyUpdateListener() {
+        setInterval(async () => {
+            console.debug("Validating exchange rate...");
+            if (this.model.exchangeRateResponse && this.exchangeRateExpired(this.model.exchangeRateResponse)) {
+                console.info("One hour has passed since the last exchange rate update. Loading new currency data...");
+
+                if (this.model.baseCalculation?.customerDetails?.address && this.paymentEvent?.complete) {
+
+                    try {
+                        this.view.hidePlaceOrderButton();
+                        this.view.hideTotal();
+                        this.view.hideProductSummaryNav();
+                        this.view.hideSummaryNav();
+
+                        this.view.showLoadCurrency();
+                        this.view.hideCurrencies();
+
+                        this.view.showLoadPlaceOrderButton();
+                        this.view.showLoadTotal();
+                        this.view.showProductsSummaryNavPlaceholder();
+                        this.view.showSummaryLoadNav();
+
+
+
+
+                        await this.loadExchangeRate();
+
+                        const rates = this.model.ratesResponse.rates;
+                        const rateIdx = this.model.selectedRateIdx ? this.model.selectedRateIdx : 0;
+                        const selectedRate = rates[rateIdx];
+                        const currentAddress = this.model.baseCalculation.customerDetails.address;
+
+
+                        const targetCalculation = await this.model.getCalculation({
+                            address: currentAddress,
+                            shippingCost: selectedRate.totalCharge,
+                            currencyCode: this.model.targetCurrency,
+                            exchangeRate: this.model.exchangeRateResponse.result["rate"]
+                        });
+
+                        this.view.renderSummary(this.model.baseCalculation);
+                        this.view.renderProductSummaryNav(this.model.baseCalculation);
+                        this.view.renderSummaryProducts(this.model.baseCalculation);
+                        await this.loadCurrencyView(targetCalculation);
+                    } catch (error) {
+                        console.error(error);
+                        showErrorModal(error.response);
+                    } finally {
+                        if(this.model.selectedCurrency !== this.model.baseCalculation.currencyCode) {
+                            this.view.selectCurrency(this.model.selectedCurrency, this.model.baseCalculation.currencyCode);
+                        }
+
+                        this.view.hideLoadPlaceOrderButton();
+                        this.view.hideLoadTotal();
+                        this.view.hideProductsSummaryNavPlaceholder();
+                        this.view.hideSummaryLoadNav();
+
+                        this.view.hideLoadCurrency();
+                        this.view.showSummaryNav();
+                        this.view.showTotal();
+                        this.view.hideSummaryLoadNav();
+                        this.view.showCurrencies();
+
+                        this.view.showPlaceOrderButton();
+                        this.view.showTotal();
+                        this.view.showProductSummaryNav();
+                        this.view.showSummaryNav();
+
+                        this.view.hideAddressButton();
+                        this.view.hidePaymentButton();
+                    }
+
+
+                } else {
+                    console.warn("Address and payment step must be complete before summary step");
+                }
+            }
+        }, 60000); // Check every minute
+    }
+
+    /**
+     * Checks if 20 minutes have passed since the last update of the exchange rate response.
+     * @param {Object} exchangeRateResponse - The exchange rate response object.
+     * @returns {boolean} - True if 20 minutes have passed, false otherwise.
+     */
+    exchangeRateExpired(exchangeRateResponse) {
+        const now = new Date();
+        const updated = new Date(exchangeRateResponse.updated);
+
+        const differenceInMinutes = (now - updated) / (1000 * 60);
+
+        return differenceInMinutes >= 20;
+    }
+
+    startCountdown(duration) {
+        if(this.model.countdown) {
+            clearInterval(this.model.countdown);
+        }
+
+        const countdownElement = document.getElementById('countdown');
+        let remainingTime = duration;
+
+        function updateCountdown() {
+            if (remainingTime <= 0) {
+                clearInterval(interval);
+                countdownElement.textContent = '00:00';
+                return;
+            }
+
+            remainingTime -= 1000;
+
+            const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
+            const seconds = Math.floor((remainingTime / 1000) % 60);
+
+            countdownElement.textContent =
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Update the countdown every second (1000 milliseconds)
+        this.model.countdown = setInterval(updateCountdown, 1000);
     }
 }

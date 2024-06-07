@@ -8,7 +8,8 @@ import java.util.List;
 
 public interface ApiService {
 
-    EasyshipRateResponse getRates(Integer pageNum, EasyshipAddressDTO address , List<CartItem> cart);
+    EasyshipRateResponse getRates(Integer pageNum, EasyshipAddressDTO recipient,
+                                  List<CartItem> cart, String baseCurrencyCode);
 
     String getAccount();
 

@@ -9,9 +9,10 @@ import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.common.entity.payload.CartItemDTO;
-import com.sellsphere.payment.PaymentRequest;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.sellsphere.payment.payload.CalculationRequest;
+import com.sellsphere.payment.payload.CalculationResponse;
+import com.sellsphere.payment.payload.PaymentRequest;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
@@ -41,84 +42,113 @@ public class CheckoutRestController {
     private final CountryRepository countryRepository;
     private final CurrencyRepository currencyRepository;
 
-    // calculate for products and address
-    @PostMapping("/calculate")
-    public ResponseEntity<CheckoutResponse> calculateWithAddress(
+    // calculation with address with specified exchange rate or in base currency if rate is not
+    // defined
+    @PostMapping("/calculate-all")
+    public ResponseEntity<CalculationResponse> calculateWithAddress(
             @RequestBody CalculationRequest request, Principal principal)
             throws StripeException, CustomerNotFoundException, CurrencyNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
 
-        String baseCurrencyCode = settingService.getCurrencyCode();
+        String baseCurrency = settingService.getCurrencyCode();
 
-        String currencyCode = baseCurrencyCode;
-
-        if (request != null && request.getCurrencyCode() != null) {
-            currencyCode = request.getCurrencyCode();
+        if(request.getCurrencyCode() == null) {
+            request.setCurrencyCode(baseCurrency);
         }
 
-        Currency currency = currencyRepository.findByCode(currencyCode).orElseThrow(
-                CurrencyNotFoundException::new);
+        Currency targetCurrency = currencyRepository
+                .findByCode(request.getCurrencyCode())
+                .orElseThrow(CurrencyNotFoundException::new);
+        Currency base = currencyRepository.findByCode(baseCurrency)
+                .orElseThrow(CurrencyNotFoundException::new);
 
-        var checkoutResponseBuilder = CheckoutResponse.builder();
+        CalculationResponse.CalculationResponseBuilder responseBuilder =
+                CalculationResponse.builder();
 
-        if (request != null) {
-            Calculation calculation = stripeService.calculateTax(cart, request.getAddress(),
-                                                                 request.getShippingCost(),
-                                                                 baseCurrencyCode, currency,
-                                                                 request.getExchangeRate()
-            );
+        Calculation calculation = stripeService.calculate(request, cart, base, targetCurrency);
 
-            // handle 3 decimal currencies 5.124 KWD -> 5124 -> 5200/5300
-            if (currency.getUnitAmount() == 1000) {
-                BigDecimal value = BigDecimal.valueOf(calculation.getAmountTotal());
-                BigDecimal hundred = BigDecimal.valueOf(100);
-                BigDecimal divided = value.divide(hundred, 0, RoundingMode.HALF_UP);
-                calculation.setAmountTotal(divided.multiply(hundred).longValue());
-            }
-
-            checkoutResponseBuilder
-                    .amountTotal(calculation.getAmountTotal())
-                    .taxAmountInclusive(calculation.getTaxAmountInclusive())
-                    .shippingCost(calculation.getShippingCost())
-                    .customerDetails(calculation.getCustomerDetails());
-        } else {
-            checkoutResponseBuilder.amountTotal(stripeService.getAmountTotal(cart, currency));
-        }
+        responseBuilder
+                .amountTotal(calculation.getAmountTotal())
+                .taxAmountInclusive(calculation.getTaxAmountInclusive())
+                .shippingCost(calculation.getShippingCost())
+                .customerDetails(calculation.getCustomerDetails())
+                .currencyCode(targetCurrency.getCode())
+                .unitAmount(targetCurrency.getUnitAmount())
+                .currencySymbol(targetCurrency.getSymbol());
 
 
-
-        checkoutResponseBuilder.currencyCode(currency.getCode());
-        checkoutResponseBuilder.unitAmount(currency.getUnitAmount());
-        checkoutResponseBuilder.currencySymbol(currency.getSymbol());
-
-        if (baseCurrencyCode.equals(currency.getCode())) {
-            checkoutResponseBuilder.cart(cart.stream().map(CartItemDto::new).toList());
+        if (baseCurrency.equals(targetCurrency.getCode())) {
+            responseBuilder.cart(cart.stream().map(CartItemDTO::new).toList());
         } else {
             BigDecimal stripeExchangeFee = BigDecimal.valueOf(0.02);
             BigDecimal exchangeRate = request.getExchangeRate().multiply(
-                    BigDecimal.ONE.add(stripeExchangeFee)).setScale(5, RoundingMode.HALF_UP);
+                    BigDecimal.ONE.add(stripeExchangeFee));
 
-            checkoutResponseBuilder.cart(cart.stream().map(cartItem -> CartItemDto.builder().subtotal(
-                    cartItem.getSubtotal().multiply(exchangeRate)).quantity(
-                    cartItem.getQuantity()).product(
-                    BasicProductDTO.builder().alias(cartItem.getProduct().getAlias()).brandName(
-                            cartItem.getProduct().getBrand().getName()).categoryName(
-                            cartItem.getProduct().getCategory().getName()).name(
-                            cartItem.getProduct().getName()).price(
-                            cartItem.getProduct().getPrice().multiply(exchangeRate)).discountPrice(
-                            cartItem.getProduct().getDiscountPrice().multiply(exchangeRate)).inStock(
-                            cartItem.getProduct().isInStock()).mainImagePath(
-                            cartItem.getProduct().getMainImagePath()).discountPercent(
-                            cartItem.getProduct().getDiscountPercent()).build()).build()).toList());
+            BigDecimal finalRate;
+            Integer scale;
+            if (targetCurrency.getUnitAmount() == 1000) {
+                finalRate = exchangeRate.setScale(3, RoundingMode.HALF_UP);
+                scale = 3;
+            } else if (targetCurrency.getUnitAmount() == 1) {
+                finalRate = exchangeRate.setScale(0, RoundingMode.HALF_UP);
+                scale = 0;
+            } else {
+                finalRate = exchangeRate.setScale(2, RoundingMode.HALF_UP);
+                scale = 2;
+            }
+
+            BigDecimal subtotal = new BigDecimal(0);
+
+            cart.forEach(cartItem -> subtotal.add(
+                    BigDecimal.valueOf(cartItem.getQuantity()).multiply(
+                            cartItem.getProduct().getDiscountPrice().setScale(scale,
+                                                                              RoundingMode.CEILING
+                            ))));
+
+
+            responseBuilder.cart(cart.stream().map(cartItem -> CartItemDTO.builder()
+                    .quantity(cartItem.getQuantity())
+                    .subtotal(subtotal).product(
+                            BasicProductDTO.builder().alias(
+                                    cartItem.getProduct().getAlias()).brandName(
+                                    cartItem.getProduct().getBrand().getName()).categoryName(
+                                    cartItem.getProduct().getCategory().getName()).name(
+                                    cartItem.getProduct().getName()).price(
+                                    cartItem.getProduct().getPrice().multiply(
+                                            finalRate)).discountPrice(
+                                    cartItem.getProduct().getDiscountPrice().multiply(
+                                            finalRate).setScale(2, RoundingMode.CEILING)).inStock(
+                                    cartItem.getProduct().isInStock()).mainImagePath(
+                                    cartItem.getProduct().getMainImagePath()).discountPercent(
+                                    cartItem.getProduct().getDiscountPercent()).build()).build()).toList());
         }
 
-        return ResponseEntity.ok(checkoutResponseBuilder.build());
+        return ResponseEntity.ok(responseBuilder.build());
     }
 
-    // calculate only for the products - for base currency code
-    @PostMapping("/calculate-basic")
-    public ResponseEntity<CheckoutResponse> calculate(Principal principal)
+    /**
+     * Rounds an amount based on the unit amount of the currency.
+     * If the unit amount is 1000 (three-decimal currency), rounds to the nearest ten.
+     * If the unit amount is 1 (zero-decimal currency), rounds to the nearest whole number.
+     * Otherwise, rounds to the nearest integer.
+     * @param amount - The amount to be rounded.
+     * @param unitAmount - The unit amount of the currency.
+     * @returns The rounded amount.
+     */
+    private long roundAmount(BigDecimal amount, long unitAmount) {
+        if (unitAmount == 1000) {
+            return amount.setScale(3, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(10)).setScale(0, RoundingMode.HALF_UP).longValue();
+        } else if (unitAmount == 1) {
+            return amount.setScale(0, RoundingMode.HALF_UP).longValue();
+        } else {
+            return amount.setScale(0, RoundingMode.HALF_UP).longValue();
+        }
+    }
+
+    // calculate without products with base currency
+    @PostMapping("/calculate-total")
+    public ResponseEntity<CalculationResponse> calculate(Principal principal)
             throws CustomerNotFoundException, CurrencyNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
@@ -128,24 +158,22 @@ public class CheckoutRestController {
                 .orElseThrow(CurrencyNotFoundException::new);
 
         return ResponseEntity.ok(
-                CheckoutResponse.builder()
+                CalculationResponse.builder()
                         .amountTotal(stripeService.getAmountTotal(cart, currency))
                         .currencyCode(currency.getCode())
                         .unitAmount(currency.getUnitAmount())
                         .currencySymbol(currency.getSymbol())
-                        .cart(cart.stream().map(CartItemDto::new).toList())
+                        .cart(cart.stream().map(CartItemDTO::new).toList())
                         .build()
         );
     }
-
 
     @PostMapping("/create-payment-intent")
     public ResponseEntity<Map<String, String>> createPaymentIntent(
             @RequestBody PaymentRequest request)
             throws StripeException {
         PaymentIntent paymentIntent = stripeService.createPaymentIntent(request.getAmountTotal(),
-                                                                        request.getCurrencyCode(),
-                                                                        request.getCustomerDetails()
+                                                                        request.getCurrencyCode()
         );
 
         Map<String, String> map = new HashMap();
