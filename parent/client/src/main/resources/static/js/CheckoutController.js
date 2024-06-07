@@ -24,11 +24,20 @@ class CheckoutController {
     async init() {
         console.info("Initializing controller");
         try {
+            this.view.showLoadTotal();
+            this.view.showSummaryLoadNav();
+            this.view.showAddressLoadBtn();
+            this.view.showProductsSummaryNavPlaceholder();
+            this.view.hideAddressButton();
+
             await this.initAddressElement();
             this.initEventListeners();
         } catch (error) {
             console.error(error);
             showErrorModal(error.response);
+        } finally {
+            this.view.hideProductsSummaryNavPlaceholder();
+            this.view.showProductSummaryNav();
         }
     }
 
@@ -38,7 +47,7 @@ class CheckoutController {
      */
     initEventListeners() {
         console.debug("Initializing event listeners");
-        this.addressElement.on("change", debounce(this.validateAddress.bind(this), 1000));
+        this.addressElement.on("change", debounce(this.validateAddress.bind(this), 500));
         $("#address-btn, #payment-accordion-btn").on("click", this.handleContinueToPayment.bind(this));
         $("#address-accordion-btn").on("click", this.handleAddressAccordion.bind(this));
         $("#payment-btn, #summary-accordion-btn").on("click", this.handleShowSummary.bind(this));
@@ -54,6 +63,15 @@ class CheckoutController {
      */
     async validateAddress(event) {
         console.debug("Validating address", event);
+
+        this.model.baseCalculation = undefined;
+
+        this.view.hideSummaryNav();
+        this.view.showSummaryLoadNav();
+        this.view.hideTotal();
+        this.view.showLoadTotal();
+        this.view.hideAddressButton();
+
         if (!event.complete) return;
 
         const { address } = event.value;
@@ -68,8 +86,10 @@ class CheckoutController {
                 await this.handleValidAddress(address);
             } else {
                 console.warn("Address validation failed", address);
-                this.view.showAddressError();
+
+                this.view.hideSummaryNav();
                 this.view.hideAddressButton();
+                this.view.showAddressLoadBtn();
             }
         } catch (error) {
             console.error(error);
@@ -121,9 +141,17 @@ class CheckoutController {
             this.view.renderSummary(calculation);
             this.view.showSummaryView();
             this.view.showAddressButton();
+            this.view.hideAddressLoadBtn();
         } catch (error) {
             console.error(error);
             showErrorModal(error.response);
+
+            this.view.hideSummaryNav();
+            this.view.showAddressLoadBtn();
+        } finally {
+            this.view.showSummaryNav();
+            this.view.hideLoadTotal();
+            this.view.hideSummaryLoadNav();
         }
     }
 
@@ -202,6 +230,13 @@ class CheckoutController {
             this.paymentElement.on('change', event => {
                 console.info("Payment element change event detected", event);
                 this.paymentEvent = event;
+                if(event.complete) {
+                    this.view.showPaymentButton();
+                    this.view.hidePaymentLoadBtn();
+                } else {
+                    this.view.hidePaymentButton();
+                    this.view.showPaymentLoadBtn();
+                }
             });
         }
     }
@@ -266,11 +301,19 @@ class CheckoutController {
      */
     async handleContinueToPayment(event) {
         event.preventDefault();
+
+
         console.info("Handling continue to payment action");
 
         if (this.model?.baseCalculation?.customerDetails?.address) {
+            if(!this.paymentEvent?.complete) {
+                this.view.showPaymentLoadBtn();
+                this.view.hidePaymentButton();
+            } else {
+                this.view.showPaymentButton()
+            }
+
             this.view.hideAddressButton();
-            this.view.showPaymentButton();
             this.view.hidePlaceOrderButton();
             this.view.hideCurrencies();
 
@@ -287,7 +330,7 @@ class CheckoutController {
                 new bootstrap.Collapse("#checkout-payment-accordion", { toggle: true }).show();
             } catch (error) {
                 console.error(error);
-                showErrorModal(error.response || new ErrorResponse(error.message, 500));
+                showErrorModal(error.response);
             }
         } else {
             console.warn("Address must be defined before payment step");
@@ -355,6 +398,16 @@ class CheckoutController {
     async handleChangeCourier(event) {
         console.info("Courier change detected", event);
 
+        this.view.hidePlaceOrderButton();
+        this.view.hideTotal();
+        this.view.hideProductSummaryNav();
+        this.view.hideSummaryNav();
+
+        this.view.showLoadPlaceOrderButton();
+        this.view.showLoadTotal();
+        this.view.showProductsSummaryNavPlaceholder();
+        this.view.showSummaryLoadNav();
+
         this.model.selectedRateIdx = event.target.dataset.addressIdx;
 
         const rates = this.model.ratesResponse.rates;
@@ -393,6 +446,16 @@ class CheckoutController {
         } catch (error) {
             console.error(error);
             showErrorModal(error.response);
+        } finally {
+            this.view.showPlaceOrderButton();
+            this.view.showTotal();
+            this.view.showProductSummaryNav();
+            this.view.showSummaryNav();
+
+            this.view.hideLoadPlaceOrderButton();
+            this.view.hideLoadTotal();
+            this.view.hideProductsSummaryNavPlaceholder();
+            this.view.hideSummaryLoadNav();
         }
     }
 
@@ -405,6 +468,17 @@ class CheckoutController {
     async handleChangeCurrency(event) {
         event.preventDefault();
         console.info("Currency change detected", event);
+
+        this.view.hidePlaceOrderButton();
+        this.view.hideTotal();
+        this.view.hideProductSummaryNav();
+        this.view.hideSummaryNav();
+
+        this.view.showLoadPlaceOrderButton();
+        this.view.showLoadTotal();
+        this.view.showProductsSummaryNavPlaceholder();
+        this.view.showSummaryLoadNav();
+
 
         const $currency = $(event.currentTarget);
         const targetCurrency = $currency.data("currency-code");
@@ -447,6 +521,16 @@ class CheckoutController {
         } catch (error) {
             console.error(error);
             showErrorModal(error.response);
+        } finally {
+            this.view.showPlaceOrderButton();
+            this.view.showTotal();
+            this.view.showProductSummaryNav();
+            this.view.showSummaryNav();
+
+            this.view.hideLoadPlaceOrderButton();
+            this.view.hideLoadTotal();
+            this.view.hideProductsSummaryNavPlaceholder();
+            this.view.hideSummaryLoadNav();
         }
     }
 

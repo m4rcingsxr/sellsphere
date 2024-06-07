@@ -22,6 +22,79 @@ class CheckoutView {
         });
     }
 
+    showProductsSummaryNavPlaceholder() {
+        $("#products-load").removeClass("d-none");
+    }
+
+    hideProductsSummaryNavPlaceholder() {
+        $("#products-load").addClass("d-none");
+    }
+
+    showProductSummaryNav() {
+        $("#products").removeClass("d-none")
+    }
+
+    hideProductSummaryNav() {
+        $("#products").addClass("d-none")
+    }
+
+    showSummaryLoadNav() {
+        $("#summary-load-nav").removeClass("d-none");
+    }
+
+    hideSummaryLoadNav() {
+        $("#summary-load-nav").addClass("d-none");
+    }
+
+    hideSummaryNav() {
+        $("#summary-nav").addClass("d-none");
+    }
+
+    showSummaryNav() {
+        $("#summary-nav").removeClass("d-none");
+    }
+
+    showTotal() {
+        $(".total").removeClass("d-none");
+    }
+
+    hideTotal() {
+        $(".total").addClass("d-none");
+    }
+
+    showLoadTotal() {
+        $("#total-load").removeClass("d-none");
+    }
+
+    hideLoadTotal() {
+        $("#total-load").addClass("d-none");
+    }
+
+    showAddressLoadBtn() {
+        $("#address-load-btn").parent().removeClass("d-none");
+    }
+
+    hideAddressLoadBtn() {
+        $("#address-load-btn").parent().addClass("d-none");
+    }
+
+    showPaymentLoadBtn() {
+        $("#payment-load-btn").parent().removeClass("d-none");
+    }
+
+    hidePaymentLoadBtn() {
+        $("#payment-load-btn").parent().addClass("d-none");
+    }
+
+    showLoadPlaceOrderButton() {
+        $("#place-order-load-btn").parent().removeClass("d-none");
+    }
+
+    hideLoadPlaceOrderButton() {
+        $("#place-order-load-btn").parent().addClass("d-none");
+    }
+
+
     /**
      * Renders the summary details.
      * @param {Object} calculation - The calculation object.
@@ -50,15 +123,6 @@ class CheckoutView {
         console.log("Showing summary checkout details");
         $("#summary-nav, .total").removeClass("d-none");
         $("#address-error").addClass("d-none");
-    }
-
-    /**
-     * Shows the address error view.
-     */
-    showAddressError() {
-        console.warn("Address validation failed, showing error element");
-        $("#summary-nav, .total").addClass("d-none");
-        $("#address-error").removeClass("d-none");
     }
 
     /**

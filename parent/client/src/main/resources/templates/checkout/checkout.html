@@ -5,11 +5,12 @@
     <th:block th:replace="~{common :: common_head('Shopping Cart')}"></th:block>
     <script src="https://js.stripe.com/v3/"></script>
     <script type="text/javascript" th:src="@{/js/debounce_util.js}"></script>
+    <script type="text/javascript" th:src="@{/js/tooltip.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutModel.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutView.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutController.js}"></script>
 
-    <link rel="stylesheet" th:href="@{/css/checkout.css}" />
+    <link rel="stylesheet" th:href="@{/css/checkout.css}"/>
 </head>
 
 <body>
@@ -25,8 +26,9 @@
                 <div class="accordion" id="checkout-accordion">
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button id="address-accordion-btn" class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                     aria-expanded="false">
+                            <button id="address-accordion-btn" class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse"
+                                    aria-expanded="false">
                                 Address
                             </button>
                         </h2>
@@ -43,7 +45,8 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button id="payment-accordion-btn" class="accordion-button collapsed" type="button" data-bs-toggle="collapse">
+                            <button id="payment-accordion-btn" class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse">
                                 Payment
                             </button>
                         </h2>
@@ -63,7 +66,8 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button id="summary-accordion-btn"  class="accordion-button collapsed" type="button" data-bs-toggle="collapse">
+                            <button id="summary-accordion-btn" class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse">
                                 Summary
                             </button>
                         </h2>
@@ -90,13 +94,19 @@
             </div>
 
             <div class="col-sm-4 align-items-start">
-                <div  class="d-flex flex-column gap-2 border border-1 shadow-sm rounded-2 p-4">
+                <div class="d-flex flex-column gap-2 border border-1 shadow-sm rounded-2 p-4">
 
-                    <h3 class="total fw-bold">123</h3>
+                    <h3 class="total fw-bold d-none">123</h3>
 
-                    <div id="products" class="d-flex flex-column gap-2"></div>
+                    <h3 id="total-load" class="fw-bold d-none">
+                        <div class="placeholder-wave w-25">
+                            <span class="placeholder col-12 bg-secondary-subtle"></span>
+                        </div>
+                    </h3>
 
-                    <div id="summary-nav">
+                    <div id="products" class="d-none d-flex flex-column gap-2"></div>
+
+                    <div id="summary-nav" class="d-none">
 
                         <hr class="text-dark-emphasis"/>
 
@@ -129,7 +139,8 @@
                             </a>
                             <!-- Prepend currencies here -->
                             <a id="settlement-currency" class="currency currency-checked" href="#">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" class="img-fluid border border-1" style="max-width: 40px; max-height: 25px"/>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg"
+                                     class="img-fluid border border-1" style="max-width: 40px; max-height: 25px"/>
                                 <span id="settlement-total" class="fw-bolder"></span>
                             </a>
                         </div>
@@ -140,25 +151,116 @@
 
                         <div class="d-flex justify-content-between mt-3">
                             <span class="fw-bolder">Total due</span>
-                            <span class="total">123</span>
+                            <span class="total"></span>
                         </div>
 
-                        <div class="d-flex mt-4 justify-content-center d-none">
-                            <button id="address-btn" class="btn btn-primary w-100 rounded-4">Continue to payment</button>
-                        </div>
+                    </div>
 
-                        <div class="d-flex mt-4 d-none">
-                            <button id="payment-btn" class="btn btn-primary w-100 rounded-4">Review and shipping</button>
+                    <div id="products-load" class="d-none d-flex flex-column gap-2">
+                        <div class="d-flex justify-content-between">
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
                         </div>
-
-                        <div class="d-flex mt-4 d-none">
-                            <button id="place-order-btn" class=" btn btn-primary w-100 rounded-4">Place order</button>
+                        <div class="d-flex justify-content-between">
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="address-error" class="d-none">
-                        <span class="text-danger">Please provide correct address to continue</span>
+                    <div id="summary-load-nav" class="d-none">
+
+                        <hr class="text-dark-emphasis"/>
+
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bolder">Subtotal</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="">Shipping</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-lighter">Shipping tax</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-lighter">Tax</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="">Total tax</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+
+                        <hr class="text-dark-emphasis"/>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <span class="fw-bolder">Total due</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+
                     </div>
+
+                    <div class="d-flex mt-4 justify-content-center">
+                        <button id="address-btn" class="btn btn-primary w-100 rounded-4">Continue to payment
+                        </button>
+                    </div>
+
+                    <div class="d-flex mt-4 justify-content-center">
+                        <span id="address-load-btn" class="d-inline-block w-100" tabindex="0" data-bs-toggle="tooltip" data-bs-title="Provide correct address to continue">
+                            <button class="btn btn-primary w-100 rounded-4" type="button" disabled>Continue to payment</button>
+                        </span>
+                    </div>
+
+                    <div class="d-flex mt-4 d-none">
+                        <button id="payment-btn" class="btn btn-primary w-100 rounded-4">Review and shipping
+                        </button>
+                    </div>
+
+                    <div class="d-flex mt-4 d-none">
+                       <span id="payment-load-btn" class="d-inline-block w-100" tabindex="0" data-bs-toggle="tooltip" data-bs-title="Please provide correct payment information to process further">
+                            <button class="btn btn-primary w-100 rounded-4" type="button" disabled>Review and shipping</button>
+                        </span>
+                    </div>
+
+                    <div class="d-flex mt-4 d-none">
+                        <button id="place-order-btn" class=" btn btn-primary w-100 rounded-4">Place order</button>
+                    </div>
+
+                    <div class="d-flex mt-4 d-none">
+                       <span id="place-order-load-btn" class="d-inline-block w-100" tabindex="0" data-bs-toggle="tooltip" data-bs-title="Please provide correct payment information to process further">
+                            <button class="btn btn-primary w-100 rounded-4" type="button" disabled>Place order</button>
+                        </span>
+                    </div>
+
                 </div>
 
             </div>
