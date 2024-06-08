@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 public class EasyshipAddressResponse {
 
-    private List<EasyshipAddressDTO> addresses;
+    private List<EasyshipAddress> addresses;
     private Meta meta;
 
 }

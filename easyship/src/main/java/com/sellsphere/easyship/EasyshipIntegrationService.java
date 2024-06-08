@@ -5,8 +5,9 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.easyship.payload.EasyshipAddressDTO;
+import com.sellsphere.easyship.payload.EasyshipAddress;
 import com.sellsphere.easyship.payload.EasyshipAddressResponse;
+import com.sellsphere.easyship.payload.EasyshipRateRequest;
 import com.sellsphere.easyship.payload.EasyshipRateResponse;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
@@ -21,92 +22,83 @@ import java.util.List;
 import static com.sellsphere.easyship.Constants.BASE_URL;
 import static com.sellsphere.easyship.Constants.BEARER_TOKEN;
 
+/**
+ * Service class for integrating with Easyship API.
+ */
 @Singleton
-public class ApiServiceImpl implements ApiService {
+public class EasyshipIntegrationService implements EasyshipService {
 
     private final Client client;
     private final Gson gson;
 
     @Inject
-    public ApiServiceImpl(Client client, Gson gson) {
+    public EasyshipIntegrationService(Client client, Gson gson) {
         this.client = client;
-        this.gson= gson;
+        this.gson = gson;
     }
 
+    /**
+     * Retrieves shipping rates from Easyship API.
+     *
+     * @param pageNum          The page number for pagination.
+     * @param recipient        The recipient address details.
+     * @param cart             The list of cart items.
+     * @param baseCurrencyCode The base currency code.
+     * @return The Easyship rate response.
+     */
     @Override
-    public EasyshipRateResponse getRates(Integer pageNum, EasyshipAddressDTO recipient,
-                                         List<CartItem> cart, String baseCurrencyCode) {
+    public EasyshipRateResponse getShippingRates(Integer pageNum, EasyshipAddress recipient,
+                                                 List<CartItem> cart, String baseCurrencyCode) {
         String outputCurrency = recipient.getCurrencyCode() == null ? baseCurrencyCode : recipient.getCurrencyCode();
 
         WebTarget target = client.target(BASE_URL).path("/rates").queryParam("page", pageNum).queryParam("sortBy", "cost_rank");
 
-        JsonObject jsonPayload = new JsonObject();
+        EasyshipRateRequest rateRequest = EasyshipRateRequest.builder()
+                .courierSelection(EasyshipRateRequest.CourierSelection.builder()
+                                          .applyShippingRules(true)
+                                          .showCourierLogoUrl(true)
+                                          .build())
+                .destinationAddress(EasyshipAddress.builder()
+                                            .countryAlpha2(recipient.getCountryAlpha2())
+                                            .city(recipient.getCity())
+                                            .postalCode(recipient.getPostalCode())
+                                            .line1(recipient.getLine1())
+                                            .line2(recipient.getLine2())
+                                            .state(recipient.getState())
+                                            .build())
+                .originAddress(EasyshipAddress.builder()
+                                       .countryAlpha2("BE")
+                                       .city("Antwerp")
+                                       .postalCode("1000")
+                                       .build())
+                .incoterms("DDU")
+                .insurance(EasyshipRateRequest.Insurance.builder()
+                                   .isInsured(false)
+                                   .build())
+                .parcels(cart.stream().map(cartItem -> EasyshipRateRequest.Parcel.builder()
+                        .items(List.of(EasyshipRateRequest.Item.builder()
+                                               .quantity(cartItem.getQuantity())
+                                               .actualWeight(cartItem.getProduct().getWeight().doubleValue())
+                                               .declaredCurrency("EUR")
+                                               .declaredCustomsValue(cartItem.getProduct().getPrice().doubleValue())
+                                               .dimensions(EasyshipRateRequest.Item.Dimensions.builder()
+                                                                   .length(cartItem.getProduct().getLength().doubleValue())
+                                                                   .width(cartItem.getProduct().getWidth().doubleValue())
+                                                                   .height(cartItem.getProduct().getHeight().doubleValue())
+                                                                   .build())
+                                               .hsCode(1)
+                                               .build()))
+                        .build()).toList())
+                .shippingSettings(EasyshipRateRequest.ShippingSettings.builder()
+                                          .units(EasyshipRateRequest.Units.builder()
+                                                         .dimensions("cm")
+                                                         .weight("kg")
+                                                         .build())
+                                          .outputCurrency(outputCurrency)
+                                          .build())
+                .build();
 
-        JsonObject courierSelection = new JsonObject();
-        courierSelection.addProperty("apply_shipping_rules", true);
-        courierSelection.addProperty("show_courier_logo_url", true);
-        jsonPayload.add("courier_selection", courierSelection);
-
-        JsonObject destinationAddress = new JsonObject();
-        destinationAddress.addProperty("country_alpha2", recipient.getCountryAlpha2());
-        destinationAddress.addProperty("city", recipient.getCity());
-        destinationAddress.addProperty("postal_code", recipient.getPostalCode());
-        destinationAddress.addProperty("line_1", recipient.getLine1());
-        destinationAddress.addProperty("line_2", recipient.getLine2());
-        destinationAddress.addProperty("state", recipient.getState());
-        jsonPayload.add("destination_address", destinationAddress);
-
-        // Hard coded origin address
-        JsonObject originAddress = new JsonObject();
-        originAddress.addProperty("country_alpha2", "BE");
-        originAddress.addProperty("city", "Antwerp");
-        originAddress.addProperty("postal_code", "1000");
-        jsonPayload.add("origin_address", originAddress);
-
-        jsonPayload.addProperty("incoterms", "DDU");
-
-        // Insurance option
-        JsonObject insurance = new JsonObject();
-        insurance.addProperty("is_insured", false);
-        jsonPayload.add("insurance", insurance);
-
-        JsonArray parcelsArray = new JsonArray();
-        for (CartItem cartItem : cart) {
-            JsonObject parcel = new JsonObject();
-            JsonArray itemsArray = new JsonArray();
-
-            JsonObject item = new JsonObject();
-            item.addProperty("quantity", cartItem.getQuantity());
-            item.addProperty("actual_weight", cartItem.getProduct().getWeight().doubleValue());
-            item.addProperty("declared_currency", "EUR");
-            item.addProperty("declared_customs_value", cartItem.getProduct().getPrice().doubleValue());
-
-            JsonObject dimensions = new JsonObject();
-            dimensions.addProperty("length", cartItem.getProduct().getLength().doubleValue());
-            dimensions.addProperty("width", cartItem.getProduct().getWidth().doubleValue());
-            dimensions.addProperty("height", cartItem.getProduct().getHeight().doubleValue());
-            item.add("dimensions", dimensions);
-
-            item.addProperty("hs_code", 1); // Replace with actual HS code if available
-
-            itemsArray.add(item);
-            parcel.add("items", itemsArray);
-            parcelsArray.add(parcel);
-        }
-        jsonPayload.add("parcels", parcelsArray);
-
-        JsonObject shippingSettings = new JsonObject();
-        JsonObject units = new JsonObject();
-        units.addProperty("dimensions", "cm");
-        units.addProperty("weight", "kg");
-        shippingSettings.add("units", units);
-
-
-
-        shippingSettings.addProperty("output_currency", outputCurrency);
-        jsonPayload.add("shipping_settings", shippingSettings);
-
-        String payload = gson.toJson(jsonPayload);
+        String payload = gson.toJson(rateRequest);
 
         Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON)
                 .header("Authorization", BEARER_TOKEN)
@@ -126,10 +118,15 @@ public class ApiServiceImpl implements ApiService {
             String error = response.readEntity(String.class);
             throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
         }
-        }
+    }
 
+    /**
+     * Retrieves the account information from Easyship API.
+     *
+     * @return The account information as a JSON string.
+     */
     @Override
-    public String getAccount() {
+    public String getAccountInfo() {
         WebTarget target = client.target(BASE_URL).path("/account");
 
         Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON)
@@ -140,17 +137,21 @@ public class ApiServiceImpl implements ApiService {
         Response response = invocationBuilder.get();
 
         return processResponse(response);
-
     }
 
+    /**
+     * Updates the sender address in Easyship.
+     *
+     * @param addressDto The address details to be updated.
+     * @return The response from Easyship API as a JSON string.
+     */
     @Override
-    public String updateSender(EasyshipAddressDTO addressDto) {
+    public String updateSenderAddress(EasyshipAddress addressDto) {
         int currentPage = 0;
         boolean senderFound = false;
-        String nextPage = null;
+        String nextPage;
 
         do {
-            // Fetch the current page of addresses
             WebTarget getTarget = client.target(BASE_URL).path("/addresses")
                     .queryParam("page", currentPage)
                     .queryParam("perPage", "10");
@@ -163,10 +164,8 @@ public class ApiServiceImpl implements ApiService {
             Response getResponse = getInvocation.get();
             EasyshipAddressResponse addressResponse = getAddressPageResponse(getResponse);
 
-            // Check if a sender address exists in the current page
-            for (EasyshipAddressDTO address : addressResponse.getAddresses()) {
+            for (EasyshipAddress address : addressResponse.getAddresses()) {
                 if (address.getDefaultFor().isSender()) {
-                    // Delete the sender address
                     WebTarget deleteTarget = client.target(BASE_URL).path("/addresses/" + address.getId());
                     Invocation.Builder deleteInvocation = deleteTarget.request(MediaType.APPLICATION_JSON)
                             .header("Authorization", BEARER_TOKEN)
@@ -174,26 +173,24 @@ public class ApiServiceImpl implements ApiService {
                             .header("Accept-Language", "en-US,en;q=0.5");
 
                     Response deleteResponse = deleteInvocation.delete();
-                    processResponse(deleteResponse); // Handle delete response if needed
+                    processResponse(deleteResponse);
                     senderFound = true;
                     break;
                 }
             }
 
-            // Check if there is a next page
             nextPage = addressResponse.getMeta().getPagination().getNext();
             currentPage++;
 
         } while (nextPage != null && !senderFound);
 
-        // Create the new sender address
         WebTarget postTarget = client.target(BASE_URL).path("/addresses");
         Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
                 .header("Authorization", BEARER_TOKEN)
                 .header("User-Agent", "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
-        String payload = gson.toJson(addressDto, EasyshipAddressDTO.class);
+        String payload = gson.toJson(addressDto, EasyshipAddress.class);
         Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON));
         return processResponse(postResponse);
     }
@@ -210,32 +207,16 @@ public class ApiServiceImpl implements ApiService {
     }
 
 
-    private List<EasyshipAddressDTO> getAddressesFromResponse(Response response) {
-        if (response.getStatus() == 200) {
-            String jsonResponse = response.readEntity(String.class);
-            Type listType = new TypeToken<List<EasyshipAddressDTO>>() {}.getType();
-            return gson.fromJson(jsonResponse, listType);
-        } else {
-            String error = response.readEntity(String.class);
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
-        }
-    }
-
-
     private String processResponse(Response response) {
         if (response.getStatus() == 200 || response.getStatus() == 201) {
             String result = response.readEntity(String.class);
-            // Parse the JSON response
             JsonElement jsonElement = JsonParser.parseString(result);
-
-            // Convert the JSON element to a pretty-printed string
             return gson.toJson(jsonElement);
         } else {
             String error = response.readEntity(String.class);
             throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
         }
     }
-
 
 
 }

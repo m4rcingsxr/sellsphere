@@ -4,6 +4,7 @@
 <head>
     <th:block th:replace="~{common :: common_head('Shopping Cart')}"></th:block>
     <script src="https://js.stripe.com/v3/"></script>
+    <script type="text/javascript" th:src="@{/node_modules/decimal.js/decimal.js}"></script>
     <script type="text/javascript" th:src="@{/js/debounce_util.js}"></script>
     <script type="text/javascript" th:src="@{/js/tooltip.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutModel.js}"></script>

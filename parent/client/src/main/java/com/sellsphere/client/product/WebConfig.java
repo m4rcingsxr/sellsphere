@@ -2,7 +2,7 @@ package com.sellsphere.client.product;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.sellsphere.easyship.ApiService;
+import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.easyship.AppModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -29,9 +29,9 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public ApiService easyshipService() {
+    public EasyshipService easyshipService() {
         Injector injector = Guice.createInjector(new AppModule());
-        return injector.getInstance(ApiService.class);
+        return injector.getInstance(EasyshipService.class);
     }
 
 }

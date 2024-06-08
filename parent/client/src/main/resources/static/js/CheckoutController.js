@@ -389,7 +389,7 @@ class CheckoutController {
                     address: currentAddress,
                     shippingCost: selectedRate.totalCharge,
                     currencyCode: this.model.targetCurrency,
-                    exchangeRate: this.model.exchangeRateResponse.result["rate"]
+                    exchangeRate: this.model.exchangeRateResponse.result["rate"] * (1.02)
                 });
 
                 await this.loadCurrencyView(targetCalculation);

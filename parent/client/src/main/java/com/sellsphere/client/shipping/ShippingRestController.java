@@ -6,8 +6,8 @@ import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.AddressDTO;
 import com.sellsphere.common.entity.payload.CountryDTO;
-import com.sellsphere.easyship.ApiService;
-import com.sellsphere.easyship.payload.EasyshipAddressDTO;
+import com.sellsphere.easyship.EasyshipService;
+import com.sellsphere.easyship.payload.EasyshipAddress;
 import com.sellsphere.easyship.payload.EasyshipRateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/shipping")
 public class ShippingRestController {
 
-    private final ApiService apiService;
+    private final EasyshipService apiService;
     private final CartItemRepository cartItemRepository;
     private final CustomerService customerService;
     private final SettingService settingService;
@@ -36,9 +36,9 @@ public class ShippingRestController {
         String currencyCode = settingService.getCurrencyCode();
 
         List<CartItem> cart = cartItemRepository.findByCustomer(customer);
-        EasyshipRateResponse rates = apiService.getRates(
+        EasyshipRateResponse rates = apiService.getShippingRates(
                 page,
-                EasyshipAddressDTO.builder()
+                EasyshipAddress.builder()
                         .city(addressDto.getCity())
                         .state(addressDto.getState())
                         .line1(addressDto.getAddressLine1())

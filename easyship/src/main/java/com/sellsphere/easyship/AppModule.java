@@ -13,7 +13,7 @@ public class AppModule extends AbstractModule {
     protected void configure() {
         configureGson();
         configureClient();
-        bind(ApiService.class).to(ApiServiceImpl.class).in(Singleton.class);
+        bind(EasyshipService.class).to(EasyshipIntegrationService.class).in(Singleton.class);
     }
 
     public void configureGson() {

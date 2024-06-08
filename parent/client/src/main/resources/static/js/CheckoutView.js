@@ -283,7 +283,7 @@ class CheckoutView {
      * @param {string} targetCurrency - The target currency code.
      */
     renderExchangeRate(baseCurrency, exchangeRate, targetCurrency) {
-        $("#exchange-rate").text(`1 ${baseCurrency} = ${exchangeRate} ${targetCurrency} (includes 2% conversion fee)`);
+        $("#exchange-rate").text(`1 ${baseCurrency} = ${new Decimal(1.02).times(exchangeRate).toString()} ${targetCurrency} (includes 2% conversion fee)`);
     }
 
     /**

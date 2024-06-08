@@ -2,7 +2,7 @@ package com.sellsphere.admin;
 
 import com.sellsphere.admin.customer.CustomerRepository;
 import com.sellsphere.admin.product.ProductRepository;
-import com.sellsphere.easyship.ApiService;
+import com.sellsphere.easyship.EasyshipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -13,7 +13,7 @@ import org.springframework.test.context.jdbc.Sql;
 public class Test {
 
     @Autowired
-    private ApiService apiService;
+    private EasyshipService apiService;
     @Autowired
     private CustomerRepository customerRepository;
     @Autowired

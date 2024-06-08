@@ -2,8 +2,7 @@ package com.sellsphere.admin.security;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.sellsphere.easyship.ApiService;
-import com.sellsphere.easyship.ApiServiceImpl;
+import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.easyship.AppModule;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.sellsphere.payment.StripeProductService;
@@ -124,9 +123,9 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public ApiService easyshipService() {
+    public EasyshipService easyshipService() {
         Injector injector = Guice.createInjector(new AppModule());
-        return injector.getInstance(ApiService.class);
+        return injector.getInstance(EasyshipService.class);
     }
 
 }
