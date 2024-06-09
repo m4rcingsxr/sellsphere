@@ -131,4 +131,13 @@ class CheckoutModel {
     async getCountryData(countryCode) {
         return await ajaxUtil.get(`https://restcountries.com/v3.1/alpha/${countryCode}`);
     }
+
+    // create or update payment intent - based on authenticated customer
+    async savePaymentIntent(amountTotal, currencyCode) {
+        return await ajaxUtil.post(`${MODULE_URL}checkout/save-payment-intent`, {
+            currencyCode,
+            amountTotal,
+            customerDetails : this.baseCalculation.customerDetails
+        });
+    }
 }

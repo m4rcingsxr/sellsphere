@@ -50,7 +50,7 @@ public class CheckoutService {
      */
     public CalculationResponse calculateWithAddress(CalculationRequest request, Customer customer)
             throws CurrencyNotFoundException, StripeException {
-        List<CartItem> cart = cartService.findAllByCustomer(customer);
+        List<CartItem> cart = cartService.findCartItemsByCustomer(customer);
 
         String baseCurrency = settingService.getCurrencyCode();
 
@@ -136,7 +136,7 @@ public class CheckoutService {
      * @throws CurrencyNotFoundException   if the specified currency is not found.
      */
     public CalculationResponse calculateTotal(Customer customer) throws CurrencyNotFoundException {
-        List<CartItem> cart = cartService.findAllByCustomer(customer);
+        List<CartItem> cart = cartService.findCartItemsByCustomer(customer);
 
         String baseCurrencyCode = settingService.getCurrencyCode();
         Currency currency = currencyRepository.findByCode(baseCurrencyCode)
@@ -161,7 +161,7 @@ public class CheckoutService {
      */
     public Session createSession(Customer customer) throws StripeException,
             SettingNotFoundException {
-        List<CartItem> cart = cartService.findAllByCustomer(customer);
+        List<CartItem> cart = cartService.findCartItemsByCustomer(customer);
 
         Setting setting = settingRepository.findById("SUPPORTED_COUNTRY").orElseThrow(SettingNotFoundException::new);
         List<Integer> supportedCountryIds = Arrays.stream(setting.getValue().split(",")).map(Integer::valueOf).toList();
@@ -177,8 +177,26 @@ public class CheckoutService {
      * @return The created Stripe payment intent.
      * @throws StripeException if there is an error with Stripe operations.
      */
-    public PaymentIntent createPaymentIntent(PaymentRequest request) throws StripeException {
-        return stripeService.createPaymentIntent(request.getAmountTotal(),
-                                                 request.getCurrencyCode());
+    public PaymentIntent savePaymentIntent(PaymentRequest request, Customer customer)
+            throws StripeException, ShoppingCartNotFoundException {
+        ShoppingCart cart = cartService.findByCustomer(customer);
+        if(cart.getPaymentIntentId() == null) {
+            PaymentIntent paymentIntent = stripeService.createPaymentIntent(
+                    request.getAmountTotal(),
+                    request.getCurrencyCode());
+
+            cart.setPaymentIntentId(paymentIntent.getId());
+            cartService.save(cart);
+
+            return paymentIntent;
+        } else {
+            PaymentIntent paymentIntent = stripeService
+                    .retrievePaymentIntent(cart.getPaymentIntentId());
+            return stripeService.updatePaymentIntent(paymentIntent, request);
+        }
+
+
+
     }
+
 }

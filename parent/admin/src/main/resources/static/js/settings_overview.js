@@ -10,10 +10,10 @@ async function loadSupportedCurrencies(countryIds) {
 
         // Fetch the available currencies from the server
         const availableCurrencies = await ajaxUtil.post(url, countryIds);
-        const $currency = $("#currencyconversion");
+        const $currency = $("#currency");
         $currency.empty();
 
-        const currentCurrencyId = $("#current-currencyconversion").val();
+        const currentCurrencyId = $("#current-currency").val();
 
         let currentCurrencyExists = false;
 

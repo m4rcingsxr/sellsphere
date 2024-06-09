@@ -4,12 +4,14 @@ import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Currency;
 import com.sellsphere.payment.payload.CalculationRequest;
+import com.sellsphere.payment.payload.PaymentRequest;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Address;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.tax.Calculation;
 import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.PaymentIntentUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.param.tax.CalculationCreateParams;
 
@@ -17,15 +19,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-/** customer_tax_location_invalid error code if your customer’s address is invalid or isn’t precise enough to calculate tax:
+/**
+ * customer_tax_location_invalid error code if your customer’s address is invalid or isn’t
+ * precise enough to calculate tax:
  * {
- *   "error": {
- *     "doc_url": "https://docs.stripe.com/error-codes#customer-tax-location-invalid",
- *     "code": "customer_tax_location_invalid",
- *     "message": "We could not determine the customer's tax location based on the provided customer address.",
- *     "param": "customer_details[address]",
- *     "type": "invalid_request_error"
- *   }
+ * "error": {
+ * "doc_url": "https://docs.stripe.com/error-codes#customer-tax-location-invalid",
+ * "code": "customer_tax_location_invalid",
+ * "message": "We could not determine the customer's tax location based on the provided customer
+ * address.",
+ * "param": "customer_details[address]",
+ * "type": "invalid_request_error"
+ * }
  * }
  */
 
@@ -51,7 +56,8 @@ public class StripeCheckoutService {
      * @return A Stripe Session object.
      * @throws StripeException If an error occurs while creating the session.
      */
-    public Session createCheckoutSession(List<CartItem> cart, List<Country> supportedCountries) throws StripeException {
+    public Session createCheckoutSession(List<CartItem> cart, List<Country> supportedCountries)
+            throws StripeException {
         SessionCreateParams.Builder builder = initializeSessionBuilder();
         addAllowedCountriesToBuilder(builder, supportedCountries);
         addCartItemsToBuilder(builder, cart);
@@ -79,7 +85,8 @@ public class StripeCheckoutService {
                 )
                 .setConsentCollection(
                         SessionCreateParams.ConsentCollection.builder()
-                                .setTermsOfService(SessionCreateParams.ConsentCollection.TermsOfService.REQUIRED)
+                                .setTermsOfService(
+                                        SessionCreateParams.ConsentCollection.TermsOfService.REQUIRED)
                                 .build()
                 );
     }
@@ -90,11 +97,14 @@ public class StripeCheckoutService {
      * @param builder            The session builder.
      * @param supportedCountries List of supported countries.
      */
-    private void addAllowedCountriesToBuilder(SessionCreateParams.Builder builder, List<Country> supportedCountries) {
-        List<SessionCreateParams.ShippingAddressCollection.AllowedCountry> allowedCountries = new ArrayList<>();
+    private void addAllowedCountriesToBuilder(SessionCreateParams.Builder builder,
+                                              List<Country> supportedCountries) {
+        List<SessionCreateParams.ShippingAddressCollection.AllowedCountry> allowedCountries =
+                new ArrayList<>();
         for (Country supportedCountry : supportedCountries) {
             allowedCountries.add(
-                    SessionCreateParams.ShippingAddressCollection.AllowedCountry.valueOf(supportedCountry.getCode())
+                    SessionCreateParams.ShippingAddressCollection.AllowedCountry.valueOf(
+                            supportedCountry.getCode())
             );
         }
         builder.setShippingAddressCollection(SessionCreateParams.ShippingAddressCollection.builder()
@@ -133,12 +143,14 @@ public class StripeCheckoutService {
      * @return A Stripe PaymentIntent object.
      * @throws StripeException If an error occurs while creating the payment intent.
      */
-    public PaymentIntent createPaymentIntent(long amountTotal, String currencyCode) throws StripeException {
+    public PaymentIntent createPaymentIntent(long amountTotal, String currencyCode)
+            throws StripeException {
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(amountTotal)
                 .setCurrency(currencyCode)
                 .setAutomaticPaymentMethods(
-                        PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled(true).build()
+                        PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled(
+                                true).build()
                 )
                 .build();
 
@@ -148,24 +160,31 @@ public class StripeCheckoutService {
     /**
      * Calculates the total price for the checkout process.
      *
-     * @param request           The calculation request containing address, shipping cost, etc.
-     * @param cart              List of cart items.
-     * @param baseCurrencyCode  Base currency code.
-     * @param targetCurrency    Target currency.
+     * @param request          The calculation request containing address, shipping cost, etc.
+     * @param cart             List of cart items.
+     * @param baseCurrencyCode Base currency code.
+     * @param targetCurrency   Target currency.
      * @return Calculation - The calculation result.
      * @throws StripeException If an error occurs during calculation.
      */
-    public Calculation calculate(CalculationRequest request, List<CartItem> cart, Currency baseCurrencyCode, Currency targetCurrency) throws StripeException {
+    public Calculation calculate(CalculationRequest request, List<CartItem> cart,
+                                 Currency baseCurrencyCode, Currency targetCurrency)
+            throws StripeException {
         var params = CalculationCreateParams.builder();
         Address address = request.getAddress();
         BigDecimal providedExchangeRate = request.getExchangeRate();
         BigDecimal shippingCost = request.getShippingCost();
         BigDecimal exchangeRate = providedExchangeRate != null ?
-                providedExchangeRate.multiply(BigDecimal.ONE.add(Constants.CONVERT_CURRENCY_FEE)) : null;
+                providedExchangeRate.multiply(
+                        BigDecimal.ONE.add(Constants.CONVERT_CURRENCY_FEE)) : null;
 
 
-        addCartItemsToCalculationParams(cart, params, baseCurrencyCode.getCode(), targetCurrency, exchangeRate);
-        addShippingCostToCalculationParams(params, shippingCost, baseCurrencyCode.getCode(), targetCurrency, exchangeRate);
+        addCartItemsToCalculationParams(cart, params, baseCurrencyCode.getCode(), targetCurrency,
+                                        exchangeRate
+        );
+        addShippingCostToCalculationParams(params, shippingCost, baseCurrencyCode.getCode(),
+                                           targetCurrency, exchangeRate
+        );
         addCustomerDetailsToCalculationParams(params, address);
 
         return Calculation.create(params.build());
@@ -180,18 +199,26 @@ public class StripeCheckoutService {
      * @param targetCurrency   Target currency.
      * @param exchangeRate     Exchange rate.
      */
-    private void addCartItemsToCalculationParams(List<CartItem> cart, CalculationCreateParams.Builder params,
-                                                 String baseCurrencyCode, Currency targetCurrency, BigDecimal exchangeRate) {
+    private void addCartItemsToCalculationParams(List<CartItem> cart,
+                                                 CalculationCreateParams.Builder params,
+                                                 String baseCurrencyCode, Currency targetCurrency,
+                                                 BigDecimal exchangeRate) {
         for (CartItem cartItem : cart) {
             long amount = baseCurrencyCode.equals(targetCurrency.getCode()) ?
-                    CheckoutUtil.roundAmount(cartItem.getProduct().getDiscountPrice(), targetCurrency.getUnitAmount()) :
-                    CheckoutUtil.roundAmount(cartItem.getProduct().getDiscountPrice().multiply(exchangeRate), targetCurrency.getUnitAmount());
+                    CheckoutUtil.roundAmount(cartItem.getProduct().getDiscountPrice(),
+                                             targetCurrency.getUnitAmount()
+                    ) :
+                    CheckoutUtil.roundAmount(
+                            cartItem.getProduct().getDiscountPrice().multiply(exchangeRate),
+                            targetCurrency.getUnitAmount()
+                    );
 
             params.setCurrency(targetCurrency.getCode())
                     .addLineItem(
                             CalculationCreateParams.LineItem.builder()
                                     .setAmount(amount)
-                                    .setTaxBehavior(CalculationCreateParams.LineItem.TaxBehavior.INCLUSIVE)
+                                    .setTaxBehavior(
+                                            CalculationCreateParams.LineItem.TaxBehavior.INCLUSIVE)
                                     .setReference(String.valueOf(cartItem.getProduct().getId()))
                                     .setTaxCode(cartItem.getProduct().getTax().getId())
                                     .build()
@@ -208,11 +235,16 @@ public class StripeCheckoutService {
      * @param targetCurrency   Target currency.
      * @param exchangeRate     Exchange rate.
      */
-    private void addShippingCostToCalculationParams(CalculationCreateParams.Builder params, BigDecimal shippingCost,
-                                                    String baseCurrencyCode, Currency targetCurrency, BigDecimal exchangeRate) {
+    private void addShippingCostToCalculationParams(CalculationCreateParams.Builder params,
+                                                    BigDecimal shippingCost,
+                                                    String baseCurrencyCode,
+                                                    Currency targetCurrency,
+                                                    BigDecimal exchangeRate) {
         long shippingAmount = baseCurrencyCode.equals(targetCurrency.getCode()) ?
                 CheckoutUtil.roundAmount(shippingCost, targetCurrency.getUnitAmount()) :
-                CheckoutUtil.roundAmount(shippingCost.multiply(exchangeRate), targetCurrency.getUnitAmount());
+                CheckoutUtil.roundAmount(shippingCost.multiply(exchangeRate),
+                                         targetCurrency.getUnitAmount()
+                );
 
         params.setShippingCost(
                 CalculationCreateParams.ShippingCost.builder()
@@ -229,7 +261,8 @@ public class StripeCheckoutService {
      * @param params  Calculation parameters builder.
      * @param address Shipping address.
      */
-    private void addCustomerDetailsToCalculationParams(CalculationCreateParams.Builder params, Address address) {
+    private void addCustomerDetailsToCalculationParams(CalculationCreateParams.Builder params,
+                                                       Address address) {
         params.setCustomerDetails(
                 CalculationCreateParams.CustomerDetails.builder()
                         .setAddress(
@@ -241,7 +274,8 @@ public class StripeCheckoutService {
                                         .setPostalCode(address.getPostalCode())
                                         .build()
                         )
-                        .setAddressSource(CalculationCreateParams.CustomerDetails.AddressSource.SHIPPING)
+                        .setAddressSource(
+                                CalculationCreateParams.CustomerDetails.AddressSource.SHIPPING)
                         .build()
         );
     }
@@ -268,6 +302,20 @@ public class StripeCheckoutService {
         }
 
         return total;
+    }
+
+    public PaymentIntent retrievePaymentIntent(String paymentIntentId) throws StripeException {
+        return PaymentIntent.retrieve(paymentIntentId);
+    }
+
+    public PaymentIntent updatePaymentIntent(PaymentIntent paymentIntent, PaymentRequest request)
+            throws StripeException {
+        return paymentIntent.update(
+                PaymentIntentUpdateParams.builder()
+                        .setAmount(request.getAmountTotal())
+                        .setCurrency(request.getCurrencyCode())
+                        .build()
+        );
     }
 
     // method to change currency conversion based on location

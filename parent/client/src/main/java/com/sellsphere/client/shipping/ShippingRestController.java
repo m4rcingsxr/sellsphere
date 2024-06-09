@@ -33,9 +33,9 @@ public class ShippingRestController {
 
         Customer customer = getAuthenticatedCustomer(principal);
 
-        String currencyCode = settingService.getCurrencyCode();
+        String currencyCode = settingService.getCurrencyCode().toUpperCase();
 
-        List<CartItem> cart = shoppingCartService.findAllByCustomer(customer);
+        List<CartItem> cart = shoppingCartService.findCartItemsByCustomer(customer);
         EasyshipRateResponse rates = apiService.getShippingRates(
                 page,
                 EasyshipAddress.builder()

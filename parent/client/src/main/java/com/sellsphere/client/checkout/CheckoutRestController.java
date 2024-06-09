@@ -1,11 +1,8 @@
 package com.sellsphere.client.checkout;
 
 import com.sellsphere.client.customer.CustomerService;
-import com.sellsphere.common.entity.CurrencyNotFoundException;
-import com.sellsphere.common.entity.Customer;
-import com.sellsphere.common.entity.CustomerNotFoundException;
-import com.sellsphere.common.entity.SettingNotFoundException;
-import com.sellsphere.payment.StripeCheckoutService;
+import com.sellsphere.client.shoppingcart.ShoppingCartService;
+import com.sellsphere.common.entity.*;
 import com.sellsphere.payment.payload.CalculationRequest;
 import com.sellsphere.payment.payload.CalculationResponse;
 import com.sellsphere.payment.payload.PaymentRequest;
@@ -31,6 +28,7 @@ public class CheckoutRestController {
 
     private final CustomerService customerService;
     private final CheckoutService checkoutService;
+    private final ShoppingCartService cartService;
 
     /**
      * Calculates the total cost including address-specific details with a specified exchange rate or in base currency if the rate is not defined.
@@ -76,11 +74,13 @@ public class CheckoutRestController {
      * @return A map containing the client secret of the payment intent.
      * @throws StripeException if there is an error with Stripe operations.
      */
-    @PostMapping("/create-payment-intent")
+    @PostMapping("/save-payment-intent")
     public ResponseEntity<Map<String, String>> createPaymentIntent(
-            @RequestBody PaymentRequest request)
-            throws StripeException {
-        PaymentIntent paymentIntent = checkoutService.createPaymentIntent(request);
+            @RequestBody PaymentRequest request, Principal principal)
+            throws StripeException, CustomerNotFoundException, ShoppingCartNotFoundException {
+        Customer customer = getAuthenticatedCustomer(principal);
+
+        PaymentIntent paymentIntent = checkoutService.savePaymentIntent(request, customer);
 
         Map<String, String> map = new HashMap<>();
         map.put("clientSecret", paymentIntent.getClientSecret());

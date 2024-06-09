@@ -30,7 +30,7 @@ public class ShoppingCartService {
      * @param customer the customer to retrieve cart items for
      * @return a list of cart items for the customer
      */
-    public List<CartItem> findAllByCustomer(Customer customer) {
+    public List<CartItem> findCartItemsByCustomer(Customer customer) {
         Optional<ShoppingCart> cart = shoppingCartRepository.findByCustomer(customer);
         if(cart.isPresent()) {
             return cart.get().getCartItems();
@@ -113,10 +113,7 @@ public class ShoppingCartService {
      */
     public void clearCart(Customer customer) {
         Optional<ShoppingCart> cart = shoppingCartRepository.findByCustomer(customer);
-        if(cart.isPresent()) {
-            cart.get().getCartItems().clear();
-            shoppingCartRepository.save(cart.get());
-        }
+        cart.ifPresent(shoppingCartRepository::delete);
     }
 
     /**
@@ -148,5 +145,17 @@ public class ShoppingCartService {
             newCart.forEach(shoppingCart::addCartItem);
             return shoppingCartRepository.save(shoppingCart);
         }
+    }
+
+    public ShoppingCart findByCustomer(Customer customer) throws ShoppingCartNotFoundException {
+        return shoppingCartRepository.findByCustomer(customer).orElseThrow(ShoppingCartNotFoundException::new);
+    }
+
+    public Boolean existByCustomer(Customer customer) {
+        return shoppingCartRepository.existsByCustomer(customer);
+    }
+
+    public ShoppingCart save(ShoppingCart cart) {
+        return shoppingCartRepository.save(cart);
     }
 }

@@ -23,6 +23,7 @@ public class ExchangeCurrencyRestController {
     public ResponseEntity<ExchangeRateResponse> exchangeRate(
             @PathVariable String baseCode, @PathVariable String targetCode, @PathVariable String amount, @PathVariable String unit_amount) {
 
+        // todo: refactor and fix rounding
         RestTemplate restTemplate = new RestTemplate();
 
         long unitAmount = Long.parseLong(unit_amount);
@@ -61,9 +62,9 @@ public class ExchangeCurrencyRestController {
         // 3 decimals currencies
         BigDecimal finalPrice;
         if(unitAmount == 1000) {
-            finalPrice = response.getResult().get(targetCode).setScale(3, RoundingMode.HALF_UP);
+            finalPrice = response.getResult().get(targetCode.toUpperCase()).setScale(3, RoundingMode.HALF_UP);
         } else {
-            finalPrice = response.getResult().get(targetCode).setScale(2, RoundingMode.HALF_UP);
+            finalPrice = response.getResult().get(targetCode.toUpperCase()).setScale(2, RoundingMode.HALF_UP);
 
         }
 

@@ -104,7 +104,7 @@ public class ShoppingCartRestController {
         Customer customer = customerService.getByEmail(email);
 
         List<MinCartItemDTO> list = cartService
-                .findAllByCustomer(customer).stream().map(MinCartItemDTO::new).toList();
+                .findCartItemsByCustomer(customer).stream().map(MinCartItemDTO::new).toList();
         return ResponseEntity.ok(list);
     }
 

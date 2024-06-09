@@ -16,6 +16,7 @@ class CheckoutController {
 
         this.init();
         this.startCurrencyUpdateListener();
+        this.initPlaceOrderBtnTriggerFormSubmit();
     }
 
     /**
@@ -55,6 +56,7 @@ class CheckoutController {
         $("#payment-btn, #summary-accordion-btn").on("click", this.handleShowSummary.bind(this));
         $("#summary").on("click", 'input[type="radio"]', this.handleChangeCourier.bind(this));
         $("#currencies").on("click", "a", this.handleChangeCurrency.bind(this));
+        $("#payment-form").on("submit", this.handleSubmit.bind(this));
     }
 
     /**
@@ -136,7 +138,10 @@ class CheckoutController {
             const calculation = await this.model.getCalculation({address, shippingCost});
 
             this.updateModelAfterCalculation(calculation, ratesResponse);
-            await this.initStripeElements(calculation);
+
+
+            const response = await this.model.savePaymentIntent(calculation.amountTotal, calculation.currencyCode);
+            await this.initStripeElementsWithPaymentIntent(response.clientSecret);
 
             this.model.selectedRateIdx = undefined;
 
@@ -213,7 +218,9 @@ class CheckoutController {
         console.info("Initializing address element");
 
         const calculation = await this.model.getBasicCalculation();
+
         await this.initStripeElements(calculation);
+
         await this.initAddressOptions();
 
         this.view.renderProductSummaryNav(calculation);
@@ -246,18 +253,32 @@ class CheckoutController {
 
     /**
      * Initializes or updates the Stripe elements with the given calculation.
-     * @param {Object} calculation - The calculation data.
      * @returns {void}
      */
-    initStripeElements(calculation ) {
-        console.debug("Initializing Stripe elements", calculation);
-        const options = {
-            appearance: {theme: 'flat'},
-            mode: 'payment',
-            amount: calculation.amountTotal,
-            currency: calculation.currencyCode.toLowerCase(),
-        };
-        this.elements = this.elements ? this.elements.update(options) : this.stripe.elements(options);
+    async initStripeElementsWithPaymentIntent(clientSecret) {
+
+        try {
+            console.debug("Initializing Stripe elements with client secret");
+            const options = {
+                appearance: {theme: 'flat'},
+                clientSecret: clientSecret
+            };
+
+            this.elements = this.stripe.elements(options);
+        } catch (error) {
+            console.error(error);
+            showErrorModal(error.response);
+        }
+    }
+
+    async initStripeElements(calculation) {
+        console.debug("Initializing Stripe elements with currency and cart subtotal");
+        const options = {};
+        options.mode = 'payment';
+        options.amount = calculation.amountTotal,
+        options.currency = calculation.currencyCode.toLowerCase();
+
+        this.elements = this.stripe.elements(options);
     }
 
     /**
@@ -324,7 +345,7 @@ class CheckoutController {
             try {
                 if (!this.elements) {
                     const calculation = await this.model.getBasicCalculation();
-                    await this.initStripeElements(calculation);
+                    await this.model.savePaymentIntent(calculation.amountTotal, calculation.currencyCode);
                 }
 
                 this.initPaymentElement();
@@ -457,7 +478,9 @@ class CheckoutController {
             });
 
             const isSameCurrency = this.model.selectedCurrency === this.model.baseCalculation.currencyCode;
-            await this.initStripeElements(isSameCurrency ? this.model.baseCalculation : targetCalculation);
+
+            const calc = isSameCurrency ? this.model.baseCalculation : targetCalculation;
+            await this.model.savePaymentIntent(calc.amountTotal, calc.currencyCode);
 
             await this.loadCurrencyView(targetCalculation);
 
@@ -524,6 +547,8 @@ class CheckoutController {
                 this.view.renderSummary(this.model.baseCalculation);
                 this.view.renderSummaryProducts(this.model.baseCalculation);
                 this.view.renderProductSummaryNav(this.model.baseCalculation);
+
+                await this.model.savePaymentIntent(this.model.baseCalculation.amountTotal, this.model.baseCalculation.currencyCode);
             } else {
 
                 const exchangeRateResponse = this.model.exchangeRateResponse;
@@ -536,6 +561,9 @@ class CheckoutController {
                     currencyCode: targetCurrency,
                     exchangeRate: exchangeRateResponse.result["rate"]
                 });
+
+                await this.model.savePaymentIntent(newCalculation.amountTotal, newCalculation.currencyCode);
+
 
                 this.view.renderSummary(newCalculation);
                 this.view.renderProductSummaryNav(newCalculation);
@@ -625,8 +653,6 @@ class CheckoutController {
                         this.view.showSummaryLoadNav();
 
 
-
-
                         await this.loadExchangeRate();
 
                         const rates = this.model.ratesResponse.rates;
@@ -650,7 +676,7 @@ class CheckoutController {
                         console.error(error);
                         showErrorModal(error.response);
                     } finally {
-                        if(this.model.selectedCurrency !== this.model.baseCalculation.currencyCode) {
+                        if (this.model.selectedCurrency !== this.model.baseCalculation.currencyCode) {
                             this.view.selectCurrency(this.model.selectedCurrency, this.model.baseCalculation.currencyCode);
                         }
 
@@ -697,7 +723,7 @@ class CheckoutController {
     }
 
     startCountdown(duration) {
-        if(this.model.countdown) {
+        if (this.model.countdown) {
             clearInterval(this.model.countdown);
         }
 
@@ -723,4 +749,87 @@ class CheckoutController {
         // Update the countdown every second (1000 milliseconds)
         this.model.countdown = setInterval(updateCountdown, 1000);
     }
+
+    initPlaceOrderBtnTriggerFormSubmit() {
+        const placeOrderBtn = document.getElementById("place-order-btn");
+        if (placeOrderBtn) {
+            placeOrderBtn.addEventListener("click", (event) => {
+                event.preventDefault();
+                const form = document.getElementById("payment-form");
+                if (form) {
+                    form.dispatchEvent(
+                        new Event("submit", {cancelable: true, bubbles: true})
+                    );
+                } else {
+                    console.error("Payment form not found.");
+                }
+            });
+        } else {
+            console.error("Place order button not found.");
+        }
+    }
+
+    async handleSubmit(event) {
+
+        const handleError = (error) => {
+            const messageContainer = document.querySelector("#error-message");
+            if (messageContainer) {
+                messageContainer.textContent = error.message;
+            }
+            submitBtn.disabled = false;
+        };
+
+        const submitBtn = document.getElementById("place-order-btn");
+
+        // Prevent multiple form submissions
+        if (submitBtn.disabled) {
+            return;
+        }
+
+        // Disable form submission while loading
+        submitBtn.disabled = true;
+
+
+        const {error: submitError} = await this.elements.submit();
+        if (submitError) {
+            handleError(submitError);
+            return;
+        }
+
+        try {
+            // Create the PaymentIntent and obtain clientSecret
+            const rates = this.model.ratesResponse.rates;
+            const rateIdx = this.model.selectedRateIdx ? this.model.selectedRateIdx : 0;
+            const selectedRate = rates[rateIdx];
+            const currentAddress = this.model.baseCalculation.customerDetails.address;
+
+
+            const targetCalculation = await this.model.getCalculation({
+                address: currentAddress,
+                shippingCost: selectedRate.totalCharge,
+                currencyCode: this.model.targetCurrency,
+                exchangeRate: this.model.exchangeRateResponse.result["rate"] * (1.02)
+            });
+
+
+            const response = await this.model.savePaymentIntent(targetCalculation.amountTotal, targetCalculation.currencyCode);
+
+            // Confirm the PaymentIntent using the details collected by the Payment Element
+            const {error} = await this.stripe.confirmPayment({
+                elements: this.elements,
+                confirmParams: {
+                    return_url: `http://localhost:8081${MODULE_URL}checkout/return`,
+                },
+            });
+
+            if (error) {
+                handleError(error);
+            }
+        } catch (error) {
+            handleError(error);
+        }
+
+    }
+
+
 }
