@@ -216,6 +216,10 @@ public class Product extends IdentifiedEntity {
     @JoinColumn(name = "tax_id")
     private ProductTax tax;
 
+    public Product(Integer id) {
+        this.id = id;
+    }
+
     /**
      * Gets the path to the main image of the product.
      * If no image is available, returns the path to a default image.

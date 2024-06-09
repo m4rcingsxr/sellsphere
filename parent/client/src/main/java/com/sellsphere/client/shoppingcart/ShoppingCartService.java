@@ -1,13 +1,12 @@
 package com.sellsphere.client.shoppingcart;
 
-import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.common.entity.CartItemNotFoundException;
-import com.sellsphere.common.entity.Customer;
-import com.sellsphere.common.entity.Product;
+import com.sellsphere.common.entity.*;
+import com.sellsphere.common.entity.payload.MinCartItemDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +22,7 @@ public class ShoppingCartService {
 
     private static final int MAX_QUANTITY_PER_PRODUCT = 5;
 
-    private final CartItemRepository cartItemRepository;
+    private final ShoppingCartRepository shoppingCartRepository;
 
     /**
      * Retrieves all cart items for a given customer.
@@ -32,7 +31,12 @@ public class ShoppingCartService {
      * @return a list of cart items for the customer
      */
     public List<CartItem> findAllByCustomer(Customer customer) {
-        return cartItemRepository.findByCustomer(customer);
+        Optional<ShoppingCart> cart = shoppingCartRepository.findByCustomer(customer);
+        if(cart.isPresent()) {
+            return cart.get().getCartItems();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -45,19 +49,37 @@ public class ShoppingCartService {
      * @throws IllegalStateException if the quantity exceeds the maximum allowed
      */
     public void addProduct(Customer customer, Product product, Integer quantity) {
-        Optional<CartItem> cartItem = cartItemRepository.findByCustomerAndProduct(customer, product);
-
         if(quantity < 1 || quantity > MAX_QUANTITY_PER_PRODUCT) {
             throw new IllegalStateException("Max product quantity is " + MAX_QUANTITY_PER_PRODUCT);
         }
 
-        if(cartItem.isPresent()) {
-            cartItem.get().setQuantity(quantity);
+        ShoppingCart customerCart = customer.getCart();
+
+        if (customerCart == null) {
+            ShoppingCart cart = new ShoppingCart();
+            cart.setCustomer(customer);
+            cart.addCartItem(
+                    new CartItem(product, quantity)
+            );
+
+            customerCart = cart;
         } else {
-            cartItem = Optional.of(new CartItem(customer, product, quantity));
+            List<CartItem> cartItems = customerCart.getCartItems();
+            Optional<CartItem> item = cartItems
+                    .stream()
+                    .filter(cartItem -> cartItem.getProduct().equals(product))
+                    .findFirst();
+
+            if(item.isPresent()) {
+                CartItem cartItem = item.get();
+                cartItem.setQuantity(quantity);
+            } else {
+                CartItem cartItem = new CartItem(product, quantity);
+                customerCart.addCartItem(cartItem);
+            }
         }
 
-        cartItemRepository.save(cartItem.get());
+        shoppingCartRepository.save(customerCart);
     }
 
     /**
@@ -65,9 +87,23 @@ public class ShoppingCartService {
      *
      * @param customerId the ID of the customer
      * @param productId  the ID of the product to delete
+     * @throws ShoppingCartNotFoundException if the shopping cart is not found
+     * @throws ProductNotFoundException if the product is not found
      */
-    public void deleteProduct(Integer customerId, Integer productId) {
-        cartItemRepository.deleteByCustomerAndProduct(customerId, productId);
+    public void deleteProduct(Integer customerId, Integer productId)
+            throws ShoppingCartNotFoundException, ProductNotFoundException {
+        ShoppingCart shoppingCart = shoppingCartRepository.findByCustomerId(customerId)
+                .orElseThrow(ShoppingCartNotFoundException::new);
+
+        CartItem item = shoppingCart
+                .getCartItems()
+                .stream()
+                .filter(cartItem -> cartItem.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElseThrow(ProductNotFoundException::new);
+
+        shoppingCart.removeCartItem(item);
+        shoppingCartRepository.save(shoppingCart);
     }
 
     /**
@@ -76,25 +112,41 @@ public class ShoppingCartService {
      * @param customer the customer to clear the cart for
      */
     public void clearCart(Customer customer) {
-        cartItemRepository.deleteAllByCustomer(customer);
+        Optional<ShoppingCart> cart = shoppingCartRepository.findByCustomer(customer);
+        if(cart.isPresent()) {
+            cart.get().getCartItems().clear();
+            shoppingCartRepository.save(cart.get());
+        }
     }
 
     /**
-     * Deletes all cart items for a given customer.
+     * Creates a new cart or replaces cart items for a given customer.
      *
-     * @param customer the customer to delete cart items for
+     * @param customer the customer to create or update the cart for
+     * @param newCartDto the new cart items to set
+     * @return the updated or newly created shopping cart
      */
-    public void deleteByCustomer(Customer customer) {
-        cartItemRepository.deleteAllByCustomer(customer);
-    }
+    public ShoppingCart createCart(Customer customer, List<MinCartItemDTO> newCartDto) {
+        List<CartItem> newCart = newCartDto
+                .stream()
+                .map(item -> new CartItem(
+                        new Product(item.getProductId()),
+                        item.getQuantity()))
+                .toList();
 
-    /**
-     * Saves a list of cart items.
-     *
-     * @param newCart the list of cart items to save
-     */
-    public void saveAll(List<CartItem> newCart) {
-        cartItemRepository.saveAll(newCart);
-    }
+        Optional<ShoppingCart> cart = shoppingCartRepository.findByCustomer(customer);
+        if(cart.isPresent()) {
+            for (CartItem cartItem : newCart) {
+                cartItem.setCart(cart.get());
+            }
 
+            cart.get().setCartItems(newCart);
+            return shoppingCartRepository.save(cart.get());
+        } else {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            shoppingCart.setCustomer(customer);
+            newCart.forEach(shoppingCart::addCartItem);
+            return shoppingCartRepository.save(shoppingCart);
+        }
+    }
 }

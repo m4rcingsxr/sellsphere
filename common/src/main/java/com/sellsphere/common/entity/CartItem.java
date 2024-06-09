@@ -6,8 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,11 +18,6 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "cart_items")
 public class CartItem extends IdentifiedEntity {
-
-    @NotNull(message = "Customer is required")
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
 
     @NotNull(message = "Product is required")
     @ManyToOne
@@ -31,13 +28,12 @@ public class CartItem extends IdentifiedEntity {
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    public CartItem(Integer customerId, Integer productId, Integer quantity) {
-        Customer customer = new Customer();
-        customer.setId(customerId);
-        Product product = new Product();
-        product.setId(productId);
+    @NotNull(message = "Cart is required")
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private ShoppingCart cart;
 
-        this.customer = customer;
+    public CartItem(Product product, int quantity) {
         this.product = product;
         this.quantity = quantity;
     }
@@ -45,5 +41,21 @@ public class CartItem extends IdentifiedEntity {
     @Transient
     public BigDecimal getSubtotal() {
         return this.product.getDiscountPrice().multiply(BigDecimal.valueOf(quantity));
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        CartItem cartItem = (CartItem) o;
+        return getId() != null && Objects.equals(getId(), cartItem.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }

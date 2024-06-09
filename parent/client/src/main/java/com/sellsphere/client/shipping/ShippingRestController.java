@@ -2,7 +2,7 @@ package com.sellsphere.client.shipping;
 
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.setting.SettingService;
-import com.sellsphere.client.shoppingcart.CartItemRepository;
+import com.sellsphere.client.shoppingcart.ShoppingCartService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.AddressDTO;
 import com.sellsphere.common.entity.payload.CountryDTO;
@@ -22,7 +22,7 @@ import java.util.List;
 public class ShippingRestController {
 
     private final EasyshipService apiService;
-    private final CartItemRepository cartItemRepository;
+    private final ShoppingCartService shoppingCartService;
     private final CustomerService customerService;
     private final SettingService settingService;
 
@@ -35,7 +35,7 @@ public class ShippingRestController {
 
         String currencyCode = settingService.getCurrencyCode();
 
-        List<CartItem> cart = cartItemRepository.findByCustomer(customer);
+        List<CartItem> cart = shoppingCartService.findAllByCustomer(customer);
         EasyshipRateResponse rates = apiService.getShippingRates(
                 page,
                 EasyshipAddress.builder()

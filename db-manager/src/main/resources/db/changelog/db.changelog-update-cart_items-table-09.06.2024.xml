@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+
+    <changeSet id="1721479516321-1" author="Marcin Seweryn">
+        <dropForeignKeyConstraint baseTableName="cart_items" constraintName="FK_CART_ITEMS_ON_CUSTOMER"/>
+    </changeSet>
+
+    <changeSet id="1721479232532-1" author="Marcin Seweryn">
+        <dropColumn tableName="cart_items" columnName="customer_id"/>
+    </changeSet>
+
+    <changeSet id="1721479329314-1" author="Marcin Seweryn">
+        <addColumn tableName="cart_items">
+            <column name="cart_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

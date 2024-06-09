@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+
+    <changeSet id="1721479189954-1" author="Marcin Seweryn">
+        <createTable tableName="shopping_carts">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_shopping_carts"/>
+            </column>
+            <column name="payment_id" type="VARCHAR(255)"/>
+            <column name="customer_id" type="INT"/>
+        </createTable>
+        <addUniqueConstraint columnNames="customer_id" constraintName="uc_shopping_carts_customer" tableName="shopping_carts"/>
+        <addUniqueConstraint columnNames="payment_id" constraintName="uc_shopping_carts_payment" tableName="shopping_carts"/>
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="shopping_carts" constraintName="FK_SHOPPING_CARTS_ON_CUSTOMER" referencedColumnNames="id" referencedTableName="customers"/>
+    </changeSet>
+
+</databaseChangeLog>

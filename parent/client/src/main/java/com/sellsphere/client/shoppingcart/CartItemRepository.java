@@ -14,14 +14,6 @@ import java.util.Optional;
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
 
-    List<CartItem> findByCustomer(Customer customer);
 
-    Optional<CartItem> findByCustomerAndProduct(Customer customer, Product product);
-
-    @Modifying
-    @Query("DELETE FROM CartItem c WHERE c.customer.id = ?1 AND c.product.id = ?2")
-    void deleteByCustomerAndProduct(Integer customerId, Integer productId);
-
-    void deleteAllByCustomer(Customer customer);
 
 }

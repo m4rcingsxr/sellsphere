@@ -17,6 +17,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/** customer_tax_location_invalid error code if your customer’s address is invalid or isn’t precise enough to calculate tax:
+ * {
+ *   "error": {
+ *     "doc_url": "https://docs.stripe.com/error-codes#customer-tax-location-invalid",
+ *     "code": "customer_tax_location_invalid",
+ *     "message": "We could not determine the customer's tax location based on the provided customer address.",
+ *     "param": "customer_details[address]",
+ *     "type": "invalid_request_error"
+ *   }
+ * }
+ */
+
 /**
  * Service for handling Stripe checkout operations.
  * This class provides methods to create checkout sessions, payment intents,

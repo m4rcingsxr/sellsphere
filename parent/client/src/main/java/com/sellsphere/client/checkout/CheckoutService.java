@@ -1,11 +1,10 @@
 package com.sellsphere.client.checkout;
 
-import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.setting.CountryRepository;
 import com.sellsphere.client.setting.CurrencyRepository;
 import com.sellsphere.client.setting.SettingRepository;
 import com.sellsphere.client.setting.SettingService;
-import com.sellsphere.client.shoppingcart.CartItemRepository;
+import com.sellsphere.client.shoppingcart.ShoppingCartService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.common.entity.payload.CartItemDTO;
@@ -34,7 +33,7 @@ import java.util.List;
 public class CheckoutService {
 
     private final StripeCheckoutService stripeService;
-    private final CartItemRepository cartItemRepository;
+    private final ShoppingCartService cartService;
     private final SettingService settingService;
     private final CurrencyRepository currencyRepository;
     private final SettingRepository settingRepository;
@@ -51,7 +50,7 @@ public class CheckoutService {
      */
     public CalculationResponse calculateWithAddress(CalculationRequest request, Customer customer)
             throws CurrencyNotFoundException, StripeException {
-        List<CartItem> cart = cartItemRepository.findByCustomer(customer);
+        List<CartItem> cart = cartService.findAllByCustomer(customer);
 
         String baseCurrency = settingService.getCurrencyCode();
 
@@ -137,7 +136,7 @@ public class CheckoutService {
      * @throws CurrencyNotFoundException   if the specified currency is not found.
      */
     public CalculationResponse calculateTotal(Customer customer) throws CurrencyNotFoundException {
-        List<CartItem> cart = cartItemRepository.findByCustomer(customer);
+        List<CartItem> cart = cartService.findAllByCustomer(customer);
 
         String baseCurrencyCode = settingService.getCurrencyCode();
         Currency currency = currencyRepository.findByCode(baseCurrencyCode)
@@ -162,7 +161,7 @@ public class CheckoutService {
      */
     public Session createSession(Customer customer) throws StripeException,
             SettingNotFoundException {
-        List<CartItem> cart = cartItemRepository.findByCustomer(customer);
+        List<CartItem> cart = cartService.findAllByCustomer(customer);
 
         Setting setting = settingRepository.findById("SUPPORTED_COUNTRY").orElseThrow(SettingNotFoundException::new);
         List<Integer> supportedCountryIds = Arrays.stream(setting.getValue().split(",")).map(Integer::valueOf).toList();
