@@ -36,4 +36,6 @@
     <include file="db/changelog/db.changelog-add-shopping_carts-table-09.06.2024.xml"/>
     <include file="db/changelog/db.changelog-update-cart_items-table-09.06.2024.xml"/>
 
+    <include file="db/changelog/db.changelog-add-shipments-table.xml"/>
+    <include file="db/changelog/db.changelog-add-orders-table.xml"/>
 </databaseChangeLog>
