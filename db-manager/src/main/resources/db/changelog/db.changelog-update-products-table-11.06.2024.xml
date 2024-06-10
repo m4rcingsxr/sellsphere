@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="1721599216639-1" author="Marcin Seweryn">
+        <addColumn tableName="products">
+            <column name="contains_baterry_pi966" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="contains_baterry_pi967" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="contains_liquids" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hs_code" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
