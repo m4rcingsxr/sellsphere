@@ -797,22 +797,12 @@ class CheckoutController {
         }
 
         try {
-            // Create the PaymentIntent and obtain clientSecret
-            const rates = this.model.ratesResponse.rates;
-            const rateIdx = this.model.selectedRateIdx ? this.model.selectedRateIdx : 0;
-            const selectedRate = rates[rateIdx];
-            const currentAddress = this.model.baseCalculation.customerDetails.address;
 
+            const {fetchError} = await this.elements.fetchUpdates();
 
-            const targetCalculation = await this.model.getCalculation({
-                address: currentAddress,
-                shippingCost: selectedRate.totalCharge,
-                currencyCode: this.model.targetCurrency,
-                exchangeRate: this.model.exchangeRateResponse.result["rate"] * (1.02)
-            });
-
-
-            const response = await this.model.savePaymentIntent(targetCalculation.amountTotal, targetCalculation.currencyCode);
+            if(fetchError) {
+                handleError(fetchError);
+            }
 
             // Confirm the PaymentIntent using the details collected by the Payment Element
             const {error} = await this.stripe.confirmPayment({
@@ -825,6 +815,7 @@ class CheckoutController {
             if (error) {
                 handleError(error);
             }
+
         } catch (error) {
             handleError(error);
         }

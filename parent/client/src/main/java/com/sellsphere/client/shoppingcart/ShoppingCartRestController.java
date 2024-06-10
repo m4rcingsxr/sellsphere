@@ -58,11 +58,11 @@ public class ShoppingCartRestController {
      */
     @PostMapping("/clear")
     public ResponseEntity<Void> clearCart(Principal principal)
-            throws CustomerNotFoundException {
+            throws CustomerNotFoundException, ShoppingCartNotFoundException {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);
 
-        cartService.clearCart(customer);
+        cartService.deleteCart(customer);
 
         return ResponseEntity.ok().build();
     }

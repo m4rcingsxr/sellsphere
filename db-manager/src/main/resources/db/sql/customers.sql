@@ -19,4 +19,4 @@ VALUES ('alice.smith@example.com', '$2a$12$ubhNeO17OtTUGyUkVKUJ9uZaq6ixOmeNH4y0F
        ('rachel.martinez@example.com', '$2a$10$6H2lK8QzS5eF7x8LQ4T9z0V8U9S8q9K8J2T4eW9Q5L8W7T6U4mG7', 'Rachel', 'Martinez', true, true, '2024-06-24 12:00:00'),
        ('steve.robinson@example.com', '$2a$10$6K1mL9PzT5gH7y9LQ5U8y9V9U9R6t8L7J2S5wX9Q7U9V6U8M4nH6', 'Steve', 'Robinson', true, true, '2024-06-24 12:00:00'),
        ('tina.clark@example.com', '$2a$10$7N1oM8QzU5hJ8z1MQ6V9z1W8V9T7u9L8K3R6eX8R8U9W8T8O4pH8', 'Tina', 'Clark', true, true, '2024-06-24 12:00:00'),
-       ('victor.rodriguez@example.com', '$2a$10$7P1qO9RzV5iK9a2NQ7W8z2W9V9U8v9K9L4S7fY9R9V9X8V9Q4qJ9', 'Victor', 'Rodriguez', true, true, '2024-06-24 12:00:00');
+       ('marcinsewerynn@gmail.com', '$2a$12$1WAZvKx.lwX05lkW2vdhUeddn9VF/areSmSDWLsFIF/HxDrowymO6', 'Victor', 'Rodriguez', true, true, '2024-06-24 12:00:00');

@@ -1,9 +1,6 @@
 package com.sellsphere.client;
 
-import com.sellsphere.common.entity.CountryNotFoundException;
-import com.sellsphere.common.entity.CustomerNotFoundException;
-import com.sellsphere.common.entity.ErrorResponse;
-import com.sellsphere.common.entity.StateNotFoundException;
+import com.sellsphere.common.entity.*;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +53,15 @@ public class RestResponseEntityExceptionHandler {
         return new ResponseEntity<>(
                 new ErrorResponse(errors.toString(), HttpStatus.BAD_REQUEST.value()),
                 HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbiddenException(ForbiddenException ex) {
+        log.warn(ex.getMessage(), ex);
+        ErrorResponse errorResponse = new ErrorResponse("Forbidden",
+                                                        HttpStatus.FORBIDDEN.value()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(Exception.class)

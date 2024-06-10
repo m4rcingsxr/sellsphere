@@ -1,7 +1,6 @@
 package com.sellsphere.client.checkout;
 
 import com.sellsphere.client.customer.CustomerService;
-import com.sellsphere.client.shoppingcart.ShoppingCartService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.payment.payload.CalculationRequest;
 import com.sellsphere.payment.payload.CalculationResponse;
@@ -28,17 +27,17 @@ public class CheckoutRestController {
 
     private final CustomerService customerService;
     private final CheckoutService checkoutService;
-    private final ShoppingCartService cartService;
 
     /**
-     * Calculates the total cost including address-specific details with a specified exchange rate or in base currency if the rate is not defined.
+     * Calculates the total cost including address-specific details with a specified exchange
+     * rate or in base currency if the rate is not defined.
      *
      * @param request   The calculation request containing cart and address details.
      * @param principal The authenticated user's principal.
      * @return The calculation response containing total amounts and details.
-     * @throws StripeException             if there is an error with Stripe operations.
-     * @throws CustomerNotFoundException   if the customer is not found.
-     * @throws CurrencyNotFoundException   if the specified currency is not found.
+     * @throws StripeException           if there is an error with Stripe operations.
+     * @throws CustomerNotFoundException if the customer is not found.
+     * @throws CurrencyNotFoundException if the specified currency is not found.
      */
     @PostMapping("/calculate-all")
     public ResponseEntity<CalculationResponse> calculateWithAddress(
@@ -55,8 +54,8 @@ public class CheckoutRestController {
      *
      * @param principal The authenticated user's principal.
      * @return The calculation response containing total amounts.
-     * @throws CustomerNotFoundException   if the customer is not found.
-     * @throws CurrencyNotFoundException   if the specified currency is not found.
+     * @throws CustomerNotFoundException if the customer is not found.
+     * @throws CurrencyNotFoundException if the specified currency is not found.
      */
     @PostMapping("/calculate-total")
     public ResponseEntity<CalculationResponse> calculate(Principal principal)
@@ -93,9 +92,9 @@ public class CheckoutRestController {
      *
      * @param principal The authenticated user's principal.
      * @return A map containing the client secret of the checkout session.
-     * @throws CustomerNotFoundException   if the customer is not found.
-     * @throws StripeException             if there is an error with Stripe operations.
-     * @throws SettingNotFoundException    if the required setting is not found.
+     * @throws CustomerNotFoundException if the customer is not found.
+     * @throws StripeException           if there is an error with Stripe operations.
+     * @throws SettingNotFoundException  if the required setting is not found.
      */
     @PostMapping("/create_session")
     public ResponseEntity<Map<String, String>> createCheckoutSession(Principal principal)
@@ -105,7 +104,9 @@ public class CheckoutRestController {
         Session session = checkoutService.createSession(customer);
 
         Map<String, String> map = new HashMap<>();
-        map.put("clientSecret", session.getRawJsonObject().getAsJsonPrimitive("client_secret").getAsString());
+        map.put("clientSecret",
+                session.getRawJsonObject().getAsJsonPrimitive("client_secret").getAsString()
+        );
 
         return ResponseEntity.ok(map);
     }
@@ -127,7 +128,8 @@ public class CheckoutRestController {
         map.put("status", session.getRawJsonObject().getAsJsonPrimitive("status").getAsString());
         map.put("customer_email",
                 session.getRawJsonObject().getAsJsonObject("customer_details").getAsJsonPrimitive(
-                        "email").getAsString());
+                        "email").getAsString()
+        );
 
         return ResponseEntity.ok(map);
     }

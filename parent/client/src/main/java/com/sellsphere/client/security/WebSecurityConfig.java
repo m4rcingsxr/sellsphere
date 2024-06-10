@@ -12,6 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
@@ -33,7 +36,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/checkout/**").authenticated()
                         .anyRequest().permitAll()
                 )
-                .csrf(Customizer.withDefaults())
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/webhook") // Disable CSRF for webhook endpoint
+                )
                 .oauth2Login(oauth2Login -> oauth2Login
                         .loginPage("/login")
                         .defaultSuccessUrl("/customer?continue", true))
@@ -63,6 +68,11 @@ public class WebSecurityConfig {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public ExecutorService taskExecutor() {
+        return Executors.newFixedThreadPool(10);
     }
 
 }

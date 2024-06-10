@@ -14,8 +14,9 @@ public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Inte
 
     Optional<ShoppingCart> findByCustomerId(Integer customerId);
 
-    void deleteByCustomer(Customer customer);
+    Optional<ShoppingCart> findByPaymentIntentId(String paymentId);
 
     Boolean existsByCustomer(Customer customer);
+
 
 }

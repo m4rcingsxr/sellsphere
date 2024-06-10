@@ -23,6 +23,8 @@ async function initialize() {
     switch (paymentIntent.status) {
         case "succeeded":
             showMessage("Payment succeeded!");
+            const model = new ShoppingCartModel();
+            model.clear();
             break;
         case "processing":
             showMessage("Your payment is processing.");

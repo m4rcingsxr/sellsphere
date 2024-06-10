@@ -148,6 +148,7 @@ public class StripeCheckoutService {
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(amountTotal)
                 .setCurrency(currencyCode)
+                //todo: remove after implementing creating payment methods in the settings
                 .setAutomaticPaymentMethods(
                         PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled(
                                 true).build()

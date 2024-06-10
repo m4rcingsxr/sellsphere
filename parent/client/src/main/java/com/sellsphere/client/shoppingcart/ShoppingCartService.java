@@ -111,9 +111,18 @@ public class ShoppingCartService {
      *
      * @param customer the customer to clear the cart for
      */
-    public void clearCart(Customer customer) {
-        Optional<ShoppingCart> cart = shoppingCartRepository.findByCustomer(customer);
-        cart.ifPresent(shoppingCartRepository::delete);
+    public void deleteCart(Customer customer) throws ShoppingCartNotFoundException {
+        ShoppingCart cart = shoppingCartRepository
+                .findByCustomer(customer)
+                .orElseThrow(ShoppingCartNotFoundException::new);
+        shoppingCartRepository.delete(cart);
+    }
+
+    public void deleteCart(String paymentIntentId) throws ShoppingCartNotFoundException {
+        ShoppingCart cart = shoppingCartRepository
+                .findByPaymentIntentId(paymentIntentId)
+                .orElseThrow(ShoppingCartNotFoundException::new);
+        shoppingCartRepository.delete(cart);
     }
 
     /**
@@ -158,4 +167,5 @@ public class ShoppingCartService {
     public ShoppingCart save(ShoppingCart cart) {
         return shoppingCartRepository.save(cart);
     }
+
 }
