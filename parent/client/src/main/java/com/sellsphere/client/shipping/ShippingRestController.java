@@ -7,8 +7,8 @@ import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.AddressDTO;
 import com.sellsphere.common.entity.payload.CountryDTO;
 import com.sellsphere.easyship.EasyshipService;
-import com.sellsphere.easyship.payload.EasyshipAddress;
-import com.sellsphere.easyship.payload.EasyshipRateResponse;
+import com.sellsphere.easyship.payload.Address;
+import com.sellsphere.easyship.payload.ShippingRatesResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,7 @@ public class ShippingRestController {
     private final SettingService settingService;
 
     @PostMapping("/rates")
-    public ResponseEntity<EasyshipRateResponse> getAvailableRates(
+    public ResponseEntity<ShippingRatesResponse> getAvailableRates(
             @RequestBody AddressDTO addressDto,@RequestParam Integer page,
             Principal principal) throws CustomerNotFoundException, CurrencyNotFoundException {
 
@@ -36,9 +36,9 @@ public class ShippingRestController {
         String currencyCode = settingService.getCurrencyCode().toUpperCase();
 
         List<CartItem> cart = shoppingCartService.findCartItemsByCustomer(customer);
-        EasyshipRateResponse rates = apiService.getShippingRates(
+        ShippingRatesResponse rates = apiService.getShippingRates(
                 page,
-                EasyshipAddress.builder()
+                Address.builder()
                         .city(addressDto.getCity())
                         .state(addressDto.getState())
                         .line1(addressDto.getAddressLine1())

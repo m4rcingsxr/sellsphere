@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @ToString
-public class EasyshipRateResponse {
+public class ShippingRatesResponse {
 
     private Meta meta;
     private List<Rate> rates;

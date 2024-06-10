@@ -5,10 +5,8 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.easyship.payload.EasyshipAddress;
-import com.sellsphere.easyship.payload.EasyshipAddressResponse;
-import com.sellsphere.easyship.payload.EasyshipRateRequest;
-import com.sellsphere.easyship.payload.EasyshipRateResponse;
+import com.sellsphere.easyship.payload.*;
+import com.sellsphere.easyship.payload.shipment.ShipmentResponse;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -47,18 +45,18 @@ public class EasyshipIntegrationService implements EasyshipService {
      * @return The Easyship rate response.
      */
     @Override
-    public EasyshipRateResponse getShippingRates(Integer pageNum, EasyshipAddress recipient,
-                                                 List<CartItem> cart, String baseCurrencyCode) {
+    public ShippingRatesResponse getShippingRates(Integer pageNum, Address recipient,
+                                                  List<CartItem> cart, String baseCurrencyCode) {
         String outputCurrency = recipient.getCurrencyCode() == null ? baseCurrencyCode : recipient.getCurrencyCode();
 
         WebTarget target = client.target(BASE_URL).path("/rates").queryParam("page", pageNum).queryParam("sortBy", "cost_rank");
 
-        EasyshipRateRequest rateRequest = EasyshipRateRequest.builder()
-                .courierSelection(EasyshipRateRequest.CourierSelection.builder()
+        ShippingRatesRequest rateRequest = ShippingRatesRequest.builder()
+                .courierSelection(ShippingRatesRequest.CourierSelection.builder()
                                           .applyShippingRules(true)
                                           .showCourierLogoUrl(true)
                                           .build())
-                .destinationAddress(EasyshipAddress.builder()
+                .destinationAddress(Address.builder()
                                             .countryAlpha2(recipient.getCountryAlpha2())
                                             .city(recipient.getCity())
                                             .postalCode(recipient.getPostalCode())
@@ -66,22 +64,22 @@ public class EasyshipIntegrationService implements EasyshipService {
                                             .line2(recipient.getLine2())
                                             .state(recipient.getState())
                                             .build())
-                .originAddress(EasyshipAddress.builder()
+                .originAddress(Address.builder()
                                        .countryAlpha2("BE")
                                        .city("Antwerp")
                                        .postalCode("1000")
                                        .build())
                 .incoterms("DDU")
-                .insurance(EasyshipRateRequest.Insurance.builder()
+                .insurance(ShippingRatesRequest.Insurance.builder()
                                    .isInsured(false)
                                    .build())
-                .parcels(cart.stream().map(cartItem -> EasyshipRateRequest.Parcel.builder()
-                        .items(List.of(EasyshipRateRequest.Item.builder()
+                .parcels(cart.stream().map(cartItem -> ShippingRatesRequest.Parcel.builder()
+                        .items(List.of(ShippingRatesRequest.Item.builder()
                                                .quantity(cartItem.getQuantity())
                                                .actualWeight(cartItem.getProduct().getWeight().doubleValue())
                                                .declaredCurrency("EUR")
                                                .declaredCustomsValue(cartItem.getProduct().getPrice().doubleValue())
-                                               .dimensions(EasyshipRateRequest.Item.Dimensions.builder()
+                                               .dimensions(ShippingRatesRequest.Item.Dimensions.builder()
                                                                    .length(cartItem.getProduct().getLength().doubleValue())
                                                                    .width(cartItem.getProduct().getWidth().doubleValue())
                                                                    .height(cartItem.getProduct().getHeight().doubleValue())
@@ -89,8 +87,8 @@ public class EasyshipIntegrationService implements EasyshipService {
                                                .hsCode(1)
                                                .build()))
                         .build()).toList())
-                .shippingSettings(EasyshipRateRequest.ShippingSettings.builder()
-                                          .units(EasyshipRateRequest.Units.builder()
+                .shippingSettings(ShippingRatesRequest.ShippingSettings.builder()
+                                          .units(ShippingRatesRequest.Units.builder()
                                                          .dimensions("cm")
                                                          .weight("kg")
                                                          .build())
@@ -110,10 +108,19 @@ public class EasyshipIntegrationService implements EasyshipService {
         return getRatesResponseFromResponse(response);
     }
 
-    private EasyshipRateResponse getRatesResponseFromResponse(Response response) {
+    @Override
+    public ShipmentResponse createShipment() {
+        // origin address - same as sender address
+        // destination address
+        // packaging details - parcels,items
+
+        return null;
+    }
+
+    private ShippingRatesResponse getRatesResponseFromResponse(Response response) {
         if (response.getStatus() == 200 || response.getStatus() == 201) {
             String jsonResponse = response.readEntity(String.class);
-            return gson.fromJson(jsonResponse, EasyshipRateResponse.class);
+            return gson.fromJson(jsonResponse, ShippingRatesResponse.class);
         } else {
             String error = response.readEntity(String.class);
             throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
@@ -146,7 +153,7 @@ public class EasyshipIntegrationService implements EasyshipService {
      * @return The response from Easyship API as a JSON string.
      */
     @Override
-    public String updateSenderAddress(EasyshipAddress addressDto) {
+    public String updateSenderAddress(Address addressDto) {
         int currentPage = 0;
         boolean senderFound = false;
         String nextPage;
@@ -162,9 +169,9 @@ public class EasyshipIntegrationService implements EasyshipService {
                     .header("Accept-Language", "en-US,en;q=0.5");
 
             Response getResponse = getInvocation.get();
-            EasyshipAddressResponse addressResponse = getAddressPageResponse(getResponse);
+            AddressResponse addressResponse = getAddressPageResponse(getResponse);
 
-            for (EasyshipAddress address : addressResponse.getAddresses()) {
+            for (Address address : addressResponse.getAddresses()) {
                 if (address.getDefaultFor().isSender()) {
                     WebTarget deleteTarget = client.target(BASE_URL).path("/addresses/" + address.getId());
                     Invocation.Builder deleteInvocation = deleteTarget.request(MediaType.APPLICATION_JSON)
@@ -190,15 +197,15 @@ public class EasyshipIntegrationService implements EasyshipService {
                 .header("User-Agent", "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
-        String payload = gson.toJson(addressDto, EasyshipAddress.class);
+        String payload = gson.toJson(addressDto, Address.class);
         Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON));
         return processResponse(postResponse);
     }
 
-    private EasyshipAddressResponse getAddressPageResponse(Response response) {
+    private AddressResponse getAddressPageResponse(Response response) {
         if (response.getStatus() == 200) {
             String jsonResponse = response.readEntity(String.class);
-            Type listType = new TypeToken<EasyshipAddressResponse>() {}.getType();
+            Type listType = new TypeToken<AddressResponse>() {}.getType();
             return gson.fromJson(jsonResponse, listType);
         } else {
             String error = response.readEntity(String.class);

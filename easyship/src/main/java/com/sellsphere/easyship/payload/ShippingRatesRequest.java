@@ -10,17 +10,17 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EasyshipRateRequest {
+public class ShippingRatesRequest {
 
 
     @SerializedName("courier_selection")
     private CourierSelection courierSelection;
 
     @SerializedName("destination_address")
-    private EasyshipAddress destinationAddress;
+    private Address destinationAddress;
 
     @SerializedName("origin_address")
-    private EasyshipAddress originAddress;
+    private Address originAddress;
 
     @SerializedName("incoterms")
     private String incoterms;

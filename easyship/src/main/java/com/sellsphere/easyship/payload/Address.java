@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class EasyshipAddress {
+public class Address {
 
     private String id;
 
