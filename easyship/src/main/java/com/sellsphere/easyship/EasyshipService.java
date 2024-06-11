@@ -12,12 +12,13 @@ public interface EasyshipService {
     ShippingRatesResponse getShippingRates(Integer pageNum, Address recipient,
                                            List<CartItem> cart, String baseCurrencyCode);
 
-
     ShipmentResponse createShipment();
 
     String getAccountInfo();
 
     String updateSenderAddress(Address addressDto);
+
+
 
 
 }
