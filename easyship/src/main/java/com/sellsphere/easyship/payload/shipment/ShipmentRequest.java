@@ -95,9 +95,9 @@ public class ShipmentRequest {
     @AllArgsConstructor
     @Builder
     public static class Metadata {
-
-//        // example:
-//        Map<String, String> addtionalServices;
+        // Map<String, String> data1;
+        // Map<String, String> data2;
     }
 
 }
+

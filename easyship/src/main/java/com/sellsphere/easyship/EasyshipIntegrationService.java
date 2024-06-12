@@ -6,6 +6,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.easyship.payload.*;
+import com.sellsphere.easyship.payload.shipment.Product;
+import com.sellsphere.easyship.payload.shipment.ProductResponse;
 import com.sellsphere.easyship.payload.shipment.ShipmentResponse;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
@@ -108,15 +110,6 @@ public class EasyshipIntegrationService implements EasyshipService {
         return getRatesResponseFromResponse(response);
     }
 
-    @Override
-    public ShipmentResponse createShipment() {
-        // origin address - same as sender address
-        // destination address
-        // packaging details - parcels,items
-
-        return null;
-    }
-
     private ShippingRatesResponse getRatesResponseFromResponse(Response response) {
         if (response.getStatus() == 200 || response.getStatus() == 201) {
             String jsonResponse = response.readEntity(String.class);
@@ -213,6 +206,14 @@ public class EasyshipIntegrationService implements EasyshipService {
         }
     }
 
+    @Override
+    public ShipmentResponse createShipment() {
+        // origin address - same as sender address
+        // destination address
+        // packaging details - parcels,items
+
+        return null;
+    }
 
     private String processResponse(Response response) {
         if (response.getStatus() == 200 || response.getStatus() == 201) {
@@ -224,6 +225,41 @@ public class EasyshipIntegrationService implements EasyshipService {
             throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
         }
     }
+
+    public ProductResponse saveProduct(Product product) {
+        WebTarget postTarget = client.target(BASE_URL).path("/products");
+
+        Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", BEARER_TOKEN)
+                .header("User-Agent", "Mozilla/5.0")
+                .header("Accept-Language", "en-US,en;q=0.5");
+
+        String payload = gson.toJson(product);
+        Response postResponse = null;
+
+        try {
+            postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON));
+            return processProductResponse(postResponse);
+        } finally {
+            if (postResponse != null) {
+                postResponse.close();
+            }
+        }
+    }
+
+    private ProductResponse processProductResponse(Response response) {
+        String rawResponse = response.readEntity(String.class);
+
+        if (response.getStatus() == Response.Status.OK.getStatusCode() ||
+                response.getStatus() == Response.Status.CREATED.getStatusCode()) {
+            JsonElement jsonElement = JsonParser.parseString(rawResponse);
+            Type responseType = new TypeToken<ProductResponse>() {}.getType();
+            return gson.fromJson(jsonElement, responseType);
+        } else {
+            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + rawResponse);
+        }
+    }
+
 
 
 }
