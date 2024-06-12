@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductResponse {
+public class SaveProductResponse {
 
     @SerializedName("meta")
     private Meta meta;

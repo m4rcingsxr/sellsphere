@@ -1,13 +1,19 @@
 package com.sellsphere.easyship;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.easyship.payload.*;
+import com.sellsphere.easyship.payload.Address;
+import com.sellsphere.easyship.payload.AddressResponse;
+import com.sellsphere.easyship.payload.ShippingRatesRequest;
+import com.sellsphere.easyship.payload.ShippingRatesResponse;
+import com.sellsphere.easyship.payload.shipment.DeleteProductResponse;
 import com.sellsphere.easyship.payload.shipment.Product;
-import com.sellsphere.easyship.payload.shipment.ProductResponse;
+import com.sellsphere.easyship.payload.shipment.SaveProductResponse;
 import com.sellsphere.easyship.payload.shipment.ShipmentResponse;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
@@ -230,7 +236,7 @@ public class EasyshipIntegrationService implements EasyshipService {
      * @param product The product details to be saved.
      * @return The response from Easyship API.
      */
-    public ProductResponse saveProduct(Product product) {
+    public SaveProductResponse saveProduct(Product product) {
         WebTarget postTarget = client.target(BASE_URL).path("/products");
 
         Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
@@ -241,16 +247,16 @@ public class EasyshipIntegrationService implements EasyshipService {
         String payload = gson.toJson(product);
 
         try (Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON))) {
-            return processProductResponse(postResponse);
+            return processSaveProductResponse(postResponse);
         }
     }
 
-    private ProductResponse processProductResponse(Response response) {
+    private SaveProductResponse processSaveProductResponse(Response response) {
         if (response.getStatus() == Response.Status.OK.getStatusCode() ||
                 response.getStatus() == Response.Status.CREATED.getStatusCode()) {
             String rawResponse = response.readEntity(String.class);
             JsonElement jsonElement = JsonParser.parseString(rawResponse);
-            Type responseType = new TypeToken<ProductResponse>() {}.getType();
+            Type responseType = new TypeToken<SaveProductResponse>() {}.getType();
             return gson.fromJson(jsonElement, responseType);
         } else {
             String error = response.readEntity(String.class);
@@ -264,6 +270,39 @@ public class EasyshipIntegrationService implements EasyshipService {
             String result = response.readEntity(String.class);
             JsonElement jsonElement = JsonParser.parseString(result);
             return gson.toJson(jsonElement);
+        } else {
+            String error = response.readEntity(String.class);
+            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+        }
+    }
+
+    /**
+     * Saves a product from Easyship.
+     *
+     * @param productId The product id to be removed.
+     * @return The response from Easyship API.
+     */
+    @Override
+    public DeleteProductResponse deleteProduct(Integer productId) {
+        WebTarget postTarget = client.target(BASE_URL).path("/products").path(String.valueOf(productId));
+
+        Invocation.Builder deleteInvocation = postTarget.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", BEARER_TOKEN)
+                .header("User-Agent", "Mozilla/5.0")
+                .header("Accept-Language", "en-US,en;q=0.5");
+
+        try (Response postResponse = deleteInvocation.delete()) {
+            return processDeleteProductResponse(postResponse);
+        }
+    }
+
+    private DeleteProductResponse processDeleteProductResponse(Response response) {
+        if (response.getStatus() == Response.Status.OK.getStatusCode() ||
+                response.getStatus() == Response.Status.CREATED.getStatusCode()) {
+            String rawResponse = response.readEntity(String.class);
+            JsonElement jsonElement = JsonParser.parseString(rawResponse);
+            Type responseType = new TypeToken<DeleteProductResponse>() {}.getType();
+            return gson.fromJson(jsonElement, responseType);
         } else {
             String error = response.readEntity(String.class);
             throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
