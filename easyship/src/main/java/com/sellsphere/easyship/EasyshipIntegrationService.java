@@ -47,8 +47,7 @@ public class EasyshipIntegrationService implements EasyshipService {
      * @return The Easyship rate response.
      */
     @Override
-    public ShippingRatesResponse getShippingRates(Integer pageNum, Address recipient,
-                                                  List<CartItem> cart, String baseCurrencyCode) {
+    public ShippingRatesResponse getShippingRates(Integer pageNum, Address recipient, List<CartItem> cart, String baseCurrencyCode) {
         String outputCurrency = recipient.getCurrencyCode() == null ? baseCurrencyCode : recipient.getCurrencyCode();
 
         WebTarget target = client.target(BASE_URL).path("/rates").queryParam("page", pageNum).queryParam("sortBy", "cost_rank");
@@ -91,8 +90,8 @@ public class EasyshipIntegrationService implements EasyshipService {
                         .build()).toList())
                 .shippingSettings(ShippingRatesRequest.ShippingSettings.builder()
                                           .units(ShippingRatesRequest.Units.builder()
-                                                         .dimensions("cm")
-                                                         .weight("kg")
+                                                         .dimensions(Constants.UNIT_OF_LENGTH)
+                                                         .weight(Constants.UNIT_OF_WEIGHT)
                                                          .build())
                                           .outputCurrency(outputCurrency)
                                           .build())
@@ -105,13 +104,14 @@ public class EasyshipIntegrationService implements EasyshipService {
                 .header("User-Agent", "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
-        Response response = invocationBuilder.post(Entity.entity(payload, MediaType.APPLICATION_JSON));
-
-        return getRatesResponseFromResponse(response);
+        try (Response response = invocationBuilder.post(Entity.entity(payload, MediaType.APPLICATION_JSON))) {
+            return processShippingRatesResponse(response);
+        }
     }
 
-    private ShippingRatesResponse getRatesResponseFromResponse(Response response) {
-        if (response.getStatus() == 200 || response.getStatus() == 201) {
+    private ShippingRatesResponse processShippingRatesResponse(Response response) {
+        if (response.getStatus() == Response.Status.OK.getStatusCode() ||
+                response.getStatus() == Response.Status.CREATED.getStatusCode()) {
             String jsonResponse = response.readEntity(String.class);
             return gson.fromJson(jsonResponse, ShippingRatesResponse.class);
         } else {
@@ -134,10 +134,11 @@ public class EasyshipIntegrationService implements EasyshipService {
                 .header("User-Agent", "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
-        Response response = invocationBuilder.get();
-
-        return processResponse(response);
+        try (Response response = invocationBuilder.get()) {
+            return processStringResponse(response);
+        }
     }
+
 
     /**
      * Updates the sender address in Easyship.
@@ -161,26 +162,28 @@ public class EasyshipIntegrationService implements EasyshipService {
                     .header("User-Agent", "Mozilla/5.0")
                     .header("Accept-Language", "en-US,en;q=0.5");
 
-            Response getResponse = getInvocation.get();
-            AddressResponse addressResponse = getAddressPageResponse(getResponse);
+            try (Response getResponse = getInvocation.get()) {
+                AddressResponse addressResponse = processAddressResponse(getResponse);
 
-            for (Address address : addressResponse.getAddresses()) {
-                if (address.getDefaultFor().isSender()) {
-                    WebTarget deleteTarget = client.target(BASE_URL).path("/addresses/" + address.getId());
-                    Invocation.Builder deleteInvocation = deleteTarget.request(MediaType.APPLICATION_JSON)
-                            .header("Authorization", BEARER_TOKEN)
-                            .header("User-Agent", "Mozilla/5.0")
-                            .header("Accept-Language", "en-US,en;q=0.5");
+                for (Address address : addressResponse.getAddresses()) {
+                    if (address.getDefaultFor().isSender()) {
+                        WebTarget deleteTarget = client.target(BASE_URL).path("/addresses/" + address.getId());
+                        Invocation.Builder deleteInvocation = deleteTarget.request(MediaType.APPLICATION_JSON)
+                                .header("Authorization", BEARER_TOKEN)
+                                .header("User-Agent", "Mozilla/5.0")
+                                .header("Accept-Language", "en-US,en;q=0.5");
 
-                    Response deleteResponse = deleteInvocation.delete();
-                    processResponse(deleteResponse);
-                    senderFound = true;
-                    break;
+                        try (Response deleteResponse = deleteInvocation.delete()) {
+                            processStringResponse(deleteResponse);
+                            senderFound = true;
+                            break;
+                        }
+                    }
                 }
-            }
 
-            nextPage = addressResponse.getMeta().getPagination().getNext();
-            currentPage++;
+                nextPage = addressResponse.getMeta().getPagination().getNext();
+                currentPage++;
+            }
 
         } while (nextPage != null && !senderFound);
 
@@ -190,13 +193,14 @@ public class EasyshipIntegrationService implements EasyshipService {
                 .header("User-Agent", "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
-        String payload = gson.toJson(addressDto, Address.class);
-        Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON));
-        return processResponse(postResponse);
+        String payload = gson.toJson(addressDto);
+        try (Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON))) {
+            return processStringResponse(postResponse);
+        }
     }
 
-    private AddressResponse getAddressPageResponse(Response response) {
-        if (response.getStatus() == 200) {
+    private AddressResponse processAddressResponse(Response response) {
+        if (response.getStatus() == Response.Status.OK.getStatusCode()) {
             String jsonResponse = response.readEntity(String.class);
             Type listType = new TypeToken<AddressResponse>() {}.getType();
             return gson.fromJson(jsonResponse, listType);
@@ -206,26 +210,26 @@ public class EasyshipIntegrationService implements EasyshipService {
         }
     }
 
+    /**
+     * Creates a shipment in Easyship.
+     *
+     * @return The response from Easyship API.
+     */
     @Override
     public ShipmentResponse createShipment() {
         // origin address - same as sender address
         // destination address
-        // packaging details - parcels,items
+        // packaging details - parcels, items
 
         return null;
     }
 
-    private String processResponse(Response response) {
-        if (response.getStatus() == 200 || response.getStatus() == 201) {
-            String result = response.readEntity(String.class);
-            JsonElement jsonElement = JsonParser.parseString(result);
-            return gson.toJson(jsonElement);
-        } else {
-            String error = response.readEntity(String.class);
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
-        }
-    }
-
+    /**
+     * Saves a product in Easyship.
+     *
+     * @param product The product details to be saved.
+     * @return The response from Easyship API.
+     */
     public ProductResponse saveProduct(Product product) {
         WebTarget postTarget = client.target(BASE_URL).path("/products");
 
@@ -235,31 +239,35 @@ public class EasyshipIntegrationService implements EasyshipService {
                 .header("Accept-Language", "en-US,en;q=0.5");
 
         String payload = gson.toJson(product);
-        Response postResponse = null;
 
-        try {
-            postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON));
+        try (Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON))) {
             return processProductResponse(postResponse);
-        } finally {
-            if (postResponse != null) {
-                postResponse.close();
-            }
         }
     }
 
     private ProductResponse processProductResponse(Response response) {
-        String rawResponse = response.readEntity(String.class);
-
         if (response.getStatus() == Response.Status.OK.getStatusCode() ||
                 response.getStatus() == Response.Status.CREATED.getStatusCode()) {
+            String rawResponse = response.readEntity(String.class);
             JsonElement jsonElement = JsonParser.parseString(rawResponse);
             Type responseType = new TypeToken<ProductResponse>() {}.getType();
             return gson.fromJson(jsonElement, responseType);
         } else {
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + rawResponse);
+            String error = response.readEntity(String.class);
+            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
         }
     }
 
-
+    private String processStringResponse(Response response) {
+        if (response.getStatus() == Response.Status.OK.getStatusCode() ||
+                response.getStatus() == Response.Status.CREATED.getStatusCode()) {
+            String result = response.readEntity(String.class);
+            JsonElement jsonElement = JsonParser.parseString(result);
+            return gson.toJson(jsonElement);
+        } else {
+            String error = response.readEntity(String.class);
+            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+        }
+    }
 
 }
