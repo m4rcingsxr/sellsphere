@@ -91,7 +91,6 @@ public class ShipmentRequest {
 
     @Getter
     @Setter
-    @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class Metadata {
