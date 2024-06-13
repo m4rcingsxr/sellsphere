@@ -2,6 +2,10 @@ package com.sellsphere.admin.product;
 
 import com.sellsphere.common.entity.ProductTax;
 import com.sellsphere.common.entity.TaxType;
+import com.sellsphere.easyship.EasyshipIntegrationService;
+import com.sellsphere.easyship.EasyshipService;
+import com.sellsphere.easyship.payload.HsCode;
+import com.sellsphere.easyship.payload.HsCodeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +23,7 @@ public class RestProductController {
 
     private final ProductService productService;
     private final ProductTaxRepository productTaxRepository;
+    private final EasyshipService easyshipService;
 
     /**
      * Checks if a product name is unique.
@@ -47,6 +52,16 @@ public class RestProductController {
         List<ProductTax> taxes = productTaxRepository.findByType(taxType);
 
         return ResponseEntity.ok(taxes);
+    }
+
+    @GetMapping("/hs-codes")
+    public ResponseEntity<HsCodeResponse> listHsCodes(
+            @RequestParam("page") Integer page,
+            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "description", required = false) String description
+    ) {
+        HsCodeResponse response = easyshipService.fetchHsCodes(page, code, description);
+        return ResponseEntity.ok(response);
     }
 
 }

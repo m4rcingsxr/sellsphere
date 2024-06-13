@@ -75,16 +75,14 @@
                 </div>
 
                 <div class="col-sm-4">
-                    <label>Hs code</label>
-                    <a href="#" id="tooltip-hscode" data-bs-toggle="tooltip" data-bs-placement="bottom"
-                       data-bs-title="An HS code consists of at least six digits and is used by customs to classify the product being shipped. That way it can accurately calculate taxes and duties and apply any necessary restrictions.">
+                    <label class="form-label">HS code</label>
+                    <a href="#" id="hs-code-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                       data-bs-title="HS code is short for Harmonized Commodity Description and Coding System. It's a list of numbers used by customs to classify a product. An HS code consists of at least six digits and is used by customs to classify the product being shipped. That way it can accurately calculate taxes and duties and apply any necessary restrictions.">
                         <i class="fa-regular fa-circle-question"></i></a>
                 </div>
+
                 <div class="col-sm-8">
-                    <select th:field="*{hsCode}" class="form-control">
-                        <option value="true">true</option>
-                        <option value="false">false</option>
-                    </select>
+                    <select th:field="*{hsCode}"></select>
                 </div>
             </div>
         </div>

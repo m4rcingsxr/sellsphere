@@ -90,10 +90,10 @@ const ajaxUtil = {
      * @returns {Promise<Object>} A promise that resolves to the response data as a JSON object.
      * @throws {Error} If the POST request fails.
      */
-    async post(url, data) {
+    async post(url, data = {}) {
         const csrfToken = this.getCSRFToken();
         const headers = {
-            'Content-Type': 'application/json'
+            'Content-Type' : 'application/json',
         };
 
         if (csrfToken) {

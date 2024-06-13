@@ -7,10 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.easyship.payload.Address;
-import com.sellsphere.easyship.payload.AddressResponse;
-import com.sellsphere.easyship.payload.ShippingRatesRequest;
-import com.sellsphere.easyship.payload.ShippingRatesResponse;
+import com.sellsphere.easyship.payload.*;
 import com.sellsphere.easyship.payload.shipment.DeleteProductResponse;
 import com.sellsphere.easyship.payload.shipment.Product;
 import com.sellsphere.easyship.payload.shipment.SaveProductResponse;
@@ -284,9 +281,9 @@ public class EasyshipIntegrationService implements EasyshipService {
      */
     @Override
     public DeleteProductResponse deleteProduct(Integer productId) {
-        WebTarget postTarget = client.target(BASE_URL).path("/products").path(String.valueOf(productId));
+        WebTarget target = client.target(BASE_URL).path("/products").path(String.valueOf(productId));
 
-        Invocation.Builder deleteInvocation = postTarget.request(MediaType.APPLICATION_JSON)
+        Invocation.Builder deleteInvocation = target.request(MediaType.APPLICATION_JSON)
                 .header("Authorization", BEARER_TOKEN)
                 .header("User-Agent", "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
@@ -302,6 +299,41 @@ public class EasyshipIntegrationService implements EasyshipService {
             String rawResponse = response.readEntity(String.class);
             JsonElement jsonElement = JsonParser.parseString(rawResponse);
             Type responseType = new TypeToken<DeleteProductResponse>() {}.getType();
+            return gson.fromJson(jsonElement, responseType);
+        } else {
+            String error = response.readEntity(String.class);
+            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+        }
+    }
+
+    @Override
+    public HsCodeResponse fetchHsCodes(Integer page, String code, String description) {
+        final String perPage = "20";
+
+        WebTarget target = client.target(BASE_URL).path("/hs_codes").queryParam("per_page", perPage);
+
+
+        if(code != null) target.queryParam("code", code);
+
+        if(description != null) target.queryParam("description", description);
+
+
+        Invocation.Builder getInvocation = target.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", BEARER_TOKEN)
+                .header("User-Agent", "Mozilla/5.0")
+                .header("Accept-Language", "en-US,en;q=0.5");
+
+        try (Response postResponse = getInvocation.get()) {
+            return processHsCodeResponse(postResponse);
+        }
+    }
+
+    private HsCodeResponse processHsCodeResponse(Response response) {
+        if (response.getStatus() == Response.Status.OK.getStatusCode() ||
+                response.getStatus() == Response.Status.CREATED.getStatusCode()) {
+            String rawResponse = response.readEntity(String.class);
+            JsonElement jsonElement = JsonParser.parseString(rawResponse);
+            Type responseType = new TypeToken<HsCodeResponse>() {}.getType();
             return gson.fromJson(jsonElement, responseType);
         } else {
             String error = response.readEntity(String.class);

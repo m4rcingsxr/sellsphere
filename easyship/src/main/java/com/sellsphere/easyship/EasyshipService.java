@@ -2,6 +2,7 @@ package com.sellsphere.easyship;
 
 import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.easyship.payload.Address;
+import com.sellsphere.easyship.payload.HsCodeResponse;
 import com.sellsphere.easyship.payload.ShippingRatesResponse;
 import com.sellsphere.easyship.payload.shipment.DeleteProductResponse;
 import com.sellsphere.easyship.payload.shipment.Product;
@@ -25,4 +26,5 @@ public interface EasyshipService {
 
     DeleteProductResponse deleteProduct(Integer productId);
 
+    HsCodeResponse fetchHsCodes(Integer page, String code, String description);
 }
