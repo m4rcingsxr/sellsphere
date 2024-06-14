@@ -1,4 +1,4 @@
-function initHsCodeSelect2() {
+function initHsCodeSelect2(initialHsCode) {
     $('#hsCode').select2({
         width: '100%',
         ajax: {
@@ -23,6 +23,8 @@ function initHsCodeSelect2() {
             processResults: function(data, params) {
                 params.page = params.page || 1;
 
+                console.log("Processing results: ", data);
+
                 if (!data.hsCodes) {
                     console.error('Invalid response format:', data);
                     return {
@@ -41,7 +43,7 @@ function initHsCodeSelect2() {
                         };
                     }),
                     pagination: {
-                        more: (params.page * 20) < data.meta.pagination.count
+                        more: data.meta.pagination.next ? true : false
                     }
                 };
             },
@@ -52,6 +54,11 @@ function initHsCodeSelect2() {
         templateResult: formatHsCode,
         templateSelection: formatHsCodeSelection
     });
+
+    if (initialHsCode) {
+        console.log('Initial HS Code:', initialHsCode);
+        fetchInitialHsCode(initialHsCode);
+    }
 }
 
 function formatHsCode(hsCode) {
@@ -74,6 +81,32 @@ function formatHsCodeSelection(hsCode) {
     return hsCode.text || hsCode.id;
 }
 
+function fetchInitialHsCode(initialHsCode) {
+    $.ajax({
+        url: `${MODULE_URL}products/hs-codes`,
+        dataType: 'json',
+        data: {
+            code: initialHsCode,
+            page: 1
+        },
+        success: function(response) {
+            console.log('Fetch Initial HS Code Response:', response);
+            if (response.hsCodes && response.hsCodes.length > 0) {
+                const hsCode = response.hsCodes[0];
+                const option = new Option(hsCode.description, hsCode.code, true, true);
+                $('#hsCode').append(option).trigger('change');
+            } else {
+                console.error('HS code not found:', initialHsCode);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Failed to fetch initial HS code:', errorThrown);
+        }
+    });
+}
+
 $(document).ready(function() {
-    initHsCodeSelect2();
+    const initialHsCode = $("#initial-hs-code").val();
+    console.log('Document Ready - Initial HS Code:', initialHsCode);
+    initHsCodeSelect2(initialHsCode);
 });

@@ -3,9 +3,14 @@ package com.sellsphere.payment;
 import com.sellsphere.common.entity.Currency;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Price;
 import com.stripe.model.Product;
+import com.stripe.param.PriceCreateParams;
+import com.stripe.param.PriceUpdateParams;
 import com.stripe.param.ProductCreateParams;
 import com.stripe.param.ProductUpdateParams;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -22,40 +27,58 @@ public class StripeProductService {
         StripeConfig.init();
     }
 
-    /**
-     * Creates or updates a product in Stripe.
-     * <p>
-     * If an existing product ID is provided, the product's archive status is changed to active
-     * before creating a new product in Stripe. The new product details are provided through
-     * the {@code newProduct} parameter.
-     *
-     * @param existingProductId The ID of the existing product to be updated. Can be null.
-     * @param newProduct        The new product details to be created in Stripe.
-     * @param currency          The currencyconversion information for setting the price.
-     * @return The created or updated Stripe {@code Product}.
-     * @throws StripeException If an error occurs during the Stripe API interaction.
-     */
-    public Product saveProduct(Integer existingProductId,
-                               com.sellsphere.common.entity.Product newProduct, Currency currency,
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Product saveProduct(Integer currentId, com.sellsphere.common.entity.Product product, Currency currency,
                                String taxBehaviorSetting)
             throws StripeException {
 
-        if (existingProductId != null) {
-            changeProductArchiveStatus(String.valueOf(existingProductId), false);
+        if(currentId != null) {
+            Product existingProduct = Product.retrieve(String.valueOf(currentId));
+            String currentPriceId = existingProduct.getDefaultPrice();
+
+            PriceCreateParams priceCreateParams = PriceCreateParams.builder()
+                    .setUnitAmount(product.getDiscountPrice().multiply(BigDecimal.valueOf(currency.getUnitAmount())).longValue())
+                    .setCurrency(currency.getCode())
+                    .setProduct(String.valueOf(product.getId()))
+                    .setTaxBehavior(PriceCreateParams.TaxBehavior.INCLUSIVE).build();
+            Price newPrice = Price.create(priceCreateParams);
+
+
+            ProductUpdateParams params = ProductUpdateParams.builder()
+                    .setActive(true)
+                    .setName(product.getName())
+                    .setDefaultPrice(newPrice.getId())
+                    .addExpand("default_price")
+                    .build();
+
+            Product updatedProduct = existingProduct.update(params);
+
+            // archive previous price
+            Price currentPrice = Price.retrieve(currentPriceId);
+            currentPrice.update(
+                    PriceUpdateParams.builder()
+                            .setActive(false)
+                            .build()
+            );
+
+            return updatedProduct;
+        } else {
+            ProductCreateParams params = ProductCreateParams.builder()
+                    .setId(String.valueOf(product.getId()))
+                    .setName(product.getName())
+                    .setActive(true)
+                    .setDefaultPriceData(
+                            ProductCreateParams.DefaultPriceData.builder()
+                                    .setUnitAmount(product.getDiscountPrice().multiply(BigDecimal.valueOf(currency.getUnitAmount())).longValue())
+                                    .setCurrency(currency.getCode())
+                                    .setTaxBehavior(ProductCreateParams.DefaultPriceData.TaxBehavior.valueOf(taxBehaviorSetting)).build())
+                    .addExpand("default_price")
+                    .build();
+
+            return Product.create(params);
         }
 
-        ProductCreateParams params = ProductCreateParams.builder().setId(
-                String.valueOf(newProduct.getId())).setName(
-                newProduct.getName()).setDefaultPriceData(
-                ProductCreateParams.DefaultPriceData.builder().setUnitAmount(
-                                newProduct.getDiscountPrice().multiply(BigDecimal.valueOf(
-                                        currency.getUnitAmount())).longValue()).setCurrency(
-                                currency.getCode())
-                        .setTaxBehavior(ProductCreateParams.DefaultPriceData.TaxBehavior.valueOf(
-                                taxBehaviorSetting))
-                        .build()).addExpand("default_price").build();
-
-        return Product.create(params);
     }
 
     /**

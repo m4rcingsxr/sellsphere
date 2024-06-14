@@ -14,4 +14,6 @@ public class Constants {
     // product require unit of weight to be kg
     public static final String UNIT_OF_WEIGHT = "kg";
 
+    public static final String HS_CODE_PER_PAGE = "20";
+
 }

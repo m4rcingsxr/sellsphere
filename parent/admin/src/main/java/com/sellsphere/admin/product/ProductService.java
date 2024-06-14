@@ -5,6 +5,8 @@ import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.setting.SettingService;
 import com.sellsphere.common.entity.*;
+import com.sellsphere.easyship.EasyshipIntegrationService;
+import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.payment.StripeProductService;
 import com.stripe.exception.StripeException;
 import jakarta.transaction.Transactional;
@@ -14,17 +16,21 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
 public class ProductService {
 
     private static final int PRODUCTS_PER_PAGE = 12;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final ProductRepository productRepository;
     private final StripeProductService stripeService;
     private final SettingService settingService;
+    private final EasyshipService easyshipService;
 
 
     /**
@@ -86,8 +92,10 @@ public class ProductService {
     public Product save(Product product, MultipartFile newPrimaryImage, MultipartFile[] extraImages)
             throws IOException, SettingNotFoundException,
             CurrencyNotFoundException, StripeException {
-        Integer existingId = product.getId();
-        Currency currentCurrency = settingService.getCurrentCurrency();
+        //                        todo: fix hs codes not selected on edit
+        //                        todo: delete product in stripe and easyship, fix updates
+        Integer productId = product.getId();
+        Currency defaultCurrency = settingService.getCurrentCurrency();
 
         updateProductDates(product);
         generateProductAlias(product);
@@ -98,10 +106,34 @@ public class ProductService {
 
         Setting taxBehavior = settingService.getTaxBehavior();
 
-        var stripeProduct = stripeService.saveProduct(existingId, savedProduct, currentCurrency, taxBehavior.getValue());
+        var stripeProduct = stripeService.saveProduct(productId, savedProduct, defaultCurrency, taxBehavior.getValue());
         String priceId = stripeProduct.getDefaultPrice();
 
-        product.setPriceId(priceId);
+        // drut - update z tym samym id i identifierem zwraca błąd
+        String uniqueIdentifier = UUID.randomUUID().toString();
+
+        var productBuilder = com.sellsphere.easyship.payload.shipment.Product.builder()
+                .id(String.valueOf(product.getId()))
+                .identifier(uniqueIdentifier)
+                .containsBatteryPi966(savedProduct.isContainsBatteryPi966())
+                .containsBatteryPi967(savedProduct.isContainsBatteryPi967()) // Corrected method call
+                .containsLiquids(savedProduct.isContainsLiquids())
+                .costPrice(savedProduct.getCost())
+                .costPriceCurrency(defaultCurrency.getCode().toUpperCase())
+                .createdAt(savedProduct.getCreatedTime().format(formatter))
+                .updatedAt(savedProduct.getProductUpdate().getUpdatedTime().format(formatter))
+                .hsCode(product.getHsCode())
+                .imageUrl(product.getMainImagePath())
+                .name(product.getName())
+                .sellingPrice(product.getDiscountPrice())
+                .height(product.getHeight())
+                .length(product.getLength())
+                .weight(product.getWeight())
+                .width(product.getWidth());
+
+        easyshipService.saveProduct(productBuilder.build());
+
+        product.setPriceId(priceId); // managed by persistence context
 
 
         ProductHelper.saveExtraImages(savedProduct, extraImages);
@@ -169,3 +201,4 @@ public class ProductService {
         productRepository.save(product);
     }
 }
+

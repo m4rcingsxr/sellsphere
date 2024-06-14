@@ -82,7 +82,12 @@
                 </div>
 
                 <div class="col-sm-8">
+                    <input type="hidden" th:value="${product.hsCode}" id="initial-hs-code"/>
                     <select th:field="*{hsCode}"></select>
+                </div>
+
+                <div class="col-12">
+                   <div th:replace="~{product/product_hs_codes :: hs_codes()}"></div>
                 </div>
             </div>
         </div>

@@ -18,6 +18,8 @@ import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -233,6 +235,7 @@ public class EasyshipIntegrationService implements EasyshipService {
      * @param product The product details to be saved.
      * @return The response from Easyship API.
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public SaveProductResponse saveProduct(Product product) {
         WebTarget postTarget = client.target(BASE_URL).path("/products");
 
@@ -308,14 +311,11 @@ public class EasyshipIntegrationService implements EasyshipService {
 
     @Override
     public HsCodeResponse fetchHsCodes(Integer page, String code, String description) {
-        final String perPage = "20";
-
-        WebTarget target = client.target(BASE_URL).path("/hs_codes").queryParam("per_page", perPage);
-
-
-        if(code != null) target.queryParam("code", code);
-
-        if(description != null) target.queryParam("description", description);
+        WebTarget target = client.target(BASE_URL).path("/hs_codes")
+                .queryParam("per_page", Constants.HS_CODE_PER_PAGE)
+                .queryParam("page", page)
+                .queryParam("description", description)
+                .queryParam("code", code);
 
 
         Invocation.Builder getInvocation = target.request(MediaType.APPLICATION_JSON)
