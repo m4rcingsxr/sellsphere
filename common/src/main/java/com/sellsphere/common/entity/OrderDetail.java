@@ -21,11 +21,9 @@ public class OrderDetail extends IdentifiedEntity {
     @Column(name = "product_cost", nullable = false)
     private BigDecimal productCost;
 
-    @Column(name = "shipping_cost", nullable = false)
-    private BigDecimal shippingCost;
 
     @Column(name = "unit_price", nullable = false)
-    private BigDecimal unitPrice;
+    private BigDecimal productPrice;
 
     @Column(name = "subtotal", nullable = false)
     private BigDecimal subtotal;

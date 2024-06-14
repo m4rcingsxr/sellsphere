@@ -3,6 +3,8 @@ package com.sellsphere.easyship.payload.shipment;
 import com.google.gson.annotations.SerializedName;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 /**
  * Represents a line item in a shipment manifest; may be multiple physical objects.
  */
@@ -17,7 +19,7 @@ public class ParcelProductItemCreate {
     private String declaredCurrency; // Item currency (ISO-4217 three-letter alphabetic currency code)
 
     @SerializedName("declared_customs_value")
-    private double declaredCustomsValue; // Item customs value, must be greater than 0 unless category is documents
+    private BigDecimal declaredCustomsValue; // Item customs value, must be greater than 0 unless category is documents
 
     private Product product; // Product details
 

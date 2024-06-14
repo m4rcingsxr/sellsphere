@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+
+    <changeSet id="1721686349931-1" author="Marcin Seweryn">
+        <dropColumn tableName="orders" columnName="tax"/>
+        <addColumn tableName="orders">
+            <column name="tax" type="DECIMAL">
+            </column>
+        </addColumn>
+
+        <addColumn tableName="shipments">
+            <column name="tracking_page_url" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delivery_state" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pickup_state" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="return_shipment" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label_state" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label_generated_at" type="VARCHAR(255)">
+            </column>
+            <column name="label_pai_at" type="VARCHAR(255)">
+            </column>
+
+
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

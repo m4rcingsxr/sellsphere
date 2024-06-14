@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,5 +46,29 @@ public class ShoppingCart extends IdentifiedEntity {
 
     public void removeCartItem(CartItem item) {
         if(cartItems != null) cartItems.remove(item);
+    }
+
+    public BigDecimal getProductCost() {
+        return cartItems.stream()
+                .map(item -> item.getProduct().getCost())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getSubtotal() {
+        return cartItems.stream()
+                .map(item -> item.getProduct().getDiscountPrice())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getTotal() {
+        return cartItems.stream()
+                .map(item -> item.getProduct().getDiscountPrice())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getTotalWeight() {
+        return  cartItems.stream()
+                .map(item -> item.getProduct().getWeight().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

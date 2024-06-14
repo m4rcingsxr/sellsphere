@@ -93,8 +93,6 @@ public class ProductService {
     public Product save(Product product, MultipartFile newPrimaryImage, MultipartFile[] extraImages)
             throws IOException, SettingNotFoundException,
             CurrencyNotFoundException, StripeException {
-        //                        todo: fix hs codes not selected on edit
-        //                        todo: delete product in stripe and easyship, fix updates
         Integer productId = product.getId();
         Currency defaultCurrency = settingService.getCurrentCurrency();
 
@@ -196,7 +194,7 @@ public class ProductService {
                 ProductNotFoundException::new);
         product.setEnabled(status);
 
-        stripeService.changeProductArchiveStatus(String.valueOf(id), true);
+        stripeService.changeProductArchiveStatus(String.valueOf(id), status);
         productRepository.save(product);
     }
 }

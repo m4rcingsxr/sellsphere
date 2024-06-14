@@ -84,7 +84,7 @@ public class ShipmentRequest {
     @SerializedName("set_as_residential")
     private boolean setAsResidential; // Set the shipment as residential
 
-    private List<Parcel> parcels; // List of parcels in the shipment
+    private List<RequestParcel> parcels; // List of parcels in the shipment
 
     @SerializedName("shipping_settings")
     private ShippingSettings shippingSettings; // Shipping settings for the shipment

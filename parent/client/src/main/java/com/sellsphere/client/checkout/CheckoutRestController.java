@@ -2,6 +2,8 @@ package com.sellsphere.client.checkout;
 
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.common.entity.*;
+import com.sellsphere.easyship.EasyshipService;
+import com.sellsphere.easyship.payload.shipment.ShipmentResponse;
 import com.sellsphere.payment.payload.CalculationRequest;
 import com.sellsphere.payment.payload.CalculationResponse;
 import com.sellsphere.payment.payload.PaymentRequest;
@@ -27,6 +29,7 @@ public class CheckoutRestController {
 
     private final CustomerService customerService;
     private final CheckoutService checkoutService;
+    private final EasyshipService easyshipService;
 
     /**
      * Calculates the total cost including address-specific details with a specified exchange

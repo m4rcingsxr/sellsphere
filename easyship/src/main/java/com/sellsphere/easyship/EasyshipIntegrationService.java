@@ -8,10 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.easyship.payload.*;
-import com.sellsphere.easyship.payload.shipment.DeleteProductResponse;
-import com.sellsphere.easyship.payload.shipment.Product;
-import com.sellsphere.easyship.payload.shipment.SaveProductResponse;
-import com.sellsphere.easyship.payload.shipment.ShipmentResponse;
+import com.sellsphere.easyship.payload.shipment.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -52,10 +49,14 @@ public class EasyshipIntegrationService implements EasyshipService {
      * @return The Easyship rate response.
      */
     @Override
-    public ShippingRatesResponse getShippingRates(Integer pageNum, Address recipient, List<CartItem> cart, String baseCurrencyCode) {
-        String outputCurrency = recipient.getCurrencyCode() == null ? baseCurrencyCode : recipient.getCurrencyCode();
+    public ShippingRatesResponse getShippingRates(Integer pageNum, Address recipient,
+                                                  List<CartItem> cart, String baseCurrencyCode) {
+        String outputCurrency = recipient.getCurrencyCode() == null ? baseCurrencyCode :
+                recipient.getCurrencyCode();
 
-        WebTarget target = client.target(BASE_URL).path("/rates").queryParam("page", pageNum).queryParam("sortBy", "cost_rank");
+        WebTarget target = client.target(BASE_URL).path("/rates").queryParam("page",
+                                                                             pageNum
+        ).queryParam("sortBy", "cost_rank");
 
         ShippingRatesRequest rateRequest = ShippingRatesRequest.builder()
                 .courierSelection(ShippingRatesRequest.CourierSelection.builder()
@@ -82,14 +83,17 @@ public class EasyshipIntegrationService implements EasyshipService {
                 .parcels(cart.stream().map(cartItem -> ShippingRatesRequest.Parcel.builder()
                         .items(List.of(ShippingRatesRequest.Item.builder()
                                                .quantity(cartItem.getQuantity())
-                                               .actualWeight(cartItem.getProduct().getWeight().doubleValue())
+                                               .actualWeight(
+                                                       cartItem.getProduct().getWeight().doubleValue())
                                                .declaredCurrency("EUR")
-                                               .declaredCustomsValue(cartItem.getProduct().getPrice().doubleValue())
-                                               .dimensions(ShippingRatesRequest.Item.Dimensions.builder()
-                                                                   .length(cartItem.getProduct().getLength().doubleValue())
-                                                                   .width(cartItem.getProduct().getWidth().doubleValue())
-                                                                   .height(cartItem.getProduct().getHeight().doubleValue())
-                                                                   .build())
+                                               .declaredCustomsValue(
+                                                       cartItem.getProduct().getPrice().doubleValue())
+                                               .dimensions(
+                                                       ShippingRatesRequest.Item.Dimensions.builder()
+                                                               .length(cartItem.getProduct().getLength().doubleValue())
+                                                               .width(cartItem.getProduct().getWidth().doubleValue())
+                                                               .height(cartItem.getProduct().getHeight().doubleValue())
+                                                               .build())
                                                .hsCode(1)
                                                .build()))
                         .build()).toList())
@@ -109,7 +113,8 @@ public class EasyshipIntegrationService implements EasyshipService {
                 .header("User-Agent", "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
-        try (Response response = invocationBuilder.post(Entity.entity(payload, MediaType.APPLICATION_JSON))) {
+        try (Response response = invocationBuilder.post(
+                Entity.entity(payload, MediaType.APPLICATION_JSON))) {
             return processShippingRatesResponse(response);
         }
     }
@@ -121,7 +126,8 @@ public class EasyshipIntegrationService implements EasyshipService {
             return gson.fromJson(jsonResponse, ShippingRatesResponse.class);
         } else {
             String error = response.readEntity(String.class);
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+            throw new RuntimeException(
+                    "API request failed with status " + response.getStatus() + ": " + error);
         }
     }
 
@@ -172,8 +178,10 @@ public class EasyshipIntegrationService implements EasyshipService {
 
                 for (Address address : addressResponse.getAddresses()) {
                     if (address.getDefaultFor().isSender()) {
-                        WebTarget deleteTarget = client.target(BASE_URL).path("/addresses/" + address.getId());
-                        Invocation.Builder deleteInvocation = deleteTarget.request(MediaType.APPLICATION_JSON)
+                        WebTarget deleteTarget = client.target(BASE_URL).path(
+                                "/addresses/" + address.getId());
+                        Invocation.Builder deleteInvocation = deleteTarget.request(
+                                        MediaType.APPLICATION_JSON)
                                 .header("Authorization", BEARER_TOKEN)
                                 .header("User-Agent", "Mozilla/5.0")
                                 .header("Accept-Language", "en-US,en;q=0.5");
@@ -199,7 +207,8 @@ public class EasyshipIntegrationService implements EasyshipService {
                 .header("Accept-Language", "en-US,en;q=0.5");
 
         String payload = gson.toJson(addressDto);
-        try (Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON))) {
+        try (Response postResponse = postInvocation.post(
+                Entity.entity(payload, MediaType.APPLICATION_JSON))) {
             return processStringResponse(postResponse);
         }
     }
@@ -207,11 +216,13 @@ public class EasyshipIntegrationService implements EasyshipService {
     private AddressResponse processAddressResponse(Response response) {
         if (response.getStatus() == Response.Status.OK.getStatusCode()) {
             String jsonResponse = response.readEntity(String.class);
-            Type listType = new TypeToken<AddressResponse>() {}.getType();
+            Type listType = new TypeToken<AddressResponse>() {
+            }.getType();
             return gson.fromJson(jsonResponse, listType);
         } else {
             String error = response.readEntity(String.class);
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+            throw new RuntimeException(
+                    "API request failed with status " + response.getStatus() + ": " + error);
         }
     }
 
@@ -221,12 +232,32 @@ public class EasyshipIntegrationService implements EasyshipService {
      * @return The response from Easyship API.
      */
     @Override
-    public ShipmentResponse createShipment() {
-        // origin address - same as sender address
-        // destination address
-        // packaging details - parcels, items
+    public ShipmentResponse createShipment(ShipmentRequest request) {
+        WebTarget postTarget = client.target(BASE_URL).path("/shipments");
 
-        return null;
+        Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", BEARER_TOKEN)
+                .header("User-Agent", "Mozilla/5.0")
+                .header("Accept-Language", "en-US,en;q=0.5");
+
+        String payload = gson.toJson(request);
+        try (Response response = postInvocation.post(
+                Entity.entity(payload, MediaType.APPLICATION_JSON))) {
+            return processShipmentResponse(response);
+        }
+
+    }
+
+    private ShipmentResponse processShipmentResponse(Response response) {
+        if (response.getStatus() == Response.Status.OK.getStatusCode() ||
+                response.getStatus() == Response.Status.CREATED.getStatusCode()) {
+            String jsonResponse = response.readEntity(String.class);
+            return gson.fromJson(jsonResponse, ShipmentResponse.class);
+        } else {
+            String error = response.readEntity(String.class);
+            throw new RuntimeException(
+                    "API request failed with status " + response.getStatus() + ": " + error);
+        }
     }
 
     /**
@@ -239,7 +270,7 @@ public class EasyshipIntegrationService implements EasyshipService {
     public SaveProductResponse saveProduct(Product product) {
         WebTarget postTarget = client.target(BASE_URL).path("/products");
 
-        if(product.getId() != null) {
+        if (product.getId() != null) {
             postTarget = postTarget.path(product.getId());
         }
 
@@ -263,11 +294,13 @@ public class EasyshipIntegrationService implements EasyshipService {
                 response.getStatus() == Response.Status.CREATED.getStatusCode()) {
             String rawResponse = response.readEntity(String.class);
             JsonElement jsonElement = JsonParser.parseString(rawResponse);
-            Type responseType = new TypeToken<SaveProductResponse>() {}.getType();
+            Type responseType = new TypeToken<SaveProductResponse>() {
+            }.getType();
             return gson.fromJson(jsonElement, responseType);
         } else {
             String error = response.readEntity(String.class);
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+            throw new RuntimeException(
+                    "API request failed with status " + response.getStatus() + ": " + error);
         }
     }
 
@@ -279,7 +312,8 @@ public class EasyshipIntegrationService implements EasyshipService {
             return gson.toJson(jsonElement);
         } else {
             String error = response.readEntity(String.class);
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+            throw new RuntimeException(
+                    "API request failed with status " + response.getStatus() + ": " + error);
         }
     }
 
@@ -288,11 +322,13 @@ public class EasyshipIntegrationService implements EasyshipService {
                 response.getStatus() == Response.Status.CREATED.getStatusCode()) {
             String rawResponse = response.readEntity(String.class);
             JsonElement jsonElement = JsonParser.parseString(rawResponse);
-            Type responseType = new TypeToken<DeleteProductResponse>() {}.getType();
+            Type responseType = new TypeToken<DeleteProductResponse>() {
+            }.getType();
             return gson.fromJson(jsonElement, responseType);
         } else {
             String error = response.readEntity(String.class);
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+            throw new RuntimeException(
+                    "API request failed with status " + response.getStatus() + ": " + error);
         }
     }
 
@@ -304,7 +340,8 @@ public class EasyshipIntegrationService implements EasyshipService {
      */
     @Override
     public DeleteProductResponse deleteProduct(String productId) {
-        WebTarget target = client.target(BASE_URL).path("/products").path(String.valueOf(productId));
+        WebTarget target = client.target(BASE_URL).path("/products").path(
+                String.valueOf(productId));
 
         Invocation.Builder deleteInvocation = target.request(MediaType.APPLICATION_JSON)
                 .header("Authorization", BEARER_TOKEN)
@@ -340,11 +377,13 @@ public class EasyshipIntegrationService implements EasyshipService {
                 response.getStatus() == Response.Status.CREATED.getStatusCode()) {
             String rawResponse = response.readEntity(String.class);
             JsonElement jsonElement = JsonParser.parseString(rawResponse);
-            Type responseType = new TypeToken<HsCodeResponse>() {}.getType();
+            Type responseType = new TypeToken<HsCodeResponse>() {
+            }.getType();
             return gson.fromJson(jsonElement, responseType);
         } else {
             String error = response.readEntity(String.class);
-            throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+            throw new RuntimeException(
+                    "API request failed with status " + response.getStatus() + ": " + error);
         }
     }
 

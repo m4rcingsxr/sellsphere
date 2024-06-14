@@ -6,7 +6,7 @@ INSERT INTO settings (setting_key, value, category)
 VALUES ('COPYRIGHT', 'Copyright (C) 2023 SellSphere Ltd.', 'GENERAL');
 
 INSERT INTO settings (setting_key, value, category)
-VALUES ('CURRENCY_ID', '1', 'CURRENCY');
+VALUES ('CURRENCY_ID', '36', 'CURRENCY');
 INSERT INTO settings (setting_key, value, category)
 VALUES ('CURRENCY_SYMBOL', '$', 'CURRENCY');
 INSERT INTO settings (setting_key, value, category)

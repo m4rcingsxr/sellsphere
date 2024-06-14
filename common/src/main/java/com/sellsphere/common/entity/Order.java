@@ -1,6 +1,5 @@
 package com.sellsphere.common.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,7 +30,7 @@ public class Order extends IdentifiedEntity {
     @Column(name = "subtotal", nullable = false)
     private BigDecimal subtotal;
 
-    @Column(name = "tax", nullable = false)
+    @Column(name = "tax")
     private BigDecimal tax;
 
     @Column(name = "total", nullable = false)
@@ -48,10 +47,26 @@ public class Order extends IdentifiedEntity {
     private Customer customer;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderDetail> orderDetails = new ArrayList<>();
+    private List<OrderDetail> orderDetails;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
+
+    public void addOrderDetail(CartItem cartItem) {
+        if(orderDetails == null) {
+            orderDetails = new ArrayList<>();
+        }
+
+        orderDetails.add(
+                OrderDetail.builder()
+                        .order(this)
+                        .productPrice(cartItem.getProduct().getDiscountPrice())
+                        .productCost(cartItem.getProduct().getCost())
+                        .product(cartItem.getProduct())
+                        .subtotal(cartItem.getSubtotal())
+                        .build()
+        );
+    }
 
 }

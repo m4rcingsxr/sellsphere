@@ -25,7 +25,7 @@ public class CheckoutController {
     public String checkout(Principal principal)
             throws CustomerNotFoundException, ShoppingCartNotFoundException {
         Customer authenticatedCustomer = customerService.getByEmail(principal.getName());
-        if(!cartService.existByCustomer(authenticatedCustomer)) {
+        if(Boolean.FALSE.equals(cartService.existByCustomer(authenticatedCustomer))) {
             throw new ShoppingCartNotFoundException();
         }
         return "checkout/checkout";

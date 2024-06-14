@@ -26,4 +26,6 @@ public class CalculationRequest {
     // required on different code that base
     private BigDecimal exchangeRate;
 
+    private String fullName;
+
 }

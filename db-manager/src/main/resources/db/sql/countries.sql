@@ -18,7 +18,7 @@ INSERT INTO countries (name, code, currency_id) VALUES ('Lithuania', 'LT', 1);
 INSERT INTO countries (name, code, currency_id) VALUES ('Luxembourg', 'LU', 1);
 INSERT INTO countries (name, code, currency_id) VALUES ('Malta', 'MT', 1);
 INSERT INTO countries (name, code, currency_id) VALUES ('Netherlands', 'NL', 36);
-INSERT INTO countries (name, code, currency_id) VALUES ('Poland', 'PL', 6);
+INSERT INTO countries (name, code, currency_id) VALUES ('Poland', 'PL', 78);
 INSERT INTO countries (name, code, currency_id) VALUES ('Portugal', 'PT', 1);
 INSERT INTO countries (name, code, currency_id) VALUES ('Romania', 'RO', 7);
 INSERT INTO countries (name, code, currency_id) VALUES ('Slovakia', 'SK', 1);

@@ -20,4 +20,6 @@ public class CalculationResponse {
     private String currencyCode;
     private String currencySymbol;
     private List<CartItemDTO> cart;
+    private String fullName;
+    private String email;
 }

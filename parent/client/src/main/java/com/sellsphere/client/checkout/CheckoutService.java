@@ -18,6 +18,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.tax.Calculation;
+import com.stripe.param.PaymentIntentCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,13 +41,14 @@ public class CheckoutService {
     private final CountryRepository countryRepository;
 
     /**
-     * Calculates the total cost with address-specific details, using a specified exchange rate or the base currency if the rate is not defined.
+     * Calculates the total cost with address-specific details, using a specified exchange rate
+     * or the base currency if the rate is not defined.
      *
-     * @param request   The calculation request containing cart and address details.
-     * @param customer  The customer entity.
+     * @param request  The calculation request containing cart and address details.
+     * @param customer The customer entity.
      * @return The calculation response containing total amounts and details.
-     * @throws CurrencyNotFoundException   if the specified currency is not found.
-     * @throws StripeException             if there is an error with Stripe operations.
+     * @throws CurrencyNotFoundException if the specified currency is not found.
+     * @throws StripeException           if there is an error with Stripe operations.
      */
     public CalculationResponse calculateWithAddress(CalculationRequest request, Customer customer)
             throws CurrencyNotFoundException, StripeException {
@@ -74,6 +76,9 @@ public class CheckoutService {
                 .customerDetails(calculation.getCustomerDetails())
                 .currencyCode(targetCurrency.getCode())
                 .unitAmount(targetCurrency.getUnitAmount())
+                .email(customer.getEmail())
+                .fullName(request.getFullName())
+
                 .currencySymbol(targetCurrency.getSymbol());
 
         responseBuilder.cart(cart.stream().map(item -> this.buildCartItem(
@@ -89,27 +94,30 @@ public class CheckoutService {
     /**
      * Builds a cart item DTO with currency conversion if necessary.
      *
-     * @param request           The calculation request containing exchange rate details.
-     * @param cartItem          The cart item entity.
-     * @param baseCurrency      The base currency entity.
-     * @param targetCurrency    The target currency entity.
+     * @param request        The calculation request containing exchange rate details.
+     * @param cartItem       The cart item entity.
+     * @param baseCurrency   The base currency entity.
+     * @param targetCurrency The target currency entity.
      * @return The cart item DTO.
      */
     public CartItemDTO buildCartItem(CalculationRequest request, CartItem cartItem,
                                      Currency baseCurrency, Currency targetCurrency) {
         BigDecimal providedExchangeRate = request.getExchangeRate();
         BigDecimal exchangeRate = providedExchangeRate != null ?
-                providedExchangeRate.multiply(BigDecimal.ONE.add(Constants.CONVERT_CURRENCY_FEE)) : null;
+                providedExchangeRate.multiply(
+                        BigDecimal.ONE.add(Constants.CONVERT_CURRENCY_FEE)) : null;
 
         if (baseCurrency.getCode().equals(targetCurrency.getCode())) {
             return new CartItemDTO(cartItem);
         } else {
 
             BigDecimal convertedPrice = CheckoutUtil.convertAndRoundPrice(
-                    cartItem.getProduct().getDiscountPrice(), exchangeRate,  targetCurrency.getUnitAmount());
+                    cartItem.getProduct().getDiscountPrice(), exchangeRate,
+                    targetCurrency.getUnitAmount()
+            );
 
             BigDecimal subtotal = CheckoutUtil.convertAndRoundPrice(
-                    cartItem.getSubtotal(), exchangeRate,  targetCurrency.getUnitAmount());
+                    cartItem.getSubtotal(), exchangeRate, targetCurrency.getUnitAmount());
 
             return CartItemDTO.builder()
                     .quantity(cartItem.getQuantity())
@@ -131,9 +139,9 @@ public class CheckoutService {
     /**
      * Calculates the total cost in base currency without considering products.
      *
-     * @param customer  The customer entity.
+     * @param customer The customer entity.
      * @return The calculation response containing total amounts.
-     * @throws CurrencyNotFoundException   if the specified currency is not found.
+     * @throws CurrencyNotFoundException if the specified currency is not found.
      */
     public CalculationResponse calculateTotal(Customer customer) throws CurrencyNotFoundException {
         List<CartItem> cart = cartService.findCartItemsByCustomer(customer);
@@ -148,23 +156,26 @@ public class CheckoutService {
                 .unitAmount(currency.getUnitAmount())
                 .currencySymbol(currency.getSymbol())
                 .cart(cart.stream().map(CartItemDTO::new).toList())
+                .email(customer.getEmail())
                 .build();
     }
 
     /**
      * Creates a checkout session for the authenticated customer.
      *
-     * @param customer  The customer entity.
+     * @param customer The customer entity.
      * @return The created Stripe checkout session.
-     * @throws StripeException             if there is an error with Stripe operations.
-     * @throws SettingNotFoundException    if the required setting is not found.
+     * @throws StripeException          if there is an error with Stripe operations.
+     * @throws SettingNotFoundException if the required setting is not found.
      */
     public Session createSession(Customer customer) throws StripeException,
             SettingNotFoundException {
         List<CartItem> cart = cartService.findCartItemsByCustomer(customer);
 
-        Setting setting = settingRepository.findById("SUPPORTED_COUNTRY").orElseThrow(SettingNotFoundException::new);
-        List<Integer> supportedCountryIds = Arrays.stream(setting.getValue().split(",")).map(Integer::valueOf).toList();
+        Setting setting = settingRepository.findById("SUPPORTED_COUNTRY").orElseThrow(
+                SettingNotFoundException::new);
+        List<Integer> supportedCountryIds = Arrays.stream(setting.getValue().split(",")).map(
+                Integer::valueOf).toList();
         List<Country> supportedCountries = countryRepository.findAllById(supportedCountryIds);
 
         return stripeService.createCheckoutSession(cart, supportedCountries);
@@ -180,10 +191,26 @@ public class CheckoutService {
     public PaymentIntent savePaymentIntent(PaymentRequest request, Customer customer)
             throws StripeException, ShoppingCartNotFoundException {
         ShoppingCart cart = cartService.findByCustomer(customer);
-        if(cart.getPaymentIntentId() == null) {
+        if (cart.getPaymentIntentId() == null) {
+            var address = request.getCustomerDetails().getAddress();
+
             PaymentIntent paymentIntent = stripeService.createPaymentIntent(
+                    PaymentIntentCreateParams.Shipping.builder()
+                            .setName(request.getMetadata().get("recipient_name"))
+                            .setAddress(PaymentIntentCreateParams.Shipping.Address.builder()
+                            .setCity(address.getCity())
+                            .setState(address.getState())
+                            .setLine1(address.getLine1())
+                            .setLine2(address.getLine2())
+                            .setCountry(address.getCountry())
+                            .setPostalCode(address.getPostalCode())
+                            .build()).build(),
                     request.getAmountTotal(),
-                    request.getCurrencyCode());
+                    request.getCurrencyCode(),
+                    request.getMetadata().get("courier_id"),
+                    request.getMetadata().get("email"));
+
+
 
             cart.setPaymentIntentId(paymentIntent.getId());
             cartService.save(cart);
@@ -194,7 +221,6 @@ public class CheckoutService {
                     .retrievePaymentIntent(cart.getPaymentIntentId());
             return stripeService.updatePaymentIntent(paymentIntent, request);
         }
-
 
 
     }

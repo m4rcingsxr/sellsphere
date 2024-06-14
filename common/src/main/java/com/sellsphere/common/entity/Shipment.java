@@ -4,16 +4,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 /**
  * Easyship integration
  */
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Getter
 @Setter
 @Entity
@@ -34,5 +34,27 @@ public class Shipment {
     @Column(name = "courier_id", nullable = false)
     private String courierId;
 
+    @Column(name = "tracking_page_url", nullable = false)
+    private String tackingPageUrl;
+
+    @Column(name = "delivery_state", nullable = false)
+    private String deliveryState;
+
+    // destination address - as common Address, return address
+
+    @Column(name = "pickup_state", nullable = false)
+    private String pickupState;
+
+    @Column(name = "return_shipment", nullable = false)
+    private boolean returnShipment;
+
+    @Column(name = "label_state", nullable = false)
+    private String labelState;
+
+    @Column(name = "label_generated_at")
+    private String labelGeneratedAt;
+
+    @Column(name = "label_pai_at")
+    private String labelPaidAt;
 
 }

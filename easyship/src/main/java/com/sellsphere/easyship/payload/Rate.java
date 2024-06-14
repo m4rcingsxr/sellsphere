@@ -22,6 +22,9 @@ public class Rate {
     @SerializedName("cost_rank")
     private int costRank;
 
+    @SerializedName("courier_id")
+    private String courierId;
+
     @SerializedName("courier_logo_url")
     private String courierLogoUrl;
 

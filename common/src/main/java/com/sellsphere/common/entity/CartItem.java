@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -40,7 +41,7 @@ public class CartItem extends IdentifiedEntity {
 
     @Transient
     public BigDecimal getSubtotal() {
-        return this.product.getDiscountPrice().multiply(BigDecimal.valueOf(quantity));
+        return this.product.getDiscountPrice().multiply(BigDecimal.valueOf(quantity)).setScale(2, RoundingMode.CEILING);
     }
 
     @Override

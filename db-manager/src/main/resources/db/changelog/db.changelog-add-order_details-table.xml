@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="1721688230626-1" author="Marcin Seweryn">
+        <createTable tableName="order_details">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_order_details"/>
+            </column>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_cost" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_price" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subtotal" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="order_id" baseTableName="order_details" constraintName="FK_ORDER_DETAILS_ON_ORDER" referencedColumnNames="id" referencedTableName="orders"/>
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="order_details" constraintName="FK_ORDER_DETAILS_ON_PRODUCT" referencedColumnNames="id" referencedTableName="products"/>
+    </changeSet>
+</databaseChangeLog>

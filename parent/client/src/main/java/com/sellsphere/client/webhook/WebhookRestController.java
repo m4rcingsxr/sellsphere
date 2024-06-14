@@ -1,6 +1,13 @@
 package com.sellsphere.client.webhook;
 
 import com.google.gson.JsonSyntaxException;
+import com.sellsphere.client.customer.CustomerRepository;
+import com.sellsphere.client.order.OrderService;
+import com.sellsphere.client.setting.SettingService;
+import com.sellsphere.common.entity.CurrencyNotFoundException;
+import com.sellsphere.common.entity.Customer;
+import com.sellsphere.common.entity.CustomerNotFoundException;
+import com.sellsphere.easyship.payload.Address;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.*;
 import com.stripe.net.ApiResource;
@@ -14,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -25,15 +33,18 @@ public class WebhookRestController {
 
     private final WebhookConfig webhookConfig;
     private final ExecutorService taskExecutor;
+    private final OrderService orderService;
 
     // Webhook endpoints might occasionally receive the same event more than once
     private final ConcurrentHashMap<String, Boolean> processedEvents = new ConcurrentHashMap<>();
+    private final CustomerRepository customerRepository;
+    private final SettingService settingService;
 
     // test env - not public endpoint
     @PostMapping("/webhook")
     public ResponseEntity<String> handleCheckoutWebhook(@RequestBody String payload,
                                                         HttpServletRequest request)
-            throws IOException {
+            throws IOException, CustomerNotFoundException, CurrencyNotFoundException {
         String requestIp = request.getRemoteAddr();
 
         if (!isAllowedIp(requestIp)) {
@@ -54,7 +65,7 @@ public class WebhookRestController {
 
         String sigHeader = request.getHeader("Stripe-Signature");
 
-        if(webhookConfig.getEndpointSecret() != null && sigHeader != null) {
+        if (webhookConfig.getEndpointSecret() != null && sigHeader != null) {
             // Only verify the event if you have an endpoint secret defined.
             // Otherwise use the basic event deserialized with GSON.
             try {
@@ -74,23 +85,36 @@ public class WebhookRestController {
             return ResponseEntity.ok("Duplicate event ignored");
         }
 
+
         // Deserialize the nested object inside the event
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         if (dataObjectDeserializer.getObject().isPresent()) {
             Optional<StripeObject> stripeObject = dataObjectDeserializer.getObject();
 
+            String currency = settingService.getCurrencyCode();
+
             final Event finalEvent = event;
-            taskExecutor.submit(() -> processEvent(stripeObject, finalEvent));
+            taskExecutor.submit(() -> {
+                try {
+                    processEvent(stripeObject, finalEvent, currency);
+                } catch (Exception e) {
+                    log.error("Customer not found", e);
+                    throw new RuntimeException(e);
+                }
+            });
         } else {
             // Deserialization failed, probably due to an API version mismatch.
-            throw new IOException("Deserialization failed, probably due to an API version mismatch");
+            throw new IOException(
+                    "Deserialization failed, probably due to an API version mismatch");
         }
 
 
         return ResponseEntity.ok().build();
     }
 
-    private void processEvent(Optional<StripeObject> stripeObjectOpt, Event event) {
+    private void processEvent(Optional<StripeObject> stripeObjectOpt, Event event, String currency)
+            throws CustomerNotFoundException {
+
         StripeObject stripeObject;
         if (stripeObjectOpt.isPresent()) {
             stripeObject = stripeObjectOpt.get();
@@ -103,7 +127,7 @@ public class WebhookRestController {
         switch (event.getType()) {
             case "payment_intent.succeeded":
                 PaymentIntent paymentIntent = (PaymentIntent) stripeObject;
-                handlePaymentIntentSucceeded(paymentIntent);
+                handlePaymentIntentSucceeded(paymentIntent,  currency);
                 break;
             case "payment_method.attached":
                 PaymentMethod paymentMethod = (PaymentMethod) stripeObject;
@@ -120,15 +144,51 @@ public class WebhookRestController {
     }
 
 
-    private void handlePaymentIntentSucceeded(PaymentIntent paymentIntent) {
+    private void handlePaymentIntentSucceeded(PaymentIntent paymentIntent,
+                                              String currency) throws CustomerNotFoundException {
         // create order
+
+        // metadata - courier_id (for selected rate)
+        // deliverDays
+        // deliverDate (naive)
+
+        // customer
+        // order details - from customer cart - delete cart on webhook (not in ui)
+
+//        Order.builder()
+//                .orderTime(LocalDateTime.now())
+//                .
+//                .build();
+
+        // retrieve courier id from paymentIntent metadata
+
+        com.stripe.model.Address address = paymentIntent.getShipping().getAddress();
+        String courierId = paymentIntent.getMetadata().get("courier_id");
+        String customerEmail = paymentIntent.getMetadata().get("email");
+        orderService.createOrder(customerEmail,
+                                 Address.builder()
+                                         .line1(address.getLine1())
+                                         .line2(address.getLine2())
+                                         .city(address.getCity())
+                                         .state(address.getState())
+                                         .countryAlpha2(address.getCountry())
+                                         .contactName("Marcin Seweryn")
+                                         .postalCode("51-200")
+                                         .contactEmail("marcinsewerynn@gmail.com")
+                                         .contactPhone("730921452")
+                                         .build()
+                , courierId, currency
+        );
+
         // send recipient email
         log.info("Handled payment intent succeeded for: {}", paymentIntent.getId());
     }
 
     private void handlePaymentMethodAttached(PaymentMethod paymentMethod) {
-        // Implement your logic here
+
         log.info("Handled payment method attached for: {}", paymentMethod.getId());
     }
+
+
 
 }

@@ -87,7 +87,7 @@ class CheckoutController {
             const isValid = await this.model.validateAddress(validateRequest);
             if (isValid) {
                 console.info("Address validated successfully", address);
-                await this.handleValidAddress(address);
+                await this.handleValidAddress(address, event.value.name);
             } else {
                 console.warn("Address validation failed", address);
 
@@ -125,7 +125,7 @@ class CheckoutController {
      * @param {Object} address - The validated address.
      * @returns {Promise<void>}
      */
-    async handleValidAddress(address) {
+    async handleValidAddress(address, name) {
         console.info("Handling valid address", address);
 
         const easyShipAddress = this.createEasyShipAddress(address);
@@ -135,12 +135,17 @@ class CheckoutController {
             this.validateRatesResponse(ratesResponse, easyShipAddress);
 
             const shippingCost = ratesResponse.rates[0].totalCharge;
-            const calculation = await this.model.getCalculation({address, shippingCost});
+            const calculation = await this.model.getCalculation({address, shippingCost, fullName : name});
 
             this.updateModelAfterCalculation(calculation, ratesResponse);
 
 
-            const response = await this.model.savePaymentIntent(calculation.amountTotal, calculation.currencyCode);
+            const response = await this.model.savePaymentIntent(calculation.amountTotal,
+                calculation.currencyCode,
+                ratesResponse.rates[0].courierId,
+                this.model.baseCalculation.fullName,
+                this.model.baseCalculation.email
+            );
             await this.initStripeElementsWithPaymentIntent(response.clientSecret);
 
             this.model.selectedRateIdx = undefined;
@@ -261,7 +266,7 @@ class CheckoutController {
             console.debug("Initializing Stripe elements with client secret");
             const options = {
                 appearance: {theme: 'flat'},
-                clientSecret: clientSecret
+                clientSecret: clientSecret,
             };
 
             this.elements = this.stripe.elements(options);
@@ -345,7 +350,17 @@ class CheckoutController {
             try {
                 if (!this.elements) {
                     const calculation = await this.model.getBasicCalculation();
-                    await this.model.savePaymentIntent(calculation.amountTotal, calculation.currencyCode);
+
+                    let courierId;
+                    if(this.model.selectedRateIdx) {
+                        const rate = this.model.rateResponse.rates[selectedRateIdx];
+                        courierId = rate.courierId;
+                    } else {
+                        const rate = this.model.rateResponse.rates[0];
+                        courierId = rate.courierId;
+                    }
+
+                    await this.model.savePaymentIntent(calculation.amountTotal, calculation.currencyCode, courierId, this.model.baseCalculation.fullName, this.model.baseCalculation.email);
                 }
 
                 this.initPaymentElement();
@@ -408,6 +423,7 @@ class CheckoutController {
 
                 const targetCalculation = await this.model.getCalculation({
                     address: currentAddress,
+                    fullName : this.model.baseCalculation.fullName,
                     shippingCost: selectedRate.totalCharge,
                     currencyCode: this.model.targetCurrency,
                     exchangeRate: this.model.exchangeRateResponse.result["rate"] * (1.02)
@@ -467,12 +483,14 @@ class CheckoutController {
             const targetCalculation = await this.model.getCalculation({
                 address: currentAddress,
                 shippingCost: selectedRate.totalCharge,
+                fullName : this.model.baseCalculation.fullName,
                 currencyCode: this.model.targetCurrency,
                 exchangeRate: this.model.exchangeRateResponse.result["rate"]
             });
 
             this.model.baseCalculation = await this.model.getCalculation({
                 address: currentAddress,
+                fullName : this.model.baseCalculation.fullName,
                 shippingCost: selectedRate.totalCharge,
                 currencyCode: this.model.baseCalculation.currencyCode
             });
@@ -480,7 +498,7 @@ class CheckoutController {
             const isSameCurrency = this.model.selectedCurrency === this.model.baseCalculation.currencyCode;
 
             const calc = isSameCurrency ? this.model.baseCalculation : targetCalculation;
-            await this.model.savePaymentIntent(calc.amountTotal, calc.currencyCode);
+            await this.model.savePaymentIntent(calc.amountTotal, calc.currencyCode, selectedRate.courierId, this.model.baseCalculation.fullName, this.model.baseCalculation.email);
 
             await this.loadCurrencyView(targetCalculation);
 
@@ -548,7 +566,7 @@ class CheckoutController {
                 this.view.renderSummaryProducts(this.model.baseCalculation);
                 this.view.renderProductSummaryNav(this.model.baseCalculation);
 
-                await this.model.savePaymentIntent(this.model.baseCalculation.amountTotal, this.model.baseCalculation.currencyCode);
+                await this.model.savePaymentIntent(this.model.baseCalculation.amountTotal, this.model.baseCalculation.currencyCode, selectedRate.courierId, this.model.baseCalculation.fullName, this.model.baseCalculation.email);
             } else {
 
                 const exchangeRateResponse = this.model.exchangeRateResponse;
@@ -557,12 +575,17 @@ class CheckoutController {
 
                 const newCalculation = await this.model.getCalculation({
                     address,
+                    fullName : this.model.baseCalculation.fullName,
                     shippingCost: selectedRate.totalCharge,
                     currencyCode: targetCurrency,
                     exchangeRate: exchangeRateResponse.result["rate"]
                 });
 
-                await this.model.savePaymentIntent(newCalculation.amountTotal, newCalculation.currencyCode);
+                await this.model.savePaymentIntent(newCalculation.amountTotal,
+                    newCalculation.currencyCode,
+                    selectedRate.courierId,
+                    this.model.baseCalculation.fullName,
+                    this.model.baseCalculation.email);
 
 
                 this.view.renderSummary(newCalculation);
@@ -663,6 +686,7 @@ class CheckoutController {
 
                         const targetCalculation = await this.model.getCalculation({
                             address: currentAddress,
+                            fullName : this.model.baseCalculation.fullName,
                             shippingCost: selectedRate.totalCharge,
                             currencyCode: this.model.targetCurrency,
                             exchangeRate: this.model.exchangeRateResponse.result["rate"]
