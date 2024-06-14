@@ -24,7 +24,7 @@ public interface EasyshipService {
 
     SaveProductResponse saveProduct(Product product);
 
-    DeleteProductResponse deleteProduct(Integer productId);
+    DeleteProductResponse deleteProduct(String productId);
 
     HsCodeResponse fetchHsCodes(Integer page, String code, String description);
 }

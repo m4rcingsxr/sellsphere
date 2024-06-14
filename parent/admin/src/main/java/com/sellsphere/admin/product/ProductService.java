@@ -7,6 +7,7 @@ import com.sellsphere.admin.setting.SettingService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.easyship.EasyshipIntegrationService;
 import com.sellsphere.easyship.EasyshipService;
+import com.sellsphere.easyship.payload.shipment.SaveProductResponse;
 import com.sellsphere.payment.StripeProductService;
 import com.stripe.exception.StripeException;
 import jakarta.transaction.Transactional;
@@ -109,12 +110,9 @@ public class ProductService {
         var stripeProduct = stripeService.saveProduct(productId, savedProduct, defaultCurrency, taxBehavior.getValue());
         String priceId = stripeProduct.getDefaultPrice();
 
-        // drut - update z tym samym id i identifierem zwraca błąd
-        String uniqueIdentifier = UUID.randomUUID().toString();
-
         var productBuilder = com.sellsphere.easyship.payload.shipment.Product.builder()
-                .id(String.valueOf(product.getId()))
-                .identifier(uniqueIdentifier)
+                .id(product.getEasyshipId())
+                .identifier(String.valueOf(savedProduct.getId()))
                 .containsBatteryPi966(savedProduct.isContainsBatteryPi966())
                 .containsBatteryPi967(savedProduct.isContainsBatteryPi967()) // Corrected method call
                 .containsLiquids(savedProduct.isContainsLiquids())
@@ -131,10 +129,10 @@ public class ProductService {
                 .weight(product.getWeight())
                 .width(product.getWidth());
 
-        easyshipService.saveProduct(productBuilder.build());
+        SaveProductResponse saveProductResponse = easyshipService.saveProduct(productBuilder.build());
 
-        product.setPriceId(priceId); // managed by persistence context
-
+        savedProduct.setPriceId(priceId);
+        savedProduct.setEasyshipId(saveProductResponse.getProduct().getId());
 
         ProductHelper.saveExtraImages(savedProduct, extraImages);
         ProductHelper.savePrimaryImage(savedProduct, newPrimaryImage);
@@ -180,6 +178,7 @@ public class ProductService {
         S3Utility.removeFolder("product-photos/" + product.getId());
 
         stripeService.changeProductArchiveStatus(String.valueOf(id), false);
+        easyshipService.deleteProduct(product.getEasyshipId());
 
         productRepository.delete(product);
     }

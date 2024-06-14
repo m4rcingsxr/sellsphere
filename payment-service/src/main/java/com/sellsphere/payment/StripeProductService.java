@@ -50,6 +50,7 @@ public class StripeProductService {
                     .setName(product.getName())
                     .setDefaultPrice(newPrice.getId())
                     .addExpand("default_price")
+                    .setTaxCode(product.getTax().getId())
                     .build();
 
             Product updatedProduct = existingProduct.update(params);
@@ -73,6 +74,7 @@ public class StripeProductService {
                                     .setUnitAmount(product.getDiscountPrice().multiply(BigDecimal.valueOf(currency.getUnitAmount())).longValue())
                                     .setCurrency(currency.getCode())
                                     .setTaxBehavior(ProductCreateParams.DefaultPriceData.TaxBehavior.valueOf(taxBehaviorSetting)).build())
+                    .setTaxCode(product.getTax().getId())
                     .addExpand("default_price")
                     .build();
 
@@ -82,7 +84,9 @@ public class StripeProductService {
     }
 
     /**
-     * Changes the archive status of a product in Stripe.
+     * Changes the archive status of a product in Stripe. Archive instead of deletion - cannot delete
+     * used in payment products, cannot delete products that have associated price. No collision on id,
+     * deleted product id is not used again.
      * <p>
      * This method retrieves the current product details from Stripe and updates its active status
      * based on the provided {@code status} parameter.

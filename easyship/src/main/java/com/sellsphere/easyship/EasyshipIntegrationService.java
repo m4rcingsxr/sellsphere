@@ -239,6 +239,10 @@ public class EasyshipIntegrationService implements EasyshipService {
     public SaveProductResponse saveProduct(Product product) {
         WebTarget postTarget = client.target(BASE_URL).path("/products");
 
+        if(product.getId() != null) {
+            postTarget = postTarget.path(product.getId());
+        }
+
         Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
                 .header("Authorization", BEARER_TOKEN)
                 .header("User-Agent", "Mozilla/5.0")
@@ -246,7 +250,10 @@ public class EasyshipIntegrationService implements EasyshipService {
 
         String payload = gson.toJson(product);
 
-        try (Response postResponse = postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON))) {
+
+        try (Response postResponse = product.getId() == null ?
+                postInvocation.post(Entity.entity(payload, MediaType.APPLICATION_JSON))
+                : postInvocation.put(Entity.entity(payload, MediaType.APPLICATION_JSON))) {
             return processSaveProductResponse(postResponse);
         }
     }
@@ -276,26 +283,6 @@ public class EasyshipIntegrationService implements EasyshipService {
         }
     }
 
-    /**
-     * Saves a product from Easyship.
-     *
-     * @param productId The product id to be removed.
-     * @return The response from Easyship API.
-     */
-    @Override
-    public DeleteProductResponse deleteProduct(Integer productId) {
-        WebTarget target = client.target(BASE_URL).path("/products").path(String.valueOf(productId));
-
-        Invocation.Builder deleteInvocation = target.request(MediaType.APPLICATION_JSON)
-                .header("Authorization", BEARER_TOKEN)
-                .header("User-Agent", "Mozilla/5.0")
-                .header("Accept-Language", "en-US,en;q=0.5");
-
-        try (Response postResponse = deleteInvocation.delete()) {
-            return processDeleteProductResponse(postResponse);
-        }
-    }
-
     private DeleteProductResponse processDeleteProductResponse(Response response) {
         if (response.getStatus() == Response.Status.OK.getStatusCode() ||
                 response.getStatus() == Response.Status.CREATED.getStatusCode()) {
@@ -306,6 +293,26 @@ public class EasyshipIntegrationService implements EasyshipService {
         } else {
             String error = response.readEntity(String.class);
             throw new RuntimeException("API request failed with status " + response.getStatus() + ": " + error);
+        }
+    }
+
+    /**
+     * Saves a product from Easyship.
+     *
+     * @param productId The product id to be removed.
+     * @return The response from Easyship API.
+     */
+    @Override
+    public DeleteProductResponse deleteProduct(String productId) {
+        WebTarget target = client.target(BASE_URL).path("/products").path(String.valueOf(productId));
+
+        Invocation.Builder deleteInvocation = target.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", BEARER_TOKEN)
+                .header("User-Agent", "Mozilla/5.0")
+                .header("Accept-Language", "en-US,en;q=0.5");
+
+        try (Response postResponse = deleteInvocation.delete()) {
+            return processDeleteProductResponse(postResponse);
         }
     }
 

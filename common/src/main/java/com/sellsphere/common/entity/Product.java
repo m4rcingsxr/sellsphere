@@ -224,6 +224,10 @@ public class Product extends IdentifiedEntity {
     private ProductTax tax;
 
     // easyship integration
+
+    @Column(name = "easyship_id")
+    private String easyshipId;
+
     /**
      * This boolean field indicates whether the item contains lithium-ion batteries that are
      * packed with equipment. These are rechargeable batteries commonly used in consumer
