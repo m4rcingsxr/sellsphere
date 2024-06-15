@@ -211,7 +211,9 @@ public class CheckoutService {
                     request.getAmountTotal(),
                     request.getCurrencyCode(),
                     request.getMetadata().get("courier_id"),
-                    request.getMetadata().get("email"));
+                    request.getMetadata().get("email"),
+                    request.getMetadata().get("addressIdx")
+            );
 
 
 

@@ -14,6 +14,8 @@ import java.io.Serializable;
 @Builder
 public class AddressDTO implements Serializable {
 
+    private Integer id;
+
     @NotNull(message = "First name is required")
     @Size(message = "First name cannot exceed 45 characters", max = 45)
     private String firstName;

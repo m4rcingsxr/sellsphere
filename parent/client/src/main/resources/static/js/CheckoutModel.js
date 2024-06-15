@@ -8,6 +8,8 @@ class CheckoutModel {
         this.selectedCurrency = null;
         this.selectedRateIdx = null;
         this.exchangeRateResponse = null;
+        this.selectedAddress = null;
+        this.addresses = null;
         this.summaryAddress = null;
     }
 
@@ -134,16 +136,19 @@ class CheckoutModel {
 
     // create or update payment intent - based on authenticated customer
     async savePaymentIntent(amountTotal, currencyCode, courierId, recipientName, customerEmail, phoneNumber) {
+        const metadata = {
+            "courier_id": courierId,
+            "recipient_name": recipientName,
+            "email": customerEmail,
+            "addressIdx": this.selectedAddress ? this.selectedAddress.id : null,
+        }
+
         return await ajaxUtil.post(`${MODULE_URL}checkout/save-payment-intent`, {
             currencyCode,
             amountTotal,
             phoneNumber,
-            customerDetails : this.baseCalculation.customerDetails,
-            metadata : {
-                "courier_id" : courierId,
-                "recipient_name" : recipientName,
-                "email" : customerEmail
-            }
+            customerDetails: this.baseCalculation.customerDetails,
+            metadata
         });
     }
 }

@@ -1,9 +1,8 @@
 package com.sellsphere.client.order;
 
+import com.sellsphere.client.address.AddressRepository;
 import com.sellsphere.client.customer.CustomerService;
-import com.sellsphere.client.setting.SettingService;
-import com.sellsphere.client.shoppingcart.ShoppingCartController;
-import com.sellsphere.client.shoppingcart.ShoppingCartRepository;
+import com.sellsphere.client.setting.CountryRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.easyship.Constants;
 import com.sellsphere.easyship.EasyshipService;
@@ -18,7 +17,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,20 +25,46 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final EasyshipService easyshipService;
     private final CustomerService customerService;
-    private final SettingService settingService;
-    private final ShoppingCartController shoppingCartController;
-    private final ShoppingCartRepository shoppingCartRepository;
+    private final AddressRepository addressRepository;
+    private final CountryRepository countryRepository;
 
     @Transactional
-    public Order createOrder(String customerEmail, Address destination, String courierId, String currencyCode)
-            throws CustomerNotFoundException {
-        // Auto box selection applies when shipments are synced from API;
-        // origin address - same as sender address (later dynamic)
-        // destination address
-        // packaging details - items - synchronized with easyship -
-        // Selection algorithm
+    public Order createOrder(String customerEmail, Address destination, String courierId,
+                             String currencyCode, String addressId)
+            throws CustomerNotFoundException, CountryNotFoundException, AddressNotFoundException {
 
         Customer customer = customerService.getByEmail(customerEmail);
+        com.sellsphere.common.entity.Address destinationAddress;
+
+        // selected
+        if (addressId == null || addressId.isEmpty()) {
+            var address = new com.sellsphere.common.entity.Address();
+            address.setAddressLine1(destination.getLine1());
+            address.setAddressLine2(destination.getLine2());
+            String[] fullName = destination.getContactName().split(" ");
+            address.setFirstName(fullName[0]);
+            address.setLastName(fullName[1]);
+
+            address.setState(destination.getState());
+            address.setPhoneNumber(destination.getContactPhone());
+            address.setPostalCode(destination.getPostalCode());
+
+            Country country = countryRepository.findByCode(
+                    destination.getCountryAlpha2()).orElseThrow(CountryNotFoundException::new);
+
+            address.setCountry(country);
+            address.setCity(destination.getCity());
+            address.setCustomer(customer);
+
+            if (customer.getAddresses() == null || customer.getAddresses().isEmpty()) {
+                address.setPrimary(true);
+            }
+
+            destinationAddress = addressRepository.save(address);
+        } else {
+            destinationAddress = addressRepository.findById(Integer.valueOf(addressId)).orElseThrow(AddressNotFoundException::new);
+        }
+
         ShoppingCart cart = customer.getCart();
 
         RequestParcel parcel = new RequestParcel();
@@ -52,7 +76,8 @@ public class OrderService {
                                    .declaredCurrency(currencyCode.toUpperCase())
                                    .quantity(cartItem.getQuantity())
                                    .product(ParcelProductItemCreate.Product.builder()
-                                                    .id(String.valueOf(cartItem.getProduct().getEasyshipId()))
+                                                    .id(String.valueOf(
+                                                            cartItem.getProduct().getEasyshipId()))
                                                     .build())
                                    .build());
         }
@@ -117,31 +142,33 @@ public class OrderService {
                 .total(cart.getTotal())
                 .productCost(cart.getProductCost())
                 .subtotal(cart.getSubtotal())
-//                .tax(cart.getTax())
+//            .tax(cart.getTax())
                 // naive implementation:
-                .deliverDate(LocalDate.from(LocalDateTime.now().plusDays(selectedRate.getMaxDeliveryTime())))
+                .deliverDate(LocalDate.from(
+                        LocalDateTime.now().plusDays(selectedRate.getMaxDeliveryTime())))
+                .destinationAddress(destinationAddress)
                 .deliverDays(selectedRate.getMaxDeliveryTime())
                 .shippingCost(BigDecimal.valueOf(selectedRate.getTotalCharge()))
                 .shipment(
-                    Shipment.builder()
-                            .courierId(courierId)
-                            .shipmentId(shipment.getShipment().getEasyshipShipmentId())
-                            .deliveryState(shipment.getShipment().getDeliveryState())
-                            .tackingPageUrl(shipment.getShipment().getTrackingPageUrl())
-                            .deliveryState(shipment.getShipment().getDeliveryState())
-                            .pickupState(shipment.getShipment().getPickupState())
-                            .returnShipment(shipment.getShipment().isReturnShipment())
-                            .labelGeneratedAt(shipment.getShipment().getLabelGeneratedAt())
-                            .labelState(shipment.getShipment().getLabelState())
-                            .labelPaidAt(shipment.getShipment().getLabelPaidAt())
-                            .build()
+                        Shipment.builder()
+                                .courierId(courierId)
+                                .shipmentId(shipment.getShipment().getEasyshipShipmentId())
+                                .deliveryState(shipment.getShipment().getDeliveryState())
+                                .trackingPageUrl(shipment.getShipment().getTrackingPageUrl())
+                                .deliveryState(shipment.getShipment().getDeliveryState())
+                                .pickupState(shipment.getShipment().getPickupState())
+                                .returnShipment(shipment.getShipment().isReturnShipment())
+                                .labelGeneratedAt(shipment.getShipment().getLabelGeneratedAt())
+                                .labelState(shipment.getShipment().getLabelState())
+                                .labelPaidAt(shipment.getShipment().getLabelPaidAt())
+                                .build()
                 ).build();
+
+        order = orderRepository.save(order);
 
         customer.getCart().getCartItems().forEach(order::addOrderDetail);
 
         orderRepository.save(order);
-
-        shoppingCartRepository.delete(customer.getCart());
 
         return order;
     }

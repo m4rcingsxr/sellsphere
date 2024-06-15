@@ -3,6 +3,7 @@ package com.sellsphere.admin.order;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.common.entity.Order;
+import com.sellsphere.easyship.EasyshipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     public static final String DEFAULT_REDIRECT_URL = "redirect:/orders/page/0?sortField=orderTime&sortDir=desc";
+
     private final OrderService orderService;
+    private final EasyshipService easyshipService;
 
     @GetMapping
     public String listFirstPage() {
@@ -50,8 +53,11 @@ public class OrderController {
         return DEFAULT_REDIRECT_URL;
     }
 
-    @PostMapping("/buy-label")
-    public String buyLabel(@RequestParam("orderId") Integer orderId) {
+    @GetMapping("/buy-label")
+    public String buyLabel(
+            @RequestParam("shipmentId") String shipmentId,
+            @RequestParam("courierId") String courierId) {
+
         return DEFAULT_REDIRECT_URL;
     }
 

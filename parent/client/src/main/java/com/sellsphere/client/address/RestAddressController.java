@@ -29,6 +29,7 @@ public class RestAddressController {
                         .stream()
                         .map(address ->
                                      AddressDTO.builder()
+                                             .id(address.getId())
                                              .firstName(address.getFirstName())
                                              .lastName(address.getLastName())
                                              .fullName(address.getFullName())

@@ -143,7 +143,7 @@ public class StripeCheckoutService {
      * @return A Stripe PaymentIntent object.
      * @throws StripeException If an error occurs while creating the payment intent.
      */
-    public PaymentIntent createPaymentIntent(PaymentIntentCreateParams.Shipping shipping, long amountTotal, String currencyCode, String courierId, String customerEmail)
+    public PaymentIntent createPaymentIntent(PaymentIntentCreateParams.Shipping shipping, long amountTotal, String currencyCode, String courierId, String customerEmail, String addressIdx)
             throws StripeException {
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(amountTotal)
@@ -155,6 +155,7 @@ public class StripeCheckoutService {
                 )
                 .putMetadata("courier_id", courierId)
                 .putMetadata("email", customerEmail)
+                .putMetadata("addressIdx", addressIdx)
                 .setShipping(shipping)
                 .build();
 

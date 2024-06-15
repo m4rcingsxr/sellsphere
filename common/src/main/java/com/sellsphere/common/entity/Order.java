@@ -43,6 +43,10 @@ public class Order extends IdentifiedEntity {
     private LocalDate deliverDate;
 
     @ManyToOne
+    @JoinColumn(name = "address_id", nullable = false)
+    private Address destinationAddress;
+
+    @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 

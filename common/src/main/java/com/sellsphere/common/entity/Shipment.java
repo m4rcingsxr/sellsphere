@@ -6,8 +6,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 /**
  * Easyship integration
  */
@@ -35,7 +33,7 @@ public class Shipment {
     private String courierId;
 
     @Column(name = "tracking_page_url", nullable = false)
-    private String tackingPageUrl;
+    private String trackingPageUrl;
 
     @Column(name = "delivery_state", nullable = false)
     private String deliveryState;

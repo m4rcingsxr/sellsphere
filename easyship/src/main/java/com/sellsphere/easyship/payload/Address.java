@@ -3,6 +3,8 @@ package com.sellsphere.easyship.payload;
 import com.google.gson.annotations.SerializedName;
 import lombok.*;
 
+import java.beans.Transient;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -61,4 +63,50 @@ public class Address {
 
     }
 
+    @Transient
+    public String getFullAddress() {
+        StringBuilder fullAddress = new StringBuilder();
+
+        if (companyName != null && !companyName.isEmpty()) {
+            fullAddress.append(companyName).append("\n");
+        }
+
+        if (contactName != null && !contactName.isEmpty()) {
+            fullAddress.append(contactName).append("\n");
+        }
+
+        if (line1 != null && !line1.isEmpty()) {
+            fullAddress.append(line1).append("\n");
+        }
+
+        if (line2 != null && !line2.isEmpty()) {
+            fullAddress.append(line2).append("\n");
+        }
+
+        if (city != null && !city.isEmpty()) {
+            fullAddress.append(city).append(", ");
+        }
+
+        if (state != null && !state.isEmpty()) {
+            fullAddress.append(state).append(" ");
+        }
+
+        if (postalCode != null && !postalCode.isEmpty()) {
+            fullAddress.append(postalCode).append("\n");
+        }
+
+        if (countryAlpha2 != null && !countryAlpha2.isEmpty()) {
+            fullAddress.append(countryAlpha2).append("\n");
+        }
+
+        if (contactPhone != null && !contactPhone.isEmpty()) {
+            fullAddress.append("Phone: ").append(contactPhone).append("\n");
+        }
+
+        if (contactEmail != null && !contactEmail.isEmpty()) {
+            fullAddress.append("Email: ").append(contactEmail).append("\n");
+        }
+
+        return fullAddress.toString().trim();
+    }
 }

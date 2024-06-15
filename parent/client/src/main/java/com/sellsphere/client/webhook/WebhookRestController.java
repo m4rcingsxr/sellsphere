@@ -4,9 +4,8 @@ import com.google.gson.JsonSyntaxException;
 import com.sellsphere.client.customer.CustomerRepository;
 import com.sellsphere.client.order.OrderService;
 import com.sellsphere.client.setting.SettingService;
-import com.sellsphere.common.entity.CurrencyNotFoundException;
+import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.Customer;
-import com.sellsphere.common.entity.CustomerNotFoundException;
 import com.sellsphere.easyship.payload.Address;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.*;
@@ -114,7 +113,7 @@ public class WebhookRestController {
     }
 
     private void processEvent(Optional<StripeObject> stripeObjectOpt, Event event, String currency)
-            throws CustomerNotFoundException {
+            throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException {
 
         StripeObject stripeObject;
         if (stripeObjectOpt.isPresent()) {
@@ -146,7 +145,8 @@ public class WebhookRestController {
 
 
     private void handlePaymentIntentSucceeded(PaymentIntent paymentIntent,
-                                              String currency) throws CustomerNotFoundException {
+                                              String currency)
+            throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException {
         // create order
 
         // metadata - courier_id (for selected rate)
@@ -166,6 +166,7 @@ public class WebhookRestController {
         ShippingDetails shipping = paymentIntent.getShipping();
         String courierId = paymentIntent.getMetadata().get("courier_id");
         String customerEmail = paymentIntent.getMetadata().get("email");
+        String addressIdx = paymentIntent.getMetadata().get("addressIdx");
 
         orderService.createOrder(customerEmail,
                                  Address.builder()
@@ -180,7 +181,7 @@ public class WebhookRestController {
                                          .contactEmail(customerEmail)
                                          .contactPhone(shipping.getPhone())
                                          .build()
-                , courierId, currency
+                , courierId, currency, addressIdx
         );
 
         // send recipient email

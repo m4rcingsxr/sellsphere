@@ -44,4 +44,6 @@
     <include file="db/changelog/db.changelog-update-shipment-table-14.06.2024.xml"/>
 
     <include file="db/changelog/db.changelog-add-order_details-table.xml"/>
+
+    <include file="db/changelog/db.changelog-update-orders-table-16.06.2024.xml"/>
 </databaseChangeLog>

@@ -81,6 +81,21 @@ class CheckoutController {
         const {address} = event.value;
         console.info("Address input complete, validating address", address);
 
+        // check if it's address from contacts - if it assigns selectedAddress
+
+        let selected = false;
+        if(this.model?.addresses) {
+            this.model.addresses.forEach(contact => {
+                if(contact.postalCode === address.postal_code && contact.city === address.city) {
+                    selected = true;
+                    this.model.selectedAddress = contact;
+                }
+            })
+        }
+        if(!selected) {
+            this.model.selectedAddress = undefined;
+        }
+
         const addressLines = [address.line1, address.line2].filter(Boolean);
         const validateRequest = this.createAddressRequest(address, addressLines);
         try {
@@ -305,6 +320,8 @@ class CheckoutController {
             options.allowedCountries = shippableCountries.map(country => country.code);
 
             const addresses = await this.model.getCustomerAddresses();
+            this.model.addresses = addresses;
+
             if (addresses?.length > 0) {
                 options.contacts = addresses.map(address => ({
                     name: address.fullName,
@@ -316,6 +333,7 @@ class CheckoutController {
                         postal_code: address.postalCode,
                         country: address.countryCode,
                     },
+                    phone: address.phoneNumber
                 }));
             }
 
