@@ -27,5 +27,6 @@ public class CalculationRequest {
     private BigDecimal exchangeRate;
 
     private String fullName;
+    private String phoneNumber;
 
 }

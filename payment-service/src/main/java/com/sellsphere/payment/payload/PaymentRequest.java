@@ -15,7 +15,8 @@ public class PaymentRequest {
     private long amountTotal;
     private String currencyCode;
     private Calculation.CustomerDetails customerDetails;
-
+    private String phoneNumber;
+    
     private Map<String, String> metadata;
 
 }

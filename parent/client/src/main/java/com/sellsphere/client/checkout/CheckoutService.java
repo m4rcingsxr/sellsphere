@@ -66,6 +66,8 @@ public class CheckoutService {
         Currency base = currencyRepository.findByCode(baseCurrency)
                 .orElseThrow(CurrencyNotFoundException::new);
         Calculation calculation = stripeService.calculate(request, cart, base, targetCurrency);
+        // drut:
+        calculation.getCustomerDetails().getAddress().setPostalCode(request.getAddress().getPostalCode());
 
         var responseBuilder = CalculationResponse.builder();
 
@@ -77,8 +79,8 @@ public class CheckoutService {
                 .currencyCode(targetCurrency.getCode())
                 .unitAmount(targetCurrency.getUnitAmount())
                 .email(customer.getEmail())
+                .phoneNumber(request.getPhoneNumber())
                 .fullName(request.getFullName())
-
                 .currencySymbol(targetCurrency.getSymbol());
 
         responseBuilder.cart(cart.stream().map(item -> this.buildCartItem(
@@ -196,6 +198,7 @@ public class CheckoutService {
 
             PaymentIntent paymentIntent = stripeService.createPaymentIntent(
                     PaymentIntentCreateParams.Shipping.builder()
+                            .setPhone(request.getPhoneNumber())
                             .setName(request.getMetadata().get("recipient_name"))
                             .setAddress(PaymentIntentCreateParams.Shipping.Address.builder()
                             .setCity(address.getCity())

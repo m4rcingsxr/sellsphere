@@ -133,10 +133,11 @@ class CheckoutModel {
     }
 
     // create or update payment intent - based on authenticated customer
-    async savePaymentIntent(amountTotal, currencyCode, courierId, recipientName, customerEmail) {
+    async savePaymentIntent(amountTotal, currencyCode, courierId, recipientName, customerEmail, phoneNumber) {
         return await ajaxUtil.post(`${MODULE_URL}checkout/save-payment-intent`, {
             currencyCode,
             amountTotal,
+            phoneNumber,
             customerDetails : this.baseCalculation.customerDetails,
             metadata : {
                 "courier_id" : courierId,

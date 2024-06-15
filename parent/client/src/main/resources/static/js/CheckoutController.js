@@ -87,7 +87,7 @@ class CheckoutController {
             const isValid = await this.model.validateAddress(validateRequest);
             if (isValid) {
                 console.info("Address validated successfully", address);
-                await this.handleValidAddress(address, event.value.name);
+                await this.handleValidAddress(address, event.value.name, event.value.phone);
             } else {
                 console.warn("Address validation failed", address);
 
@@ -125,7 +125,7 @@ class CheckoutController {
      * @param {Object} address - The validated address.
      * @returns {Promise<void>}
      */
-    async handleValidAddress(address, name) {
+    async handleValidAddress(address, name, phone) {
         console.info("Handling valid address", address);
 
         const easyShipAddress = this.createEasyShipAddress(address);
@@ -135,16 +135,21 @@ class CheckoutController {
             this.validateRatesResponse(ratesResponse, easyShipAddress);
 
             const shippingCost = ratesResponse.rates[0].totalCharge;
-            const calculation = await this.model.getCalculation({address, shippingCost, fullName : name});
+
+            address.postalCode = address.postal_code;
+
+            const calculation = await this.model.getCalculation({address, shippingCost, fullName : name, phoneNumber: phone});
 
             this.updateModelAfterCalculation(calculation, ratesResponse);
 
 
-            const response = await this.model.savePaymentIntent(calculation.amountTotal,
+            const response = await this.model.savePaymentIntent(
+                calculation.amountTotal,
                 calculation.currencyCode,
                 ratesResponse.rates[0].courierId,
                 this.model.baseCalculation.fullName,
-                this.model.baseCalculation.email
+                this.model.baseCalculation.email,
+                this.model.baseCalculation.phoneNumber
             );
             await this.initStripeElementsWithPaymentIntent(response.clientSecret);
 
@@ -314,6 +319,16 @@ class CheckoutController {
                 }));
             }
 
+            options.fields = {
+                phone : 'always'
+            }
+
+            options.validation = {
+                phone : {
+                    required : 'always'
+                }
+            }
+
             this.addressElement = this.elements.create('address', options);
             this.addressElement.mount("#address-element");
         } catch (error) {
@@ -360,7 +375,14 @@ class CheckoutController {
                         courierId = rate.courierId;
                     }
 
-                    await this.model.savePaymentIntent(calculation.amountTotal, calculation.currencyCode, courierId, this.model.baseCalculation.fullName, this.model.baseCalculation.email);
+                    await this.model.savePaymentIntent(
+                        calculation.amountTotal,
+                        calculation.currencyCode,
+                        courierId,
+                        this.model.baseCalculation.fullName,
+                        this.model.baseCalculation.email,
+                        this.model.baseCalculation.phoneNumber,
+                    );
                 }
 
                 this.initPaymentElement();
@@ -419,11 +441,12 @@ class CheckoutController {
                 const rateIdx = this.model.selectedRateIdx ? this.model.selectedRateIdx : 0;
                 const selectedRate = rates[rateIdx];
                 const currentAddress = this.model.baseCalculation.customerDetails.address;
-
+                currentAddress.postalCode = currentAddress.postal_code;
 
                 const targetCalculation = await this.model.getCalculation({
                     address: currentAddress,
                     fullName : this.model.baseCalculation.fullName,
+                    phoneNumber  : this.model.baseCalculation.phoneNumber,
                     shippingCost: selectedRate.totalCharge,
                     currencyCode: this.model.targetCurrency,
                     exchangeRate: this.model.exchangeRateResponse.result["rate"] * (1.02)
@@ -475,6 +498,7 @@ class CheckoutController {
         const rates = this.model.ratesResponse.rates;
         const selectedRate = rates[event.target.dataset.addressIdx];
         const currentAddress = this.model.baseCalculation.customerDetails.address;
+        currentAddress.postalCode = currentAddress.postal_code;
 
         try {
             if (!this.model.exchangeRateResponse) throw new Error("Invalid state, exhcange rate must be defined to process this request");
@@ -484,13 +508,17 @@ class CheckoutController {
                 address: currentAddress,
                 shippingCost: selectedRate.totalCharge,
                 fullName : this.model.baseCalculation.fullName,
+                phoneNumber  : this.model.baseCalculation.phoneNumber,
                 currencyCode: this.model.targetCurrency,
                 exchangeRate: this.model.exchangeRateResponse.result["rate"]
             });
 
+            currentAddress.postalCode = currentAddress.postal_code;
+
             this.model.baseCalculation = await this.model.getCalculation({
                 address: currentAddress,
                 fullName : this.model.baseCalculation.fullName,
+                phoneNumber  : this.model.baseCalculation.phoneNumber,
                 shippingCost: selectedRate.totalCharge,
                 currencyCode: this.model.baseCalculation.currencyCode
             });
@@ -498,7 +526,14 @@ class CheckoutController {
             const isSameCurrency = this.model.selectedCurrency === this.model.baseCalculation.currencyCode;
 
             const calc = isSameCurrency ? this.model.baseCalculation : targetCalculation;
-            await this.model.savePaymentIntent(calc.amountTotal, calc.currencyCode, selectedRate.courierId, this.model.baseCalculation.fullName, this.model.baseCalculation.email);
+            await this.model.savePaymentIntent(
+                calc.amountTotal,
+                calc.currencyCode,
+                selectedRate.courierId,
+                this.model.baseCalculation.fullName,
+                this.model.baseCalculation.email,
+                this.model.baseCalculation.phoneNumber,
+            );
 
             await this.loadCurrencyView(targetCalculation);
 
@@ -553,6 +588,8 @@ class CheckoutController {
         if (this.model.selectedCurrency === targetCurrency) return;
 
         const address = this.model.baseCalculation.customerDetails.address;
+        address.postalCode = address.postal_code;
+
         const rates = this.model.ratesResponse.rates;
         const rateId = $(`input[type="radio"]:checked`).data("address-idx");
         const selectedRate = rates[rateId];
@@ -566,7 +603,14 @@ class CheckoutController {
                 this.view.renderSummaryProducts(this.model.baseCalculation);
                 this.view.renderProductSummaryNav(this.model.baseCalculation);
 
-                await this.model.savePaymentIntent(this.model.baseCalculation.amountTotal, this.model.baseCalculation.currencyCode, selectedRate.courierId, this.model.baseCalculation.fullName, this.model.baseCalculation.email);
+                await this.model.savePaymentIntent(
+                    this.model.baseCalculation.amountTotal,
+                    this.model.baseCalculation.currencyCode,
+                    selectedRate.courierId,
+                    this.model.baseCalculation.fullName,
+                    this.model.baseCalculation.email,
+                    this.model.baseCalculation.phoneNumber,
+                );
             } else {
 
                 const exchangeRateResponse = this.model.exchangeRateResponse;
@@ -576,16 +620,20 @@ class CheckoutController {
                 const newCalculation = await this.model.getCalculation({
                     address,
                     fullName : this.model.baseCalculation.fullName,
+                    phoneNumber  : this.model.baseCalculation.phoneNumber,
                     shippingCost: selectedRate.totalCharge,
                     currencyCode: targetCurrency,
                     exchangeRate: exchangeRateResponse.result["rate"]
                 });
 
-                await this.model.savePaymentIntent(newCalculation.amountTotal,
+                await this.model.savePaymentIntent(
+                    newCalculation.amountTotal,
                     newCalculation.currencyCode,
                     selectedRate.courierId,
                     this.model.baseCalculation.fullName,
-                    this.model.baseCalculation.email);
+                    this.model.baseCalculation.email,
+                    this.model.baseCalculation.phoneNumber
+                );
 
 
                 this.view.renderSummary(newCalculation);
@@ -682,11 +730,12 @@ class CheckoutController {
                         const rateIdx = this.model.selectedRateIdx ? this.model.selectedRateIdx : 0;
                         const selectedRate = rates[rateIdx];
                         const currentAddress = this.model.baseCalculation.customerDetails.address;
-
+                        currentAddress.postalCode = currentAddress.postal_code;
 
                         const targetCalculation = await this.model.getCalculation({
                             address: currentAddress,
                             fullName : this.model.baseCalculation.fullName,
+                            phoneNumber  : this.model.baseCalculation.phoneNumber,
                             shippingCost: selectedRate.totalCharge,
                             currencyCode: this.model.targetCurrency,
                             exchangeRate: this.model.exchangeRateResponse.result["rate"]

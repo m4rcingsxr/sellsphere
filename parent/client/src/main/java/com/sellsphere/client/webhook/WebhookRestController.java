@@ -12,6 +12,7 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.*;
 import com.stripe.net.ApiResource;
 import com.stripe.net.Webhook;
+import com.stripe.param.PaymentIntentCreateParams;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -162,20 +163,22 @@ public class WebhookRestController {
 
         // retrieve courier id from paymentIntent metadata
 
-        com.stripe.model.Address address = paymentIntent.getShipping().getAddress();
+        ShippingDetails shipping = paymentIntent.getShipping();
         String courierId = paymentIntent.getMetadata().get("courier_id");
         String customerEmail = paymentIntent.getMetadata().get("email");
+
         orderService.createOrder(customerEmail,
                                  Address.builder()
-                                         .line1(address.getLine1())
-                                         .line2(address.getLine2())
-                                         .city(address.getCity())
-                                         .state(address.getState())
-                                         .countryAlpha2(address.getCountry())
-                                         .contactName("Marcin Seweryn")
-                                         .postalCode("51-200")
-                                         .contactEmail("marcinsewerynn@gmail.com")
-                                         .contactPhone("730921452")
+                                         .line1(shipping.getAddress().getLine1())
+                                         .line2(shipping.getAddress().getLine2())
+                                         .city(shipping.getAddress().getCity())
+                                         .state(shipping.getAddress().getState())
+                                         .countryAlpha2(shipping.getAddress().getCountry())
+                                         .contactName(shipping.getName())
+                                         .postalCode(shipping.getAddress().getPostalCode())
+                                         // send always to customer, not recipient
+                                         .contactEmail(customerEmail)
+                                         .contactPhone(shipping.getPhone())
                                          .build()
                 , courierId, currency
         );

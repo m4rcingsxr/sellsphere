@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class CalculationResponse {
+
     private long amountTotal;
     private long taxAmountInclusive;
     private Calculation.CustomerDetails customerDetails;
@@ -22,4 +23,6 @@ public class CalculationResponse {
     private List<CartItemDTO> cart;
     private String fullName;
     private String email;
+    private String phoneNumber;
+
 }
