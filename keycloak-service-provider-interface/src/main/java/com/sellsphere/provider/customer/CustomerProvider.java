@@ -1,9 +1,8 @@
 package com.sellsphere.provider.customer;
 
+import com.sellsphere.provider.UserModelTransaction;
+import com.sellsphere.provider.UserModelTransactionManager;
 import com.sellsphere.provider.customer.external.Customer;
-import jakarta.ejb.Stateless;
-import jakarta.enterprise.event.Event;
-import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.NoArgsConstructor;
@@ -32,7 +31,6 @@ import java.util.stream.Stream;
 /**
  * Custom provider for managing customer-related operations in Keycloak.
  */
-@Stateless
 @NoArgsConstructor
 public class CustomerProvider
         implements UserStorageProvider, UserLookupProvider, UserRegistrationProvider,
@@ -45,17 +43,16 @@ public class CustomerProvider
     private KeycloakSession session;
     private ComponentModel model;
     private EntityManager entityManager;
-    private Event<UserAddedEvent> userAddedEvent;
 
-    @Inject
-    public CustomerProvider(KeycloakSession session, ComponentModel model,
-                            JpaConnectionProvider jpaConnectionProvider,
-                            Event<UserAddedEvent> userAddedEvent) {
+    private UserModelTransaction tx = new UserModelTransaction(this::updateUser);
+
+    CustomerProvider(KeycloakSession session, ComponentModel model,
+                     JpaConnectionProvider jpaConnectionProvider) {
         this.session = session;
         this.model = model;
         this.entityManager = jpaConnectionProvider.getEntityManager();
         this.encoder = new BCryptPasswordEncoder();
-        this.userAddedEvent = userAddedEvent;
+        this.tx = UserModelTransactionManager.getInstance(this::updateUser);
     }
 
     @Override
@@ -136,11 +133,14 @@ public class CustomerProvider
     public UserModel addUser(RealmModel realm, String username) {
         // Do not persist here, just create the entity
 
-        Customer entity = new Customer();
-        entity.setEmail(username);
-        entityManager.persist(entity);
+            Customer entity = new Customer();
+            entity.setEmail(username);
+            entityManager.persist(entity);
 
-        return new CustomerAdapter(session, realm, model, entity);
+            CustomerAdapter newUser = new CustomerAdapter(session, realm, model, entity);
+            tx.addUser(username, newUser);
+
+            return newUser;
     }
 
     @Override
@@ -279,5 +279,18 @@ public class CustomerProvider
     public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realm, String attrName,
                                                                 String attrValue) {
         return Stream.empty();
+    }
+
+    private boolean syncUsers() {
+        return model.get(CustomerProviderFactory.USER_CREATION_ENABLED, false);
+    }
+
+    private void updateUser(UserModel user) {
+        CustomerAdapter userAdapter = (CustomerAdapter) user;
+        if (userAdapter.isDirty()) {
+            Customer customer = new Customer();
+            customer.setEmail(user.getUsername());
+            entityManager.persist(customer);
+        }
     }
 }

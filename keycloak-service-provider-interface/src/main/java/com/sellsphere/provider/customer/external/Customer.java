@@ -64,6 +64,16 @@ public class Customer {
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime = LocalDateTime.now();
 
+    /**
+     * Returns the full name of the customer.
+     *
+     * @return the full name of the customer.
+     */
+    @Transient
+    public String getFullName() {
+        return String.join(" ", this.firstName, this.lastName);
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

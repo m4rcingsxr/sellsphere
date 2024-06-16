@@ -20,6 +20,7 @@
     </properties>
 
     <dependencies>
+        <!-- Keycloak Dependencies -->
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
@@ -38,47 +39,41 @@
             <version>${version.keycloak}</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Spring Security Dependency -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
             <version>6.3.0</version>
         </dependency>
+
+        <!-- Lombok Dependency -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-        </dependency>
-
-        <!-- Jakarta CDI API -->
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <version>3.0.0</version>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Jakarta EJB API -->
+        <!-- Payment Service Dependency -->
         <dependency>
-            <groupId>jakarta.ejb</groupId>
-            <artifactId>jakarta.ejb-api</artifactId>
-            <version>4.0.0</version>
+            <groupId>com.sellsphere.payment</groupId>
+            <artifactId>payment-service</artifactId>
+            <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hibernate.orm</groupId>
+                    <artifactId>hibernate-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Hibernate Core Dependency -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>6.5.2.Final</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- Jakarta Persistence API -->
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>3.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Weld for CDI implementation -->
-        <dependency>
-            <groupId>org.jboss.weld.servlet</groupId>
-            <artifactId>weld-servlet-core</artifactId>
-            <version>4.0.2.Final</version>
-        </dependency>
-
     </dependencies>
 
     <build>

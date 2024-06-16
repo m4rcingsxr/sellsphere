@@ -1,6 +1,7 @@
 package com.sellsphere.provider.customer;
 
 import com.sellsphere.provider.customer.external.Customer;
+import lombok.Getter;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.UserCredentialManager;
@@ -9,7 +10,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.SubjectCredentialManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.storage.StorageId;
-import org.keycloak.storage.adapter.AbstractUserAdapter;
 import org.keycloak.storage.adapter.AbstractUserAdapterFederatedStorage;
 
 import java.time.ZoneOffset;
@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 public class CustomerAdapter extends AbstractUserAdapterFederatedStorage {
 
     private final Customer user;
+
+    @Getter
     private boolean dirty;
 
     public CustomerAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, Customer user) {
