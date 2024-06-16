@@ -7,8 +7,6 @@
         <class>com.sellsphere.provider.customer.external.Customer</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
-
-            <!-- Sets the name of the datasource to be the same as the datasource name in quarkus.properties-->
             <property name="hibernate.connection.datasource" value="user-store"/>
             <property name="jakarta.persistence.transactionType" value="JTA" />
             <property name="hibernate.hbm2ddl.auto" value="validate" />
@@ -16,4 +14,3 @@
         </properties>
     </persistence-unit>
 </persistence>
-

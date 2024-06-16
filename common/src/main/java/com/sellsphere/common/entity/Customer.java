@@ -43,7 +43,7 @@ public class Customer extends IdentifiedEntity {
     /**
      * The password for the customer's account.
      */
-    @Column(name = "customer_password", length = 64, nullable = false)
+    @Column(name = "password", length = 64)
     private String password;
 
     /**
@@ -51,7 +51,7 @@ public class Customer extends IdentifiedEntity {
      */
     @NotNull(message = "First name must not be null")
     @Size(max = 45, message = "First name must be less than or equal to 45 characters")
-    @Column(name = "first_name", length = 45, nullable = false)
+    @Column(name = "first_name", length = 45)
     private String firstName;
 
     /**
@@ -59,7 +59,7 @@ public class Customer extends IdentifiedEntity {
      */
     @NotNull(message = "Last name must not be null")
     @Size(max = 45, message = "Last name must be less than or equal to 45 characters")
-    @Column(name = "last_name", length = 45, nullable = false)
+    @Column(name = "last_name", length = 45)
     private String lastName;
 
     /**

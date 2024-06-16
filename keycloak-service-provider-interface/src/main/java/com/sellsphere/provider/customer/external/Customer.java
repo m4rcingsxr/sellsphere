@@ -31,19 +31,19 @@ public class Customer {
     /**
      * The password for the customer's account.
      */
-    @Column(name = "customer_password", length = 64, nullable = false)
+    @Column(name = "password", length = 64)
     private String password;
 
     /**
      * The first name of the customer.
      */
-    @Column(name = "first_name", length = 45, nullable = false)
+    @Column(name = "first_name", length = 45)
     private String firstName;
 
     /**
      * The last name of the customer.
      */
-    @Column(name = "last_name", length = 45, nullable = false)
+    @Column(name = "last_name", length = 45)
     private String lastName;
 
     /**

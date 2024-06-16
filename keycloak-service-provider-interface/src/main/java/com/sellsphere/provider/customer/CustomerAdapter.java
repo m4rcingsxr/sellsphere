@@ -4,16 +4,17 @@ import com.sellsphere.provider.customer.external.Customer;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.UserCredentialManager;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.SubjectCredentialManager;
+import org.keycloak.models.UserModel;
 import org.keycloak.storage.StorageId;
-import org.keycloak.storage.UserStorageUtil;
 import org.keycloak.storage.adapter.AbstractUserAdapter;
 import org.keycloak.storage.adapter.AbstractUserAdapterFederatedStorage;
-import org.keycloak.storage.federated.UserFederatedStorageProvider;
 
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -21,48 +22,37 @@ import java.util.stream.Stream;
  * This class extends {@link AbstractUserAdapterFederatedStorage} to provide
  * a bridge between Keycloak and the custom {@link Customer} entity.
  */
-public class CustomerAdapter extends AbstractUserAdapter {
+public class CustomerAdapter extends AbstractUserAdapterFederatedStorage {
 
-    private final Customer customer;
+    private final Customer user;
+    private boolean dirty;
 
-    public CustomerAdapter(KeycloakSession session, RealmModel realm, ComponentModel model,
-                           Customer customer) {
+    public CustomerAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, Customer user) {
         super(session, realm, model);
-        this.storageId = new StorageId(storageProviderModel.getId(), customer.getEmail());
-        this.customer = customer;
+        this.storageId = new StorageId(storageProviderModel.getId(), user.getEmail());
+        this.user = user;
     }
 
     @Override
     public String getUsername() {
-        return customer.getEmail();
+        return user.getEmail();
+    }
+
+    @Override
+    public void setUsername(String username) {
+        user.setEmail(username);
+        dirty = true;
     }
 
     @Override
     public String getFirstName() {
-        return customer.getFirstName();
+        return user.getFirstName();
     }
 
     @Override
-    public String getLastName() {
-        return customer.getLastName();
-    }
-
-    @Override
-    public String getEmail() {
-        return customer.getEmail();
-    }
-
-    @Override
-    public boolean isEmailVerified() {
-        return customer.isEmailVerified();
-    }
-
-    public String getPassword() {
-        return customer.getPassword();
-    }
-
-    public void setPassword(String password) {
-        customer.setPassword(password);
+    public void setFirstName(String firstName) {
+        user.setFirstName(firstName);
+        dirty = true;
     }
 
     @Override
@@ -70,10 +60,101 @@ public class CustomerAdapter extends AbstractUserAdapter {
         return new UserCredentialManager(session, realm, this);
     }
 
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    public void setPassword(String password) {
+        user.setPassword(password);
+        dirty = true;
+    }
+
+    @Override
+    public String getLastName() {
+        return user.getLastName();
+    }
+
+    @Override
+    public void setLastName(String lastName) {
+        user.setLastName(lastName);
+        dirty = true;
+    }
+
+    @Override
+    public String getEmail() {
+        return user.getEmail();
+    }
+
+    @Override
+    public void setEmail(String email) {
+        user.setEmail(email);
+        dirty = true;
+    }
+
+    @Override
+    public boolean isEmailVerified() {
+        return user.isEmailVerified();
+    }
+
+    @Override
+    public void setEmailVerified(boolean verified) {
+        user.setEmailVerified(verified);
+        dirty = true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return user.isEnabled();
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        user.setEnabled(enabled);
+        dirty = true;
+    }
+
+    @Override
+    public Long getCreatedTimestamp() {
+        return user.getCreatedTime().toEpochSecond(ZoneOffset.ofHours(1));
+    }
+
+    @Override
+    public void setCreatedTimestamp(Long timestamp) {
+        //
+    }
+
+    @Override
+    public void setAttribute(String name, List<String> values) {
+        String value = values != null && !values.isEmpty() ? values.get(0) : null;
+        switch (name) {
+            case UserModel.USERNAME -> setUsername(value);
+            case UserModel.LAST_NAME -> setLastName(value);
+            case UserModel.FIRST_NAME -> setFirstName(value);
+            case UserModel.EMAIL -> setEmail(value);
+            default -> super.setAttribute(name, values);
+        }
+    }
+
     @Override
     public String getFirstAttribute(String name) {
-        List<String> list = getAttributes().getOrDefault(name, List.of());
-        return list.isEmpty() ? null : list.get(0);
+        return switch (name) {
+            case UserModel.USERNAME -> getUsername();
+            case UserModel.LAST_NAME -> getLastName();
+            case UserModel.FIRST_NAME -> getFirstName();
+            case UserModel.EMAIL -> getEmail();
+            default -> super.getFirstAttribute(name);
+        };
+    }
+
+    @Override
+    public Stream<String> getAttributeStream(String name) {
+        return switch (name) {
+            case UserModel.USERNAME -> Stream.of(getUsername());
+            case UserModel.LAST_NAME -> Stream.of(getLastName());
+            case UserModel.FIRST_NAME -> Stream.of(getFirstName());
+            case UserModel.EMAIL -> Stream.of(getEmail());
+            default -> super.getAttributeStream(name);
+        };
     }
 
     @Override
@@ -87,48 +168,14 @@ public class CustomerAdapter extends AbstractUserAdapter {
     }
 
     @Override
-    public Stream<String> getAttributeStream(String name) {
-        Map<String, List<String>> attributes = getAttributes();
-        return (attributes.containsKey(name)) ? attributes.get(name).stream() : Stream.empty();
-    }
-
-    @Override
-    protected Set<GroupModel> getGroupsInternal() {
-        return Set.of();
-    }
-
-    @Override
-    protected Set<RoleModel> getRoleMappingsInternal() {
-        return Set.of();
-    }
-
-    @Override
-    public Stream<String> getRequiredActionsStream() {
-        return getFederatedStorage().getRequiredActionsStream(realm, this.getId());
-    }
-
-    @Override
-    public void addRequiredAction(String action) {
-        getFederatedStorage().addRequiredAction(realm, this.getId(), action);
-    }
-
-    @Override
-    public void removeRequiredAction(String action) {
-        getFederatedStorage().removeRequiredAction(realm, this.getId(), action);
-    }
-
-    @Override
-    public void addRequiredAction(RequiredAction action) {
-        getFederatedStorage().addRequiredAction(realm, this.getId(), action.name());
-    }
-
-    @Override
-    public void removeRequiredAction(RequiredAction action) {
-        getFederatedStorage().removeRequiredAction(realm, this.getId(), action.name());
-    }
-
-    UserFederatedStorageProvider getFederatedStorage() {
-        return UserStorageUtil.userFederatedStorage(session);
+    public void setSingleAttribute(String name, String value) {
+        switch (name) {
+            case UserModel.USERNAME -> setUsername(value);
+            case UserModel.LAST_NAME -> setLastName(value);
+            case UserModel.FIRST_NAME -> setFirstName(value);
+            case UserModel.EMAIL -> setEmail(value);
+            default -> super.setSingleAttribute(name, value);
+        }
     }
 
 }

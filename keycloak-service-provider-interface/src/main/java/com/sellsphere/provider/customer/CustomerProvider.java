@@ -1,8 +1,12 @@
 package com.sellsphere.provider.customer;
 
 import com.sellsphere.provider.customer.external.Customer;
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import lombok.NoArgsConstructor;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.credential.*;
@@ -28,6 +32,8 @@ import java.util.stream.Stream;
 /**
  * Custom provider for managing customer-related operations in Keycloak.
  */
+@Stateless
+@NoArgsConstructor
 public class CustomerProvider
         implements UserStorageProvider, UserLookupProvider, UserRegistrationProvider,
         UserQueryProvider, CredentialInputUpdater, CredentialInputValidator, OnUserCache,
@@ -35,16 +41,21 @@ public class CustomerProvider
 
     public static final String PASSWORD_CACHE_KEY = UserAdapter.class.getName() + ".password";
 
-    private final PasswordEncoder encoder;
-    private final KeycloakSession session;
-    private final ComponentModel model;
-    private final EntityManager entityManager;
+    private PasswordEncoder encoder;
+    private KeycloakSession session;
+    private ComponentModel model;
+    private EntityManager entityManager;
+    private Event<UserAddedEvent> userAddedEvent;
 
-    public CustomerProvider(KeycloakSession session, ComponentModel model) {
+    @Inject
+    public CustomerProvider(KeycloakSession session, ComponentModel model,
+                            JpaConnectionProvider jpaConnectionProvider,
+                            Event<UserAddedEvent> userAddedEvent) {
         this.session = session;
         this.model = model;
-        this.entityManager = session.getProvider(JpaConnectionProvider.class, "user-store").getEntityManager();
+        this.entityManager = jpaConnectionProvider.getEntityManager();
         this.encoder = new BCryptPasswordEncoder();
+        this.userAddedEvent = userAddedEvent;
     }
 
     @Override
@@ -53,10 +64,14 @@ public class CustomerProvider
     }
 
     @Override
-    public CredentialModel createCredential(RealmModel realm, UserModel user, CredentialModel credentialModel) {
+    public CredentialModel createCredential(RealmModel realm, UserModel user,
+                                            CredentialModel credentialModel) {
         hashPassword(credentialModel);
 
-        TypedQuery<Customer> customerTypedQuery = entityManager.createQuery("UPDATE Customer c SET c.password = :newPassword WHERE c.id = :customerId", Customer.class);
+        TypedQuery<Customer> customerTypedQuery = entityManager.createQuery(
+                "UPDATE Customer c SET c.password = :newPassword WHERE c.id = :customerId",
+                Customer.class
+        );
         customerTypedQuery.setParameter("customerId", Integer.valueOf(user.getId()));
         customerTypedQuery.setParameter("newPassword", credentialModel.getSecretData());
         customerTypedQuery.executeUpdate();
@@ -66,7 +81,8 @@ public class CustomerProvider
 
     @Override
     public boolean deleteCredential(RealmModel realm, UserModel user, String credentialId) {
-        TypedQuery<Customer> customerTypedQuery = entityManager.createQuery("UPDATE Customer c SET c.password = null WHERE c.id = :customerId", Customer.class);
+        TypedQuery<Customer> customerTypedQuery = entityManager.createQuery(
+                "UPDATE Customer c SET c.password = null WHERE c.id = :customerId", Customer.class);
         customerTypedQuery.setParameter("customerId", Integer.valueOf(user.getId()));
         customerTypedQuery.executeUpdate();
 
@@ -79,7 +95,8 @@ public class CustomerProvider
     }
 
     @Override
-    public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext metadataContext) {
+    public CredentialTypeMetadata getCredentialTypeMetadata(
+            CredentialTypeMetadataContext metadataContext) {
         return CredentialTypeMetadata.builder()
                 .type(getType())
                 .category(CredentialTypeMetadata.Category.BASIC_AUTHENTICATION)
@@ -95,14 +112,7 @@ public class CustomerProvider
     @Override
     public UserModel getUserById(RealmModel realm, String id) {
         String persistenceId = StorageId.externalId(id);
-        TypedQuery<Customer> query = entityManager.createQuery(
-                        "SELECT c FROM Customer c where email = :email", Customer.class)
-                .setParameter("email", persistenceId);
-        Customer entity = query.getSingleResult();
-        if (entity == null) {
-            return null;
-        }
-        return new CustomerAdapter(session, realm, model, entity);
+        return getUserByEmail(realm, persistenceId);
     }
 
     @Override
@@ -112,7 +122,8 @@ public class CustomerProvider
 
     @Override
     public UserModel getUserByEmail(RealmModel realm, String email) {
-        TypedQuery<Customer> query = entityManager.createQuery("SELECT c FROM Customer c WHERE c.email = :email", Customer.class);
+        TypedQuery<Customer> query = entityManager.createQuery(
+                "SELECT c FROM Customer c WHERE c.email = :email", Customer.class);
         query.setParameter("email", email);
         List<Customer> result = query.getResultList();
         if (result.isEmpty()) {
@@ -123,9 +134,12 @@ public class CustomerProvider
 
     @Override
     public UserModel addUser(RealmModel realm, String username) {
+        // Do not persist here, just create the entity
+
         Customer entity = new Customer();
         entity.setEmail(username);
         entityManager.persist(entity);
+
         return new CustomerAdapter(session, realm, model, entity);
     }
 
@@ -221,19 +235,24 @@ public class CustomerProvider
 
     @Override
     public int getUsersCount(RealmModel realm) {
-        Object count = entityManager.createQuery("SELECT COUNT(c) FROM Customer c").getSingleResult();
+        Object count = entityManager.createQuery(
+                "SELECT COUNT(c) FROM Customer c").getSingleResult();
         return ((Number) count).intValue();
     }
 
     @Override
-    public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult, Integer maxResults) {
+    public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params,
+                                                 Integer firstResult, Integer maxResults) {
         String search = params.get(UserModel.SEARCH);
         TypedQuery<Customer> query;
 
         if (search == null || search.isEmpty() || search.equals("*")) {
             query = entityManager.createQuery("SELECT c FROM Customer c", Customer.class);
         } else {
-            query = entityManager.createQuery("SELECT c FROM Customer c WHERE lower(c.email) LIKE :search ORDER BY c.email", Customer.class);
+            query = entityManager.createQuery(
+                    "SELECT c FROM Customer c WHERE lower(c.email) LIKE :search ORDER BY c.email",
+                    Customer.class
+            );
             query.setParameter("search", "%" + search.toLowerCase() + "%");
         }
 
@@ -246,16 +265,19 @@ public class CustomerProvider
 
         List<Customer> resultList = query.getResultList();
 
-        return resultList.stream().map(entity -> new CustomerAdapter(session, realm, model, entity));
+        return resultList.stream().map(
+                entity -> new CustomerAdapter(session, realm, model, entity));
     }
 
     @Override
-    public Stream<UserModel> getGroupMembersStream(RealmModel realm, GroupModel group, Integer firstResult, Integer maxResults) {
+    public Stream<UserModel> getGroupMembersStream(RealmModel realm, GroupModel group,
+                                                   Integer firstResult, Integer maxResults) {
         return Stream.empty();
     }
 
     @Override
-    public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realm, String attrName, String attrValue) {
+    public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realm, String attrName,
+                                                                String attrValue) {
         return Stream.empty();
     }
 }
