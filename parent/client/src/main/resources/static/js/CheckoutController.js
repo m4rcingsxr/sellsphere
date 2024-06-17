@@ -164,8 +164,10 @@ class CheckoutController {
                 ratesResponse.rates[0].courierId,
                 this.model.baseCalculation.fullName,
                 this.model.baseCalculation.email,
-                this.model.baseCalculation.phoneNumber
+                this.model.baseCalculation.phoneNumber,
+                calculation.id
             );
+
             await this.initStripeElementsWithPaymentIntent(response.clientSecret);
 
             this.model.selectedRateIdx = undefined;
@@ -404,6 +406,7 @@ class CheckoutController {
                         this.model.baseCalculation.fullName,
                         this.model.baseCalculation.email,
                         this.model.baseCalculation.phoneNumber,
+                        calculation.id,
                     );
                 }
 
@@ -555,6 +558,7 @@ class CheckoutController {
                 this.model.baseCalculation.fullName,
                 this.model.baseCalculation.email,
                 this.model.baseCalculation.phoneNumber,
+                calc.id
             );
 
             await this.loadCurrencyView(targetCalculation);
@@ -632,6 +636,7 @@ class CheckoutController {
                     this.model.baseCalculation.fullName,
                     this.model.baseCalculation.email,
                     this.model.baseCalculation.phoneNumber,
+                    this.model.baseCalculation.id
                 );
             } else {
 
@@ -654,7 +659,8 @@ class CheckoutController {
                     selectedRate.courierId,
                     this.model.baseCalculation.fullName,
                     this.model.baseCalculation.email,
-                    this.model.baseCalculation.phoneNumber
+                    this.model.baseCalculation.phoneNumber,
+                    newCalculation.id
                 );
 
 
@@ -884,7 +890,6 @@ class CheckoutController {
         // Disable form submission while loading
         submitBtn.disabled = true;
 
-
         const {error: submitError} = await this.elements.submit();
         if (submitError) {
             handleError(submitError);
@@ -892,6 +897,9 @@ class CheckoutController {
         }
 
         try {
+
+            // update payment intent - pass calculation id and create tax transaction
+            // put transaction id in metadata of payment intent
 
             const {fetchError} = await this.elements.fetchUpdates();
 

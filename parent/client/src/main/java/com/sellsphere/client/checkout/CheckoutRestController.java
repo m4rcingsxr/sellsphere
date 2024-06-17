@@ -81,7 +81,6 @@ public class CheckoutRestController {
             @RequestBody PaymentRequest request, Principal principal)
             throws StripeException, CustomerNotFoundException, ShoppingCartNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
-
         PaymentIntent paymentIntent = checkoutService.savePaymentIntent(request, customer);
 
         Map<String, String> map = new HashMap<>();

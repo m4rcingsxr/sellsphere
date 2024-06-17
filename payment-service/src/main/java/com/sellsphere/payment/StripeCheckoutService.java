@@ -11,11 +11,13 @@ import com.stripe.model.CustomerSession;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.tax.Calculation;
+import com.stripe.model.tax.Transaction;
 import com.stripe.param.CustomerSessionCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentIntentUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.param.tax.CalculationCreateParams;
+import com.stripe.param.tax.TransactionCreateFromCalculationParams;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -145,7 +147,11 @@ public class StripeCheckoutService {
      * @return A Stripe PaymentIntent object.
      * @throws StripeException If an error occurs while creating the payment intent.
      */
-    public PaymentIntent createPaymentIntent(PaymentIntentCreateParams.Shipping shipping, long amountTotal, String currencyCode, String courierId, String customerEmail, String addressIdx, String customer)
+    public PaymentIntent createPaymentIntent(PaymentIntentCreateParams.Shipping shipping,
+                                             long amountTotal, String currencyCode,
+                                             String courierId, String customerEmail,
+                                             String addressIdx, String calculationId,
+                                             String customer)
             throws StripeException {
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setCustomer(customer)
@@ -159,11 +165,35 @@ public class StripeCheckoutService {
                 .putMetadata("courier_id", courierId)
                 .putMetadata("email", customerEmail)
                 .putMetadata("addressIdx", addressIdx)
+                .putMetadata("calculation_id", calculationId)
                 .setShipping(shipping)
                 .build();
 
         return PaymentIntent.create(params);
     }
+
+    public Transaction createTransaction(PaymentIntent paymentIntent)
+            throws StripeException {
+        // crete transaction, use payment intent id as reference
+        var transactionParams = TransactionCreateFromCalculationParams.builder()
+                .setCalculation(paymentIntent.getMetadata().get("calculation_id"))
+                .setReference(paymentIntent.getId())
+                .addExpand("line_items")
+                .build();
+
+        Transaction transaction = Transaction.createFromCalculation(transactionParams);
+
+        // store transaction id in payment metadata so that later you can record refunds
+        PaymentIntentUpdateParams paymentParams =
+                PaymentIntentUpdateParams.builder()
+                        .putMetadata("tax_transaction", "{{TAX_TRANSACTION}}")
+                        .build();
+
+        paymentIntent.update(paymentParams);
+        return transaction;
+    }
+
+
 
     /**
      * Calculates the total price for the checkout process.
@@ -352,6 +382,60 @@ public class StripeCheckoutService {
         return CustomerSession.create(csParams);
     }
 
+
+    // my integration require payment intent - represent transaction on my server (assigned order
+    // id) - status
+
+
+    // include returning functionality in order ( create order details in which we can manage it)
+//    Reason for Return: (when to return for shipping both sides) (possibility to generate label
+//    in 2 ways - paid by me and by the client)
+//
+//    Defective or Wrong Product: If the product is defective or the wrong item was shipped,
+//    refunding the shipping cost is generally considered good customer service.
+//    Customer Changed Mind: If the return is due to the customer changing their mind or ordering
+//    the wrong size/color, you may decide not to refund the shipping costs.
+
+    // create tax transaction on new and refund
+    // tax reports - available
+
+    // refunds:
+    // transactions management
+
+    // customer one to many payment intent
+    // creating of shopping cart - retrieve payment intent that's incomplete (only one incomplete
+    // per customer) (once created payment intent remain 90 days)
+    // updated date - created date required
+    // refunded date
+    // decline reason
+    // customer email - in payment intent customer
+    // amount
+    // payment intent status
+    // on success - order id
+
+    // Refund
+    // on success payment intent create tax transaction
+    // refund - means reverse tax transaction Reversal transactions offset an earlier transaction
+    // by having amounts with opposite signs
+    // -- Append a suffix to the original reference. For example, if the original transaction has
+    // reference pi_123456789, then create the reversal transaction with reference
+    // pi_123456789-refund.
+    // - Use the ID of the Stripe refund or a refund ID from your system. For example,
+    // re_3MoslRBUZ691iUZ41bsYVkOg or myRefund_456.
+
+    // full refund : When you fully refund a sale in your system, create a reversal transaction
+    // with mode=full.
+    // Partially refund a sale : After issuing a refund to your customer, create a reversal tax
+    // transaction with mode=partial. This allows you to record a partial refund by providing the
+    // line item amounts refunded. You can create up to 30 partial reversals for each sale.
+    // Reversing more than the amount of tax you collected returns an error.
+
+    // todo: save payment methods on server + adding in the client ui the payment methods for
+    //  future use of the client
+    // todo: handle delayed payments webhook - make this kind of payment available
+    // todo: send receipt to customer
+    // todo : refund : return whole - or the partial
+    // todo: include info on product form that price must be included with stripe fee
     // method to change currency conversion based on location
 
     // FINISH TAX:

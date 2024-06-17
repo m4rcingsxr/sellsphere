@@ -7,11 +7,15 @@ import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.easyship.payload.Address;
+import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
 import com.stripe.model.*;
+import com.stripe.model.tax.Transaction;
 import com.stripe.net.ApiResource;
 import com.stripe.net.Webhook;
 import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.PaymentIntentUpdateParams;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +38,7 @@ public class WebhookRestController {
     private final WebhookConfig webhookConfig;
     private final ExecutorService taskExecutor;
     private final OrderService orderService;
+    private final StripeCheckoutService stripeService;
 
     // Webhook endpoints might occasionally receive the same event more than once
     private final ConcurrentHashMap<String, Boolean> processedEvents = new ConcurrentHashMap<>();
@@ -113,7 +118,8 @@ public class WebhookRestController {
     }
 
     private void processEvent(Optional<StripeObject> stripeObjectOpt, Event event, String currency)
-            throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException {
+            throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException,
+            StripeException {
 
         StripeObject stripeObject;
         if (stripeObjectOpt.isPresent()) {
@@ -146,7 +152,8 @@ public class WebhookRestController {
 
     private void handlePaymentIntentSucceeded(PaymentIntent paymentIntent,
                                               String currency)
-            throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException {
+            throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException,
+            StripeException {
         // create order
 
         // metadata - courier_id (for selected rate)
@@ -183,6 +190,15 @@ public class WebhookRestController {
                                          .build()
                 , courierId, currency, addressIdx
         );
+
+        Transaction transaction = stripeService.createTransaction(paymentIntent);
+
+        PaymentIntentUpdateParams params =
+                PaymentIntentUpdateParams.builder()
+                        .putMetadata("tax_transaction", transaction.getId())
+                        .build();
+
+        paymentIntent.update(params);
 
         // send recipient email
         log.info("Handled payment intent succeeded for: {}", paymentIntent.getId());

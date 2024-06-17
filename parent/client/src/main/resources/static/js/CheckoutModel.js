@@ -135,7 +135,7 @@ class CheckoutModel {
     }
 
     // create or update payment intent - based on authenticated customer
-    async savePaymentIntent(amountTotal, currencyCode, courierId, recipientName, customerEmail, phoneNumber) {
+    async savePaymentIntent(amountTotal, currencyCode, courierId, recipientName, customerEmail, phoneNumber, calculationId) {
         const metadata = {
             "courier_id": courierId,
             "recipient_name": recipientName,
@@ -148,6 +148,7 @@ class CheckoutModel {
             amountTotal,
             phoneNumber,
             customerDetails: this.baseCalculation.customerDetails,
+            calculationId,
             metadata
         });
     }

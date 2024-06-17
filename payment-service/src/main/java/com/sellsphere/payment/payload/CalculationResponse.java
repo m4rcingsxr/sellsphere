@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class CalculationResponse {
 
+    private String id;
     private long amountTotal;
     private long taxAmountInclusive;
     private Calculation.CustomerDetails customerDetails;

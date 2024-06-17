@@ -74,6 +74,7 @@ public class CheckoutService {
         var responseBuilder = CalculationResponse.builder();
 
         responseBuilder
+                .id(calculation.getId())
                 .amountTotal(calculation.getAmountTotal())
                 .taxAmountInclusive(calculation.getTaxAmountInclusive())
                 .shippingCost(calculation.getShippingCost())
@@ -215,10 +216,9 @@ public class CheckoutService {
                     request.getMetadata().get("courier_id"),
                     request.getMetadata().get("email"),
                     request.getMetadata().get("addressIdx"),
+                    request.getCalculationId(),
                     customer.getStripeId()
             );
-
-
 
             cart.setPaymentIntentId(paymentIntent.getId());
             cartService.save(cart);
