@@ -15,9 +15,11 @@ import com.sellsphere.payment.payload.CalculationRequest;
 import com.sellsphere.payment.payload.CalculationResponse;
 import com.sellsphere.payment.payload.PaymentRequest;
 import com.stripe.exception.StripeException;
+import com.stripe.model.CustomerSession;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.tax.Calculation;
+import com.stripe.param.CustomerSessionCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -212,7 +214,8 @@ public class CheckoutService {
                     request.getCurrencyCode(),
                     request.getMetadata().get("courier_id"),
                     request.getMetadata().get("email"),
-                    request.getMetadata().get("addressIdx")
+                    request.getMetadata().get("addressIdx"),
+                    customer.getStripeId()
             );
 
 
@@ -230,4 +233,7 @@ public class CheckoutService {
 
     }
 
+    public CustomerSession createCustomerSession(Customer customer) throws StripeException {
+        return stripeService.createCustomerSession(customer.getStripeId());
+    }
 }

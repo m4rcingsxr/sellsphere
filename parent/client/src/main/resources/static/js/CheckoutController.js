@@ -216,9 +216,6 @@ class CheckoutController {
         if (ratesResponse.length === 0) {
             throw new Error(`No shipping rate available for address: ${JSON.stringify(easyShipAddress)}`);
         }
-        if (ratesResponse.rates[0].costRank !== 1.0) {
-            throw new Error(`Cost rank of 1st rate should always be 1: ${JSON.stringify(ratesResponse)}`);
-        }
     }
 
     /**
@@ -284,9 +281,16 @@ class CheckoutController {
 
         try {
             console.debug("Initializing Stripe elements with client secret");
+
+
+            const {
+                customerSessionClientSecret
+            } = await this.model.createCustomerSession();
+
             const options = {
                 appearance: {theme: 'flat'},
                 clientSecret: clientSecret,
+                customerSessionClientSecret
             };
 
             this.elements = this.stripe.elements(options);
@@ -300,7 +304,7 @@ class CheckoutController {
         console.debug("Initializing Stripe elements with currency and cart subtotal");
         const options = {};
         options.mode = 'payment';
-        options.amount = calculation.amountTotal,
+        options.amount = calculation.amountTotal;
         options.currency = calculation.currencyCode.toLowerCase();
 
         this.elements = this.stripe.elements(options);
@@ -386,10 +390,10 @@ class CheckoutController {
 
                     let courierId;
                     if(this.model.selectedRateIdx) {
-                        const rate = this.model.rateResponse.rates[selectedRateIdx];
+                        const rate = this.model.ratesResponse.rates[selectedRateIdx];
                         courierId = rate.courierId;
                     } else {
-                        const rate = this.model.rateResponse.rates[0];
+                        const rate = this.model.ratesResponse.rates[0];
                         courierId = rate.courierId;
                     }
 

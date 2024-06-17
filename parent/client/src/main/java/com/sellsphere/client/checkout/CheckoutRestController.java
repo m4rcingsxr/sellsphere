@@ -8,6 +8,7 @@ import com.sellsphere.payment.payload.CalculationRequest;
 import com.sellsphere.payment.payload.CalculationResponse;
 import com.sellsphere.payment.payload.PaymentRequest;
 import com.stripe.exception.StripeException;
+import com.stripe.model.CustomerSession;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,6 @@ public class CheckoutRestController {
 
     private final CustomerService customerService;
     private final CheckoutService checkoutService;
-    private final EasyshipService easyshipService;
 
     /**
      * Calculates the total cost including address-specific details with a specified exchange
@@ -99,7 +99,7 @@ public class CheckoutRestController {
      * @throws StripeException           if there is an error with Stripe operations.
      * @throws SettingNotFoundException  if the required setting is not found.
      */
-    @PostMapping("/create_session")
+    @PostMapping("/create-session")
     public ResponseEntity<Map<String, String>> createCheckoutSession(Principal principal)
             throws CustomerNotFoundException, StripeException, SettingNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
@@ -110,6 +110,19 @@ public class CheckoutRestController {
         map.put("clientSecret",
                 session.getRawJsonObject().getAsJsonPrimitive("client_secret").getAsString()
         );
+
+        return ResponseEntity.ok(map);
+    }
+
+    @PostMapping("/create-customer-session")
+    public ResponseEntity<Map<String, String>> createCustomerSession(Principal principal)
+            throws CustomerNotFoundException, StripeException {
+        Customer customer = getAuthenticatedCustomer(principal);
+
+        CustomerSession session = checkoutService.createCustomerSession(customer);
+
+        Map<String, String> map = new HashMap<>();
+        map.put("customerSessionClientSecret", session.getClientSecret());
 
         return ResponseEntity.ok(map);
     }

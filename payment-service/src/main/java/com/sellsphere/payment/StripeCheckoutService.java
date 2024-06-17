@@ -7,9 +7,11 @@ import com.sellsphere.payment.payload.CalculationRequest;
 import com.sellsphere.payment.payload.PaymentRequest;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Address;
+import com.stripe.model.CustomerSession;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.tax.Calculation;
+import com.stripe.param.CustomerSessionCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentIntentUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -143,9 +145,10 @@ public class StripeCheckoutService {
      * @return A Stripe PaymentIntent object.
      * @throws StripeException If an error occurs while creating the payment intent.
      */
-    public PaymentIntent createPaymentIntent(PaymentIntentCreateParams.Shipping shipping, long amountTotal, String currencyCode, String courierId, String customerEmail, String addressIdx)
+    public PaymentIntent createPaymentIntent(PaymentIntentCreateParams.Shipping shipping, long amountTotal, String currencyCode, String courierId, String customerEmail, String addressIdx, String customer)
             throws StripeException {
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                .setCustomer(customer)
                 .setAmount(amountTotal)
                 .setCurrency(currencyCode)
                 //todo: remove after implementing creating payment methods in the settings
@@ -321,6 +324,32 @@ public class StripeCheckoutService {
                         .setCurrency(request.getCurrencyCode())
                         .build()
         );
+    }
+
+    public CustomerSession createCustomerSession(String stripeId) throws StripeException {
+        CustomerSessionCreateParams csParams = CustomerSessionCreateParams.builder()
+                .setCustomer(stripeId)
+                .setComponents(CustomerSessionCreateParams.Components.builder().build())
+                .putExtraParam("components[payment_element][enabled]", true)
+                .putExtraParam(
+                        "components[payment_element][features][payment_method_redisplay]",
+                        "enabled"
+                )
+                .putExtraParam(
+                        "components[payment_element][features][payment_method_save]",
+                        "enabled"
+                )
+                .putExtraParam(
+                        "components[payment_element][features][payment_method_save_usage]",
+                        "on_session"
+                )
+                .putExtraParam(
+                        "components[payment_element][features][payment_method_remove]",
+                        "enabled"
+                )
+                .build();
+
+        return CustomerSession.create(csParams);
     }
 
     // method to change currency conversion based on location

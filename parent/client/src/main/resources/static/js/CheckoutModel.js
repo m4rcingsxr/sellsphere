@@ -151,4 +151,8 @@ class CheckoutModel {
             metadata
         });
     }
+
+    async createCustomerSession() {
+        return await ajaxUtil.post(`${MODULE_URL}checkout/create-customer-session`, {})
+    }
 }
