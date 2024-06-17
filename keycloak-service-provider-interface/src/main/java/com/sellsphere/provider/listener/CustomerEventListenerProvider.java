@@ -31,7 +31,7 @@ public class CustomerEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(Event event) {
-        if (event.getType() == EventType.LOGIN) {
+        if (event.getType() == EventType.REGISTER) {
             String email = event.getDetails().get("username");
             if(email == null || email.isEmpty()) {
                 throw new IllegalStateException("Email cannot be null or empty");
@@ -45,7 +45,8 @@ public class CustomerEventListenerProvider implements EventListenerProvider {
             customer.setId(customer.getId());
 
             try {
-                customerService.createCustomer(customer);
+                Customer savedCustomer = customerService.createCustomer(customer);
+                user.setSingleAttribute("stripe_id", savedCustomer.getId());
             } catch (StripeException e) {
                 throw new RuntimeException(e);
             }

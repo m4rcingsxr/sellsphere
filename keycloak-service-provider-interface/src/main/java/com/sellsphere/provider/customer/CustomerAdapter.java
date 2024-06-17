@@ -115,6 +115,15 @@ public class CustomerAdapter extends AbstractUserAdapterFederatedStorage {
         dirty = true;
     }
 
+    public void setStripeId(String stripeId) {
+        user.setStripeId(stripeId);
+        dirty = true;
+    }
+
+    public String getStripeId() {
+        return user.getStripeId();
+    }
+
     @Override
     public Long getCreatedTimestamp() {
         return user.getCreatedTime().toEpochSecond(ZoneOffset.ofHours(1));
@@ -144,6 +153,7 @@ public class CustomerAdapter extends AbstractUserAdapterFederatedStorage {
             case UserModel.LAST_NAME -> getLastName();
             case UserModel.FIRST_NAME -> getFirstName();
             case UserModel.EMAIL -> getEmail();
+            case "stripe_id" -> getStripeId();
             default -> super.getFirstAttribute(name);
         };
     }
@@ -166,6 +176,7 @@ public class CustomerAdapter extends AbstractUserAdapterFederatedStorage {
         attributes.add(UserModel.EMAIL, getEmail());
         attributes.add(UserModel.FIRST_NAME, getFirstName());
         attributes.add(UserModel.LAST_NAME, getLastName());
+        attributes.add("stripe_id", getStripeId());
         return attributes;
     }
 
@@ -176,6 +187,7 @@ public class CustomerAdapter extends AbstractUserAdapterFederatedStorage {
             case UserModel.LAST_NAME -> setLastName(value);
             case UserModel.FIRST_NAME -> setFirstName(value);
             case UserModel.EMAIL -> setEmail(value);
+            case "stripe_id" -> setStripeId(value);
             default -> super.setSingleAttribute(name, value);
         }
     }

@@ -64,6 +64,9 @@ public class Customer {
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime = LocalDateTime.now();
 
+    @Column(name = "stripe_id")
+    private String stripeId;
+
     /**
      * Returns the full name of the customer.
      *

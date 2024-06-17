@@ -92,6 +92,9 @@ public class Customer extends IdentifiedEntity {
     @OneToOne(mappedBy = "customer")
     private ShoppingCart cart;
 
+    @Column(name = "stripe_id")
+    private String stripeId;
+
     public void addAddress(Address address) {
         address.setCustomer(this);
         this.addresses.add(address);

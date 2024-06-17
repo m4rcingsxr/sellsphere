@@ -8,21 +8,22 @@ import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerListParams;
 import com.stripe.param.CustomerUpdateParams;
 
-import java.util.List;
-
 public class CustomerService {
 
     static {
-        Stripe.apiKey = "sk_test_51PbnPoAx8ZpOoq6Yma531EHxQhtmlY717PYSKoRPSRe6So8e1stJkyNfOmVEZP6eDuxJygev23JWI4b5chR88Kuy00O8BD03Xz";
+        StripeConfig.init();
     }
 
     public Customer createCustomer(Customer customer) throws StripeException {
+
+        // find customer by email
         CustomerCollection customerCollection = Customer.list(
                 CustomerListParams.builder()
                         .setEmail(customer.getEmail())
                         .build()
         );
 
+        // if none exist then create new one
         if(customerCollection.getData().isEmpty()) {
             var params = CustomerCreateParams.builder()
                     .setEmail(customer.getEmail())
@@ -31,6 +32,8 @@ public class CustomerService {
 
             return Customer.create(params);
         } else {
+
+            // update existing customer
             Customer retrievedCustomer = customerCollection.getData().get(0);
             var params = CustomerUpdateParams.builder()
                     .setEmail(customer.getEmail())
