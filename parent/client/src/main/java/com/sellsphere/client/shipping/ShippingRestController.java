@@ -35,7 +35,7 @@ public class ShippingRestController {
 
         String currencyCode = settingService.getCurrencyCode().toUpperCase();
 
-        List<CartItem> cart = shoppingCartService.findCartItemsByCustomer(customer);
+        List<CartItem> cart = shoppingCartService.findAllByCustomer(customer);
         ShippingRatesResponse rates = apiService.getShippingRates(
                 page,
                 Address.builder()

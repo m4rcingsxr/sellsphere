@@ -29,12 +29,19 @@ public class CartItem extends IdentifiedEntity {
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    @NotNull(message = "Cart is required")
+    @NotNull(message = "Customer is required")
     @ManyToOne
-    @JoinColumn(name = "cart_id")
-    private ShoppingCart cart;
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
-    public CartItem(Product product, int quantity) {
+    public CartItem(Integer customerId, Integer productId, Integer quantity) {
+        Customer customer = new Customer();
+        customer.setId(customerId);
+
+        Product product = new Product();
+        product.setId(productId);
+
+        this.customer = customer;
         this.product = product;
         this.quantity = quantity;
     }

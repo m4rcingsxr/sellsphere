@@ -1,7 +1,9 @@
 package com.sellsphere.client.webhook;
 
 import com.google.gson.JsonSyntaxException;
+import com.sellsphere.client.checkout.TransactionService;
 import com.sellsphere.client.customer.CustomerRepository;
+import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.order.OrderService;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.common.entity.*;
@@ -11,6 +13,7 @@ import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.tax.Transaction;
 import com.stripe.net.ApiResource;
 import com.stripe.net.Webhook;
@@ -39,11 +42,13 @@ public class WebhookRestController {
     private final ExecutorService taskExecutor;
     private final OrderService orderService;
     private final StripeCheckoutService stripeService;
+    private final TransactionService transactionService;
 
     // Webhook endpoints might occasionally receive the same event more than once
     private final ConcurrentHashMap<String, Boolean> processedEvents = new ConcurrentHashMap<>();
     private final CustomerRepository customerRepository;
     private final SettingService settingService;
+    private final CustomerService customerService;
 
     // test env - not public endpoint
     @PostMapping("/webhook")
@@ -119,7 +124,7 @@ public class WebhookRestController {
 
     private void processEvent(Optional<StripeObject> stripeObjectOpt, Event event, String currency)
             throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException,
-            StripeException {
+            StripeException, TransactionNotFoundException {
 
         StripeObject stripeObject;
         if (stripeObjectOpt.isPresent()) {
@@ -153,7 +158,7 @@ public class WebhookRestController {
     private void handlePaymentIntentSucceeded(PaymentIntent paymentIntent,
                                               String currency)
             throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException,
-            StripeException {
+            StripeException, TransactionNotFoundException {
         // create order
 
         // metadata - courier_id (for selected rate)
@@ -175,6 +180,12 @@ public class WebhookRestController {
         String customerEmail = paymentIntent.getMetadata().get("email");
         String addressIdx = paymentIntent.getMetadata().get("addressIdx");
 
+        Customer customer = customerService.getByEmail(customerEmail);
+        var tr = transactionService.findIncompleteTransaction(customer).orElseThrow(TransactionNotFoundException::new);
+        tr.setStatus(paymentIntent.getStatus());
+        transactionService.save(tr);
+
+
         orderService.createOrder(customerEmail,
                                  Address.builder()
                                          .line1(shipping.getAddress().getLine1())
@@ -191,6 +202,7 @@ public class WebhookRestController {
                 , courierId, currency, addressIdx
         );
 
+        // update status of existing transaction
         Transaction transaction = stripeService.createTransaction(paymentIntent);
 
         PaymentIntentUpdateParams params =

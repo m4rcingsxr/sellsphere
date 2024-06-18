@@ -9,7 +9,6 @@ import com.sellsphere.payment.payload.CalculationResponse;
 import com.sellsphere.payment.payload.PaymentRequest;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
-import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +29,7 @@ public class CheckoutRestController {
 
     private final CustomerService customerService;
     private final CheckoutService checkoutService;
+    private final TransactionService transactionService;
 
     /**
      * Calculates the total cost including address-specific details with a specified exchange
@@ -79,10 +79,11 @@ public class CheckoutRestController {
     @PostMapping("/save-payment-intent")
     public ResponseEntity<Map<String, String>> createPaymentIntent(
             @RequestBody PaymentRequest request, Principal principal)
-            throws StripeException, CustomerNotFoundException, ShoppingCartNotFoundException {
+            throws StripeException, CustomerNotFoundException, ShoppingCartNotFoundException,
+            CurrencyNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
-        PaymentIntent paymentIntent = checkoutService.savePaymentIntent(request, customer);
 
+        PaymentIntent paymentIntent = transactionService.savePaymentIntent(request, customer);
         Map<String, String> map = new HashMap<>();
         map.put("clientSecret", paymentIntent.getClientSecret());
 

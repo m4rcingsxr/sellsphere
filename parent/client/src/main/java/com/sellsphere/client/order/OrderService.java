@@ -3,6 +3,7 @@ package com.sellsphere.client.order;
 import com.sellsphere.client.address.AddressRepository;
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.setting.CountryRepository;
+import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.easyship.Constants;
 import com.sellsphere.easyship.EasyshipService;
@@ -27,6 +28,7 @@ public class OrderService {
     private final CustomerService customerService;
     private final AddressRepository addressRepository;
     private final CountryRepository countryRepository;
+    private final CartItemRepository cartItemRepository;
 
     @Transactional
     public Order createOrder(String customerEmail, Address destination, String courierId,
@@ -65,12 +67,18 @@ public class OrderService {
             destinationAddress = addressRepository.findById(Integer.valueOf(addressId)).orElseThrow(AddressNotFoundException::new);
         }
 
-        ShoppingCart cart = customer.getCart();
+        List<CartItem> cart = cartItemRepository.findByCustomer(customer);
+
+
+        BigDecimal totalWeight = cart.stream()
+                .map(item -> item.getProduct().getWeight().multiply(
+                        BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         RequestParcel parcel = new RequestParcel();
-        parcel.setTotalActualWeight(cart.getTotalWeight());
+        parcel.setTotalActualWeight(totalWeight);
 
-        for (CartItem cartItem : cart.getCartItems()) {
+        for (CartItem cartItem : cart) {
             parcel.addItem(ParcelProductItemCreate.builder()
                                    .declaredCustomsValue(cartItem.getProduct().getDiscountPrice())
                                    .declaredCurrency(currencyCode.toUpperCase())
@@ -126,6 +134,7 @@ public class OrderService {
 
         ShipmentResponse shipment = easyshipService.createShipment(shipmentRequest);
 
+
         // check errors
 
         // validate if selected courier is available for this shipment
@@ -136,12 +145,22 @@ public class OrderService {
                 .findAny()
                 .orElseThrow(IllegalStateException::new);
 
+        BigDecimal subtotal = cart.stream()
+                .map(CartItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal productCost = cart.stream()
+                .map(item -> item.getProduct().getCost())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal total = subtotal.add(BigDecimal.valueOf(selectedRate.getTotalCharge()));
+
         Order order = Order.builder()
                 .orderTime(LocalDateTime.now())
                 .customer(customer)
-                .total(cart.getTotal())
-                .productCost(cart.getProductCost())
-                .subtotal(cart.getSubtotal())
+                .total(total)
+                .productCost(productCost)
+                .subtotal(subtotal)
 //            .tax(cart.getTax())
                 // naive implementation:
                 .deliverDate(LocalDate.from(
@@ -166,7 +185,7 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
-        customer.getCart().getCartItems().forEach(order::addOrderDetail);
+        cart.forEach(order::addOrderDetail);
 
         orderRepository.save(order);
 

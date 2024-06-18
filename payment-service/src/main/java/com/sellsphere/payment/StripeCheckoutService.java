@@ -346,8 +346,10 @@ public class StripeCheckoutService {
         return PaymentIntent.retrieve(paymentIntentId);
     }
 
-    public PaymentIntent updatePaymentIntent(PaymentIntent paymentIntent, PaymentRequest request)
+    public PaymentIntent updatePaymentIntent(String intentId, PaymentRequest request)
             throws StripeException {
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(intentId);
+
         return paymentIntent.update(
                 PaymentIntentUpdateParams.builder()
                         .setAmount(request.getAmountTotal())

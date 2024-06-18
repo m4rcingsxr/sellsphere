@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+
+    <changeSet id="1721903139684-1" author="Marcin Seweryn">
+        <createTable tableName="payment_intents">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_payment_intents"/>
+            </column>
+            <column name="stripe_id" type="VARCHAR(255)"/>
+            <column name="amount" type="BIGINT"/>
+            <column name="application_fee_amount" type="BIGINT"/>
+            <column name="currency_id" type="INT"/>
+            <column name="customer_id" type="INT"/>
+            <column name="order_id" type="INT"/>
+            <column name="status" type="VARCHAR(255)"/>
+            <column name="created" type="BIGINT"/>
+            <column name="canceled_at" type="BIGINT"/>
+            <column name="cancellation_reason" type="VARCHAR(255)"/>
+            <column name="client_secret" type="VARCHAR(255)"/>
+        </createTable>
+        <addUniqueConstraint columnNames="order_id" constraintName="uc_payment_intents_order" tableName="payment_intents"/>
+        <addForeignKeyConstraint baseColumnNames="currency_id" baseTableName="payment_intents" constraintName="FK_PAYMENT_INTENTS_ON_CURRENCY" referencedColumnNames="id" referencedTableName="currencies"/>
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="payment_intents" constraintName="FK_PAYMENT_INTENTS_ON_CUSTOMER" referencedColumnNames="id" referencedTableName="customers"/>
+        <addForeignKeyConstraint baseColumnNames="order_id" baseTableName="payment_intents" constraintName="FK_PAYMENT_INTENTS_ON_ORDER" referencedColumnNames="id" referencedTableName="orders"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -21,9 +21,10 @@ import java.util.List;
 @RequestMapping("/cart")
 public class ShoppingCartRestController {
 
-    private final ShoppingCartService cartService;
     private final CustomerService customerService;
     private final ProductService productService;
+    private final ShoppingCartService cartService;
+    private final CartItemRepository cartItemRepository;
 
     /**
      * Adds a product to the cart for the authenticated customer.
@@ -43,9 +44,8 @@ public class ShoppingCartRestController {
             throws CustomerNotFoundException, ProductNotFoundException {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);
-        Product product = productService.findById(productId);
 
-        cartService.addProduct(customer, product, quantity);
+        cartService.addProduct(customer, productId, quantity);
 
         return ResponseEntity.ok().build();
     }
@@ -62,7 +62,7 @@ public class ShoppingCartRestController {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);
 
-        cartService.deleteCart(customer);
+        cartService.clearCart(customer);
 
         return ResponseEntity.ok().build();
     }
@@ -104,28 +104,28 @@ public class ShoppingCartRestController {
         Customer customer = customerService.getByEmail(email);
 
         List<MinCartItemDTO> list = cartService
-                .findCartItemsByCustomer(customer).stream().map(MinCartItemDTO::new).toList();
+                .findAllByCustomer(customer).stream().map(MinCartItemDTO::new).toList();
         return ResponseEntity.ok(list);
     }
 
-    /**
-     * Sets the entire cart for the authenticated customer.
-     * Deletes the current cart and saves the new one.
-     *
-     * @param principal the authenticated user's principal
-     * @param cartItems the new cart items to set
-     * @throws CustomerNotFoundException if the customer is not found
-     */
     @PostMapping("/set")
     public ResponseEntity<Void> setCart(Principal principal,
-                                        @RequestBody List<MinCartItemDTO> cartItems)
+                                        @RequestBody List<MinCartItemDTO> cart)
             throws CustomerNotFoundException {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);
+        cartService.deleteByCustomer(customer);
 
-        // update existing cart or create new
-        cartService.createCart(customer, cartItems);
+        List<CartItem> newCart = cart
+                .stream()
+                .map(
+                        cartItemDTO -> new CartItem(
+                                customer.getId(),
+                                cartItemDTO.getProductId(),
+                                cartItemDTO.getQuantity()
+                        )).toList();
 
+        cartService.saveAll(newCart);
         return ResponseEntity.ok().build();
     }
 }

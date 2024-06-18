@@ -89,9 +89,6 @@ public class Customer extends IdentifiedEntity {
     @OrderBy("primary desc")
     private List<Address> addresses = new ArrayList<>();
 
-    @OneToOne(mappedBy = "customer")
-    private ShoppingCart cart;
-
     @Column(name = "stripe_id")
     private String stripeId;
 

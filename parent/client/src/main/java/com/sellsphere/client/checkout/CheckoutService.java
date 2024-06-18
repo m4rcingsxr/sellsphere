@@ -13,14 +13,10 @@ import com.sellsphere.payment.Constants;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.sellsphere.payment.payload.CalculationRequest;
 import com.sellsphere.payment.payload.CalculationResponse;
-import com.sellsphere.payment.payload.PaymentRequest;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
-import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.tax.Calculation;
-import com.stripe.param.CustomerSessionCreateParams;
-import com.stripe.param.PaymentIntentCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +50,7 @@ public class CheckoutService {
      */
     public CalculationResponse calculateWithAddress(CalculationRequest request, Customer customer)
             throws CurrencyNotFoundException, StripeException {
-        List<CartItem> cart = cartService.findCartItemsByCustomer(customer);
+        List<CartItem> cart = cartService.findAllByCustomer(customer);
 
         String baseCurrency = settingService.getCurrencyCode();
 
@@ -149,7 +145,7 @@ public class CheckoutService {
      * @throws CurrencyNotFoundException if the specified currency is not found.
      */
     public CalculationResponse calculateTotal(Customer customer) throws CurrencyNotFoundException {
-        List<CartItem> cart = cartService.findCartItemsByCustomer(customer);
+        List<CartItem> cart = cartService.findAllByCustomer(customer);
 
         String baseCurrencyCode = settingService.getCurrencyCode();
         Currency currency = currencyRepository.findByCode(baseCurrencyCode)
@@ -175,7 +171,7 @@ public class CheckoutService {
      */
     public Session createSession(Customer customer) throws StripeException,
             SettingNotFoundException {
-        List<CartItem> cart = cartService.findCartItemsByCustomer(customer);
+        List<CartItem> cart = cartService.findAllByCustomer(customer);
 
         Setting setting = settingRepository.findById("SUPPORTED_COUNTRY").orElseThrow(
                 SettingNotFoundException::new);
@@ -184,53 +180,6 @@ public class CheckoutService {
         List<Country> supportedCountries = countryRepository.findAllById(supportedCountryIds);
 
         return stripeService.createCheckoutSession(cart, supportedCountries);
-    }
-
-    /**
-     * Creates a payment intent for the given payment request.
-     *
-     * @param request The payment request containing amount and currency details.
-     * @return The created Stripe payment intent.
-     * @throws StripeException if there is an error with Stripe operations.
-     */
-    public PaymentIntent savePaymentIntent(PaymentRequest request, Customer customer)
-            throws StripeException, ShoppingCartNotFoundException {
-        ShoppingCart cart = cartService.findByCustomer(customer);
-        if (cart.getPaymentIntentId() == null) {
-            var address = request.getCustomerDetails().getAddress();
-
-            PaymentIntent paymentIntent = stripeService.createPaymentIntent(
-                    PaymentIntentCreateParams.Shipping.builder()
-                            .setPhone(request.getPhoneNumber())
-                            .setName(request.getMetadata().get("recipient_name"))
-                            .setAddress(PaymentIntentCreateParams.Shipping.Address.builder()
-                            .setCity(address.getCity())
-                            .setState(address.getState())
-                            .setLine1(address.getLine1())
-                            .setLine2(address.getLine2())
-                            .setCountry(address.getCountry())
-                            .setPostalCode(address.getPostalCode())
-                            .build()).build(),
-                    request.getAmountTotal(),
-                    request.getCurrencyCode(),
-                    request.getMetadata().get("courier_id"),
-                    request.getMetadata().get("email"),
-                    request.getMetadata().get("addressIdx"),
-                    request.getCalculationId(),
-                    customer.getStripeId()
-            );
-
-            cart.setPaymentIntentId(paymentIntent.getId());
-            cartService.save(cart);
-
-            return paymentIntent;
-        } else {
-            PaymentIntent paymentIntent = stripeService
-                    .retrievePaymentIntent(cart.getPaymentIntentId());
-            return stripeService.updatePaymentIntent(paymentIntent, request);
-        }
-
-
     }
 
     public CustomerSession createCustomerSession(Customer customer) throws StripeException {
