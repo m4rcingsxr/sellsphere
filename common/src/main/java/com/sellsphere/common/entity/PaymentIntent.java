@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -58,6 +59,16 @@ public class PaymentIntent extends IdentifiedEntity {
     @Column(name = "client_secret")
     private String clientSecret;
 
+    // payment method
+
     // get metadata - retrieve calculation id or transaction tax - to get tax info
+
+    public BigDecimal getDisplayAmount() {
+        Long unitAmount = currency.getUnitAmount();
+
+        return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(unitAmount)).setScale(2, RoundingMode.CEILING);
+    }
+
+
 
 }

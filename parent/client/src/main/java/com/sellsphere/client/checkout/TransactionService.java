@@ -19,7 +19,6 @@ public class TransactionService {
 
     private final PaymentIntentRepository repository;
     private final CurrencyRepository currencyRepository;
-    private final CheckoutService checkoutService;
     private final StripeCheckoutService stripeService;
 
     public Optional<PaymentIntent> findIncompleteTransaction(Customer customer) {
