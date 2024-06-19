@@ -3,9 +3,11 @@ package com.sellsphere.admin.transaction;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -41,9 +43,6 @@ public class TransactionController {
 
         return "transaction/transactions";
     }
-
-    // refund transaction (or partially)
-
 
     // cancel transaction - change transaction status (possible before it's confirmed)
 

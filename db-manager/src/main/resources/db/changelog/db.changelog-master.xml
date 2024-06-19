@@ -52,4 +52,6 @@
 
     <include file="db/changelog/db.changelog-drop-shopping_carts-table-18.06.2024.xml"/>
     <include file="db/changelog/db.changelog-update-cart_items-table-18.06.2024.xml"/>
+
+    <include file="db/changelog/db.changelog-add-refunds-table.xml"/>
 </databaseChangeLog>

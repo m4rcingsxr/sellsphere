@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+
+    <changeSet id="1721922280099-1" author="Marcin Seweryn">
+        <createTable tableName="refunds">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_refunds"/>
+            </column>
+            <column name="object" type="VARCHAR(255)"/>
+            <column name="stripe_id" type="VARCHAR(255)"/>
+            <column name="amount" type="BIGINT"/>
+            <column name="balance_transaction" type="VARCHAR(255)"/>
+            <column name="created" type="BIGINT"/>
+            <column name="currency_id" type="INT"/>
+            <column name="payment_intent_id" type="INT"/>
+            <column name="reason" type="VARCHAR(255)"/>
+            <column name="receipt_number" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(255)"/>
+            <column name="failure_reason" type="VARCHAR(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="currency_id" baseTableName="refunds" constraintName="FK_REFUNDS_ON_CURRENCY" referencedColumnNames="id" referencedTableName="currencies"/>
+        <addForeignKeyConstraint baseColumnNames="payment_intent_id" baseTableName="refunds" constraintName="FK_REFUNDS_ON_PAYMENT_INTENT" referencedColumnNames="id" referencedTableName="payment_intents"/>
+    </changeSet>
+
+</databaseChangeLog>

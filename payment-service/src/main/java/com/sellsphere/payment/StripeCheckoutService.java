@@ -9,12 +9,14 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Address;
 import com.stripe.model.CustomerSession;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.tax.Calculation;
 import com.stripe.model.tax.Transaction;
 import com.stripe.param.CustomerSessionCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentIntentUpdateParams;
+import com.stripe.param.RefundCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.param.tax.CalculationCreateParams;
 import com.stripe.param.tax.TransactionCreateFromCalculationParams;
@@ -170,6 +172,18 @@ public class StripeCheckoutService {
                 .build();
 
         return PaymentIntent.create(params);
+    }
+
+    public Refund createRefund(String paymentIntent, Long amount, RefundCreateParams.Reason reason)
+            throws StripeException {
+
+        RefundCreateParams params = RefundCreateParams.builder()
+                .setAmount(amount)
+                .setPaymentIntent(paymentIntent)
+                .setReason(reason)
+                .build();
+
+        return Refund.create(params);
     }
 
     public Transaction createTransaction(PaymentIntent paymentIntent)

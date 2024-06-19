@@ -14,6 +14,7 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
 import com.stripe.model.tax.Transaction;
 import com.stripe.net.ApiResource;
 import com.stripe.net.Webhook;
@@ -49,6 +50,7 @@ public class WebhookRestController {
     private final CustomerRepository customerRepository;
     private final SettingService settingService;
     private final CustomerService customerService;
+    private final RefundRepository refundRepository;
 
     // test env - not public endpoint
     @PostMapping("/webhook")
@@ -124,7 +126,7 @@ public class WebhookRestController {
 
     private void processEvent(Optional<StripeObject> stripeObjectOpt, Event event, String currency)
             throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException,
-            StripeException, TransactionNotFoundException {
+            StripeException, TransactionNotFoundException, RefundNotFoundException {
 
         StripeObject stripeObject;
         if (stripeObjectOpt.isPresent()) {
@@ -145,6 +147,10 @@ public class WebhookRestController {
                 handlePaymentMethodAttached(paymentMethod);
                 break;
             // ... handle other event types
+            case "charge.refund.updated":
+                Refund refund = (Refund) stripeObject;
+                handleRefundFail(refund);
+                break;
             default:
                 log.info("Unhandled event type: {}", event.getType());
         }
@@ -152,6 +158,19 @@ public class WebhookRestController {
 
     private boolean isAllowedIp(String ip) {
         return webhookConfig.getAllowedIps().contains(ip);
+    }
+
+    private void handleRefundFail(Refund stripeRefund) throws RefundNotFoundException {
+        // status & failure reason
+        String status = stripeRefund.getStatus();
+        String failureReason = stripeRefund.getFailureReason();
+
+        var ref = refundRepository
+                .findByStripeId(stripeRefund.getId())
+                .orElseThrow(RefundNotFoundException::new);
+        ref.setStatus(status);
+        ref.setFailureReason(failureReason);
+        refundRepository.save(ref);
     }
 
 

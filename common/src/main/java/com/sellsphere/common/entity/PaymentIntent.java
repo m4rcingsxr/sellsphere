@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -40,7 +41,7 @@ public class PaymentIntent extends IdentifiedEntity {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    // Status of this PaymentIntent (todo: check status on refund - do i need to retrieve refund object and check status to update it??)
+    // Status of this PaymentIntent
     @Column(name = "status")
     private String status;
 
@@ -59,16 +60,44 @@ public class PaymentIntent extends IdentifiedEntity {
     @Column(name = "client_secret")
     private String clientSecret;
 
+    @OrderBy("created asc")
+    @OneToMany(mappedBy = "paymentIntent")
+    private List<Refund> refunds;
+
     // payment method
 
     // get metadata - retrieve calculation id or transaction tax - to get tax info
 
+    @Transient
     public BigDecimal getDisplayAmount() {
         Long unitAmount = currency.getUnitAmount();
 
-        return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(unitAmount)).setScale(2, RoundingMode.CEILING);
+        return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(unitAmount)).setScale(2,
+                                                                                          RoundingMode.CEILING
+        );
+    }
+
+    @Transient
+    public boolean hasRefunds() {
+        return refunds != null && !refunds.isEmpty();
+    }
+
+    @Transient
+    public boolean isPartial() {
+        Long refundAmount = sumRefundAmount();
+        return refunds != null && refundAmount > 0 && refundAmount < amount;
+    }
+
+    @Transient
+    public boolean isRefunded() {
+        return sumRefundAmount().equals(amount);
     }
 
 
+    private Long sumRefundAmount() {
+        return refunds.stream()
+                .map(Refund::getAmount)
+                .reduce(0L, Long::sum);
+    }
 
 }

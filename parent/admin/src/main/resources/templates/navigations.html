@@ -18,7 +18,9 @@
                             <a class="nav-link active text-white" aria-current="page" href="#">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="#">Link</a>
+                            <form th:action="@{/logout}" method="POST">
+                                <a class="nav-link text-white" href="#">Logout</a>
+                            </form>
                         </li>
                     </ul>
                 </div>
