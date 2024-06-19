@@ -18,7 +18,7 @@ function initializeDeleteEntityListener() {
 }
 
 function initializeDetailEntityListener() {
-    $(".content").on('click', '#detailEntity', function (event) {
+    $(".content").on('click', '.detailEntity', function (event) {
         event.preventDefault();
         const detailURL = $(this).attr("href");
 

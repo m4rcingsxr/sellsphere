@@ -54,4 +54,10 @@
     <include file="db/changelog/db.changelog-update-cart_items-table-18.06.2024.xml"/>
 
     <include file="db/changelog/db.changelog-add-refunds-table.xml"/>
+
+    <!--
+        add missing constraints, create charge, payment_method,
+        card, balance_transaction, metadata_entry
+    -->
+    <include file="db/changelog/19-06-24-changelog.xml"/>
 </databaseChangeLog>

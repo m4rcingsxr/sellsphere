@@ -46,6 +46,7 @@
                 <td th:text="${transaction.customer.email}"></td>
                 <td>
                     <a href="#" class="refund-request" th:data-id="${transaction.id}"><i class="fa-solid fa-rotate-left"></i></a>
+                    <a th:replace="~{list_fragments :: detail_entity(|/transactions/details/${transaction.id}|)}"></a>
                 </td>
             </tr>
             </tbody>

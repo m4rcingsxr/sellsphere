@@ -51,7 +51,6 @@ public class Country extends IdentifiedEntity {
     @OrderBy("name asc")
     private Set<State> states = new HashSet<>();
 
-    @OnDelete(action = OnDeleteAction.SET_NULL)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "currency_id", nullable = false)
     private Currency currency;

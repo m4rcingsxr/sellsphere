@@ -60,5 +60,8 @@ public class TransactionService {
     }
 
 
+    public PaymentIntent findById(Integer id) throws TransactionNotFoundException {
+        return transactionRepository.findById(id).orElseThrow(TransactionNotFoundException::new);
+    }
 }
 

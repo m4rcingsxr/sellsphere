@@ -29,4 +29,6 @@
         <addForeignKeyConstraint baseColumnNames="order_id" baseTableName="payment_intents" constraintName="FK_PAYMENT_INTENTS_ON_ORDER" referencedColumnNames="id" referencedTableName="orders"/>
     </changeSet>
 
+
+
 </databaseChangeLog>

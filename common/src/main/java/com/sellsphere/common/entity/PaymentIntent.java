@@ -64,9 +64,17 @@ public class PaymentIntent extends IdentifiedEntity {
     @OneToMany(mappedBy = "paymentIntent")
     private List<Refund> refunds;
 
-    // payment method
+    @OneToMany(mappedBy = "paymentIntent")
+    private List<Charge> charges;
+
+    @ManyToOne
+    @JoinColumn(name = "payment_method_id")
+    private PaymentMethod paymentMethod;
 
     // get metadata - retrieve calculation id or transaction tax - to get tax info
+    @OneToMany
+    @JoinColumn(name = "metadata_id")
+    private List<MetadataEntry> metadata;
 
     @Transient
     public BigDecimal getDisplayAmount() {
