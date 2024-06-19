@@ -3,12 +3,14 @@ $(function () {
 })
 
 function initTransactionListeners() {
-    $("table").on("click", ".refund-request", function () {
+    $("body").on("click", ".refund-request", function () {
         const paymentId = $(this).attr("data-id");
         const currencySymbol = $(this).attr("currency-symbol");
 
         $("#currency-symbol").text(currencySymbol);
         $("#refund-btn").attr("data-id", paymentId);
+
+        $("#detailModal").modal('hide');
         $("#refundModal").modal('show');
     })
 

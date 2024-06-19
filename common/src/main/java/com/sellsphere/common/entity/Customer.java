@@ -93,7 +93,10 @@ public class Customer extends IdentifiedEntity {
     private String stripeId;
 
     @OneToMany(mappedBy = "customer")
-    private List<Card> card;
+    private List<Card> cards;
+
+    @OneToMany(mappedBy = "customer")
+    private List<PaymentIntent> transactions;
 
     public void addAddress(Address address) {
         address.setCustomer(this);
@@ -103,6 +106,14 @@ public class Customer extends IdentifiedEntity {
     public void removeAddress(Address address) {
         this.addresses.remove(address);
         address.setCustomer(null);
+    }
+
+    public void addCard(Card card) {
+        if(this.cards == null) {
+            this.cards = new ArrayList<>();
+        }
+
+        cards.add(card);
     }
 
     /**

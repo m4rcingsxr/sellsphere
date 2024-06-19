@@ -1,8 +1,6 @@
 package com.sellsphere.common.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @NoArgsConstructor
@@ -19,5 +17,9 @@ public class MetadataEntry extends IdentifiedEntity {
 
     @Column(name = "value")
     private String value;
+
+    @ManyToOne
+    @JoinColumn(name = "payment_intent_id")
+    private PaymentIntent paymentIntent;
 
 }

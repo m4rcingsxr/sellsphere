@@ -1,17 +1,17 @@
 package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table
+@Table(name = "charges")
 public class Charge extends IdentifiedEntity {
 
     @Column(name = "stripe_id")
@@ -22,6 +22,8 @@ public class Charge extends IdentifiedEntity {
 
     private Long amountRefunded;
 
+    @OneToOne
+    @JoinColumn(name = "balance_transaction_id")
     private BalanceTransaction balanceTransaction;
 
     private String receiptUrl;
@@ -30,8 +32,12 @@ public class Charge extends IdentifiedEntity {
 
     private String status;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "payment_intent_id")
     private PaymentIntent paymentIntent;
+
+    @OrderBy("created desc")
+    @OneToMany(mappedBy = "charge")
+    private List<Refund> refunds;
 
 }

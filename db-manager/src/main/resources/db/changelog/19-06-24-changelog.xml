@@ -3,135 +3,169 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
-
-
-    <changeSet id="1721944165952-6" author="Marcin Seweryn">
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1722077920294-6" author="Marcin Seweryn">
+        <createTable tableName="balance_transactions">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_balance_transactions"/>
+            </column>
+            <column name="stripe_id" type="VARCHAR(255)"/>
+            <column name="amount" type="BIGINT"/>
+            <column name="created" type="BIGINT"/>
+            <column name="fee" type="BIGINT"/>
+            <column name="currency" type="VARCHAR(255)"/>
+            <column name="net" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1722077920294-7" author="Marcin Seweryn">
         <createTable tableName="cards">
             <column autoIncrement="true" name="id" type="INT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_cards"/>
             </column>
-            <column name="stripe_id" type="VARCHAR(255)"/>
             <column name="customer_id" type="INT"/>
             <column name="brand" type="VARCHAR(255)"/>
             <column name="country" type="VARCHAR(255)"/>
-            <column name="exp_month" type="INT"/>
-            <column name="exp_year" type="INT"/>
+            <column name="exp_month" type="BIGINT"/>
+            <column name="exp_year" type="BIGINT"/>
             <column name="funding" type="VARCHAR(255)"/>
             <column name="last_4" type="VARCHAR(255)"/>
             <column name="created_time" type="BIGINT"/>
             <column name="cardholder_name" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet id="1721944165952-7" author="Marcin Seweryn">
-        <createTable tableName="charge">
+    <changeSet id="1722077920294-8" author="Marcin Seweryn">
+        <createTable tableName="charges">
             <column autoIncrement="true" name="id" type="INT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_charge"/>
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_charges"/>
             </column>
             <column name="stripe_id" type="VARCHAR(255)"/>
             <column name="amount" type="BIGINT"/>
             <column name="amount_refunded" type="BIGINT"/>
-            <column name="balance_transaction" type="BLOB"/>
+            <column name="balance_transaction_id" type="INT"/>
             <column name="receipt_url" type="VARCHAR(255)"/>
             <column name="refunded" type="BOOLEAN"/>
             <column name="status" type="VARCHAR(255)"/>
             <column name="payment_intent_id" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet id="1721944165952-8" author="Marcin Seweryn">
+    <changeSet id="1722077920294-9" author="Marcin Seweryn">
         <createTable tableName="metadata_entries">
             <column autoIncrement="true" name="id" type="INT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_metadata_entries"/>
             </column>
             <column name="key" type="VARCHAR(255)"/>
             <column name="value" type="VARCHAR(255)"/>
-            <column name="metadata_id" type="INT"/>
+            <column name="payment_intent_id" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet id="1721944165952-9" author="Marcin Seweryn">
+    <changeSet id="1722077920294-10" author="Marcin Seweryn">
         <createTable tableName="payment_methods">
             <column autoIncrement="true" name="id" type="INT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_payment_methods"/>
             </column>
             <column name="stripe_id" type="VARCHAR(255)"/>
             <column name="country_id" type="INT"/>
-            <column name="payment_method_id" type="INT"/>
+            <column name="customer_id" type="INT"/>
             <column name="payment_type" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet id="1721944165952-10" author="Marcin Seweryn">
+    <changeSet id="1722077920294-11" author="Marcin Seweryn">
+        <addColumn tableName="refunds">
+            <column name="balance_transaction_id" type="INT"/>
+            <column name="charge_id" type="INT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1722077920294-13" author="Marcin Seweryn">
         <addColumn tableName="payment_intents">
             <column name="payment_method_id" type="INT"/>
         </addColumn>
     </changeSet>
-    <changeSet id="1721944165952-11" author="Marcin Seweryn">
+    <changeSet id="1722077920294-14" author="Marcin Seweryn">
         <addUniqueConstraint columnNames="category_id" constraintName="uc_category_icons_category"
                              tableName="category_icons"/>
     </changeSet>
-    <changeSet id="1721944165952-12" author="Marcin Seweryn">
+    <changeSet id="1722077920294-15" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="balance_transaction_id" constraintName="uc_charges_balance_transaction"
+                             tableName="charges"/>
+    </changeSet>
+    <changeSet id="1722077920294-16" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="payment_intent_id" constraintName="uc_charges_payment_intent"
+                             tableName="charges"/>
+    </changeSet>
+    <changeSet id="1722077920294-17" author="Marcin Seweryn">
         <addUniqueConstraint columnNames="product_id" constraintName="uc_product_updates_product"
                              tableName="product_updates"/>
     </changeSet>
-    <changeSet id="1721944165952-13" author="Marcin Seweryn">
+    <changeSet id="1722077920294-18" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="balance_transaction_id" constraintName="uc_refunds_balance_transaction"
+                             tableName="refunds"/>
+    </changeSet>
+    <changeSet id="1722077920294-19" author="Marcin Seweryn">
         <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="cards"
                                  constraintName="FK_CARDS_ON_CUSTOMER" referencedColumnNames="id"
                                  referencedTableName="customers"/>
     </changeSet>
-    <changeSet id="1721944165952-14" author="Marcin Seweryn">
-        <addForeignKeyConstraint baseColumnNames="payment_intent_id" baseTableName="charge"
-                                 constraintName="FK_CHARGE_ON_PAYMENT_INTENT" referencedColumnNames="id"
+    <changeSet id="1722077920294-20" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="balance_transaction_id" baseTableName="charges"
+                                 constraintName="FK_CHARGES_ON_BALANCE_TRANSACTION" referencedColumnNames="id"
+                                 referencedTableName="balance_transactions"/>
+    </changeSet>
+    <changeSet id="1722077920294-21" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="payment_intent_id" baseTableName="charges"
+                                 constraintName="FK_CHARGES_ON_PAYMENT_INTENT" referencedColumnNames="id"
                                  referencedTableName="payment_intents"/>
     </changeSet>
-    <changeSet id="1721944165952-15" author="Marcin Seweryn">
+    <changeSet id="1722077920294-22" author="Marcin Seweryn">
         <addForeignKeyConstraint baseColumnNames="currency_id" baseTableName="countries"
                                  constraintName="FK_COUNTRIES_ON_CURRENCY" referencedColumnNames="id"
                                  referencedTableName="currencies"/>
     </changeSet>
-    <changeSet id="1721944165952-16" author="Marcin Seweryn">
-        <addForeignKeyConstraint baseColumnNames="metadata_id" baseTableName="metadata_entries"
-                                 constraintName="FK_METADATA_ENTRIES_ON_METADATA" referencedColumnNames="id"
+    <changeSet id="1722077920294-23" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="payment_intent_id" baseTableName="metadata_entries"
+                                 constraintName="FK_METADATA_ENTRIES_ON_PAYMENT_INTENT" referencedColumnNames="id"
                                  referencedTableName="payment_intents"/>
     </changeSet>
-    <changeSet id="1721944165952-17" author="Marcin Seweryn">
+    <changeSet id="1722077920294-24" author="Marcin Seweryn">
         <addForeignKeyConstraint baseColumnNames="address_id" baseTableName="orders"
                                  constraintName="FK_ORDERS_ON_ADDRESS" referencedColumnNames="id"
                                  referencedTableName="addresses"/>
     </changeSet>
-    <changeSet id="1721944165952-18" author="Marcin Seweryn">
+    <changeSet id="1722077920294-25" author="Marcin Seweryn">
         <addForeignKeyConstraint baseColumnNames="payment_method_id" baseTableName="payment_intents"
                                  constraintName="FK_PAYMENT_INTENTS_ON_PAYMENT_METHOD" referencedColumnNames="id"
                                  referencedTableName="payment_methods"/>
     </changeSet>
-    <changeSet id="1721944165952-19" author="Marcin Seweryn">
+    <changeSet id="1722077920294-26" author="Marcin Seweryn">
         <addForeignKeyConstraint baseColumnNames="country_id" baseTableName="payment_methods"
                                  constraintName="FK_PAYMENT_METHODS_ON_COUNTRY" referencedColumnNames="id"
                                  referencedTableName="countries"/>
     </changeSet>
-    <changeSet id="1721944165952-20" author="Marcin Seweryn">
-        <addForeignKeyConstraint baseColumnNames="payment_method_id" baseTableName="payment_methods"
-                                 constraintName="FK_PAYMENT_METHODS_ON_PAYMENT_METHOD" referencedColumnNames="id"
+    <changeSet id="1722077920294-27" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="payment_methods"
+                                 constraintName="FK_PAYMENT_METHODS_ON_CUSTOMER" referencedColumnNames="id"
                                  referencedTableName="customers"/>
     </changeSet>
-    <changeSet id="1721944165952-21" author="Marcin Seweryn">
+    <changeSet id="1722077920294-28" author="Marcin Seweryn">
         <addForeignKeyConstraint baseColumnNames="tax_id" baseTableName="products" constraintName="FK_PRODUCTS_ON_TAX"
                                  referencedColumnNames="id" referencedTableName="product_taxes"/>
     </changeSet>
-    <changeSet id="1721944165952-1" author="Marcin Seweryn">
+    <changeSet id="1722077920294-29" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="balance_transaction_id" baseTableName="refunds"
+                                 constraintName="FK_REFUNDS_ON_BALANCE_TRANSACTION" referencedColumnNames="id"
+                                 referencedTableName="balance_transactions"/>
+    </changeSet>
+    <changeSet id="1722077920294-30" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="charge_id" baseTableName="refunds"
+                                 constraintName="FK_REFUNDS_ON_CHARGE" referencedColumnNames="id"
+                                 referencedTableName="charges"/>
+    </changeSet>
+    <changeSet id="1722077920294-31" author="Marcin Seweryn">
+        <dropColumn columnName="balance_transaction" tableName="refunds"/>
+    </changeSet>
+    <changeSet id="1722077920294-1" author="Marcin Seweryn">
         <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="detail_value" tableName="product_details"
                               validate="true"/>
     </changeSet>
-    <changeSet id="1721944165952-2" author="Marcin Seweryn">
-        <addNotNullConstraint columnDataType="VARCHAR(45)" columnName="first_name" tableName="customers"
-                              validate="true"/>
-    </changeSet>
-    <changeSet id="1721944165952-3" author="Marcin Seweryn">
-        <addNotNullConstraint columnDataType="VARCHAR(45)" columnName="last_name" tableName="customers"
-                              validate="true"/>
-    </changeSet>
-    <changeSet id="1721944165952-4" author="Marcin Seweryn">
-        <modifyDataType columnName="main_image" newDataType="VARCHAR(256)" tableName="users"/>
-    </changeSet>
-    <changeSet id="1721944165952-5" author="Marcin Seweryn">
-        <addNotNullConstraint columnDataType="VARCHAR(256)" columnName="main_image" tableName="users" validate="true"/>
-    </changeSet>
+
 </databaseChangeLog>

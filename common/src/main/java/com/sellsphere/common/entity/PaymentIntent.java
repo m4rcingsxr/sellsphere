@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -60,20 +61,15 @@ public class PaymentIntent extends IdentifiedEntity {
     @Column(name = "client_secret")
     private String clientSecret;
 
-    @OrderBy("created asc")
-    @OneToMany(mappedBy = "paymentIntent")
-    private List<Refund> refunds;
-
-    @OneToMany(mappedBy = "paymentIntent")
-    private List<Charge> charges;
-
     @ManyToOne
     @JoinColumn(name = "payment_method_id")
     private PaymentMethod paymentMethod;
 
+    @OneToOne(mappedBy = "paymentIntent")
+    private Charge charge;
+
     // get metadata - retrieve calculation id or transaction tax - to get tax info
-    @OneToMany
-    @JoinColumn(name = "metadata_id")
+    @OneToMany(mappedBy = "paymentIntent")
     private List<MetadataEntry> metadata;
 
     @Transient
@@ -86,26 +82,70 @@ public class PaymentIntent extends IdentifiedEntity {
     }
 
     @Transient
-    public boolean hasRefunds() {
-        return refunds != null && !refunds.isEmpty();
+    public BigDecimal getDisplayRefunded() {
+        Long unitAmount = currency.getUnitAmount();
+
+        return BigDecimal.valueOf(charge.getAmountRefunded())
+                .divide(BigDecimal.valueOf(unitAmount))
+                .setScale(2, RoundingMode.CEILING);
     }
 
     @Transient
-    public boolean isPartial() {
-        Long refundAmount = sumRefundAmount();
-        return refunds != null && refundAmount > 0 && refundAmount < amount;
+    public BigDecimal getDisplayFee() {
+        Long finalFee = 0L;
+
+        if(this.charge != null) {
+            finalFee = charge.getBalanceTransaction().getFee();
+
+            if(this.charge.getRefunds() != null && !this.charge.getRefunds().isEmpty()) {
+                for (Refund refund : this.charge.getRefunds()) {
+                    Long fee = refund.getBalanceTransaction().getFee();
+                    finalFee += fee;
+                }
+            }
+        }
+
+        Long unitAmount = currency.getUnitAmount();
+
+        return BigDecimal.valueOf(finalFee)
+                .divide(BigDecimal.valueOf(unitAmount))
+                .setScale(2, RoundingMode.CEILING);
     }
 
     @Transient
-    public boolean isRefunded() {
-        return sumRefundAmount().equals(amount);
+    public BigDecimal getDisplayNet() {
+        Long finalNet = 0L;
+
+        if(this.charge != null) {
+            finalNet = charge.getBalanceTransaction().getNet();
+
+            if(this.charge.getRefunds() != null && !this.charge.getRefunds().isEmpty()) {
+
+                for (Refund refund : this.charge.getRefunds()) {
+                    Long net = refund.getBalanceTransaction().getNet();
+                    finalNet += net;
+                }
+            }
+        }
+
+        Long unitAmount = currency.getUnitAmount();
+
+        return BigDecimal.valueOf(finalNet)
+                .divide(BigDecimal.valueOf(unitAmount))
+                .setScale(2, RoundingMode.CEILING);
     }
 
+    public void addMetadataEntry(String key, String value) {
+        if(metadata == null) {
+            metadata = new ArrayList<>();
+        }
 
-    private Long sumRefundAmount() {
-        return refunds.stream()
-                .map(Refund::getAmount)
-                .reduce(0L, Long::sum);
+        MetadataEntry entry = new MetadataEntry();
+        entry.setKey(key);
+        entry.setValue(value);
+        entry.setPaymentIntent(this);
+
+        metadata.add(entry);
     }
 
 }

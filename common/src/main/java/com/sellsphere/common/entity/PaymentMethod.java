@@ -1,19 +1,18 @@
 package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Getter
 @Setter
 @Entity
 @Table(name = "payment_methods")
 public class PaymentMethod extends IdentifiedEntity {
 
+    @Column(name = "stripe_id")
     private String stripeId;
 
     @ManyToOne
@@ -21,7 +20,7 @@ public class PaymentMethod extends IdentifiedEntity {
     private Country billingCountry;
 
     @ManyToOne
-    @JoinColumn(name = "payment_method_id")
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @Column(name = "payment_type")

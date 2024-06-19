@@ -8,6 +8,7 @@ import com.google.inject.Singleton;
 import com.sellsphere.easyship.provider.ClientProvider;
 import jakarta.ws.rs.client.Client;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class AppModule extends AbstractModule {
@@ -22,6 +23,7 @@ public class AppModule extends AbstractModule {
     @Singleton
     public Gson provideGson() {
         return new GsonBuilder()
+                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                 .create();
     }

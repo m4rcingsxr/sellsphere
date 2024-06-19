@@ -3,10 +3,11 @@ package com.sellsphere.admin.transaction;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Currency;
 import com.sellsphere.common.entity.PaymentIntent;
-import com.sellsphere.common.entity.Refund;
 import com.sellsphere.common.entity.TransactionNotFoundException;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.StripeException;
+import com.stripe.model.BalanceTransaction;
+import com.stripe.model.Refund;
 import com.stripe.param.RefundCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,37 +27,46 @@ public class TransactionService {
     private final StripeCheckoutService stripeCheckoutService;
     private final RefundRepository refundRepository;
     private final PaymentIntentRepository paymentIntentRepository;
+    private final BalanceTransactionRepository balanceTransactionRepository;
 
 
     public void listEntities(PagingAndSortingHelper helper, Integer pageNum) {
         helper.listEntities(pageNum, TRANSACTION_PER_PAGE, transactionRepository);
     }
 
-    public Refund createRefund(Integer paymentIntentId, BigDecimal amount, String reason)
+    public String createRefund(Integer paymentIntentId, BigDecimal amount, String reason)
             throws TransactionNotFoundException, StripeException {
         PaymentIntent paymentIntent = transactionRepository
                 .findById(paymentIntentId)
                 .orElseThrow(TransactionNotFoundException::new);
 
 
-        com.stripe.model.Refund stripeRefund = stripeCheckoutService.createRefund(
-                paymentIntent.getStripeId(), amount.multiply(BigDecimal.valueOf(paymentIntent.getCurrency().getUnitAmount())).setScale(2, RoundingMode.CEILING).longValue(),
+        Refund stripeRefund = stripeCheckoutService.createRefund(
+                paymentIntent.getStripeId(),
+                amount.multiply(
+                        BigDecimal.valueOf(paymentIntent.getCurrency().getUnitAmount())).setScale(2,
+                                                                                                  RoundingMode.CEILING
+                ).longValue(),
                 RefundCreateParams.Reason.valueOf(reason)
         );
 
+        var intent = paymentIntentRepository
+                .findByStripeId(stripeRefund.getPaymentIntent())
+                .orElseThrow(TransactionNotFoundException::new);
 
         return refundRepository.save(
-                Refund.builder()
+                com.sellsphere.common.entity.Refund.builder()
                         .stripeId(stripeRefund.getId())
                         .created(stripeRefund.getCreated())
                         .amount(stripeRefund.getAmount())
                         .reason(stripeRefund.getReason())
                         .status(stripeRefund.getStatus())
-                        .paymentIntent(paymentIntent)
-                        .currency(paymentIntent.getCurrency())
+                        .paymentIntent(intent)
+                        .charge(intent.getCharge())
+                        .currency(intent.getCurrency())
                         .created(LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(1)))
                         .build()
-        );
+        ).getStatus();
     }
 
 

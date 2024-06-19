@@ -10,4 +10,5 @@ public interface PaymentIntentRepository extends JpaRepository<PaymentIntent, In
 
     Optional<PaymentIntent> findByCustomerAndStatus(Customer customer, String status);
 
+    Optional<PaymentIntent> findByStripeId(String stripeId);
 }

@@ -1,21 +1,16 @@
 package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @AllArgsConstructor
 @RequiredArgsConstructor
+@Builder
 @Getter
 @Setter
 @Entity
 @Table(name = "cards")
 public class Card extends IdentifiedEntity {
-
-    @Column(name = "stripe_id")
-    private String stripeId;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
@@ -28,10 +23,10 @@ public class Card extends IdentifiedEntity {
     private String country;
 
     @Column(name = "exp_month")
-    private Integer expMonth;
+    private Long expMonth;
 
     @Column(name = "exp_year")
-    private Integer expYear;
+    private Long expYear;
 
     @Column(name = "funding")
     private String funding;

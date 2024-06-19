@@ -28,21 +28,18 @@
                 <th>Payment method</th>
                 <th th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'customer.email', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
                 <th>
-
                 </th>
             </tr>
             </thead>
-
             <tbody>
             <tr th:each="transaction : ${transactionList}">
                 <td th:text="${transaction.id}"></td>
                 <td th:text="${transaction.currency.symbol + transaction.displayAmount}"></td>
-                <td>
-                    <span th:if="${transaction.isPartial}">Has partial refunds</span>
-                    <span th:if="${!transaction.hasRefunds}" th:text="${transaction.status}"></span>
-                    <span th:if="${transaction.isRefunded}">Refunded</span>
+                <td th:text="${transaction.status}">
                 </td>
-                <td></td>
+                <td>
+                    <span th:if="${transaction.paymentMethod != null}" th:text="${transaction.paymentMethod.type}"></span>
+                </td>
                 <td th:text="${transaction.customer.email}"></td>
                 <td>
                     <a href="#" class="refund-request" th:data-id="${transaction.id}"><i class="fa-solid fa-rotate-left"></i></a>

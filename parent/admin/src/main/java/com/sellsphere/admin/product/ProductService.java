@@ -92,8 +92,7 @@ public class ProductService {
     @Transactional
     public Product save(Product product, MultipartFile newPrimaryImage, MultipartFile[] extraImages)
             throws IOException, SettingNotFoundException,
-            CurrencyNotFoundException, StripeException {
-        Integer productId = product.getId();
+            CurrencyNotFoundException {
         Currency defaultCurrency = settingService.getCurrentCurrency();
 
         updateProductDates(product);
@@ -102,11 +101,6 @@ public class ProductService {
         ProductHelper.addProductImages(product, extraImages);
 
         Product savedProduct = productRepository.save(product);
-
-        Setting taxBehavior = settingService.getTaxBehavior();
-
-        var stripeProduct = stripeService.saveProduct(productId, savedProduct, defaultCurrency, taxBehavior.getValue());
-        String priceId = stripeProduct.getDefaultPrice();
 
         var productBuilder = com.sellsphere.easyship.payload.shipment.Product.builder()
                 .id(product.getEasyshipId())
@@ -128,8 +122,6 @@ public class ProductService {
                 .width(product.getWidth());
 
         SaveProductResponse saveProductResponse = easyshipService.saveProduct(productBuilder.build());
-
-        savedProduct.setPriceId(priceId);
         savedProduct.setEasyshipId(saveProductResponse.getProduct().getId());
 
         ProductHelper.saveExtraImages(savedProduct, extraImages);

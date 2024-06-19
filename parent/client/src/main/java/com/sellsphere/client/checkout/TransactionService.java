@@ -20,25 +20,31 @@ public class TransactionService {
     private final PaymentIntentRepository repository;
     private final CurrencyRepository currencyRepository;
     private final StripeCheckoutService stripeService;
+    private final PaymentIntentRepository paymentIntentRepository;
 
     public Optional<PaymentIntent> findIncompleteTransaction(Customer customer) {
         return repository.findByCustomerAndStatus(customer, "requires_payment_method");
     }
 
-    public PaymentIntent savePaymentIntent(PaymentRequest request, Customer customer)
+    public String savePaymentIntent(PaymentRequest request, Customer customer)
             throws StripeException, CurrencyNotFoundException {
-        Currency currency = currencyRepository
-                .findByCode(request.getCurrencyCode())
-                .orElseThrow(CurrencyNotFoundException::new);
 
         Optional<PaymentIntent> transaction = findIncompleteTransaction(customer);
         com.stripe.model.PaymentIntent stripePaymentIntent;
 
         if(transaction.isPresent()) {
-            stripePaymentIntent = stripeService.updatePaymentIntent(
-                    transaction.get().getStripeId(),
-                    request
-            );
+            stripePaymentIntent = stripeService.updatePaymentIntent(transaction.get().getStripeId(), request);
+
+            // and save it in service
+            PaymentIntent paymentIntent = transaction.get();
+            if(!paymentIntent.getCurrency().getCode().equalsIgnoreCase(
+                    stripePaymentIntent.getCurrency())) {
+                Currency currency = currencyRepository.findByCode(stripePaymentIntent.getCurrency()).orElseThrow(CurrencyNotFoundException::new);
+                paymentIntent.setCurrency(currency);
+            }
+
+            paymentIntent.setAmount(stripePaymentIntent.getAmount());
+            paymentIntentRepository.save(paymentIntent);
         } else {
             var address = request.getCustomerDetails().getAddress();
 
@@ -63,20 +69,8 @@ public class TransactionService {
                     customer.getStripeId());
         }
 
-        PaymentIntent paymentIntent  =  repository.save(
-                PaymentIntent.builder()
-                        .applicationFeeAmount(stripePaymentIntent.getApplicationFeeAmount())
-                        .amount(stripePaymentIntent.getAmount())
-                        .created(LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(1)))
-                        .clientSecret(stripePaymentIntent.getClientSecret())
-                        .currency(currency)
-                        .status(stripePaymentIntent.getStatus()) // requires_payment_method
-                        .customer(customer)
-                        .stripeId(stripePaymentIntent.getId())
-                        .build());
-        transaction.ifPresent(intent -> paymentIntent.setId(intent.getId()));
 
-        return paymentIntent;
+        return stripePaymentIntent.getClientSecret();
     }
 
     public PaymentIntent save(PaymentIntent tr) {

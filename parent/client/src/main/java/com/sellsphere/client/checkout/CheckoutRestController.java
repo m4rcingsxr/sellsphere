@@ -79,13 +79,12 @@ public class CheckoutRestController {
     @PostMapping("/save-payment-intent")
     public ResponseEntity<Map<String, String>> createPaymentIntent(
             @RequestBody PaymentRequest request, Principal principal)
-            throws StripeException, CustomerNotFoundException, ShoppingCartNotFoundException,
-            CurrencyNotFoundException {
+            throws StripeException, CustomerNotFoundException, CurrencyNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
+        String clientSecret = transactionService.savePaymentIntent(request, customer);
 
-        PaymentIntent paymentIntent = transactionService.savePaymentIntent(request, customer);
         Map<String, String> map = new HashMap<>();
-        map.put("clientSecret", paymentIntent.getClientSecret());
+        map.put("clientSecret", clientSecret);
 
         return ResponseEntity.ok(map);
     }

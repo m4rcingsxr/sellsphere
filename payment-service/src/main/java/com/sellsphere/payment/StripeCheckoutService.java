@@ -158,6 +158,7 @@ public class StripeCheckoutService {
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setCustomer(customer)
                 .setAmount(amountTotal)
+                .setSetupFutureUsage(PaymentIntentCreateParams.SetupFutureUsage.ON_SESSION)
                 .setCurrency(currencyCode)
                 //todo: remove after implementing creating payment methods in the settings
                 .setAutomaticPaymentMethods(
@@ -176,6 +177,7 @@ public class StripeCheckoutService {
 
     public Refund createRefund(String paymentIntent, Long amount, RefundCreateParams.Reason reason)
             throws StripeException {
+
 
         RefundCreateParams params = RefundCreateParams.builder()
                 .setAmount(amount)
@@ -200,7 +202,7 @@ public class StripeCheckoutService {
         // store transaction id in payment metadata so that later you can record refunds
         PaymentIntentUpdateParams paymentParams =
                 PaymentIntentUpdateParams.builder()
-                        .putMetadata("tax_transaction", "{{TAX_TRANSACTION}}")
+                        .putMetadata("tax_transaction", transaction.getId())
                         .build();
 
         paymentIntent.update(paymentParams);

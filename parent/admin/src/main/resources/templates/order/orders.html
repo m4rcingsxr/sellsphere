@@ -54,7 +54,7 @@
                 <td><a th:href="${order.shipment.trackingPageUrl}" class="link-primary link-underline-opacity-50-hover">Tracking URL</a></td>
 
                 <td>
-                    <div class="d-flex flex-column gap-3 align-items-center">
+                    <div class="d-flex flex-column gap-2 align-items-center p-2">
                         <a th:replace="~{list_fragments :: detail_entity(|/orders/details/${order.id}|)}"></a>
                         <a th:insert="~{list_fragments :: edit_entity(|/orders/edit/${order.id}|)}"></a>
                     </div>
