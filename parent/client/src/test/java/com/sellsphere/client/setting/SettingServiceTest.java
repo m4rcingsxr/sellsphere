@@ -88,7 +88,7 @@ class SettingServiceTest {
         given(currencyRepository.findById(anyInt())).willReturn(Optional.of(currency));
 
         // when
-        String result = settingService.getCurrencyCode();
+        String result = settingService.getCurrencyCode(true);
 
         // then
         then(result).isEqualTo("USD");
@@ -103,7 +103,7 @@ class SettingServiceTest {
         given(currencyRepository.findById(anyInt())).willReturn(Optional.empty());
 
         // when/then
-        thenThrownBy(() -> settingService.getCurrencyCode())
+        thenThrownBy(() -> settingService.getCurrencyCode(true))
                 .isInstanceOf(CurrencyNotFoundException.class);
     }
 }

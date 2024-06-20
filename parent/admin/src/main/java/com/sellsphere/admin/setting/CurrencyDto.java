@@ -7,6 +7,7 @@ import lombok.Value;
 import org.apache.xmlbeans.impl.store.Cur;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * DTO for {@link com.sellsphere.common.entity.Currency}
@@ -23,7 +24,7 @@ public class CurrencyDto implements Serializable {
     @NotNull(message = "Currency code is mandatory")
     String code;
     @NotNull(message = "Unit amount cannot be null")
-    Long unitAmount;
+    BigDecimal unitAmount;
 
     public CurrencyDto(Currency other) {
         this.id = other.getId();

@@ -115,7 +115,7 @@ public class WebhookRestController {
         if (dataObjectDeserializer.getObject().isPresent()) {
             Optional<StripeObject> stripeObject = dataObjectDeserializer.getObject();
 
-            String currency = settingService.getCurrencyCode();
+            String currency = settingService.getCurrencyCode(false);
 
             final Event finalEvent = event;
             taskExecutor.submit(() -> {

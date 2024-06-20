@@ -48,7 +48,7 @@ public class CartItem extends IdentifiedEntity {
 
     @Transient
     public BigDecimal getSubtotal() {
-        return this.product.getDiscountPrice().multiply(BigDecimal.valueOf(quantity)).setScale(2, RoundingMode.CEILING);
+        return this.product.getDiscountPrice().multiply(BigDecimal.valueOf(quantity));
     }
 
     @Override

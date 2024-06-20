@@ -1,12 +1,10 @@
 package com.sellsphere.admin.transaction;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
-import com.sellsphere.common.entity.Currency;
 import com.sellsphere.common.entity.PaymentIntent;
 import com.sellsphere.common.entity.TransactionNotFoundException;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.StripeException;
-import com.stripe.model.BalanceTransaction;
 import com.stripe.model.Refund;
 import com.stripe.param.RefundCreateParams;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +14,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,8 +41,8 @@ public class TransactionService {
         Refund stripeRefund = stripeCheckoutService.createRefund(
                 paymentIntent.getStripeId(),
                 amount.multiply(
-                        BigDecimal.valueOf(paymentIntent.getCurrency().getUnitAmount())).setScale(2,
-                                                                                                  RoundingMode.CEILING
+                        paymentIntent.getCurrency().getUnitAmount()).setScale(2,
+                                                                              RoundingMode.CEILING
                 ).longValue(),
                 RefundCreateParams.Reason.valueOf(reason)
         );

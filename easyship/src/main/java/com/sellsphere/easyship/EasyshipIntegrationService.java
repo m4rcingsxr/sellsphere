@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
+import com.sellsphere.common.entity.payload.ShippingRateRequestDTO;
 import com.sellsphere.easyship.payload.*;
 import com.sellsphere.easyship.payload.shipment.*;
 import jakarta.ws.rs.client.Client;
@@ -30,6 +31,10 @@ import static com.sellsphere.easyship.Constants.BEARER_TOKEN;
 @Singleton
 public class EasyshipIntegrationService implements EasyshipService {
 
+    private static final String USER_AGENT_HEADER = "User-Agent";
+    private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+
     private final Client client;
     private final Gson gson;
 
@@ -37,86 +42,6 @@ public class EasyshipIntegrationService implements EasyshipService {
     public EasyshipIntegrationService(Client client, Gson gson) {
         this.client = client;
         this.gson = gson;
-    }
-
-    /**
-     * Retrieves shipping rates from Easyship API.
-     *
-     * @param pageNum          The page number for pagination.
-     * @param recipient        The recipient address details.
-     * @param cart             The list of cart items.
-     * @param baseCurrencyCode The base currency code.
-     * @return The Easyship rate response.
-     */
-    @Override
-    public ShippingRatesResponse getShippingRates(Integer pageNum, Address recipient,
-                                                  List<CartItem> cart, String baseCurrencyCode) {
-        String outputCurrency = recipient.getCurrencyCode() == null ? baseCurrencyCode :
-                recipient.getCurrencyCode();
-
-        WebTarget target = client.target(BASE_URL).path("/rates").queryParam("page",
-                                                                             pageNum
-        ).queryParam("sortBy", "cost_rank");
-
-        ShippingRatesRequest rateRequest = ShippingRatesRequest.builder()
-                .courierSelection(ShippingRatesRequest.CourierSelection.builder()
-                                          .applyShippingRules(true)
-                                          .showCourierLogoUrl(true)
-                                          .build())
-                .destinationAddress(Address.builder()
-                                            .countryAlpha2(recipient.getCountryAlpha2())
-                                            .city(recipient.getCity())
-                                            .postalCode(recipient.getPostalCode())
-                                            .line1(recipient.getLine1())
-                                            .line2(recipient.getLine2())
-                                            .state(recipient.getState())
-                                            .build())
-                .originAddress(Address.builder()
-                                       .countryAlpha2("BE")
-                                       .city("Antwerp")
-                                       .postalCode("1000")
-                                       .build())
-                .incoterms("DDU")
-                .insurance(ShippingRatesRequest.Insurance.builder()
-                                   .isInsured(false)
-                                   .build())
-                .parcels(cart.stream().map(cartItem -> ShippingRatesRequest.Parcel.builder()
-                        .items(List.of(ShippingRatesRequest.Item.builder()
-                                               .quantity(cartItem.getQuantity())
-                                               .actualWeight(
-                                                       cartItem.getProduct().getWeight().doubleValue())
-                                               .declaredCurrency("EUR")
-                                               .declaredCustomsValue(
-                                                       cartItem.getProduct().getPrice().doubleValue())
-                                               .dimensions(
-                                                       ShippingRatesRequest.Item.Dimensions.builder()
-                                                               .length(cartItem.getProduct().getLength().doubleValue())
-                                                               .width(cartItem.getProduct().getWidth().doubleValue())
-                                                               .height(cartItem.getProduct().getHeight().doubleValue())
-                                                               .build())
-                                               .hsCode(1)
-                                               .build()))
-                        .build()).toList())
-                .shippingSettings(ShippingRatesRequest.ShippingSettings.builder()
-                                          .units(ShippingRatesRequest.Units.builder()
-                                                         .dimensions(Constants.UNIT_OF_LENGTH)
-                                                         .weight(Constants.UNIT_OF_WEIGHT)
-                                                         .build())
-                                          .outputCurrency(outputCurrency)
-                                          .build())
-                .build();
-
-        String payload = gson.toJson(rateRequest);
-
-        Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON)
-                .header("Authorization", BEARER_TOKEN)
-                .header("User-Agent", "Mozilla/5.0")
-                .header("Accept-Language", "en-US,en;q=0.5");
-
-        try (Response response = invocationBuilder.post(
-                Entity.entity(payload, MediaType.APPLICATION_JSON))) {
-            return processShippingRatesResponse(response);
-        }
     }
 
     private ShippingRatesResponse processShippingRatesResponse(Response response) {
@@ -132,6 +57,124 @@ public class EasyshipIntegrationService implements EasyshipService {
     }
 
     /**
+     * Retrieves shipping rates from Easyship API.
+     *
+     * @param pageNum The page number for pagination.
+     * @param cart    The list of cart items.
+     * @return The Easyship rate response.
+     */
+    @Override
+    public ShippingRatesResponse getShippingRates(Integer pageNum,
+                                                  ShippingRateRequestDTO requestDTO,
+                                                  List<CartItem> cart) {
+        WebTarget target = client.target(BASE_URL)
+                .path("/rates")
+                .queryParam("page", pageNum)
+                .queryParam("sortBy", "cost_rank");
+
+        var ratesRequestBuilder = ShippingRatesRequest.builder();
+
+        ratesRequestBuilder
+                .incoterms("DDU")
+                .insurance(ShippingRatesRequest.Insurance.builder()
+                                   .isInsured(false)
+                                   .build());
+
+        setCourierOptions(ratesRequestBuilder);
+        setDestinationAddress(ratesRequestBuilder, requestDTO);
+        setOriginAddress(ratesRequestBuilder);
+        setShippingSettings(ratesRequestBuilder, requestDTO.getCurrencyCode());
+        addParcels(ratesRequestBuilder, cart, requestDTO.getCurrencyCode());
+
+        String payload = gson.toJson(ratesRequestBuilder.build());
+
+        Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON)
+                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                .header(USER_AGENT_HEADER, "Mozilla/5.0")
+                .header(ACCEPT_LANGUAGE_HEADER, "en-US,en;q=0.5");
+
+        try (Response response = invocationBuilder.post(
+                Entity.entity(payload, MediaType.APPLICATION_JSON))) {
+            return processShippingRatesResponse(response);
+        }
+    }
+
+    private void setShippingSettings(
+            ShippingRatesRequest.ShippingRatesRequestBuilder ratesRequestBuilder, String currencyCode) {
+        ratesRequestBuilder.shippingSettings(ShippingRatesRequest.ShippingSettings.builder()
+                                                     .units(ShippingRatesRequest.Units.builder()
+                                                                    .dimensions(
+                                                                            Constants.UNIT_OF_LENGTH)
+                                                                    .weight(Constants.UNIT_OF_WEIGHT)
+                                                                    .build())
+                                                     .outputCurrency(currencyCode)
+                                                     .build());
+    }
+
+    // dummy version - use boxes to determine how to create the parcels!
+    private void addParcels(ShippingRatesRequest.ShippingRatesRequestBuilder ratesRequestBuilder,
+                            List<CartItem> cart, String currencyCode) {
+        // todo:
+        // fetch boxes
+        // build boxes based on the cart items
+        // if i provide the boxes then dimension on items are optional
+
+        // simplified version:
+        ratesRequestBuilder.parcels(
+                cart.stream().map(cartItem -> ShippingRatesRequest.Parcel.builder()
+                        .items(List.of(ShippingRatesRequest.Item.builder()
+                                               .quantity(cartItem.getQuantity())
+                                               .actualWeight(
+                                                       cartItem.getProduct().getWeight().doubleValue())
+                                               .declaredCurrency(currencyCode)
+                                               .declaredCustomsValue(
+                                                       cartItem.getProduct().getPrice().doubleValue())
+                                               .dimensions(
+                                                       ShippingRatesRequest.Item.Dimensions.builder()
+                                                               .length(cartItem.getProduct().getLength().doubleValue())
+                                                               .width(cartItem.getProduct().getWidth().doubleValue())
+                                                               .height(cartItem.getProduct().getHeight().doubleValue())
+                                                               .build())
+                                               .hsCode(Integer.parseInt(
+                                                       cartItem.getProduct().getHsCode()))
+                                               .build()))
+                        .build()).toList());
+    }
+
+    private void setOriginAddress(
+            ShippingRatesRequest.ShippingRatesRequestBuilder ratesRequestBuilder) {
+        ratesRequestBuilder.originAddress(Address.builder()
+                                                  .countryAlpha2("BE")
+                                                  .city("Antwerp")
+                                                  .postalCode("1000")
+                                                  .build());
+    }
+
+    private void setDestinationAddress(
+            ShippingRatesRequest.ShippingRatesRequestBuilder ratesRequestBuilder,
+            ShippingRateRequestDTO requestDTO) {
+        ratesRequestBuilder.destinationAddress(Address.builder()
+                                                       .city(requestDTO.getAddress().getCity())
+                                                       .state(requestDTO.getAddress().getState())
+                                                       .line1(requestDTO.getAddress().getAddressLine1())
+                                                       .line2(requestDTO.getAddress().getAddressLine2())
+                                                       .postalCode(requestDTO.getAddress().getPostalCode())
+                                                       .contactName(requestDTO.getAddress().getFullName())
+                                                       .contactPhone(requestDTO.getAddress().getPhoneNumber())
+                                                       .countryAlpha2(requestDTO.getAddress().getCountryCode())
+                                                       .build());
+    }
+
+    private void setCourierOptions(
+            ShippingRatesRequest.ShippingRatesRequestBuilder ratesRequestBuilder) {
+        ratesRequestBuilder.courierSelection(ShippingRatesRequest.CourierSelection.builder()
+                                                     .applyShippingRules(true)
+                                                     .showCourierLogoUrl(true)
+                                                     .build());
+    }
+
+
+    /**
      * Retrieves the account information from Easyship API.
      *
      * @return The account information as a JSON string.
@@ -141,9 +184,9 @@ public class EasyshipIntegrationService implements EasyshipService {
         WebTarget target = client.target(BASE_URL).path("/account");
 
         Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON)
-                .header("Authorization", BEARER_TOKEN)
-                .header("User-Agent", "Mozilla/5.0")
-                .header("Accept-Language", "en-US,en;q=0.5");
+                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                .header(USER_AGENT_HEADER, "Mozilla/5.0")
+                .header(ACCEPT_LANGUAGE_HEADER, "en-US,en;q=0.5");
 
         try (Response response = invocationBuilder.get()) {
             return processStringResponse(response);
@@ -169,9 +212,9 @@ public class EasyshipIntegrationService implements EasyshipService {
                     .queryParam("perPage", "10");
 
             Invocation.Builder getInvocation = getTarget.request(MediaType.APPLICATION_JSON)
-                    .header("Authorization", BEARER_TOKEN)
-                    .header("User-Agent", "Mozilla/5.0")
-                    .header("Accept-Language", "en-US,en;q=0.5");
+                    .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                    .header(USER_AGENT_HEADER, "Mozilla/5.0")
+                    .header(ACCEPT_LANGUAGE_HEADER, "en-US,en;q=0.5");
 
             try (Response getResponse = getInvocation.get()) {
                 AddressResponse addressResponse = processAddressResponse(getResponse);
@@ -182,8 +225,8 @@ public class EasyshipIntegrationService implements EasyshipService {
                                 "/addresses/" + address.getId());
                         Invocation.Builder deleteInvocation = deleteTarget.request(
                                         MediaType.APPLICATION_JSON)
-                                .header("Authorization", BEARER_TOKEN)
-                                .header("User-Agent", "Mozilla/5.0")
+                                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                                .header(USER_AGENT_HEADER, "Mozilla/5.0")
                                 .header("Accept-Language", "en-US,en;q=0.5");
 
                         try (Response deleteResponse = deleteInvocation.delete()) {
@@ -202,8 +245,8 @@ public class EasyshipIntegrationService implements EasyshipService {
 
         WebTarget postTarget = client.target(BASE_URL).path("/addresses");
         Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
-                .header("Authorization", BEARER_TOKEN)
-                .header("User-Agent", "Mozilla/5.0")
+                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                .header(USER_AGENT_HEADER, "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
         String payload = gson.toJson(addressDto);
@@ -236,8 +279,8 @@ public class EasyshipIntegrationService implements EasyshipService {
         WebTarget postTarget = client.target(BASE_URL).path("/shipments");
 
         Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
-                .header("Authorization", BEARER_TOKEN)
-                .header("User-Agent", "Mozilla/5.0")
+                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                .header(USER_AGENT_HEADER, "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
         String payload = gson.toJson(request);
@@ -275,8 +318,8 @@ public class EasyshipIntegrationService implements EasyshipService {
         }
 
         Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
-                .header("Authorization", BEARER_TOKEN)
-                .header("User-Agent", "Mozilla/5.0")
+                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                .header(USER_AGENT_HEADER, "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
         String payload = gson.toJson(product);
@@ -344,8 +387,8 @@ public class EasyshipIntegrationService implements EasyshipService {
                 String.valueOf(productId));
 
         Invocation.Builder deleteInvocation = target.request(MediaType.APPLICATION_JSON)
-                .header("Authorization", BEARER_TOKEN)
-                .header("User-Agent", "Mozilla/5.0")
+                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                .header(USER_AGENT_HEADER, "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
         try (Response postResponse = deleteInvocation.delete()) {
@@ -363,8 +406,8 @@ public class EasyshipIntegrationService implements EasyshipService {
 
 
         Invocation.Builder getInvocation = target.request(MediaType.APPLICATION_JSON)
-                .header("Authorization", BEARER_TOKEN)
-                .header("User-Agent", "Mozilla/5.0")
+                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
+                .header(USER_AGENT_HEADER, "Mozilla/5.0")
                 .header("Accept-Language", "en-US,en;q=0.5");
 
         try (Response postResponse = getInvocation.get()) {

@@ -60,4 +60,7 @@
         card, balance_transaction, metadata_entry
     -->
     <include file="db/changelog/19-06-24-changelog.xml"/>
+
+    <!-- Change type of unit amount in currency table to decimal   -->
+    <include file="db/changelog/20-06-changelog.xml"/>
 </databaseChangeLog>

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -53,7 +54,7 @@ public class Currency extends IdentifiedEntity {
 
     @Column(name = "unit_amount", nullable = false)
     @NotNull(message = "Unit amount cannot be null")
-    private Long unitAmount;
+    private BigDecimal unitAmount;
 
     @OneToMany(mappedBy = "currency")
     @OrderBy("name asc")

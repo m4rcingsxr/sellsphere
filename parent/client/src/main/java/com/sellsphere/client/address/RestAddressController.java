@@ -19,7 +19,6 @@ public class RestAddressController {
     private final CustomerService customerService;
     private final AddressValidationService validationService;
 
-    // assumption: provided addresses already validated
     @GetMapping
     public ResponseEntity<List<AddressDTO>> getAddresses(Principal principal)
             throws CustomerNotFoundException {
@@ -40,10 +39,6 @@ public class RestAddressController {
                                              .addressLine1(address.getAddressLine1())
                                              .addressLine2(address.getAddressLine2())
                                              .postalCode(address.getPostalCode())
-                                             .currencyUnitAmount(
-                                                     address.getCountry().getCurrency().getUnitAmount())
-                                             .currencySymbol(
-                                                     address.getCountry().getCurrency().getSymbol())
                                              .build()
                         )
                         .toList()

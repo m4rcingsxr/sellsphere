@@ -1,6 +1,5 @@
-package com.sellsphere.payment.payload;
+package com.sellsphere.common.entity.payload;
 
-import com.stripe.model.Address;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,10 +11,10 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CalculationRequest {
+public class CalculationRequestDTO {
 
     // required
-    private Address address;
+    private AddressDTO address;
 
     // required
     private BigDecimal shippingCost;
@@ -23,10 +22,7 @@ public class CalculationRequest {
     // required
     private String currencyCode;
 
-    // required on different code that base
+    // nullable
     private BigDecimal exchangeRate;
-
-    private String fullName;
-    private String phoneNumber;
 
 }

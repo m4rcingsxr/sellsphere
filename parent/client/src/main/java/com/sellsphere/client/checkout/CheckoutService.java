@@ -1,22 +1,20 @@
 package com.sellsphere.client.checkout;
 
+import com.sellsphere.client.PriceService;
 import com.sellsphere.client.setting.CountryRepository;
 import com.sellsphere.client.setting.CurrencyRepository;
 import com.sellsphere.client.setting.SettingRepository;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.ShoppingCartService;
 import com.sellsphere.common.entity.*;
-import com.sellsphere.common.entity.payload.BasicProductDTO;
-import com.sellsphere.common.entity.payload.CartItemDTO;
-import com.sellsphere.payment.CheckoutUtil;
+import com.sellsphere.common.entity.payload.*;
 import com.sellsphere.payment.Constants;
 import com.sellsphere.payment.StripeCheckoutService;
-import com.sellsphere.payment.payload.CalculationRequest;
-import com.sellsphere.payment.payload.CalculationResponse;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.tax.Calculation;
+import com.stripe.param.tax.CalculationCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +29,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CheckoutService {
 
+    private static final String SHIPPING_TAX_CODE = "txcd_92010001";
     private final StripeCheckoutService stripeService;
     private final ShoppingCartService cartService;
     private final SettingService settingService;
     private final CurrencyRepository currencyRepository;
     private final SettingRepository settingRepository;
     private final CountryRepository countryRepository;
+    private final PriceService priceService;
 
     /**
      * Calculates the total cost with address-specific details, using a specified exchange rate
@@ -48,118 +48,153 @@ public class CheckoutService {
      * @throws CurrencyNotFoundException if the specified currency is not found.
      * @throws StripeException           if there is an error with Stripe operations.
      */
-    public CalculationResponse calculateWithAddress(CalculationRequest request, Customer customer)
-            throws CurrencyNotFoundException, StripeException {
+    public CalculationResponseDTO calculate(CalculationRequestDTO request, Customer customer)
+            throws CurrencyNotFoundException, StripeException, SettingNotFoundException {
+        String baseCurrency = settingService.getCurrencyCode(false);
+        String taxBehavior = settingService.getTaxBehavior().getValue();
+
         List<CartItem> cart = cartService.findAllByCustomer(customer);
 
-        String baseCurrency = settingService.getCurrencyCode();
-
+        String targetCurrency;
         if (request.getCurrencyCode() == null) {
-            request.setCurrencyCode(baseCurrency);
+            targetCurrency = baseCurrency;
+        } else {
+            targetCurrency = request.getCurrencyCode().toLowerCase();
         }
 
-        Currency targetCurrency = currencyRepository
-                .findByCode(request.getCurrencyCode())
-                .orElseThrow(CurrencyNotFoundException::new);
-        Currency base = currencyRepository.findByCode(baseCurrency)
-                .orElseThrow(CurrencyNotFoundException::new);
-        Calculation calculation = stripeService.calculate(request, cart, base, targetCurrency);
-        // drut:
-        calculation.getCustomerDetails().getAddress().setPostalCode(request.getAddress().getPostalCode());
+        var params = CalculationCreateParams.builder();
+        params.setCurrency(targetCurrency);
 
-        var responseBuilder = CalculationResponse.builder();
+        setLineItems(params, cart, baseCurrency, targetCurrency, request.getExchangeRate(),
+                     taxBehavior
+        );
+        setShippingCost(params, baseCurrency, targetCurrency,
+                        request.getShippingCost(),
+                        request.getExchangeRate(),
+                        taxBehavior
+        );
+        setCustomerDetails(params, request.getAddress());
+
+        Calculation calculation = stripeService.calculate(params.build());
+
+
+        return prepareTaxCalculationResponse(calculation,
+                                             cart,
+                                             targetCurrency,
+                                             request.getAddress(),
+                                             request.getExchangeRate()
+        );
+    }
+
+    private CalculationResponseDTO prepareTaxCalculationResponse(Calculation calculation, List<CartItem> cart, String targetCurrency, AddressDTO address, BigDecimal exchangeRate)
+            throws CurrencyNotFoundException {
+        var responseBuilder = CalculationResponseDTO.builder();
+
+
+
+        Currency target = currencyRepository.findByCode(targetCurrency)
+                .orElseThrow(CurrencyNotFoundException::new);
 
         responseBuilder
                 .id(calculation.getId())
                 .amountTotal(calculation.getAmountTotal())
                 .taxAmountInclusive(calculation.getTaxAmountInclusive())
-                .shippingCost(calculation.getShippingCost())
-                .customerDetails(calculation.getCustomerDetails())
-                .currencyCode(targetCurrency.getCode())
-                .unitAmount(targetCurrency.getUnitAmount())
-                .email(customer.getEmail())
-                .phoneNumber(request.getPhoneNumber())
-                .fullName(request.getFullName())
-                .currencySymbol(targetCurrency.getSymbol());
+                .displayAmount(priceService.convertToDisplayAmount(calculation.getAmountTotal(), calculation.getCurrency()))
+                .displayTax(priceService.convertToDisplayAmount(calculation.getTaxAmountInclusive(), calculation.getCurrency()))
+                .shippingCost(CalculationResponseDTO.ShippingCostDTO.builder()
+                                      .amount(calculation.getShippingCost().getAmount())
+                                      .amountTax(calculation.getShippingCost().getAmountTax())
+                                      .build())
+                .address(address)
+                .currencyCode(calculation.getCurrency())
+                .unitAmount(target.getUnitAmount())
+                .currencySymbol(target.getSymbol());
 
-        responseBuilder.cart(cart.stream().map(item -> this.buildCartItem(
-                request,
-                item,
-                base,
-                targetCurrency
-        )).toList());
+
+        responseBuilder.cart(
+                cart.stream().map(item -> CartItemDTO.builder()
+                        .quantity(item.getQuantity())
+                        .product(BasicProductDTO.builder()
+                                         .discountPrice(item.getProduct().getDiscountPrice())
+                                         .price(item.getProduct().getPrice())
+                                         .discountPercent(item.getProduct().getDiscountPercent())
+                                         .mainImagePath(item.getProduct().getMainImagePath())
+                                         .name(item.getProduct().getName())
+                                         .inStock(item.getProduct().isInStock())
+                                         .alias(item.getProduct().getAlias())
+                                         .build())
+                        .build()).toList()
+        );
+
+        if(exchangeRate != null) {
+            BigDecimal finalExchangeRate = priceService.setConversionFee(exchangeRate);
+            responseBuilder.exchangeRate(finalExchangeRate);
+        }
 
         return responseBuilder.build();
     }
 
-    /**
-     * Builds a cart item DTO with currency conversion if necessary.
-     *
-     * @param request        The calculation request containing exchange rate details.
-     * @param cartItem       The cart item entity.
-     * @param baseCurrency   The base currency entity.
-     * @param targetCurrency The target currency entity.
-     * @return The cart item DTO.
-     */
-    public CartItemDTO buildCartItem(CalculationRequest request, CartItem cartItem,
-                                     Currency baseCurrency, Currency targetCurrency) {
-        BigDecimal providedExchangeRate = request.getExchangeRate();
-        BigDecimal exchangeRate = providedExchangeRate != null ?
-                providedExchangeRate.multiply(
-                        BigDecimal.ONE.add(Constants.CONVERT_CURRENCY_FEE)) : null;
+    private void setCustomerDetails(CalculationCreateParams.Builder params, AddressDTO address) {
+        params.setCustomerDetails(
+                CalculationCreateParams.CustomerDetails.builder()
+                        .setAddress(
+                                CalculationCreateParams.CustomerDetails.Address.builder()
+                                        .setCountry(address.getCountryCode())
+                                        .setCity(address.getCity())
+                                        .setLine1(address.getAddressLine1())
+                                        .setLine2(address.getAddressLine2())
+                                        .setPostalCode(address.getPostalCode())
+                                        .build()
+                        )
+                        .setAddressSource(
+                                CalculationCreateParams.CustomerDetails.AddressSource.SHIPPING)
+                        .build()
+        );
+    }
 
-        if (baseCurrency.getCode().equals(targetCurrency.getCode())) {
-            return new CartItemDTO(cartItem);
-        } else {
+    private void setShippingCost(CalculationCreateParams.Builder params, String base,
+                                 String target, BigDecimal shippingCost,
+                                 BigDecimal exchangeRate, String taxBehavior)
+            throws CurrencyNotFoundException {
+        long amount = priceService.convertAmount(shippingCost, base, target, exchangeRate);
 
-            BigDecimal convertedPrice = CheckoutUtil.convertAndRoundPrice(
-                    cartItem.getProduct().getDiscountPrice(), exchangeRate,
-                    targetCurrency.getUnitAmount()
-            );
+        params.setShippingCost(
+                CalculationCreateParams.ShippingCost.builder()
+                        .setTaxCode(SHIPPING_TAX_CODE)
+                        .setTaxBehavior(CalculationCreateParams.ShippingCost.TaxBehavior.valueOf(
+                                taxBehavior))
+                        .setAmount(amount)
+                        .build()
+        );
 
-            BigDecimal subtotal = CheckoutUtil.convertAndRoundPrice(
-                    cartItem.getSubtotal(), exchangeRate, targetCurrency.getUnitAmount());
+    }
 
-            return CartItemDTO.builder()
-                    .quantity(cartItem.getQuantity())
-                    .subtotal(subtotal)
-                    .product(BasicProductDTO.builder()
-                                     .alias(cartItem.getProduct().getAlias())
-                                     .brandName(cartItem.getProduct().getBrand().getName())
-                                     .categoryName(cartItem.getProduct().getCategory().getName())
-                                     .name(cartItem.getProduct().getName())
-                                     .discountPrice(convertedPrice)
-                                     .inStock(cartItem.getProduct().isInStock())
-                                     .mainImagePath(cartItem.getProduct().getMainImagePath())
-                                     .discountPercent(cartItem.getProduct().getDiscountPercent())
-                                     .build())
-                    .build();
+    private void setLineItems(
+            CalculationCreateParams.Builder calculationBuilder,
+            List<CartItem> cart,
+            String base,
+            String target,
+            BigDecimal exchangeRate,
+            String taxBehavior
+    ) throws CurrencyNotFoundException {
+
+        for (CartItem cartItem : cart) {
+            var lineItemBuilder = CalculationCreateParams.LineItem.builder();
+
+            lineItemBuilder
+                    .setTaxBehavior(
+                            CalculationCreateParams.LineItem.TaxBehavior.valueOf(
+                                    taxBehavior))
+                    .setReference(String.valueOf(cartItem.getProduct().getId()))
+                    .setTaxCode(cartItem.getProduct().getTax().getId());
+
+            BigDecimal itemSubtotal = cartItem.getSubtotal();
+            long amount = priceService.convertAmount(itemSubtotal, base, target, exchangeRate);
+
+            calculationBuilder.addLineItem(lineItemBuilder.setAmount(amount).build());
         }
     }
 
-    /**
-     * Calculates the total cost in base currency without considering products.
-     *
-     * @param customer The customer entity.
-     * @return The calculation response containing total amounts.
-     * @throws CurrencyNotFoundException if the specified currency is not found.
-     */
-    public CalculationResponse calculateTotal(Customer customer) throws CurrencyNotFoundException {
-        List<CartItem> cart = cartService.findAllByCustomer(customer);
-
-        String baseCurrencyCode = settingService.getCurrencyCode();
-        Currency currency = currencyRepository.findByCode(baseCurrencyCode)
-                .orElseThrow(CurrencyNotFoundException::new);
-
-        return CalculationResponse.builder()
-                .amountTotal(stripeService.getAmountTotal(cart, currency))
-                .currencyCode(currency.getCode())
-                .unitAmount(currency.getUnitAmount())
-                .currencySymbol(currency.getSymbol())
-                .cart(cart.stream().map(CartItemDTO::new).toList())
-                .email(customer.getEmail())
-                .build();
-    }
 
     /**
      * Creates a checkout session for the authenticated customer.
@@ -186,3 +221,4 @@ public class CheckoutService {
         return stripeService.createCustomerSession(customer.getStripeId());
     }
 }
+

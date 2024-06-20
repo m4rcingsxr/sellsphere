@@ -3,10 +3,8 @@ package com.sellsphere.payment;
 import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Currency;
-import com.sellsphere.payment.payload.CalculationRequest;
-import com.sellsphere.payment.payload.PaymentRequest;
+import com.sellsphere.common.entity.payload.PaymentRequestDTO;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Address;
 import com.stripe.model.CustomerSession;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
@@ -175,6 +173,12 @@ public class StripeCheckoutService {
         return PaymentIntent.create(params);
     }
 
+    public PaymentIntent createPaymentIntent(PaymentIntentCreateParams params)
+            throws StripeException {
+
+        return PaymentIntent.create(params);
+    }
+
     public Refund createRefund(String paymentIntent, Long amount, RefundCreateParams.Reason reason)
             throws StripeException {
 
@@ -210,169 +214,11 @@ public class StripeCheckoutService {
     }
 
 
-
-    /**
-     * Calculates the total price for the checkout process.
-     *
-     * @param request          The calculation request containing address, shipping cost, etc.
-     * @param cart             List of cart items.
-     * @param baseCurrencyCode Base currency code.
-     * @param targetCurrency   Target currency.
-     * @return Calculation - The calculation result.
-     * @throws StripeException If an error occurs during calculation.
-     */
-    public Calculation calculate(CalculationRequest request, List<CartItem> cart,
-                                 Currency baseCurrencyCode, Currency targetCurrency)
+    public Calculation calculate(CalculationCreateParams params)
             throws StripeException {
-        var params = CalculationCreateParams.builder();
-        Address address = request.getAddress();
-        BigDecimal providedExchangeRate = request.getExchangeRate();
-        BigDecimal shippingCost = request.getShippingCost();
-        BigDecimal exchangeRate = providedExchangeRate != null ?
-                providedExchangeRate.multiply(
-                        BigDecimal.ONE.add(Constants.CONVERT_CURRENCY_FEE)) : null;
-
-
-        addCartItemsToCalculationParams(cart, params, baseCurrencyCode.getCode(), targetCurrency,
-                                        exchangeRate
-        );
-        addShippingCostToCalculationParams(params, shippingCost, baseCurrencyCode.getCode(),
-                                           targetCurrency, exchangeRate
-        );
-        addCustomerDetailsToCalculationParams(params, address);
-
-        return Calculation.create(params.build());
+        return Calculation.create(params);
     }
 
-    /**
-     * Adds the cart items to the calculation parameters.
-     *
-     * @param cart             List of cart items.
-     * @param params           Calculation parameters builder.
-     * @param baseCurrencyCode Base currency code.
-     * @param targetCurrency   Target currency.
-     * @param exchangeRate     Exchange rate.
-     */
-    private void addCartItemsToCalculationParams(List<CartItem> cart,
-                                                 CalculationCreateParams.Builder params,
-                                                 String baseCurrencyCode, Currency targetCurrency,
-                                                 BigDecimal exchangeRate) {
-        for (CartItem cartItem : cart) {
-            long amount = baseCurrencyCode.equals(targetCurrency.getCode()) ?
-                    CheckoutUtil.roundAmount(cartItem.getProduct().getDiscountPrice(),
-                                             targetCurrency.getUnitAmount()
-                    ) :
-                    CheckoutUtil.roundAmount(
-                            cartItem.getProduct().getDiscountPrice().multiply(exchangeRate),
-                            targetCurrency.getUnitAmount()
-                    );
-
-            params.setCurrency(targetCurrency.getCode())
-                    .addLineItem(
-                            CalculationCreateParams.LineItem.builder()
-                                    .setAmount(amount)
-                                    .setTaxBehavior(
-                                            CalculationCreateParams.LineItem.TaxBehavior.INCLUSIVE)
-                                    .setReference(String.valueOf(cartItem.getProduct().getId()))
-                                    .setTaxCode(cartItem.getProduct().getTax().getId())
-                                    .build()
-                    ).build();
-        }
-    }
-
-    /**
-     * Adds the shipping cost to the calculation parameters.
-     *
-     * @param params           Calculation parameters builder.
-     * @param shippingCost     Shipping cost.
-     * @param baseCurrencyCode Base currency code.
-     * @param targetCurrency   Target currency.
-     * @param exchangeRate     Exchange rate.
-     */
-    private void addShippingCostToCalculationParams(CalculationCreateParams.Builder params,
-                                                    BigDecimal shippingCost,
-                                                    String baseCurrencyCode,
-                                                    Currency targetCurrency,
-                                                    BigDecimal exchangeRate) {
-        long shippingAmount = baseCurrencyCode.equals(targetCurrency.getCode()) ?
-                CheckoutUtil.roundAmount(shippingCost, targetCurrency.getUnitAmount()) :
-                CheckoutUtil.roundAmount(shippingCost.multiply(exchangeRate),
-                                         targetCurrency.getUnitAmount()
-                );
-
-        params.setShippingCost(
-                CalculationCreateParams.ShippingCost.builder()
-                        .setTaxCode("txcd_92010001") // shipping tax code
-                        .setTaxBehavior(CalculationCreateParams.ShippingCost.TaxBehavior.INCLUSIVE)
-                        .setAmount(shippingAmount)
-                        .build()
-        );
-    }
-
-    /**
-     * Adds the customer details to the calculation parameters.
-     *
-     * @param params  Calculation parameters builder.
-     * @param address Shipping address.
-     */
-    private void addCustomerDetailsToCalculationParams(CalculationCreateParams.Builder params,
-                                                       Address address) {
-        params.setCustomerDetails(
-                CalculationCreateParams.CustomerDetails.builder()
-                        .setAddress(
-                                CalculationCreateParams.CustomerDetails.Address.builder()
-                                        .setCountry(address.getCountry())
-                                        .setCity(address.getCity())
-                                        .setLine1(address.getLine1())
-                                        .setLine2(address.getLine2())
-                                        .setPostalCode(address.getPostalCode())
-                                        .build()
-                        )
-                        .setAddressSource(
-                                CalculationCreateParams.CustomerDetails.AddressSource.SHIPPING)
-                        .build()
-        );
-    }
-
-    /**
-     * Calculates the total amount for the cart.
-     *
-     * @param cart     List of cart items.
-     * @param currency Currency object.
-     * @return The total amount.
-     */
-    public long getAmountTotal(List<CartItem> cart, Currency currency) {
-        long total = 0;
-        for (CartItem cartItem : cart) {
-            total += CalculationCreateParams.LineItem.builder()
-                    .setAmount(
-                            cartItem.getProduct()
-                                    .getDiscountPrice()
-                                    .multiply(BigDecimal.valueOf(currency.getUnitAmount()))
-                                    .longValue()
-                    )
-                    .setTaxCode(cartItem.getProduct().getTax().getId())
-                    .build().getAmount();
-        }
-
-        return total;
-    }
-
-    public PaymentIntent retrievePaymentIntent(String paymentIntentId) throws StripeException {
-        return PaymentIntent.retrieve(paymentIntentId);
-    }
-
-    public PaymentIntent updatePaymentIntent(String intentId, PaymentRequest request)
-            throws StripeException {
-        PaymentIntent paymentIntent = PaymentIntent.retrieve(intentId);
-
-        return paymentIntent.update(
-                PaymentIntentUpdateParams.builder()
-                        .setAmount(request.getAmountTotal())
-                        .setCurrency(request.getCurrencyCode())
-                        .build()
-        );
-    }
 
     public CustomerSession createCustomerSession(String stripeId) throws StripeException {
         CustomerSessionCreateParams csParams = CustomerSessionCreateParams.builder()
@@ -398,6 +244,39 @@ public class StripeCheckoutService {
                 .build();
 
         return CustomerSession.create(csParams);
+    }
+
+    public PaymentIntent updatePaymentIntent(String paymentIntentId, PaymentRequestDTO request
+    ) throws StripeException {
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+
+        var builder = PaymentIntentUpdateParams.builder()
+                .setAmount(request.getAmountTotal())
+                .setCurrency(request.getCurrencyCode());
+
+        if (request.getAddress() != null) {
+            builder.setShipping(
+                    PaymentIntentUpdateParams.Shipping.builder()
+                            .setPhone(request.getPhoneNumber())
+                            .setName(request.getAddress().getFullName())
+                            .setAddress(
+                                    PaymentIntentUpdateParams.Shipping.Address.builder()
+                                            .setCity(request.getAddress().getCity())
+                                            .setState(request.getAddress().getState())
+                                            .setLine1(
+                                                    request.getAddress().getAddressLine1())
+                                            .setLine2(
+                                                    request.getAddress().getAddressLine2())
+                                            .setCountry(
+                                                    request.getAddress().getCountryCode())
+                                            .setPostalCode(
+                                                    request.getAddress().getPostalCode())
+                                            .build())
+                            .build()
+            );
+        }
+
+        return paymentIntent.update(builder.build());
     }
 
 

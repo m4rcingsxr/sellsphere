@@ -2,11 +2,9 @@ package com.sellsphere.client.checkout;
 
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.common.entity.*;
-import com.sellsphere.easyship.EasyshipService;
-import com.sellsphere.easyship.payload.shipment.ShipmentResponse;
-import com.sellsphere.payment.payload.CalculationRequest;
-import com.sellsphere.payment.payload.CalculationResponse;
-import com.sellsphere.payment.payload.PaymentRequest;
+import com.sellsphere.common.entity.payload.CalculationRequestDTO;
+import com.sellsphere.common.entity.payload.PaymentRequestDTO;
+import com.sellsphere.common.entity.payload.CalculationResponseDTO;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
 import com.stripe.model.checkout.Session;
@@ -42,30 +40,14 @@ public class CheckoutRestController {
      * @throws CustomerNotFoundException if the customer is not found.
      * @throws CurrencyNotFoundException if the specified currency is not found.
      */
-    @PostMapping("/calculate-all")
-    public ResponseEntity<CalculationResponse> calculateWithAddress(
-            @RequestBody CalculationRequest request, Principal principal)
-            throws StripeException, CustomerNotFoundException, CurrencyNotFoundException {
+    @PostMapping("/calculate")
+    public ResponseEntity<CalculationResponseDTO> calculate(
+            @RequestBody CalculationRequestDTO request, Principal principal)
+            throws StripeException, CustomerNotFoundException, CurrencyNotFoundException,
+            SettingNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
 
-        CalculationResponse response = checkoutService.calculateWithAddress(request, customer);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Calculates the total cost in base currency without considering products.
-     *
-     * @param principal The authenticated user's principal.
-     * @return The calculation response containing total amounts.
-     * @throws CustomerNotFoundException if the customer is not found.
-     * @throws CurrencyNotFoundException if the specified currency is not found.
-     */
-    @PostMapping("/calculate-total")
-    public ResponseEntity<CalculationResponse> calculate(Principal principal)
-            throws CustomerNotFoundException, CurrencyNotFoundException {
-        Customer customer = getAuthenticatedCustomer(principal);
-        CalculationResponse response = checkoutService.calculateTotal(customer);
-
+        CalculationResponseDTO response = checkoutService.calculate(request, customer);
         return ResponseEntity.ok(response);
     }
 
@@ -78,10 +60,24 @@ public class CheckoutRestController {
      */
     @PostMapping("/save-payment-intent")
     public ResponseEntity<Map<String, String>> createPaymentIntent(
-            @RequestBody PaymentRequest request, Principal principal)
-            throws StripeException, CustomerNotFoundException, CurrencyNotFoundException {
+            @RequestBody PaymentRequestDTO request, Principal principal)
+            throws StripeException, CustomerNotFoundException, CurrencyNotFoundException,
+            TransactionNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
         String clientSecret = transactionService.savePaymentIntent(request, customer);
+
+        Map<String, String> map = new HashMap<>();
+        map.put("clientSecret", clientSecret);
+
+        return ResponseEntity.ok(map);
+    }
+
+    // fetch payment intent existing & modified for current state or create new (start checkout process)
+    @PostMapping("/init-payment-intent")
+    public ResponseEntity<Map<String, String>> fetchPaymentIntent(Principal principal)
+            throws CustomerNotFoundException, StripeException, CurrencyNotFoundException {
+        Customer customer = getAuthenticatedCustomer(principal);
+        String clientSecret = transactionService.initializePaymentIntent(customer);
 
         Map<String, String> map = new HashMap<>();
         map.put("clientSecret", clientSecret);

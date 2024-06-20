@@ -5,7 +5,6 @@ import com.google.inject.Injector;
 import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.easyship.AppModule;
 import com.sellsphere.payment.StripeCheckoutService;
-import com.sellsphere.payment.StripeProductService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -115,11 +114,6 @@ public class WebSecurityConfig {
     @Bean
     public StripeCheckoutService stripeCheckoutService() {
         return new StripeCheckoutService();
-    }
-
-    @Bean
-    public StripeProductService stripeProductService() {
-        return new StripeProductService();
     }
 
     @Bean

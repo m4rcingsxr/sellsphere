@@ -57,7 +57,7 @@ public class Refund extends IdentifiedEntity {
 
     @Transient
     public BigDecimal getDisplayAmount() {
-        Long unitAmount = currency.getUnitAmount();
+        long unitAmount = currency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(amount)
                 .divide(BigDecimal.valueOf(unitAmount))

@@ -54,14 +54,18 @@ public class SettingService {
      * @return the currencyconversion code
      * @throws CurrencyNotFoundException if the currencyconversion is not found
      */
-    public String getCurrencyCode() throws CurrencyNotFoundException {
+    public String getCurrencyCode(boolean upperCase) throws CurrencyNotFoundException {
+        Currency currency = getCurrency();
+
+        return upperCase ? currency.getCode().toUpperCase() : currency.getCode();
+    }
+
+    public Currency getCurrency() throws CurrencyNotFoundException {
         Setting setting = repository.findByKey("CURRENCY_ID");
         Integer currencyId = Integer.parseInt(setting.getValue());
 
-        Currency currency = currencyRepository.findById(currencyId)
+        return currencyRepository.findById(currencyId)
                 .orElseThrow(CurrencyNotFoundException::new);
-
-        return currency.getCode();
     }
 
     public List<Country> getSupportedCountries() {
@@ -76,4 +80,7 @@ public class SettingService {
     }
 
 
+    public Setting getTaxBehavior() throws SettingNotFoundException {
+        return repository.findById("TAX").orElseThrow(SettingNotFoundException::new);
+    }
 }

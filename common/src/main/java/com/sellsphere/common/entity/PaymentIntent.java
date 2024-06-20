@@ -74,7 +74,7 @@ public class PaymentIntent extends IdentifiedEntity {
 
     @Transient
     public BigDecimal getDisplayAmount() {
-        Long unitAmount = currency.getUnitAmount();
+        long unitAmount = currency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(unitAmount)).setScale(2,
                                                                                           RoundingMode.CEILING
@@ -83,7 +83,7 @@ public class PaymentIntent extends IdentifiedEntity {
 
     @Transient
     public BigDecimal getDisplayRefunded() {
-        Long unitAmount = currency.getUnitAmount();
+        long unitAmount = currency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(charge.getAmountRefunded())
                 .divide(BigDecimal.valueOf(unitAmount))
@@ -105,7 +105,7 @@ public class PaymentIntent extends IdentifiedEntity {
             }
         }
 
-        Long unitAmount = currency.getUnitAmount();
+        long unitAmount = currency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(finalFee)
                 .divide(BigDecimal.valueOf(unitAmount))
@@ -128,7 +128,7 @@ public class PaymentIntent extends IdentifiedEntity {
             }
         }
 
-        Long unitAmount = currency.getUnitAmount();
+        long unitAmount = currency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(finalNet)
                 .divide(BigDecimal.valueOf(unitAmount))

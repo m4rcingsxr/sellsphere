@@ -5,10 +5,8 @@ import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.setting.SettingService;
 import com.sellsphere.common.entity.*;
-import com.sellsphere.easyship.EasyshipIntegrationService;
 import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.easyship.payload.shipment.SaveProductResponse;
-import com.sellsphere.payment.StripeProductService;
 import com.stripe.exception.StripeException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -29,7 +26,6 @@ public class ProductService {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final ProductRepository productRepository;
-    private final StripeProductService stripeService;
     private final SettingService settingService;
     private final EasyshipService easyshipService;
 
@@ -167,7 +163,6 @@ public class ProductService {
         Product product = get(id);
         S3Utility.removeFolder("product-photos/" + product.getId());
 
-        stripeService.changeProductArchiveStatus(String.valueOf(id), false);
         easyshipService.deleteProduct(product.getEasyshipId());
 
         productRepository.delete(product);
@@ -186,7 +181,6 @@ public class ProductService {
                 ProductNotFoundException::new);
         product.setEnabled(status);
 
-        stripeService.changeProductArchiveStatus(String.valueOf(id), status);
         productRepository.save(product);
     }
 }

@@ -50,6 +50,6 @@ VALUES ('ORDER_CONFIRMATION_CONTENT',
         'MAIL_TEMPLATES');
 
 INSERT INTO settings (setting_key, value, category)
-VALUES ('TAX', 'INCLUSIVE', 'PAYMENT');
+VALUES ('TAX', 'inclusive', 'PAYMENT');
 INSERT INTO settings (setting_key, value, category)
 VALUES ('SUPPORTED_COUNTRY', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,17,18,19,20,21,22,23,24,25,26,27', 'PAYMENT');

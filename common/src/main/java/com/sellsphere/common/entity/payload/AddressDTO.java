@@ -41,24 +41,12 @@ public class AddressDTO implements Serializable {
     @Size(message = "City cannot exceed 45 characters", max = 45)
     private String state;
 
-    private Integer countryId;
-
-    private String countryName;
-
     private String countryCode;
-
-    private String currencySymbol;
-
-    private String currencyCode;
-
-    private Long currencyUnitAmount;
 
     @NotNull(message = "Postal code is required")
     @Size(message = "Postal code cannot exceed 10 characters", max = 10)
     @NotBlank(message = "Postal code cannot be blank")
     private String postalCode;
-
-    private boolean primary;
 
     private String fullName;
 }
