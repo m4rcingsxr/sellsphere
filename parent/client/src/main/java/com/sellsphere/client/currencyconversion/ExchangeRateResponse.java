@@ -12,7 +12,7 @@ import java.util.Map;
 public class ExchangeRateResponse {
 
     private String base;
-    private String updated;
+    private long updated;
     private Map<String, BigDecimal> result;
     private BigDecimal fee;
 

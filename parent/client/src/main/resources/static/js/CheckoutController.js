@@ -2,28 +2,28 @@ class CheckoutController {
 
     stripe = null;
     elements = null;
-    model = null;
-    view = null;
-
+    paymentEvent = null;
+    currencyUpdateInterval = null;
 
     constructor(model, view) {
         this.stripe = Stripe("pk_test_51PbnPoAx8ZpOoq6Y2e0LqnQAZamnRJ6rBeShPoZVd7up9My5tepRm9Vhowv6qGue29a8aDz4r0YT5BkN3XnqQPrR00yMU9sery");
         this.model = model;
         this.view = view;
+
         this.init();
     }
 
     /**
-     * Initializes the Stripe elements,payment and address element.
+     * Initializes the Stripe elements, payment, and address elements.
      */
     async init() {
         await this.initStripeElements();
-        await this.initializeStripePaymentElement();
+        await this.initPaymentElement();
         await this.initAddressElement();
 
         this.initAddressElementListener();
-
-        $("#address-btn, #continue-to-payment-method-btn").on("click", this.handleShowPaymentMethodTab.bind(this));
+        this.initPaymentElementListener();
+        this.setupEventListeners();
     }
 
     /**
@@ -39,8 +39,7 @@ class CheckoutController {
                 clientSecret,
                 loader: 'always'
             });
-        } catch(error) {
-            // handle creating customer session or retrieving/creating new payment intent with cart amount errors
+        } catch (error) {
             console.error(error);
         }
     }
@@ -48,40 +47,27 @@ class CheckoutController {
     /**
      * Creates and mounts the Stripe payment element.
      */
-    async initializeStripePaymentElement() {
-
-        const options = {
-            layout: {
-                type: 'accordion',
-                defaultCollapsed: false,
-                radios: false,
-                spacedAccordionItems: true,
-                visibleAccordionItemsCount: 5,
-                business: {
-                    name: 'SellSphere'
-                },
-            },
-
-        }
-
+    async initPaymentElement() {
+        const options = CheckoutUtil.getPaymentElementOptions();
         this.elements.create('payment', options).mount("#payment-element");
     }
 
     /**
      * Initializes the Stripe address element by fetching customer addresses and shippable countries.
-     * Maps the addresses to Stripe contacts and calls the initialization function.
      */
     async initAddressElement() {
         try {
+            this.view.disableAddressTabBtn();
+            this.view.enableAddressTabBtnSpinner();
+
             const customerAddresses = await this.model.getCustomerAddresses();
             const allowedCountries = await this.model.getShippableCountries();
 
-            let contacts = [];
-            if (customerAddresses?.length > 0) {
-                contacts = customerAddresses.map(this.mapAddressToStripeContact);
-            }
+            const contacts = customerAddresses.length > 0
+                ? customerAddresses.map(CheckoutUtil.mapAddressToStripeContact)
+                : [];
 
-            this.initStripeAddressElement(allowedCountries.map(country => country.code), contacts)
+            this.initStripeAddressElement(allowedCountries.map(country => country.code), contacts);
         } catch (error) {
             console.error("Error occurred during fetching addresses " + error);
             throw error;
@@ -89,140 +75,538 @@ class CheckoutController {
     }
 
     /**
-     * Maps a platform entity address to a Stripe contact format.
-     *
-     * @param {Object} address - The address object from the platform.
-     * @returns {Object} - The address formatted as a Stripe contact.
-     */
-    mapAddressToStripeContact(address) {
-        return {
-            name: address.fullName,
-            address: {
-                line1: address.addressLine1,
-                line2: address.addressLine2,
-                city: address.city,
-                state: address.state,
-                postal_code: address.postalCode,
-                country: address.countryCode,
-            },
-            phone: address.phoneNumber
-        }
-    }
-
-    /**
      * Initializes the Stripe address element with allowed countries and contacts.
-     *
-     * @param {Array} allowedCountries - List of allowed country codes.
-     * @param {Array} [contacts=[]] - List of contacts formatted for Stripe.
      */
     initStripeAddressElement(allowedCountries, contacts = []) {
-        const options = {
-            mode: 'shipping',
-            autocomplete: {
-                mode: 'automatic'
-            },
-            allowedCountries,
-            blockPoBoxes: 'true', // block a post office box
-            contacts,
-            fields: {
-                phone: 'always'
-            },
-            validation: {
-                phone: {
-                    required: 'always'
-                }
-            },
-            name: 'full'
-        };
-
+        const options = CheckoutUtil.getAddressElementOptions(allowedCountries, contacts);
         this.elements.create('address', options).mount("#address-element");
     }
 
     /**
-     * Initializes the address element listener to validate the address on change.
-     * Uses a debounce function to limit the rate of validation calls.
+     * Sets up event listeners for the UI.
      */
-    initAddressElementListener() {
-        const addressElement = this.elements.getElement('address');
-        addressElement.on("change", debounce(this.handleAddress.bind(this), 500));
+    setupEventListeners() {
+        $("#address-accordion-btn").on("click", this.handleShowAddressTab.bind(this));
+        $("#payment-accordion-btn, #continue-to-payment-btn").on("click", this.showPaymentTab.bind(this));
+        $("#summary-accordion-btn, #continue-to-summary-btn").on("click", this.showSummaryTab.bind(this));
+        $("#currencies").on("click", "a", this.handleCurrencyChange.bind(this));
+        $("#summary").on("click", 'input[type="radio"]', this.handleChangeCourier.bind(this));
     }
 
     /**
-     * Validates the address when it changes and fetches shipping rates if the address is complete.
-     *
-     * @param {Object} event - The event object from the address element change.
-     * @throws {Error} If no shipping rates are available for the destination address.
+     * Initializes the address element listener.
      */
-    async handleAddress(event) {
+    initAddressElementListener() {
+        const addressElement = this.elements.getElement('address');
+        addressElement.on("change", debounce(this.handleAddressChange.bind(this), 500));
+    }
+
+    /**
+     * Initializes the payment element listener.
+     */
+    initPaymentElementListener() {
+        const paymentElement = this.elements.getElement('payment');
+        paymentElement.on("change", this.handlePaymentMethodChange.bind(this));
+    }
+
+    /**
+     * Handles the address change event.
+     *
+     * @param {Object} event - The stripe event object.
+     */
+    async handleAddressChange(event) {
         if (!event.complete) {
-            return
+            this.view.disableAddressTabBtn();
+            this.model.rateResponse = null;
+            return;
         }
 
-        this.view.enableContinueToPaymentBtnSpinner();
-
+        this.view.enableAddressTabBtnSpinner();
 
         const { address } = event.value;
-        const easyshipAddress = this.mapStripeAddressToRateRequest(address, event.value.name, event.value.phone);
+        const easyshipAddress = CheckoutUtil.mapStripeAddressToRateRequest(address, event.value.name, event.value.phone);
 
-        // fetch shipping rates or throw error
         try {
-            const response = await this.model.getShippingRates(easyshipAddress, 0);
+            this.model.rateResponse = await this.model.getShippingRates(easyshipAddress, 0);
 
-            // validate rates
-            if (response.rates.length === 0) throw new Error("No rates available for destination " + address);
+            this.validateRates();
 
-            // persist shipping rates
-            this.model.rateResponse = response;
-
-            // enable continue to payment button
-            this.view.disableContinueToPaymentBtnSpinner();
-        } catch(error) {
-            // handle not available rates or exception from rates request - tell user's that this address does not have available creates (not available for shipping)
+            this.view.enableAddressTabBtn();
+            this.view.disableAddressTabBtnSpinner();
+        } catch (error) {
             console.error(error);
         }
     }
 
-    mapStripeAddressToRateRequest(address, fullName, phoneNumber) {
-        return {
-            address : {
-                city: address.city,
-                countryCode: address.country,
-                addressLine1: address.line1,
-                addressLine2: address.line2,
-                postalCode: address.postal_code,
-                state: address.state,
-                fullName,
-                phoneNumber
-            }
-        };
+    /**
+     * Handles the payment method change event.
+     *
+     * @param {Object} event - The event object.
+     */
+    handlePaymentMethodChange(event) {
+        if (event.complete) {
+            this.view.enablePaymentTabBtnSpinner();
+
+            setTimeout(() => {
+                this.view.disablePaymentTabBtnSpinner();
+                this.view.enablePaymentTabBtn();
+            }, 1000);
+
+            this.paymentEvent = event;
+        } else {
+            this.view.disablePaymentTabBtn();
+        }
     }
 
-    async handleShowPaymentMethodTab(event) {
+    /**
+     * Handles the display of the address tab.
+     *
+     * @param {Event} event - The event object.
+     */
+    handleShowAddressTab(event) {
         event.preventDefault();
 
-        try {
-            // validate if rates exist - otherwise cannot process
-            if (this.model.rateResponse == null || this.model.rates.length === 0)
-                throw new Error("Cannot process without available shipping rates. Please provide valid address.");
-        } catch(error) {
-            // handle no shipping rates available for the address
-            // user can click it before providing address
-            // prompt the user to provide correct address
-            console.error(error);
-            throw error;
-        }
+        this.prepareForTabChange();
+        this.view.hidePaymentTabBtn();
+        this.view.hideSummaryTabBtn();
 
-        try {
-            // calculate tax to show payment details
-            const taxCalculation = await this.model.getTaxCalculation({
-
-            });
-        } catch(error) {
-
-            //calculation request error
-            console.error(error);
-        }
-
+        this.view.showAddressTabBtn();
+        this.view.showAddressTab();
     }
 
+    /**
+     * Displays the payment tab.
+     *
+     * @param {Event} event - The event object.
+     */
+    async showPaymentTab(event) {
+        event.preventDefault();
+        this.validateRates();
+
+
+        this.view.hideAddressTabBtn();
+        this.view.hideSummaryTabBtn();
+        this.view.showPaymentTabBtn();
+
+        this.prepareForTabChange();
+        this.preparePaymentTab();
+
+        try {
+            await this.renderPaymentDetails();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    /**
+     * Renders the payment details.
+     */
+    async renderPaymentDetails() {
+        const rateResponse = this.model.rateResponse;
+        const shippingCost = rateResponse.rates[0].totalCharge;
+
+        const response = await this.model.getTaxCalculation({
+            address: rateResponse.address,
+            shippingCost,
+        });
+
+        this.view.renderCheckoutDetails(
+            response.displayAmount,
+            response.displaySubtotal,
+            response.displayTax,
+            response.displayTotalTax,
+            response.shippingCost.displayAmount,
+            response.shippingCost.displayTax,
+            response.currencySymbol,
+            response.cart
+        );
+
+        this.view.hideLoadCheckoutDetails();
+        this.view.showCheckoutDetails();
+        this.view.showPaymentMethodTab();
+
+        this.view.disablePaymentTabBtnSpinner();
+        this.view.enablePaymentTabBtn();
+    }
+
+    /**
+     * Prepares the payment tab.
+     */
+    preparePaymentTab() {
+        this.view.showLoadCheckoutDetails();
+        this.view.disablePaymentTabBtn();
+        this.view.enablePaymentTabBtnSpinner();
+    }
+
+    /**
+     * Validates the rates in the model.
+     *
+     * @throws {Error} If there are no available rates.
+     */
+    validateRates() {
+        if (this.model.rateResponse == null || this.model.rateResponse.rates.length === 0) {
+            throw new Error("Cannot process without available shipping rates. Please provide valid address.");
+        }
+    }
+
+    /**
+     * Prepares the UI for tab change.
+     */
+    prepareForTabChange() {
+        this.model.clearSummaryData();
+        this.view.selectSettlementCurrency();
+        this.view.hideCurrencies();
+        this.view.hideCheckoutDetails();
+    }
+
+    /**
+     * Displays the summary tab.
+     *
+     * @param {Event} event - The event object.
+     */
+    async showSummaryTab(event) {
+        event.preventDefault();
+
+        if (this?.paymentEvent.complete && this.model?.rateResponse?.rates.length > 0) {
+            this.prepareSummaryTab();
+
+            try {
+                await this.renderSummaryDetails();
+            } catch (error) {
+                console.error(error);
+            }
+        } else {
+            console.error("Handle previous steps..");
+        }
+    }
+
+    /**
+     * Renders the summary details.
+     */
+    async renderSummaryDetails() {
+        const targetCountry = await this.model.getCountryForClientIp();
+        const targetCurrency = targetCountry.currencyCode;
+        this.model.targetCurrency = targetCurrency;
+
+        const rateResponse = this.model.rateResponse;
+        const shippingCost = rateResponse.rates[0].totalCharge;
+
+        const baseCalculation = await this.model.getTaxCalculation({
+            address: rateResponse.address,
+            shippingCost,
+        });
+
+        const basePrice = baseCalculation.displayAmount;
+        const baseCurrencyCode = baseCalculation.currencyCode;
+
+        this.model.baseCurrency = baseCurrencyCode;
+        this.model.selectedCurrency = baseCurrencyCode;
+
+        const exchangeRateResponse = await this.model.getExchangeRateWithPrice(
+            basePrice,
+            baseCurrencyCode,
+            targetCurrency
+        );
+
+        this.model.exchangeRateResponse = exchangeRateResponse;
+        const exchangeRate = exchangeRateResponse.result["rate"];
+
+        const targetCalculation = await this.model.getTaxCalculation({
+            address: rateResponse.address,
+            shippingCost,
+            currencyCode: targetCurrency,
+            exchangeRate
+        });
+
+        const targetCountryDetails = await this.model.getCountryDetails(targetCountry.code);
+
+        this.view.renderPresentmentTotal(
+            targetCountryDetails,
+            targetCalculation.targetCurrency,
+            targetCalculation.currencySymbol,
+            targetCalculation.displayAmount
+        );
+
+        this.view.renderSettlementTotal(
+            baseCalculation.displayAmount,
+            baseCalculation.currencySymbol
+        );
+
+        this.view.renderSummaryProducts(baseCalculation.cart, baseCalculation.currencySymbol);
+        this.view.setExchangeRate(exchangeRate, baseCalculation.currencyCode, targetCalculation.currencyCode);
+
+        this.view.enableSummaryTabBtn();
+        this.view.disableSummaryBtnSpinner();
+        this.view.disableCurrencyPlaceholders();
+        this.view.showCurrencies();
+
+        this.view.renderShippingRates(this.model.rateResponse.rates);
+        this.view.showSummaryTab();
+    }
+
+    /**
+     * Prepares the summary tab.
+     */
+    prepareSummaryTab() {
+        this.view.hidePaymentTabBtn();
+        this.view.hideAddressTabBtn();
+        this.view.showSummaryTabBtn();
+        this.view.disableSummaryTabBtn();
+        this.view.enableSummaryBtnSpinner();
+        this.view.enableCurrencyPlaceholders();
+        this.startCountdown(20 * 60 * 1000);
+        this.startCurrencyUpdateListener();
+    }
+
+    /**
+     * Handles the currency change event.
+     *
+     * @param {Event} event - The event object.
+     */
+    async handleCurrencyChange(event) {
+        event.preventDefault();
+        const clickedElement = event.currentTarget;
+        const selectedCurrency = clickedElement.id === "presentment-currency" ? this.model.targetCurrency : this.model.baseCurrency;
+
+        // Check if the clicked currency is already selected
+        if (this.model.selectedCurrency === selectedCurrency) return;
+
+        // Update currency-checked classes
+        document.querySelectorAll('.currency').forEach(el => el.classList.remove('currency-checked'));
+        clickedElement.classList.add('currency-checked');
+
+        // Ensure the selected rate index is preserved
+        const rateIndex = this.model.selectedRateIndex;
+
+        this.prepareCheckoutDetailsUpdate();
+
+        try {
+            await this.updateCheckoutDetails(rateIndex, true); // Pass the rate index through the update process
+            this.completeCheckoutDetailsUpdate();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    /**
+     * Handles the change of courier event.
+     *
+     * @param {Event} event - The event object.
+     */
+    async handleChangeCourier(event) {
+        this.prepareCheckoutDetailsUpdate();
+
+        const rateIndex = Number(event.currentTarget.dataset.rateIndex);
+        this.model.selectedRateIndex = rateIndex; // Ensure the selected rate index is updated in the model
+
+        try {
+            await this.updateCheckoutDetails(rateIndex);
+            this.completeCheckoutDetailsUpdate();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    /**
+     * Starts a listener that checks if 1 hour has passed since the last exchange rate update
+     * and invokes loadCurrencyData if necessary.
+     */
+    startCurrencyUpdateListener() {
+        if (this.currencyUpdateInterval) {
+            clearInterval(this.currencyUpdateInterval);
+        }
+
+        this.currencyUpdateInterval = setInterval(async () => {
+            if (this.model.exchangeRateResponse && CheckoutUtil.isExchangeRateExpired(this.model.exchangeRateResponse)) {
+                this.startCountdown(20 * 60 * 1000);
+                this.prepareCheckoutDetailsUpdate();
+
+                try {
+                    await this.updateCheckoutDetails(this.model.selectedRateIndex);
+                    this.completeCheckoutDetailsUpdate();
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                console.error("Address and payment step must be complete before summary step");
+            }
+        }, 60000 * 20); // Check every 20 minutes
+    }
+
+    /**
+     * Prepares the UI for an update.
+     */
+    prepareCheckoutDetailsUpdate() {
+        this.view.hideCheckoutDetails();
+        this.view.showLoadCheckoutDetails();
+        this.view.disableSummaryTabBtn();
+        this.view.enableSummaryBtnSpinner();
+        this.view.hideCurrencies();
+        this.view.enableCurrencyPlaceholders();
+    }
+
+    /**
+     * Completes the UI update.
+     */
+    completeCheckoutDetailsUpdate() {
+        this.view.enableSummaryTabBtn();
+        this.view.disableSummaryBtnSpinner();
+        this.view.hideLoadCheckoutDetails();
+        this.view.showCheckoutDetails();
+        this.view.showCurrencies();
+        this.view.disableCurrencyPlaceholders();
+    }
+
+    /**
+     * Updates the checkout details.
+     *
+     * @param {number} rateIndex - The index of the selected rate.
+     * @param {boolean} isPresentmentCurrencyChange - Whether the currency change is for presentment.
+     */
+    async updateCheckoutDetails(rateIndex, isPresentmentCurrencyChange = false) {
+        const rateResponse = this.model.rateResponse;
+        const selectedRate = this.getSelectedRate(rateIndex, rateResponse);
+
+        if (isPresentmentCurrencyChange) {
+            this.model.selectedCurrency = this.model.selectedCurrency === this.model.targetCurrency
+                ? this.model.baseCurrency
+                : this.model.targetCurrency;
+        }
+
+        const { targetCurrency, selectedCurrency } = this.model;
+        const shippingCost = selectedRate.totalCharge;
+        const exchangeRate = this.getExchangeRate();
+
+        const base = await this.calculateBaseTax(rateResponse, shippingCost);
+        const target = await this.calculateTargetTax(rateResponse, shippingCost, targetCurrency, exchangeRate);
+
+        const selectedCalculation = this.getSelectedCalculation(target, base, selectedCurrency);
+
+        this.renderCheckoutDetails(selectedCalculation, base, target, exchangeRate);
+    }
+
+    /**
+     * Retrieves the selected rate from the rate response.
+     *
+     * @param {number} rateIndex - The index of the selected rate.
+     * @param {Object} rateResponse - The rate response object.
+     * @returns {Object} The selected rate.
+     */
+    getSelectedRate(rateIndex, rateResponse) {
+        const selectedRate = rateResponse.rates[rateIndex];
+        if (!selectedRate?.totalCharge) {
+            throw new Error("Rate for index " + rateIndex + " not found");
+        }
+        return selectedRate;
+    }
+
+    /**
+     * Retrieves the exchange rate from the model.
+     *
+     * @returns {number} The exchange rate.
+     */
+    getExchangeRate() {
+        return this.model.exchangeRateResponse.result["rate"];
+    }
+
+    /**
+     * Calculates the base tax for the given shipping cost and rate response.
+     *
+     * @param {Object} rateResponse - The rate response object.
+     * @param {number} shippingCost - The shipping cost.
+     * @returns {Object} The base tax calculation result.
+     */
+    async calculateBaseTax(rateResponse, shippingCost) {
+        return await this.model.getTaxCalculation({
+            address: rateResponse.address,
+            shippingCost,
+        });
+    }
+
+    /**
+     * Calculates the target tax for the given shipping cost, target currency, and exchange rate.
+     *
+     * @param {Object} rateResponse - The rate response object.
+     * @param {number} shippingCost - The shipping cost.
+     * @param {string} targetCurrency - The target currency code.
+     * @param {number} exchangeRate - The exchange rate.
+     * @returns {Object} The target tax calculation result.
+     */
+    async calculateTargetTax(rateResponse, shippingCost, targetCurrency, exchangeRate) {
+        return await this.model.getTaxCalculation({
+            address: rateResponse.address,
+            shippingCost,
+            currencyCode: targetCurrency,
+            exchangeRate
+        });
+    }
+
+    /**
+     * Determines the selected calculation based on the target and base calculations.
+     *
+     * @param {Object} target - The target tax calculation result.
+     * @param {Object} base - The base tax calculation result.
+     * @param {string} selectedCurrency - The selected currency code.
+     * @returns {Object} The selected calculation result.
+     */
+    getSelectedCalculation(target, base, selectedCurrency) {
+        return (target.currencyCode === selectedCurrency) ? target : base;
+    }
+
+    /**
+     * Renders the checkout details using the selected calculation and updates the exchange rates.
+     *
+     * @param {Object} selectedCalculation - The selected tax calculation result.
+     * @param {Object} base - The base tax calculation result.
+     * @param {Object} target - The target tax calculation result.
+     * @param {number} exchangeRate - The exchange rate.
+     */
+    renderCheckoutDetails(selectedCalculation, base, target, exchangeRate) {
+        this.view.renderCheckoutDetails(
+            selectedCalculation.displayAmount,
+            selectedCalculation.displaySubtotal,
+            selectedCalculation.displayTax,
+            selectedCalculation.displayTotalTax,
+            selectedCalculation.shippingCost.displayAmount,
+            selectedCalculation.shippingCost.displayTax,
+            selectedCalculation.currencySymbol,
+            selectedCalculation.cart
+        );
+
+        this.view.setExchangeRate(exchangeRate, base.currencyCode, target.currencyCode);
+        this.view.updatePresentmentPrice(target.displayAmount, target.currencySymbol);
+        this.view.updateSettlementPrice(base.displayAmount, base.currencySymbol);
+    }
+
+    /**
+     * Starts a countdown timer for the given duration.
+     *
+     * @param {number} duration - The countdown duration in milliseconds.
+     */
+    startCountdown(duration) {
+        if (this.model.countdown) {
+            clearInterval(this.model.countdown);
+        }
+
+        const countdownElement = document.getElementById('countdown');
+        let remainingTime = duration;
+
+        const updateCountdown = () => {
+            if (remainingTime <= 0) {
+                clearInterval(this.model.countdown);
+                countdownElement.textContent = '00:00';
+                return;
+            }
+
+            remainingTime -= 1000;
+
+            const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
+            const seconds = Math.floor((remainingTime / 1000) % 60);
+
+            countdownElement.textContent =
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        };
+
+        this.model.countdown = setInterval(updateCountdown, 1000);
+    }
 }

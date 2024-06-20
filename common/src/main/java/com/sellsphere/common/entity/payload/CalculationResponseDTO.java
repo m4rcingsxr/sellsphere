@@ -20,6 +20,9 @@ public class CalculationResponseDTO {
     private BigDecimal displayTax;
     private BigDecimal exchangeRate; // applied exchange rate
 
+    private BigDecimal displaySubtotal;
+    private BigDecimal displayTotalTax;
+
     private AddressDTO address;
     private ShippingCostDTO shippingCost;
 
@@ -37,6 +40,8 @@ public class CalculationResponseDTO {
     public static class ShippingCostDTO {
         private long amount;
         private long amountTax;
+        private BigDecimal displayAmount;
+        private BigDecimal displayTax;
     }
 
 }

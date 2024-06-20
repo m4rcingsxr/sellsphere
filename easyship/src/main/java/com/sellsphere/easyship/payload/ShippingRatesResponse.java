@@ -1,5 +1,6 @@
 package com.sellsphere.easyship.payload;
 
+import com.sellsphere.common.entity.payload.AddressDTO;
 import lombok.*;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
 public class ShippingRatesResponse {
 
     private Meta meta;
+    private AddressDTO address;
     private List<Rate> rates;
 
 }

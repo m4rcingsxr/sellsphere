@@ -1,5 +1,7 @@
 package com.sellsphere.client.currencyconversion;
 
+import com.sellsphere.client.PriceService;
+import com.sellsphere.common.entity.CurrencyNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,58 +21,42 @@ import java.util.Map;
 public class ExchangeCurrencyRestController {
 
     private final String apiKey = System.getenv("FASTFOREX_API_KEY");
+    private final PriceService priceService;
 
-    @PostMapping("/exchange-rates/amount/{amount}/{unit_amount}/currency/{baseCode}/{targetCode}")
+    // todo modify it to return only the exchange rate without converted price
+    @PostMapping("/exchange-rates/amount/{basePrice}/currency/{baseCode}/{targetCode}")
     public ResponseEntity<ExchangeRateResponse> exchangeRate(
-            @PathVariable String baseCode, @PathVariable String targetCode, @PathVariable String amount, @PathVariable String unit_amount) {
+            @PathVariable String baseCode, @PathVariable String targetCode,
+            @PathVariable String basePrice)
+            throws CurrencyNotFoundException {
 
-        // todo: refactor and fix rounding
         RestTemplate restTemplate = new RestTemplate();
-
-        long unitAmount = Long.parseLong(unit_amount);
-        BigDecimal result;
-        if(unitAmount == 1000) {
-            BigDecimal value = BigDecimal.valueOf(Long.parseLong(amount));
-            BigDecimal hundred = BigDecimal.valueOf(100);
-            result = value.divide(hundred, 0, RoundingMode.HALF_UP);
-        } else {
-            result = BigDecimal.valueOf(Long.parseLong(amount)).divide(BigDecimal.valueOf(unitAmount), 0, RoundingMode.HALF_UP);
-        }
-
-        // Use the new URL to get the exchange rate
-        String url = String.format("https://api.fastforex.io/convert?from=%s&to=%s&amount=%s&api_key=%s",
-                                   baseCode.toUpperCase(), targetCode.toUpperCase(), result.doubleValue(), apiKey);
+        String url = String.format(
+                "https://api.fastforex.io/convert?from=%s&to=%s&amount=%s&api_key=%s",
+                baseCode.toUpperCase(), targetCode.toUpperCase(), basePrice, apiKey
+        );
 
         ExchangeRateResponse response = restTemplate.getForObject(url, ExchangeRateResponse.class);
-
 
         assert response != null;
         assert response.getResult() != null;
 
-
         BigDecimal rate = response.getResult().get("rate");
 
-        // Simplified:
-        // Customer pays in presentment currency (does not need to pay fee for currency change)
-        // Instead, they pay Stripe for currency conversion to the settlement currency
-        // 2 percent fee not refunded - 2 percent of the final price
         BigDecimal stripeExchangeFee = BigDecimal.valueOf(0.02);
-        BigDecimal finalRate = rate.multiply(BigDecimal.ONE.add(stripeExchangeFee)).setScale(5, RoundingMode.HALF_UP);
+        BigDecimal finalRate = rate.multiply(BigDecimal.ONE.add(stripeExchangeFee)).setScale(5,
+                                                                                             RoundingMode.HALF_UP
+        );
 
         Map<String, BigDecimal> updatedResult = new HashMap<>(response.getResult());
         updatedResult.put("rate", finalRate);
 
-        // 3 decimals currencies
-        BigDecimal finalPrice;
-        if(unitAmount == 1000) {
-            finalPrice = response.getResult().get(targetCode.toUpperCase()).setScale(3, RoundingMode.HALF_UP);
-        } else {
-            finalPrice = response.getResult().get(targetCode.toUpperCase()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal finalPrice = priceService.roundDisplayPrice(
+                response.getResult().get(targetCode.toUpperCase()), targetCode);
 
-        }
 
-        updatedResult.put(targetCode, finalPrice);
-
+        updatedResult.put(targetCode.toUpperCase(), finalPrice);
+        response.setUpdated(Instant.now().toEpochMilli());
         response.setFee(stripeExchangeFee);
         response.setResult(updatedResult);
 

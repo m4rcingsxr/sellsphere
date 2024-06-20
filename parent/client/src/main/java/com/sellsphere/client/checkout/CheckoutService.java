@@ -8,7 +8,6 @@ import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.ShoppingCartService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.*;
-import com.sellsphere.payment.Constants;
 import com.sellsphere.payment.StripeCheckoutService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
@@ -81,12 +80,14 @@ public class CheckoutService {
         return prepareTaxCalculationResponse(calculation,
                                              cart,
                                              targetCurrency,
+                                             baseCurrency,
                                              request.getAddress(),
                                              request.getExchangeRate()
         );
     }
 
-    private CalculationResponseDTO prepareTaxCalculationResponse(Calculation calculation, List<CartItem> cart, String targetCurrency, AddressDTO address, BigDecimal exchangeRate)
+    private CalculationResponseDTO prepareTaxCalculationResponse(Calculation calculation, List<CartItem> cart, String targetCurrency,
+                                                                 String baseCurrency, AddressDTO address, BigDecimal exchangeRate)
             throws CurrencyNotFoundException {
         var responseBuilder = CalculationResponseDTO.builder();
 
@@ -97,13 +98,18 @@ public class CheckoutService {
 
         responseBuilder
                 .id(calculation.getId())
+                .exchangeRate(exchangeRate)
                 .amountTotal(calculation.getAmountTotal())
                 .taxAmountInclusive(calculation.getTaxAmountInclusive())
                 .displayAmount(priceService.convertToDisplayAmount(calculation.getAmountTotal(), calculation.getCurrency()))
-                .displayTax(priceService.convertToDisplayAmount(calculation.getTaxAmountInclusive(), calculation.getCurrency()))
+                .displayTax(priceService.convertToDisplayAmount(calculation.getTaxAmountInclusive() - calculation.getShippingCost().getAmountTax(), calculation.getCurrency()))
+                .displaySubtotal(priceService.convertToDisplayAmount((calculation.getAmountTotal() - calculation.getShippingCost().getAmount()), calculation.getCurrency()))
+                .displayTotalTax(priceService.convertToDisplayAmount((calculation.getTaxAmountInclusive()), calculation.getCurrency()))
                 .shippingCost(CalculationResponseDTO.ShippingCostDTO.builder()
                                       .amount(calculation.getShippingCost().getAmount())
                                       .amountTax(calculation.getShippingCost().getAmountTax())
+                                      .displayAmount(priceService.convertToDisplayAmount(calculation.getShippingCost().getAmount(), calculation.getCurrency()))
+                                      .displayTax(priceService.convertToDisplayAmount(calculation.getShippingCost().getAmountTax(), calculation.getCurrency()))
                                       .build())
                 .address(address)
                 .currencyCode(calculation.getCurrency())
@@ -111,12 +117,18 @@ public class CheckoutService {
                 .currencySymbol(target.getSymbol());
 
 
+        Currency currency = currencyRepository.findByCode(calculation.getCurrency())
+                .orElseThrow(CurrencyNotFoundException::new);
+
+        long unitAmount = currency.getUnitAmount().longValue();
+        // convert currency
         responseBuilder.cart(
                 cart.stream().map(item -> CartItemDTO.builder()
                         .quantity(item.getQuantity())
+                        .subtotal(priceService.convertPrice(BigDecimal.valueOf(item.getQuantity()).multiply(item.getProduct().getDiscountPrice()), unitAmount, exchangeRate,baseCurrency, targetCurrency))
                         .product(BasicProductDTO.builder()
-                                         .discountPrice(item.getProduct().getDiscountPrice())
-                                         .price(item.getProduct().getPrice())
+                                         .discountPrice(priceService.convertPrice(item.getProduct().getDiscountPrice(), unitAmount, exchangeRate,baseCurrency, targetCurrency))
+                                         .price(priceService.convertPrice(item.getProduct().getPrice(), unitAmount, exchangeRate,baseCurrency, targetCurrency))
                                          .discountPercent(item.getProduct().getDiscountPercent())
                                          .mainImagePath(item.getProduct().getMainImagePath())
                                          .name(item.getProduct().getName())
@@ -126,10 +138,6 @@ public class CheckoutService {
                         .build()).toList()
         );
 
-        if(exchangeRate != null) {
-            BigDecimal finalExchangeRate = priceService.setConversionFee(exchangeRate);
-            responseBuilder.exchangeRate(finalExchangeRate);
-        }
 
         return responseBuilder.build();
     }

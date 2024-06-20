@@ -19,7 +19,7 @@ public class CalculationRequestDTO {
     // required
     private BigDecimal shippingCost;
 
-    // required
+    // nullable - base currency
     private String currencyCode;
 
     // nullable

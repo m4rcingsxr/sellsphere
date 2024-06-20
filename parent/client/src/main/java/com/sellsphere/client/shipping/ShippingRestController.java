@@ -38,6 +38,7 @@ public class ShippingRestController {
         request.setCurrencyCode(settingService.getCurrencyCode(true));
         List<CartItem> cart = shoppingCartService.findAllByCustomer(customer);
         ShippingRatesResponse rates = apiService.getShippingRates(page, request, cart);
+        rates.setAddress(request.getAddress());
 
         return ResponseEntity.ok(rates);
     }

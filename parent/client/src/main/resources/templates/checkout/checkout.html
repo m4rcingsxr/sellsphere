@@ -7,6 +7,7 @@
     <script type="text/javascript" th:src="@{/node_modules/decimal.js/decimal.js}"></script>
     <script type="text/javascript" th:src="@{/js/debounce_util.js}"></script>
     <script type="text/javascript" th:src="@{/js/tooltip.js}"></script>
+    <script type="text/javascript" th:src="@{/js/CheckoutUtil.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutModel.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutView.js}"></script>
     <script type="text/javascript" th:src="@{/js/CheckoutController.js}"></script>
@@ -72,7 +73,14 @@
                         <div id="checkout-summary-accordion" class="accordion-collapse collapse"
                              data-bs-parent="#checkout-accordion">
                             <div class="accordion-body">
+                                <div id="summary" class="d-flex">
+                                    <div id="summary-products" class="w-50 d-flex flex-column gap-3">
 
+                                    </div>
+                                    <div id="shipping-rates" class="w-50 d-flex flex-column gap-3">
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -81,10 +89,180 @@
             </div>
 
             <div class="col-sm-4 align-items-start">
+
+
                 <div class="d-flex flex-column gap-2 border border-1 shadow-sm rounded-2 p-4">
-                    <button class="btn btn-primary" type="button" id="continue-to-payment-method-btn" disabled>
+
+                    <div class="d-flex flex-column gap-2 visually-hidden" id="checkout-details">
+                        <h3 class="total fw-bold"></h3>
+
+                        <div id="products" class="d-flex flex-column gap-2">
+
+                        </div>
+
+                        <hr class="text-dark-emphasis"/>
+
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bolder">Subtotal</span>
+                            <span id="subtotal"></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="">Shipping</span>
+                            <span id="shipping"></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-lighter">Shipping tax</span>
+                            <span id="shipping-tax"></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-lighter">Tax</span>
+                            <span id="tax"></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="">Total tax</span>
+                            <span id="total-tax"></span>
+                        </div>
+
+                        <hr class="text-dark-emphasis"/>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <span class="fw-bolder">Total due</span>
+                            <span class="total"></span>
+                        </div>
+                    </div>
+
+                    <div id="checkout-load-details" class="visually-hidden">
+                        <h3 id="total-load" class="fw-bold">
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </h3>
+
+                        <div id="products-load" class="d-flex flex-column gap-2">
+                            <div class="d-flex justify-content-between">
+                                <div class="placeholder-wave w-25">
+                                    <span class="placeholder col-12 bg-secondary-subtle"></span>
+                                </div>
+                                <div class="placeholder-wave w-25">
+                                    <span class="placeholder col-12 bg-secondary-subtle"></span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div class="placeholder-wave w-25">
+                                    <span class="placeholder col-12 bg-secondary-subtle"></span>
+                                </div>
+                                <div class="placeholder-wave w-25">
+                                    <span class="placeholder col-12 bg-secondary-subtle"></span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div class="placeholder-wave w-25">
+                                    <span class="placeholder col-12 bg-secondary-subtle"></span>
+                                </div>
+                                <div class="placeholder-wave w-25">
+                                    <span class="placeholder col-12 bg-secondary-subtle"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="text-dark-emphasis"/>
+
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bolder">Subtotal</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="">Shipping</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-lighter">Shipping tax</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-lighter">Tax</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="">Total tax</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+
+                        <hr class="text-dark-emphasis"/>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <span class="fw-bolder">Total due</span>
+                            <div class="placeholder-wave w-25">
+                                <span class="placeholder col-12 bg-secondary-subtle"></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div
+                            id="currencies"
+                            class="d-flex gap-3 flex-wrap currencies visually-hidden"
+                    >
+                        <a id="presentment-currency" class="currency" href="#">
+
+                        </a>
+                        <a
+                                id="settlement-currency"
+                                class="currency currency-checked"
+                                href="#"
+                        >
+                            <img
+                                    src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg"
+                                    class="img-fluid border border-1"
+                                    style="max-width: 40px; max-height: 25px"
+                            />
+                            <span id="settlement-total" class="fw-bolder"></span>
+                        </a>
+                    </div>
+
+                    <div class="currencies visually-hidden">
+                          <span class="text-light-emphasis fs-7 d-block" id="exchange-rate">
+                              1 EUR = 4.30 PLN (includes 2% conversion fee)
+                          </span>
+                        <span class="fw-lighter fs-7">
+                                    Exchange rate will be refreshed in:<span id="countdown"></span>
+                                </span>
+                    </div>
+
+                    <div id="currencies-load" class="d-flex gap-3 flex-wrap visually-hidden mt-3">
+                        <div class="placeholder-wave" style="width: 45%">
+                            <span class="placeholder col-12 bg-secondary-subtle"></span>
+                        </div>
+                        <div class="placeholder-wave" style="width: 45%">
+                            <span class="placeholder col-12 bg-secondary-subtle"></span>
+                        </div>
+                    </div>
+
+
+                    <button class="btn btn-primary mt-2" type="button" id="continue-to-payment-btn" disabled>
                         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                         <span class="visually-hidden continue-btn" role="status">Continue to payment</span>
+                    </button>
+
+                    <button class="btn btn-primary visually-hidden mt-2" type="button" id="continue-to-summary-btn"
+                            disabled>
+                        <span class="spinner-border spinner-border-sm visually-hidden" aria-hidden="true"></span>
+                        <span class="continue-btn" role="status">Continue to summary</span>
+                    </button>
+
+                    <button class="btn btn-primary visually-hidden mt-2" type="button" id="place-order-btn" disabled>
+                        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                        <span class="visually-hidden continue-btn" role="status">Place order</span>
                     </button>
                 </div>
             </div>
@@ -108,63 +286,3 @@
 </script>
 </body>
 </html>
-
-
-<!--<div class="d-flex flex-column gap-2 border border-1 shadow-sm rounded-2 p-4">-->
-
-<!--    <h3 class="total fw-bold d-none">123</h3>-->
-
-<!--    <div id="products" class="d-none d-flex flex-column gap-2"></div>-->
-
-<!--    <div id="summary-nav" class="d-none">-->
-
-<!--        <hr class="text-dark-emphasis"/>-->
-
-<!--        <div class="d-flex justify-content-between">-->
-<!--            <span class="fw-bolder">Subtotal</span>-->
-<!--            <span id="subtotal">123</span>-->
-<!--        </div>-->
-<!--        <div class="d-flex justify-content-between">-->
-<!--            <span class="">Shipping</span>-->
-<!--            <span id="shipping">123</span>-->
-<!--        </div>-->
-<!--        <div class="d-flex justify-content-between">-->
-<!--            <span class="fw-lighter">Shipping tax</span>-->
-<!--            <span id="shipping-tax">123</span>-->
-<!--        </div>-->
-<!--        <div class="d-flex justify-content-between">-->
-<!--            <span class="fw-lighter">Tax</span>-->
-<!--            <span id="tax">123</span>-->
-<!--        </div>-->
-<!--        <div class="d-flex justify-content-between">-->
-<!--            <span class="">Total tax</span>-->
-<!--            <span id="total-tax">123</span>-->
-<!--        </div>-->
-
-<!--        <hr class="text-dark-emphasis"/>-->
-
-<!--        <div id="currencies" class="d-flex gap-3 flex-wrap currencies d-none">-->
-<!--            <a id="presentment-currency" class="currency" href="#">-->
-
-<!--            </a>-->
-<!--            &lt;!&ndash; Prepend currencies here &ndash;&gt;-->
-<!--            <a id="settlement-currency" class="currency currency-checked" href="#">-->
-<!--                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg"-->
-<!--                     class="img-fluid border border-1" style="max-width: 40px; max-height: 25px"/>-->
-<!--                <span id="settlement-total" class="fw-bolder"></span>-->
-<!--            </a>-->
-<!--        </div>-->
-
-
-<!--        <div class="currencies d-none">-->
-<!--            <span class="text-light-emphasis fs-7 d-block" id="exchange-rate">1 EUR = 4.30 PLN (includes 2% conversion fee)</span>-->
-<!--            <span class="fw-lighter fs-7">Exchange rate will be refreshed in: <span id="countdown"></span></span>-->
-<!--        </div>-->
-
-
-<!--        <div class="d-flex justify-content-between mt-3">-->
-<!--            <span class="fw-bolder">Total due</span>-->
-<!--            <span class="total"></span>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
