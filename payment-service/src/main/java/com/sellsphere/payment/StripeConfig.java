@@ -3,6 +3,9 @@ package com.sellsphere.payment;
 import com.stripe.Stripe;
 import lombok.experimental.UtilityClass;
 
+/**
+ * Utility class for initializing Stripe configuration.
+ */
 @UtilityClass
 public class StripeConfig {
 
