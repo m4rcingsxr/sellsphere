@@ -18,12 +18,12 @@ async function loadSupportedCurrencies(countryIds) {
         let currentCurrencyExists = false;
 
         availableCurrencies.forEach(currency => {
-            // Check if the current currencyconversion exists in the available currencies
+            // Check if the current exchnagerate exists in the available currencies
             if (currency.id == currentCurrencyId) {
                 currentCurrencyExists = true;
             }
 
-            // Append the currencyconversion options to the dropdown
+            // Append the exchnagerate options to the dropdown
             $currency.append(
                 `<option value="${currency.id}" ${currency.id == currentCurrencyId ? 'selected' : ''}>
                     ${currency.name} (${currency.code})
@@ -31,9 +31,9 @@ async function loadSupportedCurrencies(countryIds) {
             );
         });
 
-        // If the current currencyconversion doesn't exist in the available currencies, you can set the default selected value
+        // If the current exchnagerate doesn't exist in the available currencies, you can set the default selected value
         if (!currentCurrencyExists) {
-            // Optionally, select the first currencyconversion in the list
+            // Optionally, select the first exchnagerate in the list
             if (availableCurrencies.length > 0) {
                 $currency.val(availableCurrencies[0].id);
             }

@@ -1,4 +1,4 @@
-package com.sellsphere.client.currencyconversion;
+package com.sellsphere.common.entity.payload;
 
 import lombok.*;
 
@@ -9,7 +9,7 @@ import java.util.Map;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExchangeRateResponse {
+public class ExchangeRateResponseDTO {
 
     private String base;
     private long updated;

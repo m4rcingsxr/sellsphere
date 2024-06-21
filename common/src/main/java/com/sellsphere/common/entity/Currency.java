@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Represents a currencyconversion entity with name, symbol, and code.
- * This entity is used to store currencyconversion information in the database.
+ * Represents a exchnagerate entity with name, symbol, and code.
+ * This entity is used to store exchnagerate information in the database.
  */
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,7 +24,7 @@ import java.util.List;
 public class Currency extends IdentifiedEntity {
 
     /**
-     * The name of the currencyconversion.
+     * The name of the exchnagerate.
      * This field is mandatory and must not exceed 128 characters.
      * Example: "US Dollar", "Euro"
      */
@@ -34,7 +34,7 @@ public class Currency extends IdentifiedEntity {
     private String name;
 
     /**
-     * The symbol of the currencyconversion.
+     * The symbol of the exchnagerate.
      * This field is mandatory and must not exceed 8 characters.
      * Example: "$", "€"
      */
@@ -44,7 +44,7 @@ public class Currency extends IdentifiedEntity {
     private String symbol;
 
     /**
-     * The code of the currencyconversion.
+     * The code of the exchnagerate.
      * This field is mandatory and follows the ISO 4217 standard.
      * Example: "USD", "EUR"
      */

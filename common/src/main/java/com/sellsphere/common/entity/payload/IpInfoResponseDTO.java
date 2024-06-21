@@ -1,10 +1,10 @@
-package com.sellsphere.client.currencyconversion;
+package com.sellsphere.common.entity.payload;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class IpInfoResponse {
+public class IpInfoResponseDTO {
     private String country;
 }
