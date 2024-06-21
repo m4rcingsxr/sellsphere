@@ -3,7 +3,7 @@ package com.sellsphere.admin.transaction;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.PaymentIntent;
 import com.sellsphere.common.entity.TransactionNotFoundException;
-import com.sellsphere.payment.StripeCheckoutService;
+import com.sellsphere.payment.checkout.StripeCheckoutService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Refund;
 import com.stripe.param.RefundCreateParams;

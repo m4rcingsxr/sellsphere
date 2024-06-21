@@ -5,7 +5,7 @@ import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.PaymentRequestDTO;
-import com.sellsphere.payment.StripeCheckoutService;
+import com.sellsphere.payment.checkout.StripeCheckoutService;
 import com.stripe.exception.StripeException;
 import com.stripe.param.PaymentIntentCreateParams;
 import lombok.RequiredArgsConstructor;

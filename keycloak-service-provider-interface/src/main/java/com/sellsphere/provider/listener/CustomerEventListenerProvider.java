@@ -1,6 +1,6 @@
 package com.sellsphere.provider.listener;
 
-import com.sellsphere.payment.CustomerService;
+import com.sellsphere.payment.customer.CustomerService;
 import com.sellsphere.provider.customer.CustomerAdapter;
 import com.sellsphere.provider.UserModelTransaction;
 import com.sellsphere.provider.UserModelTransactionManager;

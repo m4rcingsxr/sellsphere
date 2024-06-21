@@ -127,7 +127,7 @@ class CheckoutController {
         const easyshipAddress = CheckoutUtil.mapStripeAddressToRateRequest(address, event.value.name, event.value.phone);
 
         try {
-            this.model.rateResponse = await this.model.getShippingRates(easyshipAddress, 0);
+            this.model.rateResponse = await this.model.getShippingRates(easyshipAddress, 1);
 
             this.validateRates();
 

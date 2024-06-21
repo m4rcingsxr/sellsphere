@@ -1,6 +1,7 @@
-package com.sellsphere.payment;
+package com.sellsphere.payment.checkout;
 
 import com.sellsphere.common.entity.payload.PaymentRequestDTO;
+import com.sellsphere.payment.StripeConfig;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
 import com.stripe.model.PaymentIntent;

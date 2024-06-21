@@ -1,5 +1,6 @@
-package com.sellsphere.payment;
+package com.sellsphere.payment.customer;
 
+import com.sellsphere.payment.StripeConfig;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.CustomerCollection;

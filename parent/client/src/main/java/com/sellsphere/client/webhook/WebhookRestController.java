@@ -13,7 +13,7 @@ import com.sellsphere.common.entity.Card;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.easyship.payload.Address;
-import com.sellsphere.payment.StripeCheckoutService;
+import com.sellsphere.payment.checkout.StripeCheckoutService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.BalanceTransaction;
@@ -43,6 +43,7 @@ import java.util.concurrent.ExecutorService;
 @RestController
 @RequiredArgsConstructor
 public class WebhookRestController {
+
     private final CardRepository cardRepository;
 
     private final PaymentMethodRepository paymentMethodRepository;
