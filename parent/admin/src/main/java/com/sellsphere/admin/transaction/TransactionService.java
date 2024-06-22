@@ -41,8 +41,8 @@ public class TransactionService {
         Refund stripeRefund = stripeCheckoutService.createRefund(
                 paymentIntent.getStripeId(),
                 amount.multiply(
-                        paymentIntent.getCurrency().getUnitAmount()).setScale(2,
-                                                                              RoundingMode.CEILING
+                        paymentIntent.getTargetCurrency().getUnitAmount()).setScale(2,
+                                                                                    RoundingMode.CEILING
                 ).longValue(),
                 RefundCreateParams.Reason.valueOf(reason)
         );
@@ -60,7 +60,7 @@ public class TransactionService {
                         .status(stripeRefund.getStatus())
                         .paymentIntent(intent)
                         .charge(intent.getCharge())
-                        .currency(intent.getCurrency())
+                        .currency(intent.getTargetCurrency())
                         .created(LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(1)))
                         .build()
         ).getStatus();

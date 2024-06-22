@@ -1,9 +1,12 @@
 class CheckoutModel {
 
+    customerAddresses = null;
+
     exchangeRateResponse = null;
     targetCurrency = null;
     baseCurrency = null;
     selectedCurrency = null;
+    appliedCalculation = null;
     selectedRateIndex = 0;
 
     constructor() {
@@ -14,6 +17,7 @@ class CheckoutModel {
         this.targetCurrency = null;
         this.baseCurrency = null;
         this.selectedCurrency = null;
+        this.appliedCalculation = null;
         this.selectedRateIndex = 0;
     }
 
@@ -153,5 +157,96 @@ class CheckoutModel {
             throw (error);
         }
     }
+
+    // on persist - update final collected payment intent data
+    async savePaymentIntent() {
+        try {
+            const appliedCalculation = this.model.appliedCalculation;
+
+            if (appliedCalculation == null) {
+                throw new Error("Illegal state. Model should have applied calculation.");
+            }
+
+            const address = appliedCalculation.address;
+
+            if (this.model?.customerAddresses.length > 0) {
+                const matchingAddressId = this.findMatchingAddressId(address, customerAddresses);
+                if (matchingAddressId) {
+                    address.id = matchingAddressId;
+                    console.log(`Matching address found with ID: ${matchingAddressId}`);
+                } else {
+                    console.log('No matching address found');
+                }
+            }
+
+            if(!this.model?.rateResponse?.rates || this.model.rateResponse.rates.length === 0) {
+                throw new Error("Illegal state. No shipping rates for provided destination: " + address)
+            }
+
+            const selectedRate = this.model.rateResponse[this.model.selectedRateIndex];
+
+            return await ajaxUtil.post(`${MODULE_URL}checkout/save-payment-intent`, {
+                address,
+                currencyCode : appliedCalculation.currencyCode,
+                amountTotal : appliedCalculation.amountTotal,
+                taxAmount : appliedCalculation.taxAmountInclusive,
+                shippingCost : appliedCalculation.shippingCost.amount,
+                shippingCostTax : appliedCalculation.shippingCost.shippingCostTax,
+                courierId : selectedRate.courierId,
+                courierName : selectedRate.courierName,
+                courierLogoUrl : selectedRate.courierLogoUrl,
+                maxDeliveryTime : selectedRate.maxDeliveryTime,
+                minDeliveryTime : selectedRate.minDeliveryTime,
+            });
+        } catch(error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    findMatchingAddressId(address, customerAddresses) {
+        // Normalize the address data for comparison (trim and convert to lower case)
+        const normalize = (str) => (str ? str.trim().toLowerCase() : '');
+
+        // Extract and normalize the essential fields from the given address
+        const givenAddress = {
+            addressLine1: normalize(address.addressLine1),
+            addressLine2: normalize(address.addressLine2),
+            city: normalize(address.city),
+            state: normalize(address.state),
+            countryCode: normalize(address.countryCode),
+            postalCode: normalize(address.postalCode)
+        };
+
+        // Iterate over the customer addresses and compare with the given address
+        for (const customerAddress of customerAddresses) {
+            // Extract and normalize the essential fields from the customer address
+            const currentAddress = {
+                addressLine1: normalize(customerAddress.addressLine1),
+                addressLine2: normalize(customerAddress.addressLine2),
+                city: normalize(customerAddress.city),
+                state: normalize(customerAddress.state),
+                countryCode: normalize(customerAddress.countryCode),
+                postalCode: normalize(customerAddress.postalCode)
+            };
+
+            // Check if all the essential fields match
+            if (
+                givenAddress.addressLine1 === currentAddress.addressLine1 &&
+                givenAddress.addressLine2 === currentAddress.addressLine2 &&
+                givenAddress.city === currentAddress.city &&
+                givenAddress.state === currentAddress.state &&
+                givenAddress.countryCode === currentAddress.countryCode &&
+                givenAddress.postalCode === currentAddress.postalCode
+            ) {
+                // Return the matching customer address ID
+                return customerAddress.id;
+            }
+        }
+
+        // Return null if no matching address is found
+        return null;
+    }
+
 
 }

@@ -13,11 +13,15 @@ public class PaymentRequestDTO {
     private AddressDTO address;
 
     private String currencyCode;
-    private String phoneNumber;
-    private String calculationId;
+
+    private String courierId;
+    private String courierName;
+    private String courierLogoUrl;
+    private Integer maxDeliveryTime;
+    private Integer minDeliveryTime;
 
     private long amountTotal;
-    private String courierId;
-    private String recipientEmail;
-
+    private long amountTax;
+    private long shippingAmount;
+    private long shippingTax;
 }

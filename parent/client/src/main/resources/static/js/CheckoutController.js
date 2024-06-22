@@ -17,13 +17,35 @@ class CheckoutController {
      * Initializes the Stripe elements, payment, and address elements.
      */
     async init() {
+        this.initPlaceOrderBtnTriggerFormSubmit();
+
         await this.initStripeElements();
         await this.initPaymentElement();
         await this.initAddressElement();
 
         this.initAddressElementListener();
         this.initPaymentElementListener();
+
         this.setupEventListeners();
+    }
+
+    initPlaceOrderBtnTriggerFormSubmit() {
+        const placeOrderBtn = document.getElementById("place-order-btn");
+        if (placeOrderBtn) {
+            placeOrderBtn.addEventListener("click", (event) => {
+                event.preventDefault();
+                const form = document.getElementById("payment-form");
+                if (form) {
+                    form.dispatchEvent(
+                        new Event("submit", {cancelable: true, bubbles: true})
+                    );
+                } else {
+                    console.error("Payment form not found.");
+                }
+            });
+        } else {
+            console.error("Place order button not found.");
+        }
     }
 
     /**
@@ -63,6 +85,8 @@ class CheckoutController {
             const customerAddresses = await this.model.getCustomerAddresses();
             const allowedCountries = await this.model.getShippableCountries();
 
+            this.model.customerAddresses = customerAddresses;
+
             const contacts = customerAddresses.length > 0
                 ? customerAddresses.map(CheckoutUtil.mapAddressToStripeContact)
                 : [];
@@ -91,6 +115,62 @@ class CheckoutController {
         $("#summary-accordion-btn, #continue-to-summary-btn").on("click", this.showSummaryTab.bind(this));
         $("#currencies").on("click", "a", this.handleCurrencyChange.bind(this));
         $("#summary").on("click", 'input[type="radio"]', this.handleChangeCourier.bind(this));
+        $("#payment-form").on("submit", this.handleSubmit.bind(this));
+    }
+
+    async handleSubmit(event) {
+
+        const handleError = (error) => {
+            const messageContainer = document.querySelector("#error-message");
+            if (messageContainer) {
+                messageContainer.textContent = error.message;
+            }
+            submitBtn.disabled = false;
+        };
+
+        const submitBtn = document.getElementById("place-order-btn");
+
+        // Prevent multiple form submissions
+        if (submitBtn.disabled) {
+            return;
+        }
+
+        // Disable form submission while loading
+        submitBtn.disabled = true;
+
+        const {error: submitError} = await this.elements.submit();
+        if (submitError) {
+            handleError(submitError);
+            return;
+        }
+
+        try {
+
+            // update payment intent - pass calculation id and create tax transaction
+            // put transaction id in metadata of payment intent
+            await this.model.savePaymentIntent();
+
+            const {fetchError} = await this.elements.fetchUpdates();
+
+            if (fetchError) {
+                handleError(fetchError);
+            }
+
+            // Confirm the PaymentIntent using the details collected by the Payment Element
+            const {error} = await this.stripe.confirmPayment({
+                elements: this.elements,
+                confirmParams: {
+                    return_url: `http://localhost:8081${MODULE_URL}checkout/return`,
+                },
+            });
+
+            if (error) {
+                handleError(error);
+            }
+
+        } catch (error) {
+            handleError(error);
+        }
     }
 
     /**
@@ -209,6 +289,9 @@ class CheckoutController {
             address: rateResponse.address,
             shippingCost,
         });
+
+        // store applied calculation to update payment intent on placing order
+        this.model.appliedCalculation = response;
 
         this.view.renderCheckoutDetails(
             response.displayAmount,
@@ -481,6 +564,7 @@ class CheckoutController {
         const target = await this.calculateTargetTax(rateResponse, shippingCost, targetCurrency, exchangeRate);
 
         const selectedCalculation = this.getSelectedCalculation(target, base, selectedCurrency);
+        this.model.appliedCalculation = selectedCalculation;
 
         this.renderCheckoutDetails(selectedCalculation, base, target, exchangeRate);
     }

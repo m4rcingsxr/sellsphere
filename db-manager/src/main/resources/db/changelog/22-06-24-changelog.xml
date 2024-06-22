@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1722346079372-22" author="m4rcingsxr">
+        <dropForeignKeyConstraint baseTableName="metadata_entries"
+                                  constraintName="FK_METADATA_ENTRIES_ON_PAYMENT_INTENT"/>
+    </changeSet>
+    <changeSet id="1722346079372-23" author="m4rcingsxr">
+        <dropForeignKeyConstraint baseTableName="orders" constraintName="FK_ORDERS_ON_ADDRESS"/>
+    </changeSet>
+    <changeSet id="1722346079372-24" author="m4rcingsxr">
+        <dropForeignKeyConstraint baseTableName="orders" constraintName="FK_ORDERS_ON_CUSTOMER"/>
+    </changeSet>
+    <changeSet id="1722346079372-25" author="m4rcingsxr">
+        <dropForeignKeyConstraint baseTableName="orders" constraintName="FK_ORDERS_ON_SHIPMENT"/>
+    </changeSet>
+    <changeSet id="1722346079372-26" author="m4rcingsxr">
+        <dropForeignKeyConstraint baseTableName="payment_intents" constraintName="FK_PAYMENT_INTENTS_ON_CURRENCY"/>
+    </changeSet>
+    <changeSet id="1722346079372-5" author="m4rcingsxr">
+        <createTable tableName="couriers">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_couriers"/>
+            </column>
+            <column name="courier_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="courier_logo_url" type="VARCHAR(255)"/>
+            <column name="min_delivery_time" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_delivery_time" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1722346079372-6" author="m4rcingsxr">
+        <addColumn tableName="payment_intents">
+            <column name="address_id" type="INT"/>
+            <column name="base_currency_id" type="INT"/>
+            <column name="courier_id" type="INT"/>
+            <column name="exchange_rate" type="DECIMAL"/>
+            <column name="shipping_amount" type="BIGINT"/>
+            <column name="shipping_tax" type="BIGINT"/>
+            <column name="target_currency_id" type="INT"/>
+            <column name="tax_amount" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1722346079372-10" author="m4rcingsxr">
+        <addColumn tableName="orders">
+            <column name="payment_intent_id" type="INT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1722346079372-15" author="m4rcingsxr">
+        <addUniqueConstraint columnNames="courier_name" constraintName="uc_couriers_courier_name" tableName="couriers"/>
+    </changeSet>
+    <changeSet id="1722346079372-16" author="m4rcingsxr">
+        <addUniqueConstraint columnNames="payment_intent_id" constraintName="uc_orders_payment_intent"
+                             tableName="orders"/>
+    </changeSet>
+    <changeSet id="1722346079372-17" author="m4rcingsxr">
+        <addForeignKeyConstraint baseColumnNames="payment_intent_id" baseTableName="orders"
+                                 constraintName="FK_ORDERS_ON_PAYMENT_INTENT" referencedColumnNames="id"
+                                 referencedTableName="payment_intents"/>
+    </changeSet>
+    <changeSet id="1722346079372-18" author="m4rcingsxr">
+        <addForeignKeyConstraint baseColumnNames="address_id" baseTableName="payment_intents"
+                                 constraintName="FK_PAYMENT_INTENTS_ON_ADDRESS" referencedColumnNames="id"
+                                 referencedTableName="addresses"/>
+    </changeSet>
+    <changeSet id="1722346079372-19" author="m4rcingsxr">
+        <addForeignKeyConstraint baseColumnNames="base_currency_id" baseTableName="payment_intents"
+                                 constraintName="FK_PAYMENT_INTENTS_ON_BASE_CURRENCY" referencedColumnNames="id"
+                                 referencedTableName="currencies"/>
+    </changeSet>
+    <changeSet id="1722346079372-20" author="m4rcingsxr">
+        <addForeignKeyConstraint baseColumnNames="courier_id" baseTableName="payment_intents"
+                                 constraintName="FK_PAYMENT_INTENTS_ON_COURIER" referencedColumnNames="id"
+                                 referencedTableName="couriers"/>
+    </changeSet>
+    <changeSet id="1722346079372-21" author="m4rcingsxr">
+        <addForeignKeyConstraint baseColumnNames="target_currency_id" baseTableName="payment_intents"
+                                 constraintName="FK_PAYMENT_INTENTS_ON_TARGET_CURRENCY" referencedColumnNames="id"
+                                 referencedTableName="currencies"/>
+    </changeSet>
+    <changeSet id="1722346079372-28" author="m4rcingsxr">
+        <dropTable cascadeConstraints="true" tableName="metadata_entries"/>
+    </changeSet>
+    <changeSet id="1722346079372-29" author="m4rcingsxr">
+        <dropTable cascadeConstraints="true" tableName="shipments"/>
+    </changeSet>
+    <changeSet id="1722346079372-30" author="m4rcingsxr">
+        <dropColumn columnName="address_id" tableName="orders"/>
+
+        <dropColumn columnName="customer_id" tableName="orders"/>
+
+        <dropColumn columnName="deliver_date" tableName="orders"/>
+
+        <dropColumn columnName="deliver_days" tableName="orders"/>
+
+        <dropColumn columnName="product_cost" tableName="orders"/>
+
+        <dropColumn columnName="shipment_id" tableName="orders"/>
+
+        <dropColumn columnName="shipping_cost" tableName="orders"/>
+
+        <dropColumn columnName="subtotal" tableName="orders"/>
+
+        <dropColumn columnName="tax" tableName="orders"/>
+
+        <dropColumn columnName="total" tableName="orders"/>
+    </changeSet>
+    <changeSet id="1722346079372-31" author="m4rcingsxr">
+        <dropColumn columnName="application_fee_amount" tableName="payment_intents"/>
+
+        <dropColumn columnName="currency_id" tableName="payment_intents"/>
+    </changeSet>
+
+</databaseChangeLog>

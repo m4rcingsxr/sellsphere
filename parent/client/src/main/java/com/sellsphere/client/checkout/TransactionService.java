@@ -1,5 +1,7 @@
 package com.sellsphere.client.checkout;
 
+import com.sellsphere.client.address.AddressService;
+import com.sellsphere.client.setting.CountryRepository;
 import com.sellsphere.client.setting.CurrencyRepository;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.CartItemRepository;
@@ -19,23 +21,68 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TransactionService {
 
+    private final StripeCheckoutService stripeService;
+    private final SettingService settingService;
+    private final AddressService addressService;
+
     private final CurrencyRepository currencyRepository;
     private final CartItemRepository cartItemRepository;
-    private final StripeCheckoutService stripeService;
     private final PaymentIntentRepository repository;
-    private final SettingService settingService;
+    private final CountryRepository countryRepository;
+    private final CourierRepository courierRepository;
+
+    public PaymentIntent getByStripeId(String paymentIntent) throws TransactionNotFoundException {
+        return repository.findByStripeId(paymentIntent).orElseThrow(TransactionNotFoundException::new);
+    }
 
     public String savePaymentIntent(PaymentRequestDTO request, Customer customer)
-            throws TransactionNotFoundException, StripeException, CurrencyNotFoundException {
+            throws TransactionNotFoundException, StripeException, CurrencyNotFoundException,
+            CountryNotFoundException, AddressNotFoundException {
 
         PaymentIntent transaction = findIncompleteTransaction(customer)
                 .orElseThrow(TransactionNotFoundException::new);
 
         var paymentIntent = stripeService.updatePaymentIntent(transaction.getStripeId(), request);
-        Currency currency = currencyRepository.findByCode(request.getCurrencyCode()).orElseThrow(CurrencyNotFoundException::new);
+        Currency targetCurrency = currencyRepository.findByCode(request.getCurrencyCode()).orElseThrow(CurrencyNotFoundException::new);
+        Currency baseCurrency = settingService.getCurrency();
+        Country country = countryRepository.findByCode(request.getAddress().getCountryCode()).orElseThrow(
+                CountryNotFoundException::new);
 
+        Address address;
+        if(request.getAddress().getId() != null) {
+            address = addressService.getById(request.getAddress().getId());
+        } else {
+            address = Address.builder()
+                    .addressLine1(request.getAddress().getAddressLine1())
+                    .addressLine2(request.getAddress().getAddressLine2())
+                    .city(request.getAddress().getCity())
+                    .country(country)
+                    .firstName(request.getAddress().getFirstName())
+                    .lastName(request.getAddress().getLastName())
+                    .state(request.getAddress().getState())
+                    .primary(false)
+                    .postalCode(request.getAddress().getPostalCode())
+                    .phoneNumber(request.getAddress().getPhoneNumber())
+                    .build();
+        }
+
+        transaction.setShippingAddress(address);
         transaction.setAmount(request.getAmountTotal());
-        transaction.setCurrency(currency);
+        transaction.setShippingAmount(request.getShippingAmount());
+        transaction.setTaxAmount(request.getAmountTax());
+        transaction.setShippingTax(request.getShippingTax());
+        transaction.setTargetCurrency(targetCurrency);
+        transaction.setBaseCurrency(baseCurrency);
+
+        Courier courier = courierRepository.save(Courier.builder()
+                                                      .name(request.getCourierName())
+                                                      .maxDeliveryTime(request.getMaxDeliveryTime())
+                                                      .minDeliveryTime(request.getMinDeliveryTime())
+                                                      .logoUrl(request.getCourierLogoUrl())
+                                                      .build());
+        transaction.setCourier(courier);
+
+        save(transaction);
 
         return paymentIntent.getClientSecret();
     }
@@ -75,7 +122,7 @@ public class TransactionService {
 
         // update platform entity
         paymentIntent.setAmount(amount.longValue());
-        paymentIntent.setCurrency(currency);
+        paymentIntent.setBaseCurrency(currency);
 
         return stripeService.updatePaymentIntent(
                 paymentIntent.getStripeId(),

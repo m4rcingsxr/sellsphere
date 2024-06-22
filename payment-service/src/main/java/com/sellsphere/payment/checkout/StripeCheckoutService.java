@@ -50,7 +50,6 @@ public class StripeCheckoutService {
     public PaymentIntent updatePaymentIntent(String paymentIntentId, PaymentRequestDTO request
     ) throws StripeException {
         PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
-
         var builder = PaymentIntentUpdateParams.builder()
                 .setAmount(request.getAmountTotal())
                 .setCurrency(request.getCurrencyCode());
@@ -58,7 +57,7 @@ public class StripeCheckoutService {
         if (request.getAddress() != null) {
             builder.setShipping(
                     PaymentIntentUpdateParams.Shipping.builder()
-                            .setPhone(request.getPhoneNumber())
+                            .setPhone(request.getAddress().getPhoneNumber())
                             .setName(request.getAddress().getFullName())
                             .setAddress(
                                     PaymentIntentUpdateParams.Shipping.Address.builder()
@@ -75,6 +74,7 @@ public class StripeCheckoutService {
                                             .build())
                             .build()
             );
+
         }
 
         return paymentIntent.update(builder.build());

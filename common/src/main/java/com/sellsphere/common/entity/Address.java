@@ -2,9 +2,7 @@ package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
@@ -19,10 +17,12 @@ import java.util.Objects;
  * It is linked to a specific customer and country.
  */
 @NoArgsConstructor
+@Builder
 @Setter
 @Getter
 @Entity
 @Table(name = "addresses")
+@AllArgsConstructor
 public class Address extends IdentifiedEntity{
 
     /**

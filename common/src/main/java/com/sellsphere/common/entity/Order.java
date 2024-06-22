@@ -21,41 +21,12 @@ public class Order extends IdentifiedEntity {
     @Column(name = "order_time", nullable = false)
     private LocalDateTime orderTime;
 
-    @Column(name = "shipping_cost", nullable = false)
-    private BigDecimal shippingCost;
-
-    @Column(name = "product_cost", nullable = false)
-    private BigDecimal productCost;
-
-    @Column(name = "subtotal", nullable = false)
-    private BigDecimal subtotal;
-
-    @Column(name = "tax")
-    private BigDecimal tax;
-
-    @Column(name = "total", nullable = false)
-    private BigDecimal total;
-
-    @Column(name = "deliver_days", nullable = false)
-    private int deliverDays;
-
-    @Column(name = "deliver_date", nullable = false)
-    private LocalDate deliverDate;
-
-    @ManyToOne
-    @JoinColumn(name = "address_id", nullable = false)
-    private Address destinationAddress;
-
-    @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @OneToOne
+    @JoinColumn(name = "payment_intent_id")
+    private PaymentIntent transaction;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails;
-
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "shipment_id")
-    private Shipment shipment;
 
     public void addOrderDetail(CartItem cartItem) {
         if(orderDetails == null) {

@@ -25,13 +25,30 @@ public class PaymentIntent extends IdentifiedEntity {
     @Column(name = "amount")
     private Long amount;
 
-    @Column(name = "application_fee_amount")
-    private Long applicationFeeAmount;
+    @Column(name = "shipping_amount")
+    private Long shippingAmount;
+
+    @Column(name = "shipping_tax")
+    private Long shippingTax;
+
+    @Column(name = "tax_amount")
+    private Long taxAmount;
+
+    @Column(name = "exchange_rate")
+    private BigDecimal exchangeRate;
+
+    @ManyToOne
+    @JoinColumn(name = "base_currency_id")
+    private Currency baseCurrency;
+
+    @ManyToOne
+    @JoinColumn(name = "address_id")
+    private Address shippingAddress;
 
     // Three-letter ISO currency code, in lowercase
     @ManyToOne
-    @JoinColumn(name = "currency_id")
-    private Currency currency;
+    @JoinColumn(name = "target_currency_id")
+    private Currency targetCurrency;
 
     // ID of the Customer this PaymentIntent belongs to, if one exists
     @ManyToOne
@@ -68,13 +85,14 @@ public class PaymentIntent extends IdentifiedEntity {
     @OneToOne(mappedBy = "paymentIntent")
     private Charge charge;
 
-    // get metadata - retrieve calculation id or transaction tax - to get tax info
-    @OneToMany(mappedBy = "paymentIntent")
-    private List<MetadataEntry> metadata;
+    // tax transaction id and selected rate courier id
+    @ManyToOne
+    @JoinColumn(name = "courier_id")
+    private Courier courier;
 
     @Transient
     public BigDecimal getDisplayAmount() {
-        long unitAmount = currency.getUnitAmount().longValue();
+        long unitAmount = targetCurrency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(unitAmount)).setScale(2,
                                                                                           RoundingMode.CEILING
@@ -83,7 +101,7 @@ public class PaymentIntent extends IdentifiedEntity {
 
     @Transient
     public BigDecimal getDisplayRefunded() {
-        long unitAmount = currency.getUnitAmount().longValue();
+        long unitAmount = targetCurrency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(charge.getAmountRefunded())
                 .divide(BigDecimal.valueOf(unitAmount))
@@ -94,10 +112,10 @@ public class PaymentIntent extends IdentifiedEntity {
     public BigDecimal getDisplayFee() {
         Long finalFee = 0L;
 
-        if(this.charge != null) {
+        if (this.charge != null) {
             finalFee = charge.getBalanceTransaction().getFee();
 
-            if(this.charge.getRefunds() != null && !this.charge.getRefunds().isEmpty()) {
+            if (this.charge.getRefunds() != null && !this.charge.getRefunds().isEmpty()) {
                 for (Refund refund : this.charge.getRefunds()) {
                     Long fee = refund.getBalanceTransaction().getFee();
                     finalFee += fee;
@@ -105,7 +123,7 @@ public class PaymentIntent extends IdentifiedEntity {
             }
         }
 
-        long unitAmount = currency.getUnitAmount().longValue();
+        long unitAmount = targetCurrency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(finalFee)
                 .divide(BigDecimal.valueOf(unitAmount))
@@ -116,10 +134,10 @@ public class PaymentIntent extends IdentifiedEntity {
     public BigDecimal getDisplayNet() {
         Long finalNet = 0L;
 
-        if(this.charge != null) {
+        if (this.charge != null) {
             finalNet = charge.getBalanceTransaction().getNet();
 
-            if(this.charge.getRefunds() != null && !this.charge.getRefunds().isEmpty()) {
+            if (this.charge.getRefunds() != null && !this.charge.getRefunds().isEmpty()) {
 
                 for (Refund refund : this.charge.getRefunds()) {
                     Long net = refund.getBalanceTransaction().getNet();
@@ -128,24 +146,11 @@ public class PaymentIntent extends IdentifiedEntity {
             }
         }
 
-        long unitAmount = currency.getUnitAmount().longValue();
+        long unitAmount = targetCurrency.getUnitAmount().longValue();
 
         return BigDecimal.valueOf(finalNet)
                 .divide(BigDecimal.valueOf(unitAmount))
                 .setScale(2, RoundingMode.CEILING);
-    }
-
-    public void addMetadataEntry(String key, String value) {
-        if(metadata == null) {
-            metadata = new ArrayList<>();
-        }
-
-        MetadataEntry entry = new MetadataEntry();
-        entry.setKey(key);
-        entry.setValue(value);
-        entry.setPaymentIntent(this);
-
-        metadata.add(entry);
     }
 
 }

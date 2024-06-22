@@ -49,4 +49,7 @@ public class AddressDTO implements Serializable {
     private String postalCode;
 
     private String fullName;
+
+    // easyship selected courier
+    private String courierId;
 }

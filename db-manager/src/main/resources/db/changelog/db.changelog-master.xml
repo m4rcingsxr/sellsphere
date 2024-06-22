@@ -62,5 +62,12 @@
     <include file="db/changelog/19-06-24-changelog.xml"/>
 
     <!-- Change type of unit amount in currency table to decimal   -->
-    <include file="db/changelog/20-06-changelog.xml"/>
+    <include file="db/changelog/20-06-24-changelog.xml"/>
+
+    <!--
+        Remove shipment object - easyship has limited test environment.
+        Change PaymentIntent object to contain tax and shipping information.
+        Simplify order by providing transaction.
+     -->
+    <include file="db/changelog/22-06-24-changelog.xml"/>
 </databaseChangeLog>

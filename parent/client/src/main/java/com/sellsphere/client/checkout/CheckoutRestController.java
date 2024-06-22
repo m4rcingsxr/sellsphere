@@ -60,7 +60,7 @@ public class CheckoutRestController {
     public ResponseEntity<Map<String, String>> createPaymentIntent(
             @RequestBody PaymentRequestDTO request, Principal principal)
             throws StripeException, CustomerNotFoundException, CurrencyNotFoundException,
-            TransactionNotFoundException {
+            TransactionNotFoundException, AddressNotFoundException, CountryNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
         String clientSecret = transactionService.savePaymentIntent(request, customer);
 

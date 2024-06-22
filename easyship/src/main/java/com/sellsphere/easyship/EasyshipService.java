@@ -26,4 +26,5 @@ public interface EasyshipService {
     DeleteProductResponse deleteProduct(String productId);
 
     HsCodeResponse fetchHsCodes(Integer page, String code, String description);
+
 }

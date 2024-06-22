@@ -39,4 +39,8 @@ public class CustomerService {
 
         return customerRepository.save(newCustomer);
     }
+
+    public Customer getById(Integer id) throws CustomerNotFoundException {
+        return customerRepository.findById(id).orElseThrow(CustomerNotFoundException::new);
+    }
 }

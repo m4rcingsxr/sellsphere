@@ -415,6 +415,7 @@ public class EasyshipIntegrationService implements EasyshipService {
         }
     }
 
+
     private HsCodeResponse processHsCodeResponse(Response response) {
         if (response.getStatus() == Response.Status.OK.getStatusCode() ||
                 response.getStatus() == Response.Status.CREATED.getStatusCode()) {

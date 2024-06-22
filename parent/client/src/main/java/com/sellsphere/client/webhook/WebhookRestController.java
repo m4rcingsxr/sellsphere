@@ -64,7 +64,7 @@ public class WebhookRestController {
     @PostMapping("/webhook")
     public ResponseEntity<String> handleCheckoutWebhook(@RequestBody String payload,
                                                         HttpServletRequest request)
-            throws IOException, CustomerNotFoundException, CurrencyNotFoundException {
+            throws IOException {
         String requestIp = request.getRemoteAddr();
 
         if (!isAllowedIp(requestIp)) {
@@ -112,10 +112,8 @@ public class WebhookRestController {
         if (dataObjectDeserializer.getObject().isPresent()) {
             Optional<StripeObject> stripeObject = dataObjectDeserializer.getObject();
 
-            String currency = webhookService.getSettingService().getCurrencyCode(false);
-
             final Event finalEvent = event;
-            taskExecutor.submit(wrapCheckedException(() -> webhookService.processEvent(stripeObject, finalEvent, currency)));
+            taskExecutor.submit(wrapCheckedException(() -> webhookService.processEvent(stripeObject, finalEvent)));
 
         } else {
 
