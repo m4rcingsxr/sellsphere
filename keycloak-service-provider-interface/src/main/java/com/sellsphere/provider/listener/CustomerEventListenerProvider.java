@@ -1,6 +1,6 @@
 package com.sellsphere.provider.listener;
 
-import com.sellsphere.payment.customer.CustomerService;
+import com.sellsphere.payment.customer.StripeCustomerService;
 import com.sellsphere.provider.customer.CustomerAdapter;
 import com.sellsphere.provider.UserModelTransaction;
 import com.sellsphere.provider.UserModelTransactionManager;
@@ -17,7 +17,7 @@ import org.keycloak.models.UserModel;
 @Slf4j
 public class CustomerEventListenerProvider implements EventListenerProvider {
 
-    private final CustomerService customerService;
+    private final StripeCustomerService customerService;
 
     private final EntityManager entityManager;
 
@@ -25,7 +25,7 @@ public class CustomerEventListenerProvider implements EventListenerProvider {
 
     public CustomerEventListenerProvider(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.customerService = new CustomerService();
+        this.customerService = new StripeCustomerService();
         this.tx = UserModelTransactionManager.getInstance(this::updateUser);
     }
 

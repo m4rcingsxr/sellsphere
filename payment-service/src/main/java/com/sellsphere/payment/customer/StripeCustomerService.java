@@ -12,7 +12,7 @@ import com.stripe.param.CustomerUpdateParams;
  * Service for handling Stripe customer operations.
  * This class provides methods to create and update Stripe customers.
  */
-public class CustomerService {
+public class StripeCustomerService {
 
     static {
         StripeConfig.init();
