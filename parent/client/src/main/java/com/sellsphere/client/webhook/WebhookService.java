@@ -35,7 +35,6 @@ public class WebhookService {
     private final RefundRepository refundRepository;
     private final ChargeRepository chargeRepository;
     private final BalanceTransactionRepository balanceTransactionRepository;
-    private final CurrencyRepository currencyRepository;
 
     /**
      * Process the Stripe event.
@@ -152,11 +151,27 @@ public class WebhookService {
      */
     private void handlePaymentIntentRequiresAction(
             com.stripe.model.PaymentIntent stripePaymentIntent)
-            throws TransactionNotFoundException {
-        var servicePaymentIntent = transactionService.getByStripeId(stripePaymentIntent.getId());
+            throws TransactionNotFoundException, StripeException {
 
-        servicePaymentIntent.setStatus(stripePaymentIntent.getStatus());
-        transactionService.save(servicePaymentIntent);
+        var serviceTransaction = transactionService.getByStripeId(stripePaymentIntent.getId());
+        Customer customer = serviceTransaction.getCustomer();
+
+
+        var paymentMethod = com.stripe.model.PaymentMethod.retrieve(
+                stripePaymentIntent.getPaymentMethod()
+        );
+        var servicePaymentMethod = paymentMethodRepository.save(
+                com.sellsphere.common.entity.PaymentMethod.builder()
+                        .type(paymentMethod.getType())
+                        .customer(customer)
+                        .stripeId(paymentMethod.getId())
+                        .build()
+        );
+
+        serviceTransaction.setPaymentMethod(servicePaymentMethod);
+
+        serviceTransaction.setStatus(stripePaymentIntent.getStatus());
+        transactionService.save(serviceTransaction);
     }
 
     /**
@@ -172,24 +187,11 @@ public class WebhookService {
             throws StripeException, TransactionNotFoundException {
 
         var serviceTransaction = transactionService.getByStripeId(stripePaymentIntent.getId());
-        Customer customer = serviceTransaction.getCustomer();
 
         Order order = orderService.createOrder(
                 serviceTransaction
         );
 
-        var paymentMethod = com.stripe.model.PaymentMethod.retrieve(
-                stripePaymentIntent.getPaymentMethod()
-        );
-        var servicePaymentMethod = paymentMethodRepository.save(
-                com.sellsphere.common.entity.PaymentMethod.builder()
-                        .type(paymentMethod.getType())
-                        .customer(customer)
-                        .stripeId(paymentMethod.getId())
-                        .build()
-        );
-
-        serviceTransaction.setPaymentMethod(servicePaymentMethod);
         serviceTransaction.setStatus(stripePaymentIntent.getStatus());
         serviceTransaction.setOrder(order);
         transactionService.save(serviceTransaction);
@@ -208,21 +210,6 @@ public class WebhookService {
      */
     private void handlePaymentIntentCreated(com.stripe.model.PaymentIntent stripeIntent)
             throws CustomerNotFoundException, CurrencyNotFoundException {
-//        Customer customer = customerRepository.findByStripeId(stripeIntent.getCustomer())
-//                .orElseThrow(CustomerNotFoundException::new);
-//        Currency serviceCurrency = currencyRepository.findByCode(stripeIntent.getCurrency())
-//                .orElseThrow(CurrencyNotFoundException::new);
-
-//        transactionService.save(
-//                com.sellsphere.common.entity.PaymentIntent.builder()
-//                        .amount(stripeIntent.getAmount())
-//                        .created(Instant.now().toEpochMilli())
-//                        .clientSecret(stripeIntent.getClientSecret())
-//                        .baseCurrency(serviceCurrency)
-//                        .status(stripeIntent.getStatus())
-//                        .customer(customer)
-//                        .stripeId(stripeIntent.getId())
-//                        .build());
     }
 
     private void handleChargeRefunded(com.stripe.model.Charge chargeRefund)

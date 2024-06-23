@@ -18,17 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/transactions")
 public class TransactionController {
 
-    // cancel available:
-    /**
-     * requires_payment_method
-     * requires_capture
-     * requires_confirmation
-     * requires_action
-     * processing
-     *
-     * // cancel refunds
-     */
-
     public static final String DEFAULT_REDIRECT_URL = "redirect:/transactions/page/0?sortField=created&sortDir=desc";
     private final TransactionService transactionService;
 

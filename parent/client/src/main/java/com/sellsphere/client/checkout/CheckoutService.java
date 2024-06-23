@@ -3,6 +3,7 @@ package com.sellsphere.client.checkout;
 import com.sellsphere.client.PriceService;
 import com.sellsphere.client.setting.CurrencyRepository;
 import com.sellsphere.client.setting.SettingService;
+import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.client.shoppingcart.ShoppingCartService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.*;
@@ -31,6 +32,7 @@ public class CheckoutService {
     private final SettingService settingService;
     private final CurrencyRepository currencyRepository;
     private final PriceService priceService;
+    private final CartItemRepository cartItemRepository;
 
     /**
      * Calculates the total cost with address-specific details, using a specified exchange rate
@@ -41,6 +43,7 @@ public class CheckoutService {
      * @return The calculation response containing total amounts and details.
      * @throws CurrencyNotFoundException if the specified currency is not found.
      * @throws StripeException           if there is an error with Stripe operations.
+     * @throws SettingNotFoundException  if the setting is not found.
      */
     public CalculationResponseDTO calculate(CalculationRequestDTO request, Customer customer)
             throws CurrencyNotFoundException, StripeException, SettingNotFoundException {
@@ -64,24 +67,6 @@ public class CheckoutService {
                                              request.getAddress(),
                                              request.getExchangeRate()
         );
-    }
-
-    private CalculationCreateParams.Builder buildCalculationParams(CalculationRequestDTO request,
-                                                                   String baseCurrency,
-                                                                   String targetCurrency,
-                                                                   String taxBehavior,
-                                                                   List<CartItem> cart)
-            throws CurrencyNotFoundException {
-        CalculationCreateParams.Builder params = CalculationCreateParams.builder();
-        params.setCurrency(targetCurrency);
-        setLineItems(params, cart, baseCurrency, targetCurrency, request.getExchangeRate(),
-                     taxBehavior
-        );
-        setShippingCost(params, baseCurrency, targetCurrency, request.getShippingCost(),
-                        request.getExchangeRate(), taxBehavior
-        );
-        setCustomerDetails(params, request.getAddress());
-        return params;
     }
 
     private CalculationResponseDTO prepareTaxCalculationResponse(Calculation calculation,
@@ -126,6 +111,24 @@ public class CheckoutService {
                                         unitAmount
                 ))
                 .build();
+    }
+
+    private CalculationCreateParams.Builder buildCalculationParams(CalculationRequestDTO request,
+                                                                   String baseCurrency,
+                                                                   String targetCurrency,
+                                                                   String taxBehavior,
+                                                                   List<CartItem> cart)
+            throws CurrencyNotFoundException {
+        CalculationCreateParams.Builder params = CalculationCreateParams.builder();
+        params.setCurrency(targetCurrency);
+        setLineItems(params, cart, baseCurrency, targetCurrency, request.getExchangeRate(),
+                     taxBehavior
+        );
+        setShippingCost(params, baseCurrency, targetCurrency, request.getShippingCost(),
+                        request.getExchangeRate(), taxBehavior
+        );
+        setCustomerDetails(params, request.getAddress());
+        return params;
     }
 
     private CalculationResponseDTO.ShippingCostDTO buildShippingCostDTO(Calculation calculation)
@@ -214,8 +217,38 @@ public class CheckoutService {
         }
     }
 
+    /**
+     * Creates a customer session in Stripe for the given customer.
+     *
+     * @param customer The customer entity.
+     * @return The created CustomerSession.
+     * @throws StripeException if there is an error with Stripe operations.
+     */
     public CustomerSession createCustomerSession(Customer customer) throws StripeException {
         return stripeService.createCustomerSession(customer.getStripeId());
+    }
+
+    /**
+     * Retrieves a simplified checkout summary for the given customer.
+     *
+     * @param customer The customer entity.
+     * @return The CheckoutDTO containing the total amount and currency.
+     * @throws CurrencyNotFoundException if the specified currency is not found.
+     */
+    public CheckoutDTO getSimpleCheckout(Customer customer) throws CurrencyNotFoundException {
+        List<CartItem> cart = cartItemRepository.findByCustomer(customer);
+
+        Currency currency = settingService.getCurrency();
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (CartItem cartItem : cart) {
+            total = total.add(priceService.convertAmount(cartItem.getSubtotal(), currency.getUnitAmount()));
+        }
+
+        return CheckoutDTO.builder()
+                .amount(priceService.handleRoundingAmountByCurrency(total, currency.getUnitAmount()))
+                .currency(currency.getCode())
+                .build();
     }
 }
 

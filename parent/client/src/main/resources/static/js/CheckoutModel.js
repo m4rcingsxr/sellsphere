@@ -21,6 +21,15 @@ class CheckoutModel {
         this.selectedRateIndex = 0;
     }
 
+    async getCartTotal() {
+        try {
+            return await ajaxUtil.get(`${MODULE_URL}checkout/cart-total`);
+        } catch(error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
     /**
      * Fetches the customer addresses.
      * @returns {Promise<Object>} - A promise that resolves to an array of customer addresses.
@@ -54,16 +63,6 @@ class CheckoutModel {
         try {
             const response = await ajaxUtil.post(`${MODULE_URL}checkout/create-customer-session`, {});
             return response.customerSessionClientSecret;
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
-    }
-
-    async fetchClientSecret() {
-        try {
-            const response = await ajaxUtil.post(`${MODULE_URL}checkout/init-payment-intent`, {});
-            return response.clientSecret;
         } catch (error) {
             console.error(error);
             throw error;
@@ -161,7 +160,7 @@ class CheckoutModel {
     // on persist - update final collected payment intent data
     async savePaymentIntent() {
         try {
-            const appliedCalculation = this.model.appliedCalculation;
+            const appliedCalculation = this.appliedCalculation;
 
             if (appliedCalculation == null) {
                 throw new Error("Illegal state. Model should have applied calculation.");
@@ -169,8 +168,8 @@ class CheckoutModel {
 
             const address = appliedCalculation.address;
 
-            if (this.model?.customerAddresses.length > 0) {
-                const matchingAddressId = this.findMatchingAddressId(address, customerAddresses);
+            if (this?.customerAddresses.length > 0) {
+                const matchingAddressId = this.findMatchingAddressId(address, this.customerAddresses);
                 if (matchingAddressId) {
                     address.id = matchingAddressId;
                     console.log(`Matching address found with ID: ${matchingAddressId}`);
@@ -179,24 +178,30 @@ class CheckoutModel {
                 }
             }
 
-            if(!this.model?.rateResponse?.rates || this.model.rateResponse.rates.length === 0) {
+            if(!this?.rateResponse?.rates || this.rateResponse.rates.length === 0) {
                 throw new Error("Illegal state. No shipping rates for provided destination: " + address)
             }
 
-            const selectedRate = this.model.rateResponse[this.model.selectedRateIndex];
+            const selectedRate = this.rateResponse.rates[this.selectedRateIndex];
+
+            if(!this?.exchangeRateResponse) {
+                throw new Error("Illegal state. Exchange rates should be presented.")
+            }
+
+            const exchangeRate = this.exchangeRateResponse.result["rate"];
 
             return await ajaxUtil.post(`${MODULE_URL}checkout/save-payment-intent`, {
                 address,
                 currencyCode : appliedCalculation.currencyCode,
                 amountTotal : appliedCalculation.amountTotal,
-                taxAmount : appliedCalculation.taxAmountInclusive,
-                shippingCost : appliedCalculation.shippingCost.amount,
-                shippingCostTax : appliedCalculation.shippingCost.shippingCostTax,
-                courierId : selectedRate.courierId,
+                amountTax : appliedCalculation.taxAmountInclusive,
+                shippingAmount : appliedCalculation.shippingCost.amount,
+                shippingTax : appliedCalculation.shippingCost.shippingCostTax,
                 courierName : selectedRate.courierName,
                 courierLogoUrl : selectedRate.courierLogoUrl,
                 maxDeliveryTime : selectedRate.maxDeliveryTime,
                 minDeliveryTime : selectedRate.minDeliveryTime,
+                exchangeRate
             });
         } catch(error) {
             console.error(error);

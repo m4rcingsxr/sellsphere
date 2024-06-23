@@ -8,7 +8,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sellsphere.common.entity.CartItem;
 import com.sellsphere.common.entity.payload.ShippingRateRequestDTO;
-import com.sellsphere.easyship.payload.*;
+import com.sellsphere.easyship.payload.Address;
+import com.sellsphere.easyship.payload.HsCodeResponse;
+import com.sellsphere.easyship.payload.ShippingRatesRequest;
+import com.sellsphere.easyship.payload.ShippingRatesResponse;
 import com.sellsphere.easyship.payload.shipment.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
@@ -57,7 +60,13 @@ public class EasyshipIntegrationService implements EasyshipService {
     }
 
     /**
-     * Retrieves shipping rates from Easyship API.
+     * If a parcel's total_actual_weight is provided, it will prevail over the sum of the items'
+     * weights. If not provided, the items' weights are mandatory and will be used to calculate
+     * the total package dimensions.
+     *
+     * Likewise, if the box object is provided, its dimensions will prevail over all individual
+     * items' dimensions. If a box isn't specified, item dimensions are mandatory and we will
+     * used to determine the best box for the parcel
      *
      * @param pageNum The page number for pagination.
      * @param cart    The list of cart items.
@@ -100,7 +109,8 @@ public class EasyshipIntegrationService implements EasyshipService {
     }
 
     private void setShippingSettings(
-            ShippingRatesRequest.ShippingRatesRequestBuilder ratesRequestBuilder, String currencyCode) {
+            ShippingRatesRequest.ShippingRatesRequestBuilder ratesRequestBuilder,
+            String currencyCode) {
         ratesRequestBuilder.shippingSettings(ShippingRatesRequest.ShippingSettings.builder()
                                                      .units(ShippingRatesRequest.Units.builder()
                                                                     .dimensions(
@@ -154,10 +164,14 @@ public class EasyshipIntegrationService implements EasyshipService {
                                                        .state(requestDTO.getAddress().getState())
                                                        .line1(requestDTO.getAddress().getAddressLine1())
                                                        .line2(requestDTO.getAddress().getAddressLine2())
-                                                       .postalCode(requestDTO.getAddress().getPostalCode())
-                                                       .contactName(requestDTO.getAddress().getFullName())
-                                                       .contactPhone(requestDTO.getAddress().getPhoneNumber())
-                                                       .countryAlpha2(requestDTO.getAddress().getCountryCode())
+                                                       .postalCode(
+                                                               requestDTO.getAddress().getPostalCode())
+                                                       .contactName(
+                                                               requestDTO.getAddress().getFullName())
+                                                       .contactPhone(
+                                                               requestDTO.getAddress().getPhoneNumber())
+                                                       .countryAlpha2(
+                                                               requestDTO.getAddress().getCountryCode())
                                                        .build());
     }
 

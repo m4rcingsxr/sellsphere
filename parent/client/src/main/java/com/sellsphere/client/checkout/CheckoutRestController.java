@@ -3,6 +3,7 @@ package com.sellsphere.client.checkout;
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.CalculationRequestDTO;
+import com.sellsphere.common.entity.payload.CheckoutDTO;
 import com.sellsphere.common.entity.payload.PaymentRequestDTO;
 import com.sellsphere.common.entity.payload.CalculationResponseDTO;
 import com.stripe.exception.StripeException;
@@ -15,10 +16,6 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-
-/**
- * REST controller for handling checkout-related operations.
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/checkout")
@@ -38,6 +35,7 @@ public class CheckoutRestController {
      * @throws StripeException           if there is an error with Stripe operations.
      * @throws CustomerNotFoundException if the customer is not found.
      * @throws CurrencyNotFoundException if the specified currency is not found.
+     * @throws SettingNotFoundException  if a required setting is not found.
      */
     @PostMapping("/calculate")
     public ResponseEntity<CalculationResponseDTO> calculate(
@@ -50,17 +48,39 @@ public class CheckoutRestController {
     }
 
     /**
+     * Retrieves the total amount in the cart for the authenticated customer.
+     *
+     * @param principal The authenticated user's principal.
+     * @return The CheckoutDTO containing the total amount and currency.
+     * @throws CustomerNotFoundException if the customer is not found.
+     * @throws CurrencyNotFoundException if the specified currency is not found.
+     */
+    @GetMapping("/cart-total")
+    public ResponseEntity<CheckoutDTO> cartTotal(Principal principal)
+            throws CustomerNotFoundException, CurrencyNotFoundException {
+        Customer customer = getAuthenticatedCustomer(principal);
+        CheckoutDTO checkoutDTO = checkoutService.getSimpleCheckout(customer);
+
+        return ResponseEntity.ok(checkoutDTO);
+    }
+
+    /**
      * Creates a payment intent for the given payment request.
      *
-     * @param request The payment request containing address, amount and currency details.
+     * @param request   The payment request containing address, amount, and currency details.
+     * @param principal The authenticated user's principal.
      * @return A map containing the client secret of the payment intent.
-     * @throws StripeException if there is an error with Stripe operations.
+     * @throws StripeException           if there is an error with Stripe operations.
+     * @throws CustomerNotFoundException if the customer is not found.
+     * @throws CurrencyNotFoundException if the specified currency is not found.
+     * @throws AddressNotFoundException  if the specified address is not found.
+     * @throws CountryNotFoundException  if the specified country is not found.
      */
     @PostMapping("/save-payment-intent")
     public ResponseEntity<Map<String, String>> createPaymentIntent(
             @RequestBody PaymentRequestDTO request, Principal principal)
             throws StripeException, CustomerNotFoundException, CurrencyNotFoundException,
-            TransactionNotFoundException, AddressNotFoundException, CountryNotFoundException {
+            AddressNotFoundException, CountryNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
         String clientSecret = transactionService.savePaymentIntent(request, customer);
 
@@ -70,19 +90,14 @@ public class CheckoutRestController {
         return ResponseEntity.ok(map);
     }
 
-    // fetch payment intent existing & modified for current state or create new (start checkout process)
-    @PostMapping("/init-payment-intent")
-    public ResponseEntity<Map<String, String>> fetchPaymentIntent(Principal principal)
-            throws CustomerNotFoundException, StripeException, CurrencyNotFoundException {
-        Customer customer = getAuthenticatedCustomer(principal);
-        String clientSecret = transactionService.initializePaymentIntent(customer);
-
-        Map<String, String> map = new HashMap<>();
-        map.put("clientSecret", clientSecret);
-
-        return ResponseEntity.ok(map);
-    }
-
+    /**
+     * Creates a customer session in Stripe for the authenticated customer.
+     *
+     * @param principal The authenticated user's principal.
+     * @return A map containing the client secret of the customer session.
+     * @throws CustomerNotFoundException if the customer is not found.
+     * @throws StripeException           if there is an error with Stripe operations.
+     */
     @PostMapping("/create-customer-session")
     public ResponseEntity<Map<String, String>> createCustomerSession(Principal principal)
             throws CustomerNotFoundException, StripeException {

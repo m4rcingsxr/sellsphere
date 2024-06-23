@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface PaymentIntentRepository extends SearchRepository<PaymentIntent, Integer> {
 
     @Override
-    @Query("SELECT p FROM PaymentIntent p WHERE LOWER(CONCAT(p.id, ' ', p.currency.code, ' ', p" +
+    @Query("SELECT p FROM PaymentIntent p WHERE LOWER(CONCAT(p.id, ' ', p" +
             ".customer.email, ' ', p.status)) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<PaymentIntent> findAll(@Param("keyword") String keyword, Pageable pageRequest);
 

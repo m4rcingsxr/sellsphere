@@ -54,11 +54,13 @@ class CheckoutController {
     async initStripeElements() {
         try {
             const customerSessionClientSecret = await this.model.fetchCustomerSessionClientSecret();
-            const clientSecret = await this.model.fetchClientSecret();
+            const checkout = await this.model.getCartTotal();
 
             this.elements = this.stripe.elements({
+                mode : 'payment',
+                amount : checkout.amount,
+                currency: checkout.currency,
                 customerSessionClientSecret,
-                clientSecret,
                 loader: 'always'
             });
         } catch (error) {
@@ -138,6 +140,8 @@ class CheckoutController {
         // Disable form submission while loading
         submitBtn.disabled = true;
 
+        this.elements.update({currency: this.model.appliedCalculation.currencyCode});
+
         const {error: submitError} = await this.elements.submit();
         if (submitError) {
             handleError(submitError);
@@ -148,17 +152,13 @@ class CheckoutController {
 
             // update payment intent - pass calculation id and create tax transaction
             // put transaction id in metadata of payment intent
-            await this.model.savePaymentIntent();
-
-            const {fetchError} = await this.elements.fetchUpdates();
-
-            if (fetchError) {
-                handleError(fetchError);
-            }
+            const response = await this.model.savePaymentIntent();
+            const clientSecret = response.clientSecret;
 
             // Confirm the PaymentIntent using the details collected by the Payment Element
             const {error} = await this.stripe.confirmPayment({
                 elements: this.elements,
+                clientSecret,
                 confirmParams: {
                     return_url: `http://localhost:8081${MODULE_URL}checkout/return`,
                 },
@@ -564,6 +564,7 @@ class CheckoutController {
         const target = await this.calculateTargetTax(rateResponse, shippingCost, targetCurrency, exchangeRate);
 
         const selectedCalculation = this.getSelectedCalculation(target, base, selectedCurrency);
+
         this.model.appliedCalculation = selectedCalculation;
 
         this.renderCheckoutDetails(selectedCalculation, base, target, exchangeRate);

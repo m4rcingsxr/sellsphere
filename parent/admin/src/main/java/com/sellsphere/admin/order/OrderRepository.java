@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 public interface OrderRepository extends SearchRepository<Order, Integer> {
 
     @Override
-    @Query("SELECT o FROM Order o WHERE LOWER(CONCAT(o.id, ' ', o.shipment.shipmentId)) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query("SELECT o FROM Order o WHERE LOWER(CONCAT(o.id, ' ', o.transaction.id)) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Order> findAll(@Param("keyword") String keyword, Pageable pageRequest);
 
 }

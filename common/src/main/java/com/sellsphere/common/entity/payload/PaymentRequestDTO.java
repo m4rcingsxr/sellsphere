@@ -2,6 +2,8 @@ package com.sellsphere.common.entity.payload;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 
 @Getter
 @Setter
@@ -14,11 +16,12 @@ public class PaymentRequestDTO {
 
     private String currencyCode;
 
-    private String courierId;
     private String courierName;
     private String courierLogoUrl;
     private Integer maxDeliveryTime;
     private Integer minDeliveryTime;
+
+    private BigDecimal exchangeRate;
 
     private long amountTotal;
     private long amountTax;

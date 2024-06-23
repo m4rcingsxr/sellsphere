@@ -13,7 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ShippingRatesRequest {
 
-
     @SerializedName("courier_selection")
     private CourierSelection courierSelection;
 

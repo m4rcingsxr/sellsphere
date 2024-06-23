@@ -24,7 +24,6 @@ public class TransactionService {
     private final StripeCheckoutService stripeCheckoutService;
     private final RefundRepository refundRepository;
     private final PaymentIntentRepository paymentIntentRepository;
-    private final BalanceTransactionRepository balanceTransactionRepository;
 
 
     public void listEntities(PagingAndSortingHelper helper, Integer pageNum) {

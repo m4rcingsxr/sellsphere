@@ -34,7 +34,7 @@ public class PaymentIntent extends IdentifiedEntity {
     @Column(name = "tax_amount")
     private Long taxAmount;
 
-    @Column(name = "exchange_rate")
+    @Column(name = "exchange_rate", precision = 18, scale = 8)
     private BigDecimal exchangeRate;
 
     @ManyToOne
@@ -74,9 +74,6 @@ public class PaymentIntent extends IdentifiedEntity {
     // Reason for cancellation of this PaymentIntent
     @Column(name = "cancellation_reason")
     private String cancellationReason;
-
-    @Column(name = "client_secret")
-    private String clientSecret;
 
     @ManyToOne
     @JoinColumn(name = "payment_method_id")
