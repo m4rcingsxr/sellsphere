@@ -1,6 +1,5 @@
 package com.sellsphere.admin.customer;
 
-import com.sellsphere.admin.setting.CountryRepository;
 import com.sellsphere.common.entity.Address;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Customer;

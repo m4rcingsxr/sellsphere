@@ -1,9 +1,9 @@
 package com.sellsphere.provider.listener;
 
 import com.sellsphere.payment.customer.StripeCustomerService;
-import com.sellsphere.provider.customer.CustomerAdapter;
 import com.sellsphere.provider.UserModelTransaction;
 import com.sellsphere.provider.UserModelTransactionManager;
+import com.sellsphere.provider.customer.CustomerAdapter;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import jakarta.persistence.EntityManager;

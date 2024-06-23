@@ -2,7 +2,6 @@ package com.sellsphere.admin.transaction;
 
 import com.sellsphere.admin.page.SearchRepository;
 import com.sellsphere.common.entity.PaymentIntent;
-import com.sellsphere.common.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;

@@ -7,7 +7,6 @@ import com.sellsphere.admin.product.ProductController;
 import com.sellsphere.admin.user.UserController;
 import com.sellsphere.common.entity.*;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.core.annotation.Order;

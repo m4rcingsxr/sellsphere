@@ -12,18 +12,18 @@ import lombok.*;
 @Table(name = "payment_methods")
 public class PaymentMethod extends IdentifiedEntity {
 
-    @Column(name = "stripe_id")
+    @Column(name = "stripe_id", nullable = false)
     private String stripeId;
 
     @ManyToOne
-    @JoinColumn(name = "country_id")
+    @JoinColumn(name = "country_id", nullable = false)
     private Country billingCountry;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @Column(name = "payment_type")
+    @Column(name = "payment_type", nullable = false)
     private String type;
 
 }

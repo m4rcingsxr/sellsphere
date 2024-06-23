@@ -3,11 +3,12 @@ package com.sellsphere.client.checkout;
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.CalculationRequestDTO;
+import com.sellsphere.common.entity.payload.CalculationResponseDTO;
 import com.sellsphere.common.entity.payload.CheckoutDTO;
 import com.sellsphere.common.entity.payload.PaymentRequestDTO;
-import com.sellsphere.common.entity.payload.CalculationResponseDTO;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,7 @@ public class CheckoutRestController {
      */
     @PostMapping("/calculate")
     public ResponseEntity<CalculationResponseDTO> calculate(
-            @RequestBody CalculationRequestDTO request, Principal principal)
+            @Valid @RequestBody CalculationRequestDTO request, Principal principal)
             throws StripeException, CustomerNotFoundException, CurrencyNotFoundException,
             SettingNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);
@@ -78,7 +79,7 @@ public class CheckoutRestController {
      */
     @PostMapping("/save-payment-intent")
     public ResponseEntity<Map<String, String>> createPaymentIntent(
-            @RequestBody PaymentRequestDTO request, Principal principal)
+            @Valid @RequestBody PaymentRequestDTO request, Principal principal)
             throws StripeException, CustomerNotFoundException, CurrencyNotFoundException,
             AddressNotFoundException, CountryNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);

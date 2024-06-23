@@ -1,12 +1,12 @@
 package com.sellsphere.common.entity.payload;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.math.BigDecimal;
 
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,15 +14,17 @@ import java.math.BigDecimal;
 public class CalculationRequestDTO {
 
     // required
+    @NotNull(message = "Address cannot be null")
     private AddressDTO address;
 
     // required
+    @NotNull(message = "Shipping cost cannot be null")
     private BigDecimal shippingCost;
 
     // nullable - base currency
+    @Size(min = 3, max = 3, message = "Currency code must be 3 characters")
     private String currencyCode;
 
-    // nullable
+    // nullable - must be present if currency code differ from base
     private BigDecimal exchangeRate;
-
 }

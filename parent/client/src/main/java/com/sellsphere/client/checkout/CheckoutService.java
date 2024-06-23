@@ -1,7 +1,6 @@
 package com.sellsphere.client.checkout;
 
 import com.sellsphere.client.PriceService;
-import com.sellsphere.client.setting.CurrencyRepository;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.client.shoppingcart.ShoppingCartService;
@@ -30,7 +29,7 @@ public class CheckoutService {
     private final StripeCheckoutService stripeService;
     private final ShoppingCartService cartService;
     private final SettingService settingService;
-    private final CurrencyRepository currencyRepository;
+    private final CurrencyService currencyService;
     private final PriceService priceService;
     private final CartItemRepository cartItemRepository;
 
@@ -54,9 +53,12 @@ public class CheckoutService {
         String targetCurrency = (request.getCurrencyCode() == null) ? baseCurrency :
                 request.getCurrencyCode().toLowerCase();
 
-        CalculationCreateParams.Builder params = buildCalculationParams(request, baseCurrency,
-                                                                        targetCurrency, taxBehavior,
-                                                                        cart
+        CalculationCreateParams.Builder params = buildCalculationParams(
+                request,
+                baseCurrency,
+                targetCurrency,
+                taxBehavior,
+                cart
         );
         Calculation calculation = stripeService.calculate(params.build());
 
@@ -76,10 +78,7 @@ public class CheckoutService {
                                                                  AddressDTO address,
                                                                  BigDecimal exchangeRate)
             throws CurrencyNotFoundException {
-        Currency target = currencyRepository.findByCode(targetCurrency).orElseThrow(
-                CurrencyNotFoundException::new);
-        Currency currency = currencyRepository.findByCode(calculation.getCurrency()).orElseThrow(
-                CurrencyNotFoundException::new);
+        Currency currency = currencyService.getByCode(calculation.getCurrency());
         long unitAmount = currency.getUnitAmount().longValue();
 
         return CalculationResponseDTO.builder()
@@ -105,8 +104,8 @@ public class CheckoutService {
                 .shippingCost(buildShippingCostDTO(calculation))
                 .address(address)
                 .currencyCode(calculation.getCurrency())
-                .unitAmount(target.getUnitAmount())
-                .currencySymbol(target.getSymbol())
+                .unitAmount(currency.getUnitAmount())
+                .currencySymbol(currency.getSymbol())
                 .cart(buildCartItemDTOs(cart, baseCurrency, targetCurrency, exchangeRate,
                                         unitAmount
                 ))
@@ -121,12 +120,24 @@ public class CheckoutService {
             throws CurrencyNotFoundException {
         CalculationCreateParams.Builder params = CalculationCreateParams.builder();
         params.setCurrency(targetCurrency);
-        setLineItems(params, cart, baseCurrency, targetCurrency, request.getExchangeRate(),
-                     taxBehavior
+
+        setLineItems(
+                params,
+                cart,
+                baseCurrency,
+                targetCurrency,
+                request.getExchangeRate(),
+                taxBehavior
         );
-        setShippingCost(params, baseCurrency, targetCurrency, request.getShippingCost(),
-                        request.getExchangeRate(), taxBehavior
+        setShippingCost(
+                params,
+                baseCurrency,
+                targetCurrency,
+                request.getShippingCost(),
+                request.getExchangeRate(),
+                taxBehavior
         );
+
         setCustomerDetails(params, request.getAddress());
         return params;
     }
@@ -148,20 +159,30 @@ public class CheckoutService {
                                                 long unitAmount) {
         return cart.stream().map(item -> CartItemDTO.builder()
                 .quantity(item.getQuantity())
-                .subtotal(priceService.convertPrice(BigDecimal.valueOf(item.getQuantity()).multiply(
-                                                            item.getProduct().getDiscountPrice())
-                        , unitAmount, exchangeRate,
-                                                    baseCurrency, targetCurrency
+                .subtotal(priceService.convertPrice(
+                        item.getSubtotal(),
+                        unitAmount,
+                        exchangeRate,
+                        baseCurrency,
+                        targetCurrency
                 ))
                 .product(BasicProductDTO.builder()
-                                 .discountPrice(priceService.convertPrice(
-                                         item.getProduct().getDiscountPrice(), unitAmount,
-                                         exchangeRate, baseCurrency, targetCurrency
-                                 ))
-                                 .price(priceService.convertPrice(item.getProduct().getPrice(),
-                                                                  unitAmount, exchangeRate,
-                                                                  baseCurrency, targetCurrency
-                                 ))
+                                 .discountPrice(
+                                         priceService.convertPrice(
+                                                 item.getProduct().getDiscountPrice(),
+                                                 unitAmount,
+                                                 exchangeRate,
+                                                 baseCurrency,
+                                                 targetCurrency
+                                         ))
+                                 .price(
+                                         priceService.convertPrice(
+                                                 item.getProduct().getPrice(),
+                                                 unitAmount,
+                                                 exchangeRate,
+                                                 baseCurrency,
+                                                 targetCurrency
+                                         ))
                                  .discountPercent(item.getProduct().getDiscountPercent())
                                  .mainImagePath(item.getProduct().getMainImagePath())
                                  .name(item.getProduct().getName())
@@ -191,6 +212,7 @@ public class CheckoutService {
                                  BigDecimal shippingCost, BigDecimal exchangeRate,
                                  String taxBehavior) throws CurrencyNotFoundException {
         long amount = priceService.convertAmount(shippingCost, base, target, exchangeRate);
+
         params.setShippingCost(CalculationCreateParams.ShippingCost.builder()
                                        .setTaxCode(SHIPPING_TAX_CODE)
                                        .setTaxBehavior(
@@ -206,12 +228,13 @@ public class CheckoutService {
             throws CurrencyNotFoundException {
         for (CartItem cartItem : cart) {
             var lineItemBuilder = CalculationCreateParams.LineItem.builder();
-            lineItemBuilder.setTaxBehavior(
-                            CalculationCreateParams.LineItem.TaxBehavior.valueOf(taxBehavior))
+            lineItemBuilder
+                    .setTaxBehavior(CalculationCreateParams.LineItem.TaxBehavior.valueOf(taxBehavior))
                     .setReference(String.valueOf(cartItem.getProduct().getId()))
                     .setTaxCode(cartItem.getProduct().getTax().getId());
 
             BigDecimal itemSubtotal = cartItem.getSubtotal();
+
             long amount = priceService.convertAmount(itemSubtotal, base, target, exchangeRate);
             calculationBuilder.addLineItem(lineItemBuilder.setAmount(amount).build());
         }
@@ -242,11 +265,14 @@ public class CheckoutService {
 
         BigDecimal total = BigDecimal.ZERO;
         for (CartItem cartItem : cart) {
-            total = total.add(priceService.convertAmount(cartItem.getSubtotal(), currency.getUnitAmount()));
+            total = total.add(
+                    priceService.convertAmount(cartItem.getSubtotal(), currency.getUnitAmount()));
         }
 
         return CheckoutDTO.builder()
-                .amount(priceService.handleRoundingAmountByCurrency(total, currency.getUnitAmount()))
+                .amount(priceService.handleRoundingAmountByCurrency(total,
+                                                                    currency.getUnitAmount()
+                ))
                 .currency(currency.getCode())
                 .build();
     }

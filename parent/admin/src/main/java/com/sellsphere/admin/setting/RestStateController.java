@@ -1,6 +1,9 @@
 package com.sellsphere.admin.setting;
 
-import com.sellsphere.common.entity.*;
+import com.sellsphere.common.entity.Country;
+import com.sellsphere.common.entity.CountryNotFoundException;
+import com.sellsphere.common.entity.State;
+import com.sellsphere.common.entity.StateNotFoundException;
 import com.sellsphere.common.entity.payload.StateDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;

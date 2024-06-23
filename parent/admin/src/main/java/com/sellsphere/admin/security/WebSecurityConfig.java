@@ -2,8 +2,8 @@ package com.sellsphere.admin.security;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.easyship.AppModule;
+import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.payment.checkout.StripeCheckoutService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

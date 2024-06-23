@@ -1,12 +1,14 @@
 package com.sellsphere.client.setting;
 
 import com.sellsphere.common.entity.Country;
-import com.sellsphere.common.entity.payload.CountryDTO;
 import com.sellsphere.common.entity.CountryNotFoundException;
+import com.sellsphere.common.entity.payload.CountryDTO;
 import com.sellsphere.common.entity.payload.IpInfoResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -17,7 +19,7 @@ public class CountryRestController {
 
     private final String ipinfoApiKey = System.getenv("IPINFO_API_KEY");
 
-    private final CountryRepository countryRepository;
+    private final CountryService countryService;
 
     @PostMapping("/countries/country-ip")
     public ResponseEntity<CountryDTO> fetchCountryForIp(@RequestBody Map<String, String> request)
@@ -33,7 +35,7 @@ public class CountryRestController {
             return ResponseEntity.badRequest().build();
         }
 
-        Country country = countryRepository.findByCode(countryCode).orElseThrow(CountryNotFoundException::new);
+        Country country = countryService.getCountryByCode(countryCode);
         return ResponseEntity.ok(new CountryDTO(country));
     }
 

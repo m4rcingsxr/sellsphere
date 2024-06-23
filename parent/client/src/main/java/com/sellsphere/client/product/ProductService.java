@@ -1,9 +1,9 @@
 package com.sellsphere.client.product;
 
-import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetail;
 import com.sellsphere.common.entity.ProductNotFoundException;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

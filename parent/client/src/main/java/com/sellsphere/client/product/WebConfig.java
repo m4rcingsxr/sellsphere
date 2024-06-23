@@ -2,8 +2,8 @@ package com.sellsphere.client.product;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.easyship.AppModule;
+import com.sellsphere.easyship.EasyshipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

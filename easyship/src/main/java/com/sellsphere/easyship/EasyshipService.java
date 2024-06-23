@@ -1,11 +1,8 @@
 package com.sellsphere.easyship;
 
 import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.common.entity.payload.AddressDTO;
 import com.sellsphere.common.entity.payload.ShippingRateRequestDTO;
-import com.sellsphere.easyship.payload.Address;
 import com.sellsphere.easyship.payload.HsCodeResponse;
-import com.sellsphere.easyship.payload.ShippingRatesRequest;
 import com.sellsphere.easyship.payload.ShippingRatesResponse;
 import com.sellsphere.easyship.payload.shipment.*;
 

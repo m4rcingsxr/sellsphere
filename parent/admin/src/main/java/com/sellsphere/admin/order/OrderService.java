@@ -2,7 +2,6 @@ package com.sellsphere.admin.order;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 @Service

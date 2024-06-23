@@ -4,7 +4,6 @@ import com.sellsphere.common.entity.Currency;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Value;
-import org.apache.xmlbeans.impl.store.Cur;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

@@ -2,7 +2,6 @@ package com.sellsphere.admin.setting;
 
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Country;
-import com.sellsphere.common.entity.Currency;
 import com.sellsphere.common.entity.Setting;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

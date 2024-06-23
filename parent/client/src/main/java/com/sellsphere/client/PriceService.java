@@ -1,13 +1,14 @@
 package com.sellsphere.client;
 
-import com.sellsphere.client.setting.CurrencyRepository;
+import com.sellsphere.client.checkout.CurrencyService;
 import com.sellsphere.common.entity.Currency;
 import com.sellsphere.common.entity.CurrencyNotFoundException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PriceService {
 
-    private final CurrencyRepository currencyRepository;
+    private final CurrencyService currencyService;
     private final Map<String, Currency> currencyCache = new HashMap<>();
 
     /**
@@ -29,36 +30,36 @@ public class PriceService {
     public Currency getCurrency(String currencyCode) throws CurrencyNotFoundException {
         Currency currency = currencyCache.get(currencyCode);
         if (currency == null) {
-            currency = currencyRepository.findByCode(currencyCode).orElseThrow(() -> new CurrencyNotFoundException("Currency not found"));
+            currency = currencyService.getByCode(currencyCode);
             currencyCache.put(currencyCode, currency);
         }
         return currency;
     }
 
     /**
-     * Converts an amount from base currency to target currency using the given exchange rate.
+     * Converts an amount from baseCurrencyCode currency to targetCurrencyCode currency using the given exchange rate.
      *
      * @param amount       The amount to be converted.
-     * @param base         The base currency code.
-     * @param target       The target currency code.
-     * @param exchangeRate The exchange rate from base to target currency.
-     * @return The converted amount in the smallest unit of the target currency.
+     * @param baseCurrencyCode         The baseCurrencyCode currency code.
+     * @param targetCurrencyCode       The targetCurrencyCode currency code.
+     * @param exchangeRate The exchange rate from baseCurrencyCode to targetCurrencyCode currency.
+     * @return The converted amount in the smallest unit of the targetCurrencyCode currency.
      * @throws CurrencyNotFoundException if the currency is not found.
      */
-    public long convertAmount(BigDecimal amount, String base, String target, BigDecimal exchangeRate)
+    public long convertAmount(BigDecimal amount, String baseCurrencyCode, String targetCurrencyCode, BigDecimal exchangeRate)
             throws CurrencyNotFoundException {
-        if (!base.equals(target)) {
+        if (!baseCurrencyCode.equals(targetCurrencyCode)) {
             if (exchangeRate == null) {
                 throw new IllegalStateException(
-                        "Exchange rate must be provided if calculation currency is different than base currency");
+                        "Exchange rate must be provided if calculation currency is different than baseCurrencyCode currency");
             }
 
-            Currency targetCurrency = getCurrency(target);
+            Currency targetCurrency = getCurrency(targetCurrencyCode);
 
             BigDecimal convertedAmount = convertAmount(amount, targetCurrency.getUnitAmount(), exchangeRate);
             return handleRoundingAmountByCurrency(convertedAmount, targetCurrency.getUnitAmount());
         } else {
-            Currency baseCurrency = getCurrency(base);
+            Currency baseCurrency = getCurrency(baseCurrencyCode);
 
             BigDecimal convertedAmount = convertAmount(amount, baseCurrency.getUnitAmount());
             return handleRoundingAmountByCurrency(convertedAmount, baseCurrency.getUnitAmount());
@@ -169,5 +170,9 @@ public class PriceService {
         } else {
             return price.multiply(exchangeRate).setScale(0, RoundingMode.HALF_UP);
         }
+    }
+
+    public void clearCache() {
+        this.currencyCache.clear();
     }
 }

@@ -1,11 +1,11 @@
 package com.sellsphere.client.setting;
 
+import com.sellsphere.client.checkout.CurrencyService;
 import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.sellsphere.common.entity.SettingCategory.*;
 
@@ -17,9 +17,10 @@ import static com.sellsphere.common.entity.SettingCategory.*;
 @RequiredArgsConstructor
 public class SettingService {
 
+    private final CurrencyService currencyService;
+    private final CountryService countryService;
+
     private final SettingRepository repository;
-    private final CurrencyRepository currencyRepository;
-    private final CountryRepository countryRepository;
 
     /**
      * Retrieves general settings.
@@ -64,15 +65,14 @@ public class SettingService {
         Setting setting = repository.findByKey("CURRENCY_ID");
         Integer currencyId = Integer.parseInt(setting.getValue());
 
-        return currencyRepository.findById(currencyId)
-                .orElseThrow(CurrencyNotFoundException::new);
+        return currencyService.getById(currencyId);
     }
 
     public List<Country> getSupportedCountries() {
         List<Setting> paymentSettings = listPaymentSettings();
         PaymentSettingManager paymentManager = new PaymentSettingManager(paymentSettings);
 
-        return countryRepository.findAllById(paymentManager.getSupportedCountries());
+        return countryService.getAllById(paymentManager.getSupportedCountries());
     }
 
     public List<Setting> listPaymentSettings() {

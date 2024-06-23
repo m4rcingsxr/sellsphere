@@ -1,9 +1,9 @@
 package com.sellsphere.common.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -14,17 +14,26 @@ import lombok.*;
 @Table(name = "balance_transactions")
 public class BalanceTransaction extends IdentifiedEntity {
 
-    @Column(name = "stripe_id")
+    @Column(name = "stripe_id", nullable = false)
     private String stripeId;
 
+    @Column(name = "amount", nullable = false)
     private Long amount;
 
+    @Column(name = "created", nullable = false)
     private Long created;
 
+    @Column(name = "fee", nullable = false)
     private Long fee;
 
-    private String currency;
+    @ManyToOne
+    @JoinColumn(name = "currency_id", nullable = false)
+    private Currency currency;
 
+    @Column(name = "net", nullable = false)
     private Long net;
+
+    @Column(name = "exchange_rate", nullable = false)
+    private BigDecimal exchangeRate;
 
 }

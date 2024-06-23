@@ -1,10 +1,8 @@
 package com.sellsphere.client.checkout;
 
 import com.sellsphere.client.address.AddressService;
-import com.sellsphere.client.setting.CountryRepository;
-import com.sellsphere.client.setting.CurrencyRepository;
+import com.sellsphere.client.setting.CountryService;
 import com.sellsphere.client.setting.SettingService;
-import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.PaymentRequestDTO;
 import com.sellsphere.payment.checkout.StripeCheckoutService;
@@ -14,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,10 +20,10 @@ public class TransactionService {
     private final StripeCheckoutService stripeService;
     private final SettingService settingService;
     private final AddressService addressService;
+    private final CurrencyService currencyService;
+    private final CountryService countryService;
 
-    private final CurrencyRepository currencyRepository;
     private final PaymentIntentRepository repository;
-    private final CountryRepository countryRepository;
     private final CourierRepository courierRepository;
 
 
@@ -60,11 +57,11 @@ public class TransactionService {
         PaymentIntentCreateParams params = buildPaymentIntentParams(request, customer);
         com.stripe.model.PaymentIntent paymentIntent = stripeService.createPaymentIntent(params);
 
-        Currency targetCurrency = currencyRepository.findByCode(request.getCurrencyCode())
-                .orElseThrow(CurrencyNotFoundException::new);
+
+        Currency targetCurrency = currencyService.getByCode(request.getCurrencyCode());
         Currency baseCurrency = settingService.getCurrency();
-        Country country = countryRepository.findByCode(request.getAddress().getCountryCode())
-                .orElseThrow(CountryNotFoundException::new);
+
+        Country country = countryService.getCountryByCode(request.getAddress().getCountryCode());
 
         Address address = getAddress(request, customer, country);
 

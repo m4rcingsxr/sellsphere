@@ -1,6 +1,5 @@
 package com.sellsphere.payment.checkout;
 
-import com.sellsphere.common.entity.payload.PaymentRequestDTO;
 import com.sellsphere.payment.StripeConfig;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
@@ -37,47 +36,6 @@ public class StripeCheckoutService {
             throws StripeException {
 
         return PaymentIntent.create(params);
-    }
-
-    /**
-     * Updates a Stripe payment intent with the given request details.
-     *
-     * @param paymentIntentId The ID of the payment intent to update.
-     * @param request         The payment request details.
-     * @return The updated PaymentIntent object.
-     * @throws StripeException if there is an error with Stripe operations.
-     */
-    public PaymentIntent updatePaymentIntent(String paymentIntentId, PaymentRequestDTO request
-    ) throws StripeException {
-        PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
-        var builder = PaymentIntentUpdateParams.builder()
-                .setAmount(request.getAmountTotal())
-                .setCurrency(request.getCurrencyCode());
-
-        if (request.getAddress() != null) {
-            builder.setShipping(
-                    PaymentIntentUpdateParams.Shipping.builder()
-                            .setPhone(request.getAddress().getPhoneNumber())
-                            .setName(request.getAddress().getFullName())
-                            .setAddress(
-                                    PaymentIntentUpdateParams.Shipping.Address.builder()
-                                            .setCity(request.getAddress().getCity())
-                                            .setState(request.getAddress().getState())
-                                            .setLine1(
-                                                    request.getAddress().getAddressLine1())
-                                            .setLine2(
-                                                    request.getAddress().getAddressLine2())
-                                            .setCountry(
-                                                    request.getAddress().getCountryCode())
-                                            .setPostalCode(
-                                                    request.getAddress().getPostalCode())
-                                            .build())
-                            .build()
-            );
-
-        }
-
-        return paymentIntent.update(builder.build());
     }
 
     /**

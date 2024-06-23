@@ -1,8 +1,8 @@
 package com.sellsphere.client.product;
 
 import com.sellsphere.client.category.CategoryRepository;
-import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

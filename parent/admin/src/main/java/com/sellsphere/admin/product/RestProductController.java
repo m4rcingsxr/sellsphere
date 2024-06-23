@@ -2,9 +2,7 @@ package com.sellsphere.admin.product;
 
 import com.sellsphere.common.entity.ProductTax;
 import com.sellsphere.common.entity.TaxType;
-import com.sellsphere.easyship.EasyshipIntegrationService;
 import com.sellsphere.easyship.EasyshipService;
-import com.sellsphere.easyship.payload.HsCode;
 import com.sellsphere.easyship.payload.HsCodeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

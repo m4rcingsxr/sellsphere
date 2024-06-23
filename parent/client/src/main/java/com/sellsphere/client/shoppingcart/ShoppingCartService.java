@@ -1,13 +1,14 @@
 package com.sellsphere.client.shoppingcart;
 
 import com.sellsphere.client.product.ProductRepository;
-import com.sellsphere.common.entity.*;
-import com.sellsphere.common.entity.payload.MinCartItemDTO;
+import com.sellsphere.common.entity.CartItem;
+import com.sellsphere.common.entity.Customer;
+import com.sellsphere.common.entity.Product;
+import com.sellsphere.common.entity.ProductNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 

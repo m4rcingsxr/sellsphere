@@ -9,15 +9,15 @@ public class PrimaryAddressValidator implements ConstraintValidator<ValidPrimary
 
     @Override
     public boolean isValid(Customer customer, ConstraintValidatorContext context) {
-        if (customer == null || customer.getAddresses() == null || customer.getAddresses().isEmpty()) {
-            return false; // No addresses should be considered invalid as one primary address is required
+        if (customer == null || customer.getAddresses() == null) {
+            return true; // Valid because customer is null or addresses list is null, indicating no addresses.
         }
 
         long primaryCount = customer.getAddresses().stream()
                 .filter(Address::isPrimary)
                 .count();
 
-        if (primaryCount != 1) {
+        if (primaryCount != 1 && !customer.getAddresses().isEmpty()) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(context.getDefaultConstraintMessageTemplate())
                     .addPropertyNode("addresses")

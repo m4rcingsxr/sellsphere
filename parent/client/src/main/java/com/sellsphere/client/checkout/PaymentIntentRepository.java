@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface PaymentIntentRepository extends JpaRepository<PaymentIntent, Integer> {
 
     Optional<PaymentIntent> findByStripeId(String stripeId);
+
 }

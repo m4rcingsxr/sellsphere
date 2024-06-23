@@ -2,26 +2,12 @@
 package com.sellsphere.client.webhook;
 
 import com.google.gson.JsonSyntaxException;
-import com.sellsphere.client.checkout.PaymentIntentRepository;
-import com.sellsphere.client.checkout.TransactionService;
-import com.sellsphere.client.customer.CustomerRepository;
-import com.sellsphere.client.customer.CustomerService;
-import com.sellsphere.client.order.OrderService;
-import com.sellsphere.client.setting.CurrencyRepository;
-import com.sellsphere.client.setting.SettingService;
-import com.sellsphere.common.entity.Card;
-import com.sellsphere.common.entity.Customer;
-import com.sellsphere.common.entity.*;
-import com.sellsphere.easyship.payload.Address;
-import com.sellsphere.payment.checkout.StripeCheckoutService;
+import com.sellsphere.common.entity.CurrencyNotFoundException;
+import com.sellsphere.common.entity.CustomerNotFoundException;
 import com.stripe.exception.SignatureVerificationException;
-import com.stripe.exception.StripeException;
-import com.stripe.model.BalanceTransaction;
-import com.stripe.model.Charge;
-import com.stripe.model.PaymentIntent;
-import com.stripe.model.PaymentMethod;
-import com.stripe.model.Refund;
-import com.stripe.model.*;
+import com.stripe.model.Event;
+import com.stripe.model.EventDataObjectDeserializer;
+import com.stripe.model.StripeObject;
 import com.stripe.net.ApiResource;
 import com.stripe.net.Webhook;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -58,8 +42,6 @@ public class WebhookRestController {
      * @param request The HTTP request.
      * @return The response entity.
      * @throws IOException if an I/O error occurs.
-     * @throws CustomerNotFoundException if the customer is not found.
-     * @throws CurrencyNotFoundException if the currency is not found.
      */
     @PostMapping("/webhook")
     public ResponseEntity<String> handleCheckoutWebhook(@RequestBody String payload,

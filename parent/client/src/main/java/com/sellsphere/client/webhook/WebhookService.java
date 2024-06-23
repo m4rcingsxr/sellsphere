@@ -1,9 +1,9 @@
 package com.sellsphere.client.webhook;
 
+import com.sellsphere.client.checkout.CurrencyService;
 import com.sellsphere.client.checkout.TransactionService;
 import com.sellsphere.client.customer.CustomerRepository;
 import com.sellsphere.client.order.OrderService;
-import com.sellsphere.client.setting.CurrencyRepository;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.payment.checkout.StripeCheckoutService;
@@ -27,13 +27,13 @@ public class WebhookService {
     private final SettingService settingService;
     private final OrderService orderService;
     private final TransactionService transactionService;
-    private final StripeCheckoutService stripeService;
+    private final CurrencyService currencyService;
 
     private final CardRepository cardRepository;
-    private final PaymentMethodRepository paymentMethodRepository;
     private final CustomerRepository customerRepository;
     private final RefundRepository refundRepository;
     private final ChargeRepository chargeRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
     private final BalanceTransactionRepository balanceTransactionRepository;
 
     /**
@@ -51,7 +51,7 @@ public class WebhookService {
      * @throws CurrencyNotFoundException    if the currency is not found.
      */
     public void processEvent(Optional<StripeObject> stripeObjectOpt, Event event)
-            throws CustomerNotFoundException, AddressNotFoundException, CountryNotFoundException,
+            throws CustomerNotFoundException,
             StripeException, TransactionNotFoundException, RefundNotFoundException,
             ChargeNotFoundException, CurrencyNotFoundException {
 
@@ -178,13 +178,12 @@ public class WebhookService {
      * Handles the payment_intent.succeeded event.
      *
      * @param stripePaymentIntent The Stripe PaymentIntent.
-     * @throws AddressNotFoundException     if the address is not found.
      * @throws CountryNotFoundException     if the country is not found.
      * @throws StripeException              if there is an error with Stripe operations.
      * @throws TransactionNotFoundException if the transaction is not found.
      */
     private void handlePaymentIntentSucceeded(com.stripe.model.PaymentIntent stripePaymentIntent)
-            throws StripeException, TransactionNotFoundException {
+        throws TransactionNotFoundException {
 
         var serviceTransaction = transactionService.getByStripeId(stripePaymentIntent.getId());
 
@@ -195,8 +194,6 @@ public class WebhookService {
         serviceTransaction.setStatus(stripePaymentIntent.getStatus());
         serviceTransaction.setOrder(order);
         transactionService.save(serviceTransaction);
-
-        stripeService.createTransaction(stripePaymentIntent);
 
         log.info("Handled payment intent succeeded for: {}", stripePaymentIntent.getId());
     }
@@ -233,7 +230,7 @@ public class WebhookService {
      * @throws StripeException         if there is an error with Stripe operations.
      */
     private void handleChargeUpdated(com.stripe.model.Charge updatedCharge)
-            throws ChargeNotFoundException, StripeException {
+            throws ChargeNotFoundException, StripeException, CurrencyNotFoundException {
         String balanceTransaction = updatedCharge.getBalanceTransaction();
         var balance = com.stripe.model.BalanceTransaction.retrieve(balanceTransaction);
 
@@ -255,7 +252,7 @@ public class WebhookService {
      * @throws StripeException         if there is an error with Stripe operations.
      */
     private void handleRefundUpdate(com.stripe.model.Refund stripeRefund)
-            throws RefundNotFoundException, StripeException {
+            throws RefundNotFoundException, StripeException, CurrencyNotFoundException {
         String status = stripeRefund.getStatus();
         String failureReason = stripeRefund.getFailureReason();
 
@@ -273,13 +270,16 @@ public class WebhookService {
     }
 
     private BalanceTransaction createServiceBalanceTransaction(
-            com.stripe.model.BalanceTransaction balanceTransaction) {
+            com.stripe.model.BalanceTransaction balanceTransaction)
+            throws CurrencyNotFoundException {
+        Currency currency = currencyService.getByCode(balanceTransaction.getCurrency());
+
         return balanceTransactionRepository.save(
                 com.sellsphere.common.entity.BalanceTransaction.builder()
                         .fee(balanceTransaction.getFee())
                         .amount(balanceTransaction.getAmount())
                         .created(balanceTransaction.getCreated())
-                        .currency(balanceTransaction.getCurrency())
+                        .currency(currency)
                         .net(balanceTransaction.getNet())
                         .stripeId(balanceTransaction.getId())
                         .build());

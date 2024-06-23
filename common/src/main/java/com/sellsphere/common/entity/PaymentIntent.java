@@ -5,8 +5,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,41 +16,41 @@ import java.util.List;
 public class PaymentIntent extends IdentifiedEntity {
 
     // Unique identifier for the PaymentIntent in Stripe
-    @Column(name = "stripe_id")
+    @Column(name = "stripe_id", nullable = false)
     private String stripeId;
 
     // Amount intended to be collected by this PaymentIntent in the smallest currency unit
-    @Column(name = "amount")
+    @Column(name = "amount", nullable = false)
     private Long amount;
 
-    @Column(name = "shipping_amount")
+    @Column(name = "shipping_amount", nullable = false)
     private Long shippingAmount;
 
-    @Column(name = "shipping_tax")
+    @Column(name = "shipping_tax", nullable = false)
     private Long shippingTax;
 
-    @Column(name = "tax_amount")
+    @Column(name = "tax_amount", nullable = false)
     private Long taxAmount;
 
     @Column(name = "exchange_rate", precision = 18, scale = 8)
     private BigDecimal exchangeRate;
 
     @ManyToOne
-    @JoinColumn(name = "base_currency_id")
+    @JoinColumn(name = "base_currency_id", nullable = false)
     private Currency baseCurrency;
 
     @ManyToOne
-    @JoinColumn(name = "address_id")
+    @JoinColumn(name = "address_id", nullable = false)
     private Address shippingAddress;
 
     // Three-letter ISO currency code, in lowercase
     @ManyToOne
-    @JoinColumn(name = "target_currency_id")
+    @JoinColumn(name = "target_currency_id", nullable = false)
     private Currency targetCurrency;
 
     // ID of the Customer this PaymentIntent belongs to, if one exists
     @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
     @OneToOne
@@ -60,11 +58,11 @@ public class PaymentIntent extends IdentifiedEntity {
     private Order order;
 
     // Status of this PaymentIntent
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     private String status;
 
     // Time at which the object was created
-    @Column(name = "created")
+    @Column(name = "created", nullable = false)
     private Long created;
 
     // Time at which the PaymentIntent was canceled, if it was canceled
@@ -82,9 +80,8 @@ public class PaymentIntent extends IdentifiedEntity {
     @OneToOne(mappedBy = "paymentIntent")
     private Charge charge;
 
-    // tax transaction id and selected rate courier id
     @ManyToOne
-    @JoinColumn(name = "courier_id")
+    @JoinColumn(name = "courier_id", nullable = false)
     private Courier courier;
 
     @Transient
