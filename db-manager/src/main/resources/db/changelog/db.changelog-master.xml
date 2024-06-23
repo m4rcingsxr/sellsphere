@@ -70,4 +70,7 @@
         Simplify order by providing transaction.
      -->
     <include file="db/changelog/22-06-24-changelog.xml"/>
+
+    <!-- Remove redundant easyship product integration  -->
+    <include file="db/changelog/23-06-2024.xml"/>
 </databaseChangeLog>

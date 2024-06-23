@@ -17,10 +17,6 @@ public interface EasyshipService {
 
     ShipmentResponse createShipment(ShipmentRequest request);
 
-    String getAccountInfo();
-
-    String updateSenderAddress(Address addressDto);
-
     SaveProductResponse saveProduct(Product product);
 
     DeleteProductResponse deleteProduct(String productId);

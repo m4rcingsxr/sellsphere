@@ -212,21 +212,10 @@ public class Product extends IdentifiedEntity {
             CascadeType.ALL}, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProductDetail> details = new ArrayList<>();
 
-    /**
-     * Stripe price id
-     */
-    @Column(name = "price_id")
-    private String priceId;
-
     @NotNull(message = "Product tax must be provided")
     @ManyToOne
     @JoinColumn(name = "tax_id")
     private ProductTax tax;
-
-    // easyship integration
-
-    @Column(name = "easyship_id")
-    private String easyshipId;
 
     /**
      * This boolean field indicates whether the item contains lithium-ion batteries that are

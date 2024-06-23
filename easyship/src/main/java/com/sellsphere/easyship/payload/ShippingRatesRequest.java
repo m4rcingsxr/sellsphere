@@ -3,6 +3,7 @@ package com.sellsphere.easyship.payload;
 import com.google.gson.annotations.SerializedName;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Builder
@@ -104,13 +105,13 @@ public class ShippingRatesRequest {
         private int quantity;
 
         @SerializedName("actual_weight")
-        private double actualWeight;
+        private BigDecimal actualWeight;
 
         @SerializedName("declared_currency")
         private String declaredCurrency;
 
         @SerializedName("declared_customs_value")
-        private double declaredCustomsValue;
+        private BigDecimal declaredCustomsValue;
 
         @SerializedName("dimensions")
         private Dimensions dimensions;
@@ -126,13 +127,13 @@ public class ShippingRatesRequest {
         public static class Dimensions {
 
             @SerializedName("length")
-            private double length;
+            private BigDecimal length;
 
             @SerializedName("width")
-            private double width;
+            private BigDecimal width;
 
             @SerializedName("height")
-            private double height;
+            private BigDecimal height;
         }
     }
 

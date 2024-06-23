@@ -114,10 +114,6 @@ public class EasyshipIntegrationService implements EasyshipService {
     // dummy version - use boxes to determine how to create the parcels!
     private void addParcels(ShippingRatesRequest.ShippingRatesRequestBuilder ratesRequestBuilder,
                             List<CartItem> cart, String currencyCode) {
-        // todo:
-        // fetch boxes
-        // build boxes based on the cart items
-        // if i provide the boxes then dimension on items are optional
 
         // simplified version:
         ratesRequestBuilder.parcels(
@@ -125,15 +121,15 @@ public class EasyshipIntegrationService implements EasyshipService {
                         .items(List.of(ShippingRatesRequest.Item.builder()
                                                .quantity(cartItem.getQuantity())
                                                .actualWeight(
-                                                       cartItem.getProduct().getWeight().doubleValue())
+                                                       cartItem.getProduct().getWeight())
                                                .declaredCurrency(currencyCode)
                                                .declaredCustomsValue(
-                                                       cartItem.getProduct().getPrice().doubleValue())
+                                                       cartItem.getProduct().getPrice())
                                                .dimensions(
                                                        ShippingRatesRequest.Item.Dimensions.builder()
-                                                               .length(cartItem.getProduct().getLength().doubleValue())
-                                                               .width(cartItem.getProduct().getWidth().doubleValue())
-                                                               .height(cartItem.getProduct().getHeight().doubleValue())
+                                                               .length(cartItem.getProduct().getLength())
+                                                               .width(cartItem.getProduct().getWidth())
+                                                               .height(cartItem.getProduct().getHeight())
                                                                .build())
                                                .hsCode(Integer.parseInt(
                                                        cartItem.getProduct().getHsCode()))
@@ -171,102 +167,6 @@ public class EasyshipIntegrationService implements EasyshipService {
                                                      .applyShippingRules(true)
                                                      .showCourierLogoUrl(true)
                                                      .build());
-    }
-
-
-    /**
-     * Retrieves the account information from Easyship API.
-     *
-     * @return The account information as a JSON string.
-     */
-    @Override
-    public String getAccountInfo() {
-        WebTarget target = client.target(BASE_URL).path("/account");
-
-        Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
-                .header(USER_AGENT_HEADER, "Mozilla/5.0")
-                .header(ACCEPT_LANGUAGE_HEADER, "en-US,en;q=0.5");
-
-        try (Response response = invocationBuilder.get()) {
-            return processStringResponse(response);
-        }
-    }
-
-
-    /**
-     * Updates the sender address in Easyship.
-     *
-     * @param addressDto The address details to be updated.
-     * @return The response from Easyship API as a JSON string.
-     */
-    @Override
-    public String updateSenderAddress(Address addressDto) {
-        int currentPage = 0;
-        boolean senderFound = false;
-        String nextPage;
-
-        do {
-            WebTarget getTarget = client.target(BASE_URL).path("/addresses")
-                    .queryParam("page", currentPage)
-                    .queryParam("perPage", "10");
-
-            Invocation.Builder getInvocation = getTarget.request(MediaType.APPLICATION_JSON)
-                    .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
-                    .header(USER_AGENT_HEADER, "Mozilla/5.0")
-                    .header(ACCEPT_LANGUAGE_HEADER, "en-US,en;q=0.5");
-
-            try (Response getResponse = getInvocation.get()) {
-                AddressResponse addressResponse = processAddressResponse(getResponse);
-
-                for (Address address : addressResponse.getAddresses()) {
-                    if (address.getDefaultFor().isSender()) {
-                        WebTarget deleteTarget = client.target(BASE_URL).path(
-                                "/addresses/" + address.getId());
-                        Invocation.Builder deleteInvocation = deleteTarget.request(
-                                        MediaType.APPLICATION_JSON)
-                                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
-                                .header(USER_AGENT_HEADER, "Mozilla/5.0")
-                                .header("Accept-Language", "en-US,en;q=0.5");
-
-                        try (Response deleteResponse = deleteInvocation.delete()) {
-                            processStringResponse(deleteResponse);
-                            senderFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                nextPage = addressResponse.getMeta().getPagination().getNext();
-                currentPage++;
-            }
-
-        } while (nextPage != null && !senderFound);
-
-        WebTarget postTarget = client.target(BASE_URL).path("/addresses");
-        Invocation.Builder postInvocation = postTarget.request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION_HEADER, BEARER_TOKEN)
-                .header(USER_AGENT_HEADER, "Mozilla/5.0")
-                .header("Accept-Language", "en-US,en;q=0.5");
-
-        String payload = gson.toJson(addressDto);
-        try (Response postResponse = postInvocation.post(
-                Entity.entity(payload, MediaType.APPLICATION_JSON))) {
-            return processStringResponse(postResponse);
-        }
-    }
-
-    private AddressResponse processAddressResponse(Response response) {
-        if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-            String jsonResponse = response.readEntity(String.class);
-            Type listType = new TypeToken<AddressResponse>() {
-            }.getType();
-            return gson.fromJson(jsonResponse, listType);
-        } else {
-            String error = response.readEntity(String.class);
-            throw new RuntimeException(
-                    "API request failed with status " + response.getStatus() + ": " + error);
-        }
     }
 
     /**
@@ -414,7 +314,6 @@ public class EasyshipIntegrationService implements EasyshipService {
             return processHsCodeResponse(postResponse);
         }
     }
-
 
     private HsCodeResponse processHsCodeResponse(Response response) {
         if (response.getStatus() == Response.Status.OK.getStatusCode() ||

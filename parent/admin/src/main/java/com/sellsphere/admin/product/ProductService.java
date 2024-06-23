@@ -3,11 +3,9 @@ package com.sellsphere.admin.product;
 import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
-import com.sellsphere.admin.setting.SettingService;
-import com.sellsphere.common.entity.*;
-import com.sellsphere.easyship.EasyshipService;
-import com.sellsphere.easyship.payload.shipment.SaveProductResponse;
-import com.stripe.exception.StripeException;
+import com.sellsphere.common.entity.Product;
+import com.sellsphere.common.entity.ProductNotFoundException;
+import com.sellsphere.common.entity.SettingNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -23,11 +20,7 @@ import java.util.List;
 public class ProductService {
 
     private static final int PRODUCTS_PER_PAGE = 12;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     private final ProductRepository productRepository;
-    private final SettingService settingService;
-    private final EasyshipService easyshipService;
 
 
     /**
@@ -87,38 +80,13 @@ public class ProductService {
      */
     @Transactional
     public Product save(Product product, MultipartFile newPrimaryImage, MultipartFile[] extraImages)
-            throws IOException, SettingNotFoundException,
-            CurrencyNotFoundException {
-        Currency defaultCurrency = settingService.getCurrentCurrency();
-
+            throws IOException, SettingNotFoundException {
         updateProductDates(product);
         generateProductAlias(product);
 
         ProductHelper.addProductImages(product, extraImages);
 
         Product savedProduct = productRepository.save(product);
-
-        var productBuilder = com.sellsphere.easyship.payload.shipment.Product.builder()
-                .id(product.getEasyshipId())
-                .identifier(String.valueOf(savedProduct.getId()))
-                .containsBatteryPi966(savedProduct.isContainsBatteryPi966())
-                .containsBatteryPi967(savedProduct.isContainsBatteryPi967()) // Corrected method call
-                .containsLiquids(savedProduct.isContainsLiquids())
-                .costPrice(savedProduct.getCost())
-                .costPriceCurrency(defaultCurrency.getCode().toUpperCase())
-                .createdAt(savedProduct.getCreatedTime().format(formatter))
-                .updatedAt(savedProduct.getProductUpdate().getUpdatedTime().format(formatter))
-                .hsCode(product.getHsCode())
-                .imageUrl(product.getMainImagePath())
-                .name(product.getName())
-                .sellingPrice(product.getDiscountPrice())
-                .height(product.getHeight())
-                .length(product.getLength())
-                .weight(product.getWeight())
-                .width(product.getWidth());
-
-        SaveProductResponse saveProductResponse = easyshipService.saveProduct(productBuilder.build());
-        savedProduct.setEasyshipId(saveProductResponse.getProduct().getId());
 
         ProductHelper.saveExtraImages(savedProduct, extraImages);
         ProductHelper.savePrimaryImage(savedProduct, newPrimaryImage);
@@ -159,11 +127,9 @@ public class ProductService {
      * @param id The ID of the product to delete.
      * @throws ProductNotFoundException If no product is found with the provided ID.
      */
-    public void deleteProduct(Integer id) throws ProductNotFoundException, StripeException {
+    public void deleteProduct(Integer id) throws ProductNotFoundException {
         Product product = get(id);
         S3Utility.removeFolder("product-photos/" + product.getId());
-
-        easyshipService.deleteProduct(product.getEasyshipId());
 
         productRepository.delete(product);
     }
@@ -176,7 +142,7 @@ public class ProductService {
      * @throws ProductNotFoundException If no product is found with the provided ID.
      */
     public void updateProductEnabledStatus(Integer id, boolean status)
-            throws ProductNotFoundException, StripeException {
+            throws ProductNotFoundException {
         Product product = productRepository.findById(id).orElseThrow(
                 ProductNotFoundException::new);
         product.setEnabled(status);
