@@ -23,7 +23,7 @@ public class RestResponseEntityExceptionHandler {
 
     @ExceptionHandler({CustomerNotFoundException.class, CountryNotFoundException.class,
                        StateNotFoundException.class, CurrencyNotFoundException.class, SettingNotFoundException.class,
-                       TransactionNotFoundException.class, AddressNotFoundException.class})
+                       TransactionNotFoundException.class, AddressNotFoundException.class, ExchangeRateNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleNotFoundExceptions(Exception e) {
         log.warn(e.getMessage(), e);
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),
