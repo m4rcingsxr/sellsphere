@@ -57,14 +57,15 @@ class CheckoutController {
             const checkout = await this.model.getCartTotal();
 
             this.elements = this.stripe.elements({
-                mode : 'payment',
-                amount : checkout.amount,
+                mode: 'payment',
+                amount: checkout.amount,
                 currency: checkout.currency,
                 customerSessionClientSecret,
                 loader: 'always'
             });
         } catch (error) {
-            console.error(error);
+            console.error("Error occurred during initialization of stripe elements" + error);
+            showErrorModal(error.response);
         }
     }
 
@@ -95,8 +96,8 @@ class CheckoutController {
 
             this.initStripeAddressElement(allowedCountries.map(country => country.code), contacts);
         } catch (error) {
-            console.error("Error occurred during fetching addresses " + error);
-            throw error;
+            console.error("Error occurred during initialization of address element" + error);
+            showErrorModal(error.response);
         }
     }
 
@@ -120,7 +121,7 @@ class CheckoutController {
         $("#payment-form").on("submit", this.handleSubmit.bind(this));
     }
 
-    async handleSubmit(event) {
+    async handleSubmit() {
 
         const handleError = (error) => {
             const messageContainer = document.querySelector("#error-message");
@@ -169,7 +170,8 @@ class CheckoutController {
             }
 
         } catch (error) {
-            handleError(error);
+            console.error("Error during transaction saving", error);
+            showErrorModal(error.response);
         }
     }
 
@@ -201,20 +203,22 @@ class CheckoutController {
             return;
         }
 
-        this.view.enableAddressTabBtnSpinner();
-
-        const { address } = event.value;
-        const easyshipAddress = CheckoutUtil.mapStripeAddressToRateRequest(address, event.value.name, event.value.phone);
-
         try {
+            this.view.enableAddressTabBtnSpinner();
+
+            const {address} = event.value;
+            const easyshipAddress = CheckoutUtil.mapStripeAddressToRateRequest(address, event.value.name, event.value.phone);
+
             this.model.rateResponse = await this.model.getShippingRates(easyshipAddress, 1);
 
             this.validateRates();
 
+        } catch (error) {
+            console.error("Error occurred during fetching shipping rates", error);
+            showErrorModal(error.response);
+        } finally {
             this.view.enableAddressTabBtn();
             this.view.disableAddressTabBtnSpinner();
-        } catch (error) {
-            console.error(error);
         }
     }
 
@@ -274,7 +278,8 @@ class CheckoutController {
         try {
             await this.renderPaymentDetails();
         } catch (error) {
-            console.error(error);
+            console.error("Error during rendering payment details", error);
+            showErrorModal(error.response);
         }
     }
 
@@ -357,9 +362,14 @@ class CheckoutController {
                 await this.renderSummaryDetails();
             } catch (error) {
                 console.error(error);
+                showErrorModal(error.response);
             }
         } else {
             console.error("Handle previous steps..");
+            showErrorModal({
+                status : 400,
+                message : "Please fill previous steps before continuing"
+            })
         }
     }
 
@@ -421,6 +431,7 @@ class CheckoutController {
         this.view.enableSummaryTabBtn();
         this.view.disableSummaryBtnSpinner();
         this.view.disableCurrencyPlaceholders();
+
         this.view.showCurrencies();
 
         this.view.renderShippingRates(this.model.rateResponse.rates);
@@ -468,6 +479,7 @@ class CheckoutController {
             this.completeCheckoutDetailsUpdate();
         } catch (error) {
             console.error(error);
+            showErrorModal(error.response);
         }
     }
 
@@ -487,6 +499,7 @@ class CheckoutController {
             this.completeCheckoutDetailsUpdate();
         } catch (error) {
             console.error(error);
+            showErrorModal(error.response);
         }
     }
 
@@ -509,9 +522,14 @@ class CheckoutController {
                     this.completeCheckoutDetailsUpdate();
                 } catch (error) {
                     console.error(error);
+                    showErrorModal(error.response);
                 }
             } else {
                 console.error("Address and payment step must be complete before summary step");
+                showErrorModal({
+                    status : 400,
+                    message : "Address and payment step must be complete before summary step"
+                })
             }
         }, 60000 * 20); // Check every 20 minutes
     }
@@ -556,18 +574,23 @@ class CheckoutController {
                 : this.model.targetCurrency;
         }
 
-        const { targetCurrency, selectedCurrency } = this.model;
+        const {targetCurrency, selectedCurrency} = this.model;
         const shippingCost = selectedRate.totalCharge;
         const exchangeRate = this.getExchangeRate();
 
-        const base = await this.calculateBaseTax(rateResponse, shippingCost);
-        const target = await this.calculateTargetTax(rateResponse, shippingCost, targetCurrency, exchangeRate);
+        try {
+            const base = await this.calculateBaseTax(rateResponse, shippingCost);
+            const target = await this.calculateTargetTax(rateResponse, shippingCost, targetCurrency, exchangeRate);
 
-        const selectedCalculation = this.getSelectedCalculation(target, base, selectedCurrency);
+            const selectedCalculation = this.getSelectedCalculation(target, base, selectedCurrency);
 
-        this.model.appliedCalculation = selectedCalculation;
+            this.model.appliedCalculation = selectedCalculation;
 
-        this.renderCheckoutDetails(selectedCalculation, base, target, exchangeRate);
+            this.renderCheckoutDetails(selectedCalculation, base, target, exchangeRate);
+        } catch(error) {
+            console.error(error);
+            showErrorModal(error.response);
+        }
     }
 
     /**

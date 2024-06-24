@@ -2,9 +2,9 @@
 package com.sellsphere.client.webhook;
 
 import com.google.gson.JsonSyntaxException;
-import com.sellsphere.common.entity.CurrencyNotFoundException;
-import com.sellsphere.common.entity.CustomerNotFoundException;
+import com.sellsphere.common.entity.*;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.StripeObject;
@@ -95,39 +95,34 @@ public class WebhookRestController {
             Optional<StripeObject> stripeObject = dataObjectDeserializer.getObject();
 
             final Event finalEvent = event;
-            taskExecutor.submit(wrapCheckedException(() -> webhookService.processEvent(stripeObject, finalEvent)));
+
+            taskExecutor.submit(() -> {
+                try {
+                    webhookService.processEvent(stripeObject, finalEvent);
+                } catch (CustomerNotFoundException | StripeException |
+                         TransactionNotFoundException | RefundNotFoundException |
+                         ChargeNotFoundException | CurrencyNotFoundException |
+                         CountryNotFoundException e) {
+                    log.error("Error processing event {}: {}", finalEvent.getId(), e.getMessage(), e);
+                    // send email to dev
+                }
+            });
 
         } else {
 
             // Deserialization failed, probably due to an API version mismatch.
-            throw new IOException("Deserialization failed, probably due to an API version mismatch");
+            throw new IOException(
+                    "Deserialization failed, probably due to an API version mismatch");
         }
 
         return ResponseEntity.ok().build();
     }
 
 
-
     private boolean isAllowedIp(String ip) {
         return webhookConfig.getAllowedIps().contains(ip);
     }
 
-
-    public static <T> Runnable wrapCheckedException(CheckedExceptionRunnable<T> runnable) {
-        return () -> {
-            try {
-                runnable.run();
-            } catch (Exception e) {
-                log.error("Exception thrown during execution of webhook task", e);
-                throw new RuntimeException(e);
-            }
-        };
-    }
-
-    @FunctionalInterface
-    public interface CheckedExceptionRunnable<T> {
-        void run() throws Exception;
-    }
 
 }
 

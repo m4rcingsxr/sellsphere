@@ -86,20 +86,25 @@ public class CheckoutService {
                 .exchangeRate(exchangeRate)
                 .amountTotal(calculation.getAmountTotal())
                 .taxAmountInclusive(calculation.getTaxAmountInclusive())
-                .displayAmount(priceService.convertToDisplayAmount(calculation.getAmountTotal(),
-                                                                   calculation.getCurrency()
-                ))
-                .displayTax(priceService.convertToDisplayAmount(
-                        calculation.getTaxAmountInclusive() - calculation.getShippingCost().getAmountTax(),
-                        calculation.getCurrency()
-                ))
-                .displaySubtotal(priceService.convertToDisplayAmount(
-                        (calculation.getAmountTotal() - calculation.getShippingCost().getAmount()),
-                        calculation.getCurrency()
-                ))
+                .displayAmount(
+                        priceService.convertToDisplayAmount(
+                                calculation.getAmountTotal(),
+                                calculation.getCurrency()
+                        ))
+                .displayTax(
+                        priceService.convertToDisplayAmount(
+                                calculation.getTaxAmountInclusive() - calculation.getShippingCost().getAmountTax(),
+                                calculation.getCurrency()
+                        ))
+                .displaySubtotal(
+                        priceService.convertToDisplayAmount(
+                                (calculation.getAmountTotal() - calculation.getShippingCost().getAmount()),
+                                calculation.getCurrency()
+                        ))
                 .displayTotalTax(
-                        priceService.convertToDisplayAmount((calculation.getTaxAmountInclusive()),
-                                                            calculation.getCurrency()
+                        priceService.convertToDisplayAmount(
+                                (calculation.getTaxAmountInclusive()),
+                                calculation.getCurrency()
                         ))
                 .shippingCost(buildShippingCostDTO(calculation))
                 .address(address)
@@ -229,7 +234,8 @@ public class CheckoutService {
         for (CartItem cartItem : cart) {
             var lineItemBuilder = CalculationCreateParams.LineItem.builder();
             lineItemBuilder
-                    .setTaxBehavior(CalculationCreateParams.LineItem.TaxBehavior.valueOf(taxBehavior))
+                    .setTaxBehavior(
+                            CalculationCreateParams.LineItem.TaxBehavior.valueOf(taxBehavior))
                     .setReference(String.valueOf(cartItem.getProduct().getId()))
                     .setTaxCode(cartItem.getProduct().getTax().getId());
 

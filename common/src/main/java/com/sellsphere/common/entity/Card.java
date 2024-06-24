@@ -37,6 +37,4 @@ public class Card extends IdentifiedEntity {
     @Column(name = "created_time", nullable = false)
     private Long created;
 
-    @Column(name = "cardholder_name", nullable = false)
-    private String name;
 }

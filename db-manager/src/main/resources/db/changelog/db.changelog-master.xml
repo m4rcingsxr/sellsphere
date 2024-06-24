@@ -73,4 +73,7 @@
 
     <!-- Remove redundant easyship product integration  -->
     <include file="db/changelog/23-06-2024.xml"/>
+
+    <!-- Add constraints for Stripe integration related entities  -->
+    <include file="db/changelog/24-06-changelog.xml"/>
 </databaseChangeLog>

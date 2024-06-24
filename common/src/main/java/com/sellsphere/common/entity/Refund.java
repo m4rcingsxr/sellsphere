@@ -15,44 +15,44 @@ import java.math.RoundingMode;
 @Table(name = "refunds")
 public class Refund extends IdentifiedEntity {
 
-    @Column(name = "stripe_id")
+    @Column(name = "stripe_id", nullable = false)
     private String stripeId;
 
     @ManyToOne
-    @JoinColumn(name = "charge_id")
+    @JoinColumn(name = "charge_id", nullable = false)
     private Charge charge;
 
-    @Column(name = "object")
+    @Column(name = "object", nullable = false)
     private String object;
 
-    @Column(name = "amount")
+    @Column(name = "amount", nullable = false)
     private Long amount;
 
     @OneToOne
     @JoinColumn(name = "balance_transaction_id")
     private BalanceTransaction balanceTransaction;
 
-    @Column(name = "created")
+    @Column(name = "created", nullable = false)
     private Long created;
 
     @ManyToOne
-    @JoinColumn(name = "currency_id")
+    @JoinColumn(name = "currency_id", nullable = false)
     private Currency currency;
 
     @ManyToOne
-    @JoinColumn(name = "payment_intent_id")
+    @JoinColumn(name = "payment_intent_id", nullable = false)
     private PaymentIntent paymentIntent;
 
-    @Column(name = "reason")
+    @Column(name = "reason", nullable = false)
     private String reason;
 
-    @Column(name = "receipt_number")
+    @Column(name = "receipt_number", nullable = false)
     private String receiptNumber;
 
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "failure_reason")
+    @Column(name = "failure_reason", nullable = false)
     private String failureReason;
 
     @Transient

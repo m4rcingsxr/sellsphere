@@ -1,6 +1,7 @@
 package com.sellsphere.client;
 
 import com.sellsphere.common.entity.*;
+import com.stripe.exception.StripeException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,8 @@ import java.util.stream.Collectors;
 public class RestResponseEntityExceptionHandler {
 
     @ExceptionHandler({CustomerNotFoundException.class, CountryNotFoundException.class,
-                       StateNotFoundException.class})
+                       StateNotFoundException.class, CurrencyNotFoundException.class, SettingNotFoundException.class,
+                       TransactionNotFoundException.class, AddressNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleNotFoundExceptions(Exception e) {
         log.warn(e.getMessage(), e);
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),
@@ -30,7 +32,6 @@ public class RestResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-
     @ExceptionHandler({IllegalArgumentException.class, InvalidDataAccessApiUsageException.class})
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(Exception e) {
         log.error(e.getMessage(), e);
@@ -38,6 +39,16 @@ public class RestResponseEntityExceptionHandler {
                                                         HttpStatus.BAD_REQUEST.value()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({StripeException.class})
+    public ResponseEntity<ErrorResponse> handleStripeException(StripeException e) {
+        log.error("{}{}", e.getMessage(), e.getCode(), e);
+
+        Integer statusCode = e.getStatusCode();
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), statusCode);
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(statusCode));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

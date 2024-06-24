@@ -55,7 +55,6 @@ class PaymentMethodRepositoryTest {
 
         PaymentMethod paymentMethod = PaymentMethod.builder()
                 .stripeId("pm_test_id")
-                .billingCountry(country)
                 .customer(customer)
                 .type("card")
                 .build();
@@ -67,7 +66,6 @@ class PaymentMethodRepositoryTest {
         PaymentMethod foundPaymentMethod = entityManager.find(PaymentMethod.class, savedPaymentMethod.getId());
         assertThat(foundPaymentMethod).isNotNull();
         assertThat(foundPaymentMethod.getStripeId()).isEqualTo("pm_test_id");
-        assertThat(foundPaymentMethod.getBillingCountry().getName()).isEqualTo("United States");
         assertThat(foundPaymentMethod.getCustomer().getEmail()).isEqualTo("test@example.com");
         assertThat(foundPaymentMethod.getType()).isEqualTo("card");
     }

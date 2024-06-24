@@ -45,7 +45,6 @@ class CardRepositoryTest {
                 .funding("credit")
                 .last4("1234")
                 .created(System.currentTimeMillis())
-                .name("John Doe")
                 .build();
 
         // When
@@ -60,7 +59,6 @@ class CardRepositoryTest {
         assertThat(retrievedCard.get().getExpYear()).isEqualTo(2025L);
         assertThat(retrievedCard.get().getFunding()).isEqualTo("credit");
         assertThat(retrievedCard.get().getLast4()).isEqualTo("1234");
-        assertThat(retrievedCard.get().getName()).isEqualTo("John Doe");
     }
 
 }

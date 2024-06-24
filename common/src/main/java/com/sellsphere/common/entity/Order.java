@@ -20,7 +20,7 @@ public class Order extends IdentifiedEntity {
     private LocalDateTime orderTime;
 
     @OneToOne
-    @JoinColumn(name = "payment_intent_id")
+    @JoinColumn(name = "payment_intent_id", nullable = false)
     private PaymentIntent transaction;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

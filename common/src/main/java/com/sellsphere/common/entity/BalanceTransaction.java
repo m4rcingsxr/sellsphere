@@ -33,7 +33,7 @@ public class BalanceTransaction extends IdentifiedEntity {
     @Column(name = "net", nullable = false)
     private Long net;
 
-    @Column(name = "exchange_rate", nullable = false)
+    @Column(name = "exchange_rate", precision = 18, scale = 8)
     private BigDecimal exchangeRate;
 
 }

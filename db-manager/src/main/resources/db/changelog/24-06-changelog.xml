@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
+
+    <changeSet id="1722449404141-53" author="Marcin Seweryn">
+        <dropForeignKeyConstraint baseTableName="payment_methods" constraintName="FK_PAYMENT_METHODS_ON_COUNTRY"/>
+    </changeSet>
+    <changeSet id="1722449404141-48" author="Marcin Seweryn">
+        <addColumn tableName="balance_transactions">
+            <column name="currency_id" type="INT"/>
+            <column name="exchange_rate" type="DECIMAL"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1722449404141-49" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="currency_id" tableName="balance_transactions"/>
+    </changeSet>
+    <changeSet id="1722449404141-51" author="Marcin Seweryn">
+        <addColumn tableName="charges">
+            <column name="refuned" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1722449404141-52" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="currency_id" baseTableName="balance_transactions"
+                                 constraintName="FK_BALANCE_TRANSACTIONS_ON_CURRENCY" referencedColumnNames="id"
+                                 referencedTableName="currencies"/>
+    </changeSet>
+    <changeSet id="1722449404141-54" author="Marcin Seweryn">
+        <dropColumn columnName="country_id" tableName="payment_methods"/>
+    </changeSet>
+    <changeSet id="1722449404141-55" author="Marcin Seweryn">
+        <dropColumn columnName="currency" tableName="balance_transactions"/>
+    </changeSet>
+    <changeSet id="1722449404141-56" author="Marcin Seweryn">
+        <dropColumn columnName="refunded" tableName="charges"/>
+    </changeSet>
+    <changeSet id="1722449404141-1" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="address_id" tableName="payment_intents" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-2" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="amount" tableName="balance_transactions"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-3" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="amount" tableName="charges" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-4" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="amount" tableName="payment_intents" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-5" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="amount" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-6" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="amount_refunded" tableName="charges" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-7" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="base_currency_id" tableName="payment_intents"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-8" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="brand" tableName="cards" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-10" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="charge_id" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-11" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="country" tableName="cards" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-12" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="courier_id" tableName="payment_intents" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-13" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="created" tableName="balance_transactions"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-14" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="created" tableName="payment_intents" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-15" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="created" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-16" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="created_time" tableName="cards" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-17" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="currency_id" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-18" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="customer_id" tableName="cards" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-19" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="customer_id" tableName="payment_intents"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-20" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="customer_id" tableName="payment_methods"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-21" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="exp_month" tableName="cards" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-22" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="exp_year" tableName="cards" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-23" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="failure_reason" tableName="refunds"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-24" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="fee" tableName="balance_transactions"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-26" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="last_4" tableName="cards" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-30" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="net" tableName="balance_transactions"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-31" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="object" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-32" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="payment_intent_id" tableName="orders" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-33" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="payment_intent_id" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-34" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="payment_type" tableName="payment_methods"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-35" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="reason" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-36" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="receipt_number" tableName="refunds"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-37" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="shipping_amount" tableName="payment_intents"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-38" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="shipping_tax" tableName="payment_intents"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-39" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="status" tableName="payment_intents"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-40" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="status" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-41" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="stripe_id" tableName="balance_transactions"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-42" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="stripe_id" tableName="charges" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-43" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="stripe_id" tableName="payment_intents"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-44" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="stripe_id" tableName="payment_methods"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-45" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="stripe_id" tableName="refunds" validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-46" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="INT" columnName="target_currency_id" tableName="payment_intents"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722449404141-47" author="Marcin Seweryn">
+        <addNotNullConstraint columnDataType="BIGINT" columnName="tax_amount" tableName="payment_intents"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1722450042062-1" author="Marcin Seweryn">
+        <modifyDataType columnName="exchange_rate" newDataType="DECIMAL(18, 8)" tableName="balance_transactions"/>
+    </changeSet>
+
+</databaseChangeLog>

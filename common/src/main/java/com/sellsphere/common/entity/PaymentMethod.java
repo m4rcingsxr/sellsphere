@@ -16,10 +16,6 @@ public class PaymentMethod extends IdentifiedEntity {
     private String stripeId;
 
     @ManyToOne
-    @JoinColumn(name = "country_id", nullable = false)
-    private Country billingCountry;
-
-    @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
