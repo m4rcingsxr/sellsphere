@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -86,65 +87,100 @@ public class PaymentIntent extends IdentifiedEntity {
 
     @Transient
     public BigDecimal getDisplayAmount() {
-        long unitAmount = targetCurrency.getUnitAmount().longValue();
-
-        return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(unitAmount)).setScale(2,
-                                                                                          RoundingMode.CEILING
-        );
-    }
-
-    @Transient
-    public BigDecimal getDisplayRefunded() {
-        long unitAmount = targetCurrency.getUnitAmount().longValue();
-
-        return BigDecimal.valueOf(charge.getAmountRefunded())
-                .divide(BigDecimal.valueOf(unitAmount))
-                .setScale(2, RoundingMode.CEILING);
+        return convertToDisplayAmount(amount, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
     }
 
     @Transient
     public BigDecimal getDisplayFee() {
-        Long finalFee = 0L;
-
-        if (this.charge != null) {
-            finalFee = charge.getBalanceTransaction().getFee();
-
-            if (this.charge.getRefunds() != null && !this.charge.getRefunds().isEmpty()) {
-                for (Refund refund : this.charge.getRefunds()) {
-                    Long fee = refund.getBalanceTransaction().getFee();
-                    finalFee += fee;
-                }
-            }
-        }
-
-        long unitAmount = targetCurrency.getUnitAmount().longValue();
-
-        return BigDecimal.valueOf(finalFee)
-                .divide(BigDecimal.valueOf(unitAmount))
-                .setScale(2, RoundingMode.CEILING);
+        long finalFee = calculateTotalFee();
+        return convertToDisplayAmount(finalFee, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
     }
 
     @Transient
     public BigDecimal getDisplayNet() {
-        Long finalNet = 0L;
+        long finalNet = calculateTotalNet();
+        return convertToDisplayAmount(finalNet, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+    }
 
-        if (this.charge != null) {
-            finalNet = charge.getBalanceTransaction().getNet();
+    @Transient
+    public boolean hasRefunds() {
+        return charge.getRefunds() != null && !charge.getRefunds().isEmpty();
+    }
 
-            if (this.charge.getRefunds() != null && !this.charge.getRefunds().isEmpty()) {
-
-                for (Refund refund : this.charge.getRefunds()) {
-                    Long net = refund.getBalanceTransaction().getNet();
-                    finalNet += net;
-                }
-            }
+    @Transient
+    public String getDisplayRefunded() {
+        if (!hasRefunds()) {
+            return null;
         }
 
-        long unitAmount = targetCurrency.getUnitAmount().longValue();
+        BigDecimal totalRefund = getTotalRefunded();
+        long settlementCurrencyTotalAmount = calculateSettlementCurrencyTotalAmount();
 
-        return BigDecimal.valueOf(finalNet)
-                .divide(BigDecimal.valueOf(unitAmount))
-                .setScale(2, RoundingMode.CEILING);
+        String settlementCurrency = charge.getBalanceTransaction().getCurrency().getCode();
+        String presentmentCurrency = targetCurrency.getCode();
+
+        if (settlementCurrency.equals(presentmentCurrency)) {
+            return formatAmount(totalRefund, settlementCurrency);
+        } else {
+            BigDecimal convertedAmount = convertToSettlementCurrency(settlementCurrencyTotalAmount, charge.getBalanceTransaction().getCurrency().getUnitAmount());
+            return formatAmount(totalRefund, presentmentCurrency) + " -> " + formatAmount(convertedAmount, settlementCurrency);
+        }
+    }
+
+    private BigDecimal convertToDisplayAmount(long amount, long unitAmount, RoundingMode roundingMode) {
+        return BigDecimal.valueOf(amount)
+                .divide(BigDecimal.valueOf(unitAmount), 2, roundingMode);
+    }
+
+    private long calculateTotalFee() {
+        if (charge == null) {
+            return 0L;
+        }
+
+        long finalFee = charge.getBalanceTransaction().getFee();
+        if (hasRefunds()) {
+            finalFee += charge.getRefunds().stream()
+                    .mapToLong(refund -> refund.getBalanceTransaction().getFee())
+                    .sum();
+        }
+
+        return finalFee;
+    }
+
+    private long calculateTotalNet() {
+        if (charge == null) {
+            return 0L;
+        }
+
+        long finalNet = charge.getBalanceTransaction().getNet();
+        if (hasRefunds()) {
+            finalNet += charge.getRefunds().stream()
+                    .mapToLong(refund -> refund.getBalanceTransaction().getNet())
+                    .sum();
+        }
+
+        return finalNet;
+    }
+
+    private long calculateSettlementCurrencyTotalAmount() {
+        return charge.getRefunds().stream()
+                .mapToLong(refund -> refund.getBalanceTransaction().getAmount())
+                .sum();
+    }
+
+    private BigDecimal convertToSettlementCurrency(long amount, BigDecimal unitAmount) {
+        return BigDecimal.valueOf(amount)
+                .divide(unitAmount, 2, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(-1));
+    }
+
+    private String formatAmount(BigDecimal amount, String currency) {
+        return amount.toPlainString() + " " + currency.toUpperCase();
+    }
+
+    private BigDecimal getTotalRefunded() {
+        return convertToDisplayAmount(charge.getAmountRefunded(), targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
     }
 
 }
+

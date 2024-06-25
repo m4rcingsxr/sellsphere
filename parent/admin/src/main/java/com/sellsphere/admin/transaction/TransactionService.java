@@ -1,5 +1,6 @@
 package com.sellsphere.admin.transaction;
 
+import com.sellsphere.admin.PriceUtil;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.PaymentIntent;
 import com.sellsphere.common.entity.TransactionNotFoundException;
@@ -37,12 +38,14 @@ public class TransactionService {
                 .orElseThrow(TransactionNotFoundException::new);
 
 
+        long stripeAmount = PriceUtil.convertToStripeAmount(
+                amount,
+                paymentIntent.getTargetCurrency().getUnitAmount()
+        );
+
         Refund stripeRefund = stripeCheckoutService.createRefund(
                 paymentIntent.getStripeId(),
-                amount.multiply(
-                        paymentIntent.getTargetCurrency().getUnitAmount()).setScale(2,
-                                                                                    RoundingMode.CEILING
-                ).longValue(),
+                stripeAmount,
                 RefundCreateParams.Reason.valueOf(reason)
         );
 
@@ -65,9 +68,25 @@ public class TransactionService {
         ).getStatus();
     }
 
+    public BigDecimal getAvailableRefund(Integer transactionId)
+            throws TransactionNotFoundException {
+        PaymentIntent transaction = findById(transactionId);
+
+        Long amountRefunded = transaction.getCharge().getAmountRefunded();
+        Long amount = transaction.getCharge().getAmount();
+
+        Long availableRefund = amount - amountRefunded;
+
+        return PriceUtil.convertToDisplayPrice(
+                availableRefund,
+                transaction.getTargetCurrency().getUnitAmount()
+        );
+    }
 
     public PaymentIntent findById(Integer id) throws TransactionNotFoundException {
         return transactionRepository.findById(id).orElseThrow(TransactionNotFoundException::new);
     }
+
+
 }
 

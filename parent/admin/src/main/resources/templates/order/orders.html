@@ -23,14 +23,10 @@
             <thead class="table-dark">
             <tr>
                 <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'customer.firstName', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'total', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Total')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'transaction.customer.firstName', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'transaction.total', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Total')}"></th>
                 <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'orderTime', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Order Time')}"></th>
                 <th>Destination Address</th>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'shipment.labelState', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Label state')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'shipment.labelGeneratedAt', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Label generated at')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'shipment.labelPaidAt', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Label paid at')}"></th>
-                <th>Tracking page url</th>
                 <th></th>
             </tr>
             </thead>
@@ -38,21 +34,10 @@
             <tbody>
             <tr th:each="order : ${orderList}">
                 <td th:text="${order.id}"></td>
-                <td th:text="${order.customer.fullName}"></td>
-                <td th:text="${order.total}"></td>
+                <td th:text="${order.transaction.customer.fullName}"></td>
+                <td th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></td>
                 <td th:text="${order.orderTime}"></td>
-                <td th:text="${order.destinationAddress.fullAddress}"></td>
-                <td>
-                   <th:block th:if="${order.shipment.labelState == 'not_created'}">
-                       <!-- link to create new label for this shipment -->
-                   </th:block>
-                    <th:block th:text="${order.shipment.labelState}" th:if="${order.shipment.labelState != 'not_created'}">
-                    </th:block>
-                </td>
-                <td th:text="${order.shipment.labelGeneratedAt}"></td>
-                <td th:text="${order.shipment.labelPaidAt}"></td>
-                <td><a th:href="${order.shipment.trackingPageUrl}" class="link-primary link-underline-opacity-50-hover">Tracking URL</a></td>
-
+                <td th:text="${order.transaction.shippingAddress.fullAddress}"></td>
                 <td>
                     <div class="d-flex flex-column gap-2 align-items-center p-2">
                         <a th:replace="~{list_fragments :: detail_entity(|/orders/details/${order.id}|)}"></a>

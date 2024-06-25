@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Getter
 @Setter
@@ -35,5 +36,23 @@ public class BalanceTransaction extends IdentifiedEntity {
 
     @Column(name = "exchange_rate", precision = 18, scale = 8)
     private BigDecimal exchangeRate;
+
+    @Transient
+    public BigDecimal getDisplayAmount() {
+        long unitAmount = currency.getUnitAmount().longValue();
+
+        return BigDecimal.valueOf(amount)
+                .divide(BigDecimal.valueOf(unitAmount))
+                .setScale(2, RoundingMode.CEILING);
+    }
+
+    @Transient
+    public BigDecimal getDisplayFee() {
+        long unitAmount = currency.getUnitAmount().longValue();
+
+        return BigDecimal.valueOf(fee)
+                .divide(BigDecimal.valueOf(unitAmount))
+                .setScale(2, RoundingMode.CEILING);
+    }
 
 }

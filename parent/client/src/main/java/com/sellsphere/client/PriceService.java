@@ -69,12 +69,12 @@ public class PriceService {
     /**
      * Converts an amount by multiplying it with the unit amount of the currency.
      *
-     * @param itemSubtotal The amount to be converted.
+     * @param amount The amount to be converted.
      * @param unitAmount   The unit amount of the currency.
      * @return The converted amount.
      */
-    public BigDecimal convertAmount(BigDecimal itemSubtotal, BigDecimal unitAmount) {
-        return itemSubtotal.multiply(unitAmount);
+    public BigDecimal convertAmount(BigDecimal amount, BigDecimal unitAmount) {
+        return amount.multiply(unitAmount);
     }
 
     /**
@@ -119,7 +119,9 @@ public class PriceService {
      */
     public long handleRoundingAmountByCurrency(BigDecimal amount, BigDecimal unitAmount) {
         if (unitAmount.longValue() == 1000L) {
-            BigDecimal roundedAmount = amount.setScale(0, RoundingMode.HALF_UP);
+
+            // nearest 10
+            BigDecimal roundedAmount = amount.divide(BigDecimal.TEN, 0, RoundingMode.HALF_UP).multiply(BigDecimal.TEN);
             return roundedAmount.longValue();
         } else if (unitAmount.longValue() == 100L) {
             return amount.setScale(0, RoundingMode.HALF_UP).longValue();

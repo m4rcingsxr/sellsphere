@@ -4,8 +4,9 @@ import com.sellsphere.client.checkout.CurrencyService;
 import com.sellsphere.client.checkout.TransactionService;
 import com.sellsphere.client.customer.CustomerRepository;
 import com.sellsphere.client.order.OrderService;
-import com.sellsphere.client.setting.CountryService;
 import com.sellsphere.client.setting.SettingService;
+import com.sellsphere.client.shoppingcart.CartItemRepository;
+import com.sellsphere.client.shoppingcart.ShoppingCartService;
 import com.sellsphere.common.entity.*;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -28,6 +30,7 @@ public class WebhookService {
     private final OrderService orderService;
     private final TransactionService transactionService;
     private final CurrencyService currencyService;
+    private final ShoppingCartService shoppingCartService;
 
     private final CardRepository cardRepository;
     private final CustomerRepository customerRepository;
@@ -126,8 +129,9 @@ public class WebhookService {
                 break;
             case "payment_method.updated":
                 break;
-
             case "refund.created":
+                // identify whether this charge is created (stripe dashboard, admin dashboard)
+                handleRefundCreated((com.stripe.model.Refund) stripeObject);
                 break;
             case "refund.updated":
                 break;
@@ -141,6 +145,11 @@ public class WebhookService {
             default:
                 log.info("Unhandled event type: {}", event.getType());
         }
+    }
+
+    private void handleRefundCreated(com.stripe.model.Refund stripeRefund)
+            throws TransactionNotFoundException {
+        Optional<Refund> refundOpt = refundRepository.findByStripeId(stripeRefund.getId());
     }
 
     /**
@@ -198,6 +207,10 @@ public class WebhookService {
         serviceTransaction.setStatus(stripePaymentIntent.getStatus());
         serviceTransaction.setOrder(order);
         transactionService.save(serviceTransaction);
+
+        // clean cart
+        shoppingCartService.clearCart(customer);
+
 
         log.info("Handled payment intent succeeded for: {}", stripePaymentIntent.getId());
     }

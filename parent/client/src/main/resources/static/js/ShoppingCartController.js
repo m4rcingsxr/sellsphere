@@ -187,4 +187,18 @@ class ShoppingCartController {
         this.view.updateTax(this.model.getTax());
         this.view.updateShipping(this.model.getShipping());
     }
+
+    clear() {
+        this.model.clear()
+            .then(() => {
+                this.view.updateNavigationQuantity(this.model.data.length);
+                this.view.clear();
+
+                console.debug("Successfully removed all items from cart")
+            })
+            .catch(error => {
+                console.error(error);
+                showErrorModal(error.response)
+            });
+    }
 }

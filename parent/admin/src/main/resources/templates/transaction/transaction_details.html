@@ -2,7 +2,7 @@
     <div class="p-4">
         <header>
             <div class="d-flex justify-content-between">
-                <h3 th:text="${transaction.displayAmount + ' ' + transaction.currency.code.toUpperCase()}"></h3>
+                <h3 th:text="${transaction.displayAmount + ' ' + transaction.targetCurrency.code.toUpperCase()}"></h3>
                 <a href="#" class="link-dark refund-request"><i class="fa-solid fa-xl fa-rotate-left"></i></a>
             </div>
         </header>
@@ -72,19 +72,23 @@
             <div class="row g-3">
                 <div class="col-sm-6 text-light-emphasis">Amount</div>
                 <div class="col-sm-6"
-                     th:text="${transaction.displayAmount + ' ' + transaction.currency.code.toUpperCase()}"></div>
+                     th:text="${transaction.displayAmount + ' ' + transaction.targetCurrency.code.toUpperCase() + ' -> ' + transaction.charge.balanceTransaction.displayAmount + ' ' + transaction.charge.balanceTransaction.currency.code.toUpperCase()}"></div>
 
-                <div class="col-sm-6 text-light-emphasis">Refunded</div>
-                <div class="col-sm-6"
-                     th:text="${transaction.displayRefunded + ' ' + transaction.currency.code.toUpperCase()}"></div>
+                <div th:if="${transaction.charge.balanceTransaction.exchangeRate != null}" class="col-sm-6 text-light-emphasis">Payment exchange rate</div>
+                <div th:if="${transaction.charge.balanceTransaction.exchangeRate != null}" class="col-sm-6"
+                     th:text="${'1.00 ' + transaction.targetCurrency.code.toUpperCase() + ' -> ' + transaction.charge.balanceTransaction.exchangeRate + ' ' + transaction.charge.balanceTransaction.currency.code.toUpperCase()}"></div>
+
+                <div th:if="${transaction.hasRefunds}" class="col-sm-6 text-light-emphasis">Refunded</div>
+                <div th:if="${transaction.hasRefunds}" class="col-sm-6"
+                     th:text="${transaction.displayRefunded}"></div>
 
                 <div class="col-sm-6 text-light-emphasis">Fee</div>
                 <div class="col-sm-6"
-                     th:text="${transaction.displayFee + ' ' + transaction.currency.code.toUpperCase()}"></div>
+                     th:text="${transaction.displayFee + ' ' + transaction.charge.balanceTransaction.currency.code.toUpperCase()}"></div>
 
                 <div class="col-sm-6 text-light-emphasis">Net</div>
                 <div class="col-sm-6"
-                     th:text="${transaction.displayNet + ' ' + transaction.currency.code.toUpperCase()}"></div>
+                     th:text="${transaction.displayNet + ' ' + transaction.charge.balanceTransaction.currency.code.toUpperCase()}"></div>
 
                 <div class="col-sm-6 text-light-emphasis">Status</div>
                 <div class="col-sm-6" th:text="${transaction.status}"></div>
@@ -114,13 +118,13 @@
 
             <div class="row g-3">
                 <div class="col-sm-6 text-light-emphasis">Recipient</div>
-                <div class="col-sm-6" th:text="${transaction.order.destinationAddress.fullName}"></div>
+                <div class="col-sm-6" th:text="${transaction.order.transaction.shippingAddress.fullName}"></div>
 
                 <div class="col-sm-6 text-light-emphasis">Phone</div>
-                <div class="col-sm-6" th:text="${transaction.order.destinationAddress.phoneNumber}"></div>
+                <div class="col-sm-6" th:text="${transaction.order.transaction.shippingAddress.phoneNumber}"></div>
 
                 <div class="col-sm-6 text-light-emphasis">Address</div>
-                <div class="col-sm-6" th:text="${transaction.order.destinationAddress.fullAddress}"></div>
+                <div class="col-sm-6" th:text="${transaction.order.transaction.shippingAddress.fullAddress}"></div>
 
             </div>
         </section>
@@ -148,7 +152,7 @@
                         <td th:text="${tr.displayAmount}"></td>
                         <th>
                             <span th:if="${tr.paymentMethod != null}"
-                                  th:text="${tr.paymentMethod.type + ' ' + tr.currency.code.toUpperCase()}"></span>
+                                  th:text="${tr.paymentMethod.type + ' ' + tr.targetCurrency.code.toUpperCase()}"></span>
                         </th>
                         <td th:text="${tr.customer.fullName}"></td>
                         <td th:text="${tr.created}"></td>

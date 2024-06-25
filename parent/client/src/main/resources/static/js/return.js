@@ -6,7 +6,6 @@ $(function() {
 })
 
 
-// todo: cleanup - remove shopping cart assigned to customer on success
 async function initialize() {
     const stripe = Stripe("pk_test_51PbnPoAx8ZpOoq6Y2e0LqnQAZamnRJ6rBeShPoZVd7up9My5tepRm9Vhowv6qGue29a8aDz4r0YT5BkN3XnqQPrR00yMU9sery");
 
@@ -22,9 +21,11 @@ async function initialize() {
 
     switch (paymentIntent.status) {
         case "succeeded":
+            cartController.clear();
             showMessage("Payment succeeded!");
             break;
         case "processing":
+            cartController.clear();
             showMessage("Your payment is processing.");
             break;
         case "requires_payment_method":

@@ -22,7 +22,7 @@ public class Refund extends IdentifiedEntity {
     @JoinColumn(name = "charge_id", nullable = false)
     private Charge charge;
 
-    @Column(name = "object", nullable = false)
+    @Column(name = "object")
     private String object;
 
     @Column(name = "amount", nullable = false)
@@ -46,13 +46,13 @@ public class Refund extends IdentifiedEntity {
     @Column(name = "reason", nullable = false)
     private String reason;
 
-    @Column(name = "receipt_number", nullable = false)
+    @Column(name = "receipt_number")
     private String receiptNumber;
 
     @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "failure_reason", nullable = false)
+    @Column(name = "failure_reason")
     private String failureReason;
 
     @Transient

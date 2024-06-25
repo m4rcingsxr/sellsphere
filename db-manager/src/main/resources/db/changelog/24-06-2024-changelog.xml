@@ -106,10 +106,6 @@
     <changeSet id="1722449404141-22" author="Marcin Seweryn">
         <addNotNullConstraint columnDataType="BIGINT" columnName="exp_year" tableName="cards" validate="true"/>
     </changeSet>
-    <changeSet id="1722449404141-23" author="Marcin Seweryn">
-        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="failure_reason" tableName="refunds"
-                              validate="true"/>
-    </changeSet>
     <changeSet id="1722449404141-24" author="Marcin Seweryn">
         <addNotNullConstraint columnDataType="BIGINT" columnName="fee" tableName="balance_transactions"
                               validate="true"/>
@@ -120,9 +116,6 @@
     <changeSet id="1722449404141-30" author="Marcin Seweryn">
         <addNotNullConstraint columnDataType="BIGINT" columnName="net" tableName="balance_transactions"
                               validate="true"/>
-    </changeSet>
-    <changeSet id="1722449404141-31" author="Marcin Seweryn">
-        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="object" tableName="refunds" validate="true"/>
     </changeSet>
     <changeSet id="1722449404141-32" author="Marcin Seweryn">
         <addNotNullConstraint columnDataType="INT" columnName="payment_intent_id" tableName="orders" validate="true"/>
@@ -136,10 +129,6 @@
     </changeSet>
     <changeSet id="1722449404141-35" author="Marcin Seweryn">
         <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="reason" tableName="refunds" validate="true"/>
-    </changeSet>
-    <changeSet id="1722449404141-36" author="Marcin Seweryn">
-        <addNotNullConstraint columnDataType="VARCHAR(255)" columnName="receipt_number" tableName="refunds"
-                              validate="true"/>
     </changeSet>
     <changeSet id="1722449404141-37" author="Marcin Seweryn">
         <addNotNullConstraint columnDataType="BIGINT" columnName="shipping_amount" tableName="payment_intents"
