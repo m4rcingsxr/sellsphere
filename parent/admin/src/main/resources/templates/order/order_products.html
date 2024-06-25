@@ -1,0 +1,64 @@
+<div th:fragment="order_products()" class="tab-pane fade" id="nav-products" role="tabpanel"
+     aria-labelledby="nav-products-tab"
+     tabindex="0">
+
+    <div class="p-4">
+        <div th:each="detail, status : ${order.orderDetails}" class="card mb-3">
+
+            <div class="row g-0">
+                <div class="col-md-4">
+                    <img th:src="${detail.product.mainImagePath}" class="img-fluid rounded-start" alt="">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a th:href="@{'/products/edit/' + ${detail.product.id}}"
+                               th:text="${detail.product.name}" class="link-dark link-underline-opacity-50-hover link-underline-opacity-0"></a>
+                        </h5>
+                        <div class="row mt-3 px-3">
+                            <div class="col-sm-6 row g-1">
+                                <div class="col-sm-12">
+                                    <h6 class="fw-bolder">Details</h6>
+                                </div>
+
+                                <div class="col-sm-6">Price</div>
+                                <div class="col-sm-6" th:text="${detail.product.discountPrice + ' ' + order.transaction.targetCurrency.symbol}"></div>
+
+                                <div class="col-sm-6">In stock</div>
+                                <div class="col-sm-6" th:text="${detail.product.inStock}"></div>
+
+                                <div class="col-sm-6">Category</div>
+                                <div class="col-sm-6" th:text="${detail.product.category.name}"></div>
+
+                                <div class="col-sm-6">Brand</div>
+                                <div class="col-sm-6" th:text="${detail.product.brand.name}"></div>
+                            </div>
+                            <div class="col-sm-6 row g-1">
+                                <div class="col-sm-12">
+                                    <h6 class="fw-bolder">Shipping</h6>
+                                </div>
+                                <div class="col-sm-6">Length</div>
+                                <div class="col-sm-6" th:text="${detail.product.length} + ' cm'"></div>
+                                <div class="col-sm-6">Width</div>
+                                <div class="col-sm-6" th:text="${detail.product.width} + ' cm'"></div>
+                                <div class="col-sm-6">Height</div>
+                                <div class="col-sm-6" th:text="${detail.product.height + ' cm'}"></div>
+                                <div class="col-sm-6">Weight</div>
+                                <div class="col-sm-6" th:text="${detail.product.weight} + ' kg'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="admin_order_products_read_only()" th:each="detail, status : ${order.orderDetails}"
+     class="card mb-3 m-4 position-relative">
+</div>
+
+<div th:fragment="shipper_order_products_read_only()" th:each="detail, status : ${order.orderDetails}"
+     class="card mb-3 m-4 position-relative">
+</div>
+

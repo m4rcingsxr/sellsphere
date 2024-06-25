@@ -188,6 +188,45 @@ const ajaxUtil = {
             error.response = errorResponse;
             throw error;
         }
+    },
+
+    /**
+     * Performs a DELETE request to the specified URL and returns the JSON response.
+     *
+     * @param {string} url - The URL to send the DELETE request to.
+     * @returns {Promise<Object>} A promise that resolves to the response data as a JSON object.
+     * @throws {Error} If the DELETE request fails.
+     */
+    async deleteReturnBody(url) {
+        const csrfToken = this.getCSRFToken();
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken;
+        }
+
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: headers
+        });
+
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const error = new Error(`DELETE request failed: ${response.statusText}`);
+            error.response = errorResponse;
+            throw error;
+        }
+
+        // Check if the response has a body and return the JSON response
+        if (response.status !== 204) {
+            return await response.json();
+        }
+
+        // Return null if there is no content (status 204)
+        return null;
     }
+
 };
 

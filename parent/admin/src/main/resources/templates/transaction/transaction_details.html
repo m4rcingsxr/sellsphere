@@ -35,7 +35,9 @@
         </section>
 
         <!-- Refunds -->
-        <section th:if="${transaction.charge != null and transaction.charge.refunds != null and transaction.charge.refunds.size() > 0}" class="mt-5">
+        <section
+                th:if="${transaction.charge != null and transaction.charge.refunds != null and transaction.charge.refunds.size() > 0}"
+                class="mt-5">
             <h4>Refunds</h4>
 
             <hr/>
@@ -64,77 +66,20 @@
         </section>
 
         <!-- Payment details -->
-        <section class="mt-5" th:if="${transaction.charge != null}">
-            <h4>Payment details</h4>
-
-            <hr/>
-
-            <div class="row g-3">
-                <div class="col-sm-6 text-light-emphasis">Amount</div>
-                <div class="col-sm-6"
-                     th:text="${transaction.displayAmount + ' ' + transaction.targetCurrency.code.toUpperCase() + ' -> ' + transaction.charge.balanceTransaction.displayAmount + ' ' + transaction.charge.balanceTransaction.currency.code.toUpperCase()}"></div>
-
-                <div th:if="${transaction.charge.balanceTransaction.exchangeRate != null}" class="col-sm-6 text-light-emphasis">Payment exchange rate</div>
-                <div th:if="${transaction.charge.balanceTransaction.exchangeRate != null}" class="col-sm-6"
-                     th:text="${'1.00 ' + transaction.targetCurrency.code.toUpperCase() + ' -> ' + transaction.charge.balanceTransaction.exchangeRate + ' ' + transaction.charge.balanceTransaction.currency.code.toUpperCase()}"></div>
-
-                <div th:if="${transaction.hasRefunds}" class="col-sm-6 text-light-emphasis">Refunded</div>
-                <div th:if="${transaction.hasRefunds}" class="col-sm-6"
-                     th:text="${transaction.displayRefunded}"></div>
-
-                <div class="col-sm-6 text-light-emphasis">Fee</div>
-                <div class="col-sm-6"
-                     th:text="${transaction.displayFee + ' ' + transaction.charge.balanceTransaction.currency.code.toUpperCase()}"></div>
-
-                <div class="col-sm-6 text-light-emphasis">Net</div>
-                <div class="col-sm-6"
-                     th:text="${transaction.displayNet + ' ' + transaction.charge.balanceTransaction.currency.code.toUpperCase()}"></div>
-
-                <div class="col-sm-6 text-light-emphasis">Status</div>
-                <div class="col-sm-6" th:text="${transaction.status}"></div>
-            </div>
-        </section>
+        <section th:replace="~{transaction/transaction_fragments :: payment_details(${transaction})}"></section>
 
         <!-- Customer details -->
-        <section class="mt-5">
-            <h4>Customer details</h4>
-
-            <hr/>
-
-            <div class="row g-3">
-                <div class="col-sm-6 text-light-emphasis">Name</div>
-                <div class="col-sm-6" th:text="${transaction.customer.fullName}"></div>
-
-                <div class="col-sm-6 text-light-emphasis">Email</div>
-                <div class="col-sm-6" th:text="${transaction.customer.email}"></div>
-            </div>
-        </section>
+        <section th:replace="~{transaction/transaction_fragments :: customer_details(${transaction})}"></section>
 
         <!-- Shipping       -->
-        <section class="mt-5" th:if="${transaction.order}">
-            <h4>Shipping</h4>
-
-            <hr />
-
-            <div class="row g-3">
-                <div class="col-sm-6 text-light-emphasis">Recipient</div>
-                <div class="col-sm-6" th:text="${transaction.order.transaction.shippingAddress.fullName}"></div>
-
-                <div class="col-sm-6 text-light-emphasis">Phone</div>
-                <div class="col-sm-6" th:text="${transaction.order.transaction.shippingAddress.phoneNumber}"></div>
-
-                <div class="col-sm-6 text-light-emphasis">Address</div>
-                <div class="col-sm-6" th:text="${transaction.order.transaction.shippingAddress.fullAddress}"></div>
-
-            </div>
-        </section>
+        <section th:replace="~{transaction/transaction_fragments :: shipping_details(${transaction})}"></section>
 
         <!-- Related payments -->
         <section th:if="${transaction.customer.transactions.size() > 1}" class="mt-4">
 
             <h3>Related payments</h3>
 
-            <hr />
+            <hr/>
 
             <div class="overflow-y-scroll" style="height: 200px;">
                 <table class="table">

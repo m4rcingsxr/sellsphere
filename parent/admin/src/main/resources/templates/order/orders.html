@@ -13,9 +13,6 @@
         <!-- Alerts -->
         <div th:replace="~{common :: alerts()}"></div>
 
-        <!-- Export       -->
-        <ul th:replace="~{navigations :: export_nav('orders', true)}"></ul>
-
         <!-- Search Bar -->
         <form th:replace="~{list_fragments :: search_bar('/orders/page/0', 'Search for the order', 'firstName', ${keyword}, ${totalItems}, null)}"></form>
 

@@ -26,7 +26,7 @@ function initializeValidators() {
 }
 
 function addCategoryIconValidator() {
-    $.validator.addMethod('categoryIcon', function(value, element) {
+    $.validator.addMethod('categoryIcon', function (value, element) {
         const categoryId = Number($("#parent").val());
         const categoryIcon = $("#categoryIcon\\.iconPath").val();
 
@@ -72,7 +72,7 @@ function addBasicValidators() {
         return $(`input[name="${element.name}"]:checked`).length >= 1;
     }, 'Please select at least one option.');
 
-    $.validator.addMethod("notZero", function(value, element) {
+    $.validator.addMethod("notZero", function (value, element) {
         return this.optional(element) || parseFloat(value) !== 0.0;
     }, "The value must not be 0.0.");
 }
@@ -87,9 +87,12 @@ function addFileValidators() {
         return hasExistingValue || hasNewFile;
     }, `An image file is required`);
 
+    const DEFAULT_MAX_FILE_SIZE = 1048576; // 1 MB in bytes
+    const maxFileSize = typeof MAX_FILE_SIZE !== 'undefined' ? MAX_FILE_SIZE : DEFAULT_MAX_FILE_SIZE;
+
     $.validator.addMethod("maxImageSize", function (value, element) {
-        return element.files.length === 0 || element.files[0].size <= MAX_FILE_SIZE;
-    }, `File must be less than ${MAX_FILE_SIZE} bytes.`);
+        return element.files.length === 0 || element.files[0].size <= maxFileSize;
+    }, `File must be less than ${maxFileSize} bytes.`);
 }
 
 function configureFormValidation() {
@@ -107,16 +110,18 @@ function configureFormValidation() {
  * @param {function} [submitHandler] - The submit handler function.
  */
 function validateForm(formSelector, submitHandler) {
-    $(formSelector).validate({
+    const options = {
         ignore: [],
-        rules: validationRules,
-        messages: validationMessages,
         errorElement: "em",
+        rules: validationRules,
+        messages : validationMessages,
         errorPlacement: errorPlacementHandler,
         highlight: highlightHandler,
         unhighlight: unhighlightHandler,
         submitHandler: submitHandler
-    });
+    };
+
+    $(formSelector).validate(options);
 }
 
 /**
@@ -146,7 +151,7 @@ function toggleValidationClasses(element, isInvalid) {
     const oppositeAction = isInvalid ? "removeClass" : "addClass";
 
     if (element.type === "checkbox") {
-        $(`input[name="${elementName}"]`).each(function() {
+        $(`input[name="${elementName}"]`).each(function () {
             $(this)[action]("is-invalid")[oppositeAction]("is-valid");
         });
     } else {
@@ -181,12 +186,13 @@ function errorPlacementHandler(error, element) {
  */
 function applyDynamicValidationRules() {
     dynamicRules.forEach(config => {
-        $(config.selector).each(function() {
+        $(config.selector).each(function () {
             if (!$(this).rules().required) { // Avoid duplicate rule application
                 $(this).rules("add", config.rules);
             }
         });
     });
+
 }
 
 function handleRemoteValidationError(jqXHR) {

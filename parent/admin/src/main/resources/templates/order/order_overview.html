@@ -1,0 +1,61 @@
+<div th:fragment="order_overview()" class="tab-pane fade show active" id="nav-overview" role="tabpanel"
+     aria-labelledby="nav-overview-tab" tabindex="0">
+    <input type="hidden" name="id" id="id" th:value="${order.id}"/>
+    <div class="mt-2 p-4">
+
+        <section class="mt-3">
+            <div class="d-flex gap-5 align-items-center">
+                <h4>Summary</h4>
+
+                <div>
+                    <span class="d-block text-light-emphasis">Created</span>
+                    <span th:text="${order.orderTime}"></span>
+                </div>
+                <div>
+                    <span class="d-block text-light-emphasis">Customer</span>
+                    <a th:href="@{'/customers/edit/' + ${order.transaction.customer.id}}"
+                       th:text="${order.transaction.customer.fullName}"></a>
+                </div>
+                <div th:if="${order.transaction.paymentMethod != null}">
+                    <span class="d-block text-light-emphasis">Payment method</span>
+                    <span th:text="${order.transaction.paymentMethod.type}"></span>
+                </div>
+                <div th:if="${order.orderStatus != null}">
+                    <span class="d-block text-light-emphasis">Order status</span>
+                    <span th:text="${order.orderStatus}"></span>
+                </div>
+                <div>
+                    <span class="d-block text-light-emphasis">Transaction</span>
+                    <a th:href="@{'/transactions/details/' + ${order.transaction.id}}"
+                       th:text="${'#' + order.transaction.id}"
+                       class="link-primary"
+                    >
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <div class="row mt-4">
+            <div class="col-sm-6">
+                <section th:replace="~{transaction/transaction_fragments :: payment_details(${order.transaction})}"></section>
+            </div>
+            <div class="col-sm-6">
+                <section th:replace="~{transaction/transaction_fragments :: customer_details(${order.transaction})}"></section>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div th:fragment="admin_order_overview_read_only()" class="row">
+    <th:block th:replace="form_fragments :: text_input('Order ID', 'id', true)"></th:block>
+    <th:block th:replace="form_fragments :: text_input('Customer', 'transaction.customer.fullName', true)"></th:block>
+    <th:block th:replace="form_fragments :: text_input('Order Date', 'orderTime', true)"></th:block>
+</div>
+
+
+<div th:fragment="shipper_order_overview_read_only()" class="row">
+    <th:block
+            th:replace="form_fragments :: text_input('Order ID', 'id', true)"></th:block>
+
+</div>

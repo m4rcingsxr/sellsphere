@@ -86,6 +86,11 @@ public class PaymentIntent extends IdentifiedEntity {
     private Courier courier;
 
     @Transient
+    public BigDecimal getDisplayShippingAmount() {
+        return convertToDisplayAmount(shippingAmount, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+    }
+
+    @Transient
     public BigDecimal getDisplayAmount() {
         return convertToDisplayAmount(amount, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
     }
@@ -126,6 +131,7 @@ public class PaymentIntent extends IdentifiedEntity {
             return formatAmount(totalRefund, presentmentCurrency) + " -> " + formatAmount(convertedAmount, settlementCurrency);
         }
     }
+
 
     private BigDecimal convertToDisplayAmount(long amount, long unitAmount, RoundingMode roundingMode) {
         return BigDecimal.valueOf(amount)

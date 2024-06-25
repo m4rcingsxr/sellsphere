@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class RestResponseEntityExceptionHandler {
 
     @ExceptionHandler({BrandNotFoundException.class, CountryNotFoundException.class,
-                       StateNotFoundException.class, CartItemNotFoundException.class})
+                       StateNotFoundException.class, CartItemNotFoundException.class,
+                       OrderNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleNotFoundExceptions(Exception e) {
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage(),
                                                         HttpStatus.NOT_FOUND.value()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
-
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(

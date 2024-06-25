@@ -3,8 +3,10 @@ package com.sellsphere.common.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @AllArgsConstructor
@@ -26,8 +28,13 @@ public class Order extends IdentifiedEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval =
+            true)
+    @OrderBy("updatedTime ASC, status ASC")
+    private List<OrderTrack> orderTracks;
+
     public void addOrderDetail(CartItem cartItem) {
-        if(orderDetails == null) {
+        if (orderDetails == null) {
             orderDetails = new ArrayList<>();
         }
 
@@ -40,6 +47,32 @@ public class Order extends IdentifiedEntity {
                         .subtotal(cartItem.getSubtotal())
                         .build()
         );
+    }
+
+    @Transient
+    public BigDecimal getProductCost() {
+        if(orderDetails != null) {
+            return orderDetails.stream().map(OrderDetail::getProductCost).reduce(BigDecimal.ZERO,  BigDecimal::add);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    @Transient
+    public OrderStatus getOrderStatus() {
+        if(orderDetails != null && !orderTracks.isEmpty()) {
+            List<OrderTrack> orderTracks = this.orderTracks.stream().sorted(Comparator.comparingInt(track -> track.getStatus().ordinal())).toList();
+            return orderTracks.get(orderTracks.size() - 1).getStatus();
+        }
+        return null;
+    }
+
+    public void addOrderTrack(OrderTrack orderTrack) {
+        if (orderTracks == null) {
+            orderTracks = new ArrayList<>();
+        }
+
+        orderTrack.setOrder(this);
+        orderTracks.add(orderTrack);
     }
 
 }

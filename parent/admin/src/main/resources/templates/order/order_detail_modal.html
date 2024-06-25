@@ -1,0 +1,56 @@
+<div th:fragment="detail_modal()" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-sc">
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button class="nav-link active" id="nav-overview-tab" data-bs-toggle="tab" data-bs-target="#nav-overview"
+                    type="button" role="tab" aria-controls="nav-overview" aria-selected="true">Overview
+            </button>
+            <button class="nav-link" id="nav-products-tab" data-bs-toggle="tab" data-bs-target="#nav-products"
+                    type="button"
+                    role="tab" aria-controls="nav-products" aria-selected="false">Products
+            </button>
+            <button class="nav-link" id="nav-shipping-tab" data-bs-toggle="tab" data-bs-target="#nav-shipping"
+                    type="button"
+                    role="tab" aria-controls="nav-shipping" aria-selected="false">Shipping
+            </button>
+            <button class="nav-link" id="nav-track-tab" data-bs-toggle="tab" data-bs-target="#nav-track" type="button"
+                    role="tab" aria-controls="nav-track" aria-selected="false">Track
+            </button>
+        </div>
+    </nav>
+    <form th:object="${order}">
+
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab"
+                 tabindex="0">
+                <th:block sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_SALESPERSON')">
+                    <div th:replace="order/order_overview :: admin_order_overview_read_only()"></div>
+                </th:block>
+
+                <th:block sec:authorize="hasRole('ROLE_SHIPPER')">
+                    <div th:replace="order/order_overview :: shipper_order_overview_read_only()"></div>
+                </th:block>
+            </div>
+
+            <div class="tab-pane fade" id="nav-products" role="tabpanel" aria-labelledby="nav-products-tab"
+                 tabindex="0">
+                <th:block sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_SALESPERSON')">
+                    <div th:replace="order/order_products :: admin_order_products_read_only()"></div>
+                </th:block>
+                <th:block sec:authorize="hasRole('ROLE_SHIPPER')">
+                    <div th:replace="order/order_products :: shipper_order_products_read_only()"></div>
+                </th:block>
+            </div>
+
+            <div class="tab-pane fade" id="nav-shipping" role="tabpanel" aria-labelledby="nav-shipping-tab"
+                 tabindex="0">
+                <div th:replace="order/order_shipping :: order_shipping_read_only()"></div>
+            </div>
+
+            <div class="tab-pane fade text-start p-2" id="nav-track" role="tabpanel" aria-labelledby="nav-track-tab"
+                 tabindex="0">
+                <div th:replace="order/order_tracks :: order_tracks_read_only()"></div>
+            </div>
+        </div>
+    </form>
+
+</div>

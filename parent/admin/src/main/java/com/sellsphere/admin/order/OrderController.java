@@ -3,6 +3,8 @@ package com.sellsphere.admin.order;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.common.entity.Order;
+import com.sellsphere.common.entity.OrderNotFoundException;
+import com.sellsphere.common.entity.OrderStatus;
 import com.sellsphere.easyship.EasyshipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -17,7 +19,6 @@ public class OrderController {
     public static final String DEFAULT_REDIRECT_URL = "redirect:/orders/page/0?sortField=orderTime&sortDir=desc";
 
     private final OrderService orderService;
-    private final EasyshipService easyshipService;
 
     @GetMapping
     public String listFirstPage() {
@@ -33,7 +34,14 @@ public class OrderController {
     }
 
     @GetMapping("/edit/{id}")
-    public String showOrderForm(@PathVariable Integer id, Model model) {
+    public String showOrderForm(@PathVariable Integer id, Model model)
+            throws OrderNotFoundException {
+        Order order = orderService.getById(id);
+
+        model.addAttribute("order", order);
+        model.addAttribute("orderStatusList", OrderStatus.values());
+        model.addAttribute("orderStatusMap", OrderStatus.getOrderStatusMap());
+
         return "order/order_form";
     }
 

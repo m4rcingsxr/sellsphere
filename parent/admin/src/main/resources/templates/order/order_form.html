@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="form_fragments :: head('Edit order')"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<section class="content">
+    <div class="container mt-7">
+        <!--        <h1 class="subheading text-center" th:text="${pageTitle}"></h1>-->
+
+        <nav class="mt-4">
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-overview-tab" data-bs-toggle="tab"
+                        data-bs-target="#nav-overview"
+                        type="button" role="tab" aria-controls="nav-overview" aria-selected="true">Overview
+                </button>
+                <button class="nav-link" id="nav-products-tab" data-bs-toggle="tab" data-bs-target="#nav-products"
+                        type="button" role="tab" aria-controls="nav-products" aria-selected="false">Products
+                </button>
+                <button class="nav-link" id="nav-shipping-tab" data-bs-toggle="tab" data-bs-target="#nav-shipping"
+                        type="button" role="tab" aria-controls="nav-shipping" aria-selected="false">Shipping
+                </button>
+            </div>
+        </nav>
+
+        <div class="tab-content" id="nav-tabContent">
+            <div th:replace="order/order_overview :: order_overview()"></div>
+            <div th:replace="order/order_products :: order_products()"></div>
+            <div th:replace="order/order_shipping :: order_shipping()"></div>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<script type="text/javascript">
+    const MODULE_URL = "[[@{/}]]";
+    const validationRules = {};
+    const validationMessages = {};
+    const dynamicRules = [];
+</script>
+<script type="text/javascript" th:src="@{/js/OrderController.js}"></script>
+
+</body>
+</html>

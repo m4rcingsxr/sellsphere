@@ -1,12 +1,11 @@
 package com.sellsphere.client.order;
 
 import com.sellsphere.client.shoppingcart.CartItemRepository;
-import com.sellsphere.common.entity.CartItem;
-import com.sellsphere.common.entity.Order;
-import com.sellsphere.common.entity.PaymentIntent;
+import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,6 +25,14 @@ public class OrderService {
 
         List<CartItem> cart = cartItemRepository.findByCustomer(transaction.getCustomer());
         cart.forEach(order::addOrderDetail);
+
+        order.addOrderTrack(
+                OrderTrack.builder()
+                        .updatedTime(LocalDate.now())
+                        .status(OrderStatus.NEW)
+                        .notes(OrderStatus.NEW.getNote())
+                        .build()
+        );
 
         return orderRepository.save(order);
     }

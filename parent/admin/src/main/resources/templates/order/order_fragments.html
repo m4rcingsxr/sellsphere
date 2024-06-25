@@ -1,0 +1,9 @@
+<a th:fragment="order_status(orderId, status, statusParam, icon)" class="d-flex flex-column justify-content-between text-center gap-2"
+   th:disabled="${status ? 'disabled' : ''}" th:href="@{'/orders/change_status/' + ${orderId} + '?status=' + ${statusParam}}">
+    <th:block th:with="iconColor = ${status ? true : false}">
+        <div>
+            <i th:class="'fa-solid ' + ${icon} + ' fa-2xl'"
+               th:style="${iconColor ? 'color: green;' : 'color: grey;'}"></i>
+        </div>
+    </th:block>
+</a>
