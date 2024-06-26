@@ -76,5 +76,22 @@ public class OrderController {
         return "order/orders_customer";
     }
 
+    /**
+     * Displays the order details modal for the specified order ID.
+     *
+     * @param orderId the order ID to view details for
+     * @param model the model to add attributes
+     * @return order detail modal view
+     * @throws OrderNotFoundException if the order is not found
+     */
+    @GetMapping("/orders/detail/{id}")
+    public String viewOrderDetail(@PathVariable("id") Integer orderId,  Model model)
+            throws OrderNotFoundException {
+        Order order = orderService.getById(orderId);
+
+        model.addAttribute("order", order);
+
+        return "order/order_detail_modal";
+    }
 
 }
