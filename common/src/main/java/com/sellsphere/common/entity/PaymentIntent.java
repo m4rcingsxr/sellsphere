@@ -108,6 +108,11 @@ public class PaymentIntent extends IdentifiedEntity {
     }
 
     @Transient
+    public BigDecimal getDisplayTax() {
+        return convertToDisplayAmount(taxAmount, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+    }
+
+    @Transient
     public boolean hasRefunds() {
         return charge.getRefunds() != null && !charge.getRefunds().isEmpty();
     }

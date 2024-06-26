@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{common :: common_head('Order ')}"></th:block>
+</head>
+<body>
+<nav th:replace="~{navigations :: header()}"></nav>
+
+<div class="container p-0 mt-2 content">
+
+    <div class="row mt-5">
+        <div class="col-sm-3">
+            <div th:replace="~{customer/customer_navigation :: nav()}"></div>
+        </div>
+
+        <div class="col-sm-9 mt-4">
+            <div>
+                <h2>Orders</h2>
+
+                <table class="table mt-4">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="p-4 fw-light">Order #ID</th>
+                        <th scope="col" class="p-4 fw-light">Order date</th>
+                        <th scope="col" class="p-4 fw-light">Status</th>
+                        <th scope="col" class="p-4 fw-light">Total</th>
+                        <th scope="col" class="p-4 fw-light"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="order : ${orderList}">
+                        <th class="p-4">
+                            <a href="#" class="link-dark link-underline-opacity-0 link-underline entity-detail"
+                               th:text="${order.id}" th:data-id="${order.id}"></a>
+                        </th>
+                        <td th:text="${order.orderTime.toLocalDate()}" class="p-4"></td>
+                        <td class="p-4" th:id="${'orderStatus' + order.id}">
+                            <div th:replace="~{order/order_fragments :: table_order_status(${order.orderStatus})}"></div>
+                        </td>
+                        <td class="p-4">
+                            <div th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></div>
+                        </td>
+                        <td style="width: 300px;">
+                            <div th:replace="~{order/order_fragments :: table_order_images(${order.orderDetails}, ${order.id})}"></div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav th:replace="~{navigations :: footer()}"></nav>
+
+
+<div id="overlay" class="overlay"></div>
+<div id="returnSidebar" class="sidebar">
+    <div th:replace="~{order/return_order_modal :: return_sidebar()}"></div>
+</div>
+<div id="sidebar" class="sidebar"></div>
+
+<script type="text/javascript">
+    const MODULE_URL = "[[@{/}]]";
+</script>
+<script type="text/javascript" th:src="@{/js/customer_order.js}"></script>
+<script type="text/javascript" th:src="@{/js/return_customer_order.js}"></script>
+</body>
+</html>

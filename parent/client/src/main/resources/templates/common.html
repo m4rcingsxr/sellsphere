@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" th:href="@{/css/common.css}">
     <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
     <link rel="stylesheet" th:href="@{/css/general.css}">
     <link rel="stylesheet" th:href="@{/css/media_queries.css}">
 
@@ -81,6 +82,10 @@
           class="fw-lighter text-decoration-line-through fs-5"
           th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></span>
 </div>
+
+<a th:fragment="chevron_right(entityId)" href="#" class="link-dark entity-detail" th:data-id="${entityId}">
+    <i class="bi bi-chevron-right d-block"></i>
+</a>
 
 
 <script type="text/javascript" th:fragment="configurations()">

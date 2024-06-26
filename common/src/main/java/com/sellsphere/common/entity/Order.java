@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -44,6 +46,7 @@ public class Order extends IdentifiedEntity {
                         .productPrice(cartItem.getProduct().getDiscountPrice())
                         .productCost(cartItem.getProduct().getCost())
                         .product(cartItem.getProduct())
+                        .quantity(cartItem.getQuantity())
                         .subtotal(cartItem.getSubtotal())
                         .build()
         );
@@ -58,12 +61,41 @@ public class Order extends IdentifiedEntity {
     }
 
     @Transient
+    public boolean isDelivered() {
+        return getOrderStatus() == OrderStatus.DELIVERED;
+    }
+
+    @Transient
+    public boolean isReturnRequested() {
+        return getOrderStatus() == OrderStatus.RETURN_REQUESTED;
+    }
+
+    @Transient
     public OrderStatus getOrderStatus() {
         if(orderDetails != null && !orderTracks.isEmpty()) {
             List<OrderTrack> orderTracks = this.orderTracks.stream().sorted(Comparator.comparingInt(track -> track.getStatus().ordinal())).toList();
             return orderTracks.get(orderTracks.size() - 1).getStatus();
         }
         return null;
+    }
+
+
+    @Transient
+    public LocalDate getEstimatedDeliveryDate() {
+        assert transaction.getCourier() != null;
+        Integer deliveryDays = transaction.getCourier().getMaxDeliveryTime();
+
+        LocalDate estimatedDate = orderTime.toLocalDate();
+        int addedDays = 0;
+
+        while (addedDays < deliveryDays) {
+            estimatedDate = estimatedDate.plusDays(1);
+            if (!(estimatedDate.getDayOfWeek() == DayOfWeek.SATURDAY || estimatedDate.getDayOfWeek() == DayOfWeek.SUNDAY)) {
+                addedDays++;
+            }
+        }
+
+        return estimatedDate;
     }
 
     public void addOrderTrack(OrderTrack orderTrack) {

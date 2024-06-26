@@ -16,7 +16,7 @@ public class OrderDetail extends IdentifiedEntity {
 
 
     @Column(name = "quantity", nullable = false)
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "product_cost", nullable = false)
     private BigDecimal productCost;
