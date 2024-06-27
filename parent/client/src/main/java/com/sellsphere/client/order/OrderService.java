@@ -81,6 +81,67 @@ public class OrderService {
         }
     }
 
+    /**
+     * Sets an order as return requested.
+     *
+     * @param request  the return request
+     * @param customer the customer requesting the return
+     * @throws OrderNotFoundException          if the order is not found
+     * @throws ReturnRequestAlreadyPlacedException if a return request has already been placed for the order
+     */
+    public void setOrderReturnRequested(OrderReturnRequest request,
+                                        Customer customer)
+            throws OrderNotFoundException, ReturnRequestAlreadyPlacedException {
+        Order order = orderRepository
+                .findByIdAndTransactionCustomer(request.getOrderId(), customer)
+                .orElseThrow(OrderNotFoundException::new);
 
+        validateReturnRequest(order);
+        addReturnRequestOrderTrack(request, order);
+        orderRepository.save(order);
+    }
+
+    private void validateReturnRequest(Order order) throws ReturnRequestAlreadyPlacedException {
+        validateOrderDelivered(order);
+        validateReturnRequestNotPlaced(order);
+    }
+
+    private void validateOrderDelivered(Order order) {
+        if (order.getOrderStatus() != OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Order is not delivered");
+        }
+    }
+
+    // Validates that a return request has not already been placed for the order.
+    private void validateReturnRequestNotPlaced(Order order)
+            throws ReturnRequestAlreadyPlacedException {
+        if (order.isReturnRequested()) {
+            throw new ReturnRequestAlreadyPlacedException(
+                    "Return request already placed.");
+        }
+    }
+
+    private void addReturnRequestOrderTrack(OrderReturnRequest request, Order order) {
+
+        OrderTrack track = createOrderTrackForReturnRequest(request, order);
+        order.getOrderTracks().add(track);
+    }
+
+    private OrderTrack createOrderTrackForReturnRequest(
+            OrderReturnRequest request, Order order) {
+        OrderTrack track = new OrderTrack();
+        track.setOrder(order);
+        track.setUpdatedTime(LocalDate.now());
+        track.setStatus(OrderStatus.RETURN_REQUESTED);
+
+        String notes = "Reason: " + request.getReason();
+        if (request.getNote() != null && !request.getNote().isBlank()) {
+            notes += ". Customer note: " + request.getNote();
+        }
+
+        track.setNotes(notes);
+
+        return track;
+    }
 
 }

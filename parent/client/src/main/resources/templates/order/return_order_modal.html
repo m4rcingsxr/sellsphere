@@ -1,0 +1,40 @@
+<div class="p-4 bg-white h-100 d-flex flex-column" th:fragment="return_sidebar()">
+
+    <h4 class="fw-bolder mb-2">Return Order</h4>
+    <p class="text-light-emphasis">Why do you want to return your order?</p>
+
+    <form class="flex-grow-1 d-flex flex-column gap-3" id="returnForm">
+        <div>
+            <input type="radio" class="btn-check" name="options" id="option1" autocomplete="off">
+            <label class="btn btn-outline-success" for="option1">I bought the wrong items</label>
+        </div>
+
+        <div>
+            <input type="radio" class="btn-check" name="options" id="option2" autocomplete="off">
+            <label class="btn btn-outline-success" for="option2">I received the wrong items</label>
+        </div>
+
+        <div>
+            <input type="radio" class="btn-check" name="options" id="option3" autocomplete="off">
+            <label class="btn btn-outline-success" for="option3">The product was damaged/defective</label>
+        </div>
+
+        <div>
+            <input type="radio" class="btn-check" name="options" id="option4" autocomplete="off">
+            <label class="btn btn-outline-success" for="option4">The product arrived too late</label>
+        </div>
+
+        <div class="form-floating mt-3">
+            <textarea class="form-control" placeholder="Leave a comment here" id="note"
+                      style="height: 100px"></textarea>
+            <label for="note">Additional information</label>
+        </div>
+
+        <button type="submit" class="btn btn-outline-primary w-100 mt-auto mb-3" id="returnRequestBtn">Send a return request</button>
+    </form>
+
+    <div class="mt-auto">
+        <a href="#" class="btn btn-outline-secondary w-100" id="cancelBtn">Cancel</a>
+    </div>
+
+</div>

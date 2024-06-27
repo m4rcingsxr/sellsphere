@@ -5,7 +5,6 @@ import com.sellsphere.client.checkout.TransactionService;
 import com.sellsphere.client.customer.CustomerRepository;
 import com.sellsphere.client.order.OrderService;
 import com.sellsphere.client.setting.SettingService;
-import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.client.shoppingcart.ShoppingCartService;
 import com.sellsphere.common.entity.*;
 import com.stripe.exception.StripeException;
@@ -17,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
