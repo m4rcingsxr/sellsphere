@@ -1,2 +1,0 @@
-- change saving product price in order detail in correct currency
-- charge client for additional payment services like paypal where fee might get big (stripe fee must be include in the price!)

@@ -36,4 +36,27 @@ public class OrderDetail extends IdentifiedEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    public OrderDetail(String name,
+                       int quantity,
+                       BigDecimal productCost,
+                       BigDecimal productPrice,
+                       BigDecimal subtotal,
+                       DetailContext detailContext
+    ) {
+        this.product = new Product();
+
+        switch(detailContext) {
+            case PRODUCT -> this.product.setName(name);
+            case CATEGORY -> {
+                Category category = new Category();
+                category.setName(name);
+                this.product.setCategory(category);
+            }
+        }
+
+        this.quantity = quantity;
+        this.productCost = productCost;
+        this.productPrice = productPrice;
+        this.subtotal = subtotal;
+    }
 }

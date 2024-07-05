@@ -43,18 +43,6 @@ public class SettingService {
         return settingRepository.findAllByCategoryIn(List.of(SettingCategory.PAYMENT));
     }
 
-    public Setting getTaxBehavior() throws SettingNotFoundException {
-        return settingRepository.findById("TAX").orElseThrow(SettingNotFoundException::new);
-    }
-
-    public Currency getCurrentCurrency() throws SettingNotFoundException,
-            CurrencyNotFoundException {
-        String currencyId = settingRepository.findById("CURRENCY_ID").orElseThrow(
-                SettingNotFoundException::new).getValue();
-        return currencyRepository.findById(Integer.valueOf(currencyId)).orElseThrow(
-                CurrencyNotFoundException::new);
-    }
-
     public void save(HttpServletRequest request, MultipartFile file) throws IOException {
         GeneralSettingManager generalSettingManager = populateGeneralSettingManager();
 
@@ -108,4 +96,7 @@ public class SettingService {
     }
 
 
+    public List<Setting> getCurrencySettings() {
+        return settingRepository.findAllByCategory(SettingCategory.CURRENCY);
+    }
 }

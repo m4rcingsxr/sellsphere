@@ -1,0 +1,74 @@
+<div th:fragment="tab_content(btnClass, chartId, inputContainerId)" class="py-3 px-1">
+    <div class="d-flex align-items-start">
+        <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+            <button class="nav-link active" data-bs-toggle="pill"
+                    data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home"
+                    aria-selected="true" data-period="7_days" th:classappend="${btnClass}">Last 7 Days
+            </button>
+            <button class="nav-link" data-bs-toggle="pill"
+                    data-bs-target="#sales-date-28" type="button" role="tab" aria-controls="sales-date-28"
+                    aria-selected="false" data-period="28_days" th:classappend="${btnClass}">Last 28 Days
+            </button>
+            <button class="nav-link" data-bs-toggle="pill"
+                    data-bs-target="#sales-date-28-days" type="button" role="tab" aria-controls="sales-date-28-days"
+                    aria-selected="false" data-period="6_months" th:classappend="${btnClass}">Last 6 Months
+            </button>
+            <button class="nav-link" data-bs-toggle="pill"
+                    data-bs-target="#sales-date-1-year" type="button" role="tab" aria-controls="sales-date-1-year"
+                    aria-selected="false" data-period="1_year" th:classappend="${btnClass}">Last Year
+            </button>
+            <button class="nav-link" data-bs-toggle="pill"
+                    data-bs-target="#sales-date-custom" type="button" role="tab" aria-controls="sales-date-custom"
+                    aria-selected="false" data-period="custom" th:classappend="${btnClass}">Custom Date
+            </button>
+        </div>
+
+        <div class="w-100">
+            <div th:id="${inputContainerId}" class="d-none row">
+                <div class="col-sm-6">
+                    <label>Sales From</label>
+                    <input type="date" class="form-control from" th:data-type="${chartId}"/>
+                </div>
+                <div class="col-sm-6">
+                    <label>Sales To</label>
+                    <input type="date" class="form-control to" th:data-type="${chartId}"/>
+                </div>
+            </div>
+            <div class="col-sm-12" th:id="${chartId}">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-4">
+        <div class="offset-sm-1 col-sm-2">
+            <div th:replace=":: summary_card('total_gross_sales', 'Total gross sales')"></div>
+        </div>
+
+        <div class="col-sm-2">
+            <div th:replace=":: summary_card('total_net_sales', 'Total net sales')"></div>
+        </div>
+
+        <div class="col-sm-2">
+            <div th:replace=":: summary_card('avg_gross_sales', 'avg. Gross sales')"></div>
+        </div>
+
+        <div class="col-sm-2">
+            <div th:replace=":: summary_card('avg_net_sales', 'avg. Net sales')"></div>
+        </div>
+
+        <div class="col-sm-2">
+            <div th:replace=":: summary_card('total', 'Total')"></div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="summary_card(cardId, cardHeader)" class="card" th:id="${cardId}">
+    <div class="card-header">
+        [[${cardHeader}]]
+    </div>
+    <div class="card-body">
+        <h5 class="card-title"></h5>
+    </div>
+</div>

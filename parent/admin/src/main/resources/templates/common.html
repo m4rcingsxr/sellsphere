@@ -46,3 +46,20 @@
 
 </div>
 
+<script type="text/javascript" th:fragment="configurations()">
+    const MODULE_URL = "[[@{/}]]";
+
+    const currencySymbolPosition = '[[${CURRENCY_SYMBOL_POSITION}]]';
+    const currencySymbol = '[[${CURRENCY_SYMBOL}]]';
+    const thousandsPointType = '[[${THOUSANDS_POINT_TYPE}]]';
+    const decimalDigits = '[[${DECIMAL_DIGITS}]]';
+    const decimalPointType = '[[${DECIMAL_POINT_TYPE}]]';
+
+    const currencySettings = {
+        currencySymbolPosition,
+        currencySymbol,
+        thousandsPointType,
+        decimalDigits,
+        decimalPointType
+    }
+</script>

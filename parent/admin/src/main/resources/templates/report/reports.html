@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{common :: head_all('Sales reports')}"></th:block>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+<nav th:replace="~{navigations :: header()}"></nav>
+
+<section class="content">
+    <div class="container mt-7">
+        <h2 class="subheading text-center">Sales report</h2>
+
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="sales-date-tab" data-bs-toggle="tab" data-bs-target="#sales-date"
+                        type="button" role="tab" aria-controls="sales-date" aria-selected="true">Date sales report
+                </button>
+                <button class="nav-link" id="sales-category-tab" data-bs-toggle="tab" data-bs-target="#sales-category"
+                        type="button" role="tab" aria-controls="sales-category" aria-selected="false">Category sales
+                    report
+                </button>
+                <button class="nav-link" id="sales-product-tab" data-bs-toggle="tab" data-bs-target="#sales-product"
+                        type="button" role="tab" aria-controls="sales-product" aria-selected="false">Product sales
+                    report
+                </button>
+            </div>
+        </nav>
+
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="sales-date" role="tabpanel" aria-labelledby="sales-date-tab" tabindex="0">
+                <div th:replace="report/date_reports :: tab_content('btn-sales-by-date', 'date_chart_div', 'custom_date_input')"></div>
+            </div>
+            <div class="tab-pane fade" id="sales-category" role="tabpanel" aria-labelledby="sales-category-tab"
+                 tabindex="0">
+                <div th:replace="report/date_reports :: tab_content('btn-sales-by-category', 'category_chart_div','custom_category_input')"></div>
+            </div>
+            <div class="tab-pane fade" id="sales-product" role="tabpanel" aria-labelledby="sales-product-tab" tabindex="0">
+                <div th:replace="report/date_reports :: tab_content('btn-sales-by-product', 'product_chart_div', 'custom_product_input')" ></div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<nav th:replace="~{navigations :: footer()}"></nav>
+<script th:replace="~{common :: configurations()}"></script>
+
+<script type="text/javascript" th:src="@{/js/sales_report.js}"></script>
+</body>
+</html>
