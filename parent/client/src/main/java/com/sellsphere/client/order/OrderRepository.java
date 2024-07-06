@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,5 +25,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     Page<Order> findAllByTransactionCustomer(Customer customer, Pageable pageRequest);
 
     Optional<Order> findByIdAndTransactionCustomer(Integer orderId, Customer customer);
+
+    List<Order> findAllByTransactionCustomer(Customer customer);
 
 }

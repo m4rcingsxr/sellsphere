@@ -144,4 +144,13 @@ public class OrderService {
         return track;
     }
 
+    public List<Product> findBoughtProducts(Customer customer) {
+        List<Order> allCustomerOrders = orderRepository.findAllByTransactionCustomer(customer);
+        return allCustomerOrders.stream()
+                .map(Order::getOrderDetails)
+                .flatMap(List::stream)
+                .map(OrderDetail::getProduct)
+                .toList();
+    }
+
 }
