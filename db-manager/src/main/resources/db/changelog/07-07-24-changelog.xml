@@ -41,4 +41,31 @@
                                  constraintName="FK_REVIEWS_ON_PRODUCT" referencedColumnNames="id"
                                  referencedTableName="products"/>
     </changeSet>
+
+    <changeSet id="1722944660805-5" author="Marcin Seweryn">
+        <createTable tableName="reviews_votes">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_reviews_votes"/>
+            </column>
+            <column name="votes" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="review_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1722944660805-6" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="reviews_votes"
+                                 constraintName="FK_REVIEWS_VOTES_ON_CUSTOMER" referencedColumnNames="id"
+                                 referencedTableName="customers"/>
+    </changeSet>
+    <changeSet id="1722944660805-7" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="review_id" baseTableName="reviews_votes"
+                                 constraintName="FK_REVIEWS_VOTES_ON_REVIEW" referencedColumnNames="id"
+                                 referencedTableName="reviews"/>
+    </changeSet>
 </databaseChangeLog>
