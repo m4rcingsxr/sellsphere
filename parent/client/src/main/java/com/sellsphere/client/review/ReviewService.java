@@ -19,6 +19,10 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final OrderRepository orderRepository;
 
+    public Review getReview(Integer id) throws ReviewNotFoundException {
+        return reviewRepository.findById(id).orElseThrow(ReviewNotFoundException::new);
+    }
+
     public Review save(Review review) {
         review.setReviewTime(LocalDate.now());
 

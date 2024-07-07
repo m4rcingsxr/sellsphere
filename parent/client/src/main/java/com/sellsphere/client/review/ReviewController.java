@@ -61,6 +61,15 @@ public class ReviewController {
         return "redirect:/reviews";
     }
 
+    @GetMapping("/reviews/detail/{id}")
+    public String detailReview(@PathVariable Integer id,  Model model)
+            throws ReviewNotFoundException {
+        Review review = reviewService.getReview(id);
+        model.addAttribute("review", review);
+
+        return "review/review_detail_sidebar";
+    }
+
     private Customer getAuthenticatedCustomer(Principal principal)
             throws CustomerNotFoundException {
         if(principal != null) {

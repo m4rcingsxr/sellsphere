@@ -92,6 +92,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.js"></script>
 </th:block>
 
+<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 mt-auto">
+
+    <strong th:text="${(CURRENCY_SYMBOL_POSITION == 'Before price' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(discountPrice, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'After price' ? CURRENCY_SYMBOL : '')}"></strong>
+
+    <span th:if="${discountPercent > 0}"
+          class="fw-lighter text-decoration-line-through"
+          th:text="${(CURRENCY_SYMBOL_POSITION == 'Before price' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'After price' ? CURRENCY_SYMBOL : '')}"></span>
+
+</div>
+
 <script type="text/javascript" th:fragment="configurations()">
     const MODULE_URL = "[[@{/}]]";
     const LOGGED_IN = "[[${#authorization.expression('isAuthenticated()')}]]" === "true";
