@@ -1,0 +1,5 @@
+<div th:fragment="review_stars(rate)" class="d-flex align-items-center gap-1">
+    <div th:each="rating : ${#numbers.sequence(1, 5)}">
+        <i th:classappend="${rating <= rate} ? 'fa-solid fa-star text-warning' : 'fa-regular fa-star text-warning'" style="font-size: 1rem;"></i>
+    </div>
+</div>

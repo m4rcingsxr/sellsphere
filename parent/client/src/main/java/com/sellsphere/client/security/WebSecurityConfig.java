@@ -33,6 +33,7 @@ public class WebSecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/customer/**").authenticated()
+                        .requestMatchers("/reviews/**").authenticated()
                         .requestMatchers("/checkout/**").authenticated()
                         .anyRequest().permitAll()
                 )

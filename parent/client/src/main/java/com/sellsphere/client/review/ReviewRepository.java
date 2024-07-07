@@ -13,4 +13,6 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
     List<Review> findAllByCustomerAndProduct(Customer customer, Product product);
 
+    List<Review> findAllByCustomer(Customer customer);
+
 }

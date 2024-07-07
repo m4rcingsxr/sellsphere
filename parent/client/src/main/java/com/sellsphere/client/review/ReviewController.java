@@ -24,6 +24,23 @@ public class ReviewController {
     private final CustomerService customerService;
     private final ReviewService reviewService;
     private final ProductService productService;
+    private final OrderService orderService;
+
+    @GetMapping("/reviews")
+    public String listFirstPageProductsWithoutReview(Principal principal, Model model) throws CustomerNotFoundException {
+        Customer authenticatedCustomer = getAuthenticatedCustomer(principal);
+
+        List<Product> productList = orderService.findBoughtProducts(authenticatedCustomer);
+        Map<Product, Review> productMap = reviewService.mapProductsByReviewStatus(authenticatedCustomer, productList);
+
+        Review review = new Review();
+
+        model.addAttribute("customer", authenticatedCustomer);
+        model.addAttribute("productMap", productMap);
+        model.addAttribute("review", review);
+
+        return "review/reviews";
+    }
 
     @PostMapping("/reviews/create")
     public String createReview(@ModelAttribute("review") Review review,

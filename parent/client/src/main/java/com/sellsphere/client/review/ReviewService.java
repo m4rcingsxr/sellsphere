@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -43,4 +46,17 @@ public class ReviewService {
         }
     }
 
+    public Map<Product, Review> mapProductsByReviewStatus(Customer customer, List<Product> boughtProducts) {
+        List<Review> reviewsByCustomer = reviewRepository.findAllByCustomer(customer);
+
+        Map<Product, Review> productReviewMap = reviewsByCustomer.stream()
+                .collect(Collectors.toMap(Review::getProduct, review -> review, (existing, replacement) -> existing));
+
+        Map<Product, Review> result = new HashMap<>();
+        for (Product product : boughtProducts) {
+            result.put(product, productReviewMap.getOrDefault(product, null));
+        }
+
+        return result;
+    }
 }

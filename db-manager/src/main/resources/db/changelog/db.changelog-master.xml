@@ -79,4 +79,7 @@
 
     <!-- Add order track entity  -->
     <include file="db/changelog/25-06-2024-changelog.xml"/>
+
+    <!-- Add review table  -->
+    <include file="db/changelog/07-07-24-changelog.xml"/>
 </databaseChangeLog>
