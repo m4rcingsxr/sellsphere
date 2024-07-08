@@ -3,9 +3,7 @@ package com.sellsphere.client;
 import com.sellsphere.client.checkout.CurrencyService;
 import com.sellsphere.common.entity.Currency;
 import com.sellsphere.common.entity.CurrencyNotFoundException;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

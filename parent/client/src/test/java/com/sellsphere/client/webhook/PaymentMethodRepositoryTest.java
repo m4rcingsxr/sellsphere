@@ -4,7 +4,6 @@ import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Currency;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.PaymentMethod;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

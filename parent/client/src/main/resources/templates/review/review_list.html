@@ -1,0 +1,93 @@
+<ul th:fragment="content()" class="list-group list-group-flush">
+    <li th:each="review : ${reviewList}" class="list-group-item"
+        th:classappend="${customer != null && customer.id == review.customer.id ? 'text-bg-light' : ''}">
+
+        <div class="d-flex justify-content-between">
+            <div class="d-flex gap-3 align-items-center">
+                <div>
+                    <i th:each="star : ${#numbers.sequence(1, 5)}"
+                       th:classappend="${star <= review.rate} ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                </div>
+                <div>
+                                <span class="badge d-flex align-items-center p-1 pe-2 text-success-emphasis bg-success-subtle border border-success-subtle rounded-pill gap-2">
+                                    <i class="fa-solid fa-check"></i> Opinion confirmed by purchase
+                                </span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 me-4 vote-container">
+                <th:block th:replace="vote/vote_fragments :: thumbs('vote_review', ${review})"></th:block>
+            </div>
+
+        </div>
+
+        <hr/>
+
+        <h4 class="fw-bold fs-3" th:text="${review.headline}"></h4>
+        <p class="fs-4 mt-2 lh-base" th:text="${review.comment}"></p>
+        <div class="d-flex gap-2">
+            <div class="fw-bold"
+                 th:text="${review.customer.firstName + (customer != null && customer.id == review.customer.id ? ' ' + customer.lastName + ' (YOU)' : '')}"></div>
+            <div th:text="${review.reviewTime}"></div>
+        </div>
+    </li>
+
+    <li th:if="${reviewList == null or reviewList.isEmpty()}" class="list-group-item">
+        <p class="text-body-secondary text-center p-4">
+            This product doesn't have any reviews yet.
+        </p>
+    </li>
+
+    <li th:if="${#authorization.expression('isAuthenticated()') && reviewPermission}"
+        class="list-group-item">
+        <div>
+            <div class="card">
+                <h5 class="card-header">Write new review</h5>
+                <div class="card-body">
+                    <form th:action="@{/reviews/create}" method="POST" th:object="${review}">
+                        <div>
+                            <input type="hidden" name="product" th:value="${product.id}"/>
+                            <input type="hidden" name="customer" th:value="${customer.id}"/>
+                            <input type="hidden" name="rate" id="rate"/>
+
+                            <div class="d-flex justify-content-between pe-4">
+                                <div class="form-floating w-75">
+                                    <input type="text" class="form-control" placeholder="Headline"
+                                           th:field="*{headline}"/>
+                                    <label>Headline</label>
+                                </div>
+                                <div id="rateYo3" class="mt-2 col-sm-4"></div>
+                            </div>
+
+
+                            <label class="form-label mt-2">Comment</label>
+                            <textarea class="form-control" th:field="*{comment}"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary mt-3">Post review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </li>
+
+    <li th:if="${#authorization.expression('isAuthenticated()') && !reviewPermission && !reviewPosted}"
+        class="list-group-item">
+        <p class="text-body-secondary text-center p-4">
+            You must buy the product to post the review!
+        </p>
+    </li>
+
+    <li th:if="${!#authorization.expression('isAuthenticated()')}" class="list-group-item fw-lighter text-center p-4">
+        <p>Please login to post a review.</p>
+        <a href="#" class="btn btn-primary">Login</a>
+    </li>
+
+    <li th:if="${#authorization.expression('isAuthenticated()') && reviewPosted && (reviewList == null or reviewList.isEmpty())}"
+        class="list-group-item">
+        <p class="text-body-secondary text-center p-4">
+            Review published, waiting for approval by the staff.
+        </p>
+    </li>
+
+</ul>

@@ -1,10 +1,9 @@
 package com.sellsphere.client.product;
 
 import com.sellsphere.client.category.CategoryService;
-import com.sellsphere.common.entity.Category;
-import com.sellsphere.common.entity.CategoryNotFoundException;
-import com.sellsphere.common.entity.Product;
-import com.sellsphere.common.entity.ProductNotFoundException;
+import com.sellsphere.client.customer.CustomerService;
+import com.sellsphere.client.review.ReviewService;
+import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
@@ -15,7 +14,9 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,6 +26,8 @@ public class ProductController {
 
     private final CategoryService categoryService;
     private final ProductService productService;
+    private final CustomerService customerService;
+    private final ReviewService reviewService;
 
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
@@ -58,13 +61,29 @@ public class ProductController {
     }
 
     @GetMapping("/p/{product_alias}")
-    public String viewProduct(@PathVariable("product_alias") String productAlias, Model model)
-            throws ProductNotFoundException {
+    public String viewProduct(
+            @PathVariable("product_alias") String productAlias,
+            Model model,
+            Principal principal) throws ProductNotFoundException, CustomerNotFoundException {
         Product product = productService.findByAlias(productAlias);
-        List<Category> categoryParentList = categoryService.getCategoryParents(product.getCategory());
+        Customer customer = principal != null ? getAuthenticatedCustomer(principal) : null;
+        List<Category> categoryParentList = categoryService.getCategoryParents(
+                product.getCategory());
+
+        List<Review> reviewList = reviewService.getFirst5ApprovedReviews(product);
+        Map<Integer, Float> ratingPercentages = reviewService.calculateRatingPercentages(product);
+        boolean customerReviewPermission = reviewService.hasCustomerReviewPermission(customer, product);
+        boolean reviewPosted = reviewService.hasCustomerPostedReview(customer, product);
 
         model.addAttribute("product", product);
         model.addAttribute("categoryParentList", categoryParentList);
+        model.addAttribute("product", product);
+        model.addAttribute("reviewList", reviewList);
+        model.addAttribute("ratingPercentages", ratingPercentages);
+        model.addAttribute("reviewPermission", customerReviewPermission);
+        model.addAttribute("reviewPosted", reviewPosted);
+        model.addAttribute("customer", customer);
+        model.addAttribute("review", new Review());
 
         Category categoryProduct = new Category();
         categoryProduct.setName(product.getName());
@@ -74,4 +93,8 @@ public class ProductController {
         return "product/product_detail";
     }
 
+    private Customer getAuthenticatedCustomer(Principal principal)
+            throws CustomerNotFoundException {
+        return customerService.getByEmail(principal.getName());
+    }
 }

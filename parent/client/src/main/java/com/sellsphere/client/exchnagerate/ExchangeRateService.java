@@ -5,9 +5,7 @@ import com.sellsphere.common.entity.CurrencyNotFoundException;
 import com.sellsphere.common.entity.ExchangeRateNotFoundException;
 import com.sellsphere.common.entity.payload.ExchangeRateResponseDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;

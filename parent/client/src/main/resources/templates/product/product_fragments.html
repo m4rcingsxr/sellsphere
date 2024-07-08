@@ -110,3 +110,21 @@
     </button>
 </div>
 
+<div th:fragment="reviews()" id="reviews" class="card mb-6 mt-3">
+    <div class="card-header">
+        <h4 class="card-title">Reviews ([[${product.reviewCount}]])</h4>
+    </div>
+    <div class="card-body row p-4">
+        <div class="col-sm-4">
+            <div th:replace="review/review_fragments :: rating_summary(${product.averageRating}, 'rateYo2', ${product.reviewCount})"></div>
+        </div>
+        <div class="col-sm-4">
+            <div th:replace="review/review_fragments :: rating_percentages(${ratingPercentages})"></div>
+        </div>
+        <div class="col-sm-4 d-flex align-items-center">
+            <a th:href="@{|/reviews/p/${product.alias}/page/0|}" class="btn btn-outline-primary mx-auto">View
+                all reviews</a>
+        </div>
+    </div>
+    <ul th:replace="review/review_list :: content()"></ul>
+</div>

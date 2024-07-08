@@ -1,16 +1,18 @@
 package com.sellsphere.client.review;
 
 // todo: for question and review write for customer table that will list their questions and reviews
-import com.sellsphere.client.category.CategoryService;
+
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.order.OrderService;
 import com.sellsphere.client.product.ProductService;
 import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;

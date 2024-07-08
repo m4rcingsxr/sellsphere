@@ -249,6 +249,12 @@ public class Product extends IdentifiedEntity {
     @Column(name = "hs_code", nullable = false)
     private String hsCode;
 
+    @Column(name = "review_count")
+    private Integer reviewCount;
+
+    @Column(name = "average_rating")
+    private Float averageRating;
+
     public Product(Integer id) {
         this.id = id;
     }
