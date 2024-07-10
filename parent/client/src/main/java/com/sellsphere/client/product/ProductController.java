@@ -3,6 +3,7 @@ package com.sellsphere.client.product;
 import com.sellsphere.client.category.CategoryService;
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.review.ReviewService;
+import com.sellsphere.client.review.ReviewVoteService;
 import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -28,6 +29,7 @@ public class ProductController {
     private final ProductService productService;
     private final CustomerService customerService;
     private final ReviewService reviewService;
+    private final ReviewVoteService reviewVoteService;
 
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
@@ -74,6 +76,8 @@ public class ProductController {
         Map<Integer, Float> ratingPercentages = reviewService.calculateRatingPercentages(product);
         boolean customerReviewPermission = reviewService.hasCustomerReviewPermission(customer, product);
         boolean reviewPosted = reviewService.hasCustomerPostedReview(customer, product);
+
+        reviewVoteService.markReviewsVotedForProductByCustomer(reviewList, product, customer);
 
         model.addAttribute("product", product);
         model.addAttribute("categoryParentList", categoryParentList);

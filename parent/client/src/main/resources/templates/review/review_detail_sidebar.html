@@ -19,9 +19,11 @@
         <span th:text="${review.reviewTime}" class="text-light-emphasis"></span>
     </div>
 
-    <p class="p-3 text-light-emphasis fw-lighter lh-base" th:text="${review.comment}">
+    <p class="p-3 text-light-emphasis fw-lighter lh-base" th:text="${review.comment}"></p>
 
-    </p>
+    <div class="d-flex justify-content-end gap-2 me-4">
+        <th:block th:replace="~{vote/vote_fragments :: thumbs('vote_review', ${review})}"></th:block>
+    </div>
 
 
 
