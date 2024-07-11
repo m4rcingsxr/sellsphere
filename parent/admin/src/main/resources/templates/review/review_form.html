@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{form_fragments :: head('Edit Review')}"></head>
+<body>
+<nav th:replace="~{navigations :: header()}"></nav>
+
+<section class="content">
+    <div class="container mt-7">
+        <h1 class="subheading text-center" th:text="${'EDIT REVIEW ' + review.id}"></h1>
+        <form id="mainForm" th:action="@{/reviews/save}" method="POST" th:object="${review}">
+            <div class="mx-auto mt-5">
+                <div th:replace="~{common :: alerts()}"></div>
+
+                <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                    <input type="hidden" th:field="*{id}"/>
+
+                    <th:block th:replace="~{form_fragments :: text_input('Product', 'product.name', true)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: text_input('Customer', 'customer.fullName', true)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: text_input('Rating', 'product.averageRating', true)}"></th:block>
+
+                    <th:block th:replace="~{form_fragments :: date_input('Review time', '', ${review.reviewTime}, true)}"></th:block>
+
+                    <th:block th:replace="~{form_fragments :: text_input('Headline', 'headline', false)}"></th:block>
+
+                    <label class="col-sm-4 col-form-label">Comment</label>
+                    <div class="col-sm-8 ">
+                        <textarea class="form-control" th:field="*{comment}"></textarea>
+                    </div>
+
+                    <th:block th:replace="~{form_fragments :: checkbox_input('Approved', 'approved', ${review.approved}, false)}"></th:block>
+                </div>
+
+                <div th:replace="~{form_fragments :: form_buttons(${review})}"></div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<nav th:replace="~{navigations :: footer()}"></nav>
+</body>
+</html>

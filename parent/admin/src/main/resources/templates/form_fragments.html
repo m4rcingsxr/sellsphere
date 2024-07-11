@@ -21,6 +21,15 @@
     <script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
 </th:block>
 
+<!--Date input-->
+<th:block th:fragment="date_input(label,name, value, readonly)">
+    <label class="col-form-label col-sm-4" th:text="${label}">Label</label>
+    <div class="col-sm-8">
+        <input type="date" th:name="${name}" th:value="${value}" class="form-control"
+               th:attr="readonly=${readonly}? 'readonly' : null"/>
+    </div>
+</th:block>
+
 <!-- HIDDEN INPUT -->
 <input th:fragment="hidden_input(fieldName)" th:field="*{__${fieldName}__}" type="hidden"/>
 
