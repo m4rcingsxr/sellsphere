@@ -1,5 +1,6 @@
 package com.sellsphere.client.review;
 
+import com.sellsphere.client.product.ProductRepository;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.VoteResultDTO;
 import jakarta.transaction.Transactional;
@@ -16,6 +17,7 @@ public class ReviewVoteService {
 
     private final ReviewVoteRepository reviewVoteRepository;
     private final ReviewRepository reviewRepository;
+    private final ProductRepository productRepository;
 
     public VoteResultDTO doVote(Integer reviewId, Customer customer, VoteType voteType) {
         Review review = null;
