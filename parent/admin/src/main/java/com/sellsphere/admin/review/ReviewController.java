@@ -49,5 +49,12 @@ public class ReviewController {
         return DEFAULT_REDIRECT_URL + savedReview.getId();
     }
 
+    @GetMapping("/reviews/details/{id}")
+    public String viewReviewDetails(@PathVariable Integer id, Model model) throws ReviewNotFoundException {
+        Review review = reviewService.get(id);
+        model.addAttribute("review", review);
+
+        return "review/review_detail_modal";
+    }
 
 }

@@ -1,0 +1,20 @@
+<form th:object="${review}">
+    <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+        <th:block th:replace="form_fragments :: text_input('Product', 'product.name', true)"></th:block>
+        <th:block
+                th:replace="form_fragments :: text_input('Customer', 'customer.fullName', true)"></th:block>
+        <th:block
+                th:replace="form_fragments :: text_input('Rating', 'product.averageRating', true)"></th:block>
+
+
+
+        <th:block th:replace="form_fragments :: text_input('Headline', 'headline', true)"></th:block>
+
+        <label class="col-sm-4 col-form-label">Comment</label>
+        <div class="col-sm-8 ">
+            <textarea class="form-control" readonly="readonly">[[*{comment}]]</textarea>
+        </div>
+
+        <th:block th:replace="form_fragments :: date_input('Review time', '', ${review.reviewTime}, true)"></th:block>
+    </div>
+</form>
