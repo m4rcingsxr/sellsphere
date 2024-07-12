@@ -13,12 +13,16 @@
 
                 <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
                     <input type="hidden" th:field="*{id}"/>
+                    <input type="hidden" th:field="*{reviewTime}"/>
+                    <input type="hidden" th:field="*{votes}"/>
+                    <input type="hidden" th:field="*{customer}"/>
+                    <input type="hidden" th:field="*{product}"/>
 
                     <th:block th:replace="~{form_fragments :: text_input('Product', 'product.name', true)}"></th:block>
                     <th:block
                             th:replace="~{form_fragments :: text_input('Customer', 'customer.fullName', true)}"></th:block>
                     <th:block
-                            th:replace="~{form_fragments :: text_input('Rating', 'product.averageRating', true)}"></th:block>
+                            th:replace="~{form_fragments :: text_input('Rating', 'rate', true)}"></th:block>
 
                     <th:block th:replace="~{form_fragments :: date_input('Review time', '', ${review.reviewTime}, true)}"></th:block>
 

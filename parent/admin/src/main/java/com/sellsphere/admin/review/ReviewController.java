@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 @RequiredArgsConstructor
@@ -39,5 +41,13 @@ public class ReviewController {
 
         return "review/review_form";
     }
+
+    @PostMapping("/reviews/save")
+    public String updateReview(@ModelAttribute Review review) {
+        Review savedReview = reviewService.save(review);
+
+        return DEFAULT_REDIRECT_URL + savedReview.getId();
+    }
+
 
 }

@@ -47,4 +47,8 @@ public class ReviewService {
         sort = helper.getSortDir().equals(Constants.SORT_ASCENDING) ? sort.ascending() : sort.descending();
         return PageRequest.of(pageNum, REVIEWS_PER_PAGE, sort);
     }
+
+    public Review save(Review review) {
+        return repository.save(review);
+    }
 }

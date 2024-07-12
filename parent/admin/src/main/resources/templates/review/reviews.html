@@ -20,7 +20,7 @@
                 <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'id',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
                 <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'product.name',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Product')}"></th>
                 <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'customer',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'product.averageRating',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Rating')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'rate',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Rating')}"></th>
                 <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'reviewTime',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Review Time')}"></th>
                 <th>Approved</th>
                 <th></th>
@@ -31,7 +31,7 @@
                 <td th:text="${review.id}"></td>
                 <td th:text="${review.product.name}"></td>
                 <td th:text="${review.customer.fullName}"></td>
-                <td th:text="${review.product.averageRating}"></td>
+                <td th:text="${review.rate}"></td>
                 <td th:text="${review.reviewTime}"></td>
                 <td><th:block th:replace="~{list_fragments :: status(${review.approved}, |/reviews/${review.id}/approved/${!review.approved}|)}"></th:block></td>
                 <td>
