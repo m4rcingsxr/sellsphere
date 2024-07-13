@@ -282,6 +282,7 @@ public class Product extends IdentifiedEntity {
         return this.price;
     }
 
+
     /**
      * Adds a detail to the product.
      *
@@ -316,6 +317,18 @@ public class Product extends IdentifiedEntity {
         } else {
             this.productUpdate.setUpdatedTime(LocalDateTime.now());
         }
+    }
+
+    public Float getAverageRating() {
+        if (this.averageRating == null) return 0.0F;
+
+        return this.averageRating;
+    }
+
+    public Integer getReviewCount() {
+        if (this.averageRating == null) return 0;
+
+        return this.reviewCount;
     }
 
     @Override
