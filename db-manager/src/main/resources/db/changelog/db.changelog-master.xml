@@ -85,4 +85,7 @@
 
     <!-- Add review count and average rating to products table   -->
     <include file="db/changelog/08-07-24-changelog.xml"/>
+
+    <!-- Add questions table   -->
+    <include file="db/changelog/13-07-24-changelog.xml"/>
 </databaseChangeLog>
