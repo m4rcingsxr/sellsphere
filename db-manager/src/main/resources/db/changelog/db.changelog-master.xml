@@ -88,4 +88,7 @@
 
     <!-- Add questions table   -->
     <include file="db/changelog/13-07-24-changelog.xml"/>
+
+    <!-- Add question_votes table  -->
+    <include file="db/changelog/14-07-24-changelog.xml"/>
 </databaseChangeLog>

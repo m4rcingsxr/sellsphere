@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
+    <changeSet id="1722971733092-5" author="Marcin Seweryn">
+        <createTable tableName="questions_votes">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_questions_votes"/>
+            </column>
+            <column name="votes" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="question_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1722971733092-6" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="questions_votes"
+                                 constraintName="FK_QUESTIONS_VOTES_ON_CUSTOMER" referencedColumnNames="id"
+                                 referencedTableName="customers"/>
+    </changeSet>
+    <changeSet id="1722971733092-7" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="question_id" baseTableName="questions_votes"
+                                 constraintName="FK_QUESTIONS_VOTES_ON_QUESTION" referencedColumnNames="id"
+                                 referencedTableName="questions"/>
+    </changeSet>
+
+</databaseChangeLog>
