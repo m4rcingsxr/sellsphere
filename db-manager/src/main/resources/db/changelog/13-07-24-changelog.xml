@@ -40,5 +40,8 @@
                                  constraintName="FK_QUESTIONS_ON_PRODUCT" referencedColumnNames="id"
                                  referencedTableName="products"/>
     </changeSet>
+    <changeSet id="1722970262933-5" author="Marcin Seweryn">
+        <dropColumn columnName="question_count" tableName="products"/>
+    </changeSet>
 
 </databaseChangeLog>

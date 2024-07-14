@@ -2,6 +2,7 @@ package com.sellsphere.client.product;
 
 import com.sellsphere.client.category.CategoryService;
 import com.sellsphere.client.customer.CustomerService;
+import com.sellsphere.client.question.QuestionService;
 import com.sellsphere.client.review.ReviewService;
 import com.sellsphere.client.review.ReviewVoteService;
 import com.sellsphere.common.entity.*;
@@ -30,6 +31,7 @@ public class ProductController {
     private final CustomerService customerService;
     private final ReviewService reviewService;
     private final ReviewVoteService reviewVoteService;
+    private final QuestionService questionService;
 
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
@@ -77,17 +79,21 @@ public class ProductController {
         boolean customerReviewPermission = reviewService.hasCustomerReviewPermission(customer, product);
         boolean reviewPosted = reviewService.hasCustomerPostedReview(customer, product);
 
+        List<Question> questionList = questionService.find5MostPopularQuestions(product);
+
         reviewVoteService.markReviewsVotedForProductByCustomer(reviewList, product, customer);
 
         model.addAttribute("product", product);
         model.addAttribute("categoryParentList", categoryParentList);
         model.addAttribute("product", product);
         model.addAttribute("reviewList", reviewList);
+        model.addAttribute("questionList", questionList);
         model.addAttribute("ratingPercentages", ratingPercentages);
         model.addAttribute("reviewPermission", customerReviewPermission);
         model.addAttribute("reviewPosted", reviewPosted);
         model.addAttribute("customer", customer);
         model.addAttribute("review", new Review());
+        model.addAttribute("question", new Question());
 
         Category categoryProduct = new Category();
         categoryProduct.setName(product.getName());

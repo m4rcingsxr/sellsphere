@@ -1,0 +1,74 @@
+<div class="card" id="questions" th:fragment="question_card()">
+    <div class="card-header d-flex align-items-center justify-content-between p-3">
+        <h4>Questions and answers ([[${product.questionCount}]])</h4>
+        <a href="#ask_question" class="me-5 btn btn-outline-primary">Ask question</a>
+    </div>
+    <ul th:replace=" :: question_list()"></ul>
+</div>
+
+<ul class="list-group list-group-flush" th:fragment="question_list()">
+    <li th:each="question : ${questionList}" class="list-group-item">
+        <div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong th:text="${question.customer.firstName}"></strong>
+                    <span th:text="${question.askTime}" class="fs-6 fw-lighter"></span>
+                </div>
+<!--                <div class="me-4 vote-container">-->
+<!--                    <th:block th:replace="vote/vote_fragments :: thumbs('vote_question', ${question})"></th:block>-->
+<!--                </div>-->
+            </div>
+
+
+            <p th:text="${question.questionContent}" class="lh-base mt-4"></p>
+
+            <div th:if="${question.answerContent != null}" class="row">
+                <hr/>
+
+                <div class="offset-sm-1 col-sm-11">
+                    <strong th:text="${question.answerer}"></strong>
+                    <span th:text="${question.answerTime}" class="fs-6 fw-lighter"></span>
+                    <p th:text="${question.answerContent}" class="text-bg-light rounded-2 p-4 mt-2"></p>
+                </div>
+
+            </div>
+        </div>
+    </li>
+
+    <li th:if="${questionList == null or questionList.isEmpty()}"
+        class="list-group-item text-center fw-lighter p-4">
+        This product do not have any questions yet.
+    </li>
+
+    <li class="list-group-item p-4" id="ask_question">
+        <div class="card" th:if="${#authorization.expression('isAuthenticated()')}">
+            <h5 class="card-header">Ask new question</h5>
+            <div class="card-body">
+                <form  method="POST"
+                       th:action="@{/questions/create}" th:object="${question}">
+                    <div class="row p-4">
+                        <input type="hidden" th:name="product" th:value="${product.id}">
+                        <input type="hidden" th:name="customer" th:value="${customer.id}">
+
+                        <label class="form-label col-sm-label col-sm-3 fw-bolder">Question</label>
+                        <div class="col-sm-9">
+                                        <textarea class="form-control" th:field="*{questionContent}"
+                                                  rows="3"></textarea>
+                        </div>
+
+                    </div>
+                    <div class="text-center p-3">
+                        <button type="submit" class="btn btn-primary mt-3">Ask question</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${!#authorization.expression('isAuthenticated()')}" class="text-center fw-lighter p-4">
+            <p>Please login to ask a question</p>
+            <a href="#" class="btn btn-primary">Login</a>
+        </div>
+    </li>
+</ul>
+
+

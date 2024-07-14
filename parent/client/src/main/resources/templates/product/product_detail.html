@@ -34,7 +34,9 @@
             <div class="tab-pane fade" id="review-tab-pane" role="tabpanel" aria-labelledby="review-tab" tabindex="0">
                 <div th:replace="~{product/product_fragments :: reviews()}"></div>
             </div>
-            <div class="tab-pane fade" id="question-tab-pane" role="tabpanel" aria-labelledby="question-tab" tabindex="0">...</div>
+            <div class="tab-pane fade" id="question-tab-pane" role="tabpanel" aria-labelledby="question-tab" tabindex="0">
+                <div th:replace="~{question/question_fragments :: question_card()}"></div>
+            </div>
         </div>
 
     </div>

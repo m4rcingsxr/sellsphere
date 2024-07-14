@@ -255,6 +255,9 @@ public class Product extends IdentifiedEntity {
     @Column(name = "average_rating")
     private Float averageRating;
 
+    @Column(name = "question_count")
+    private Integer questionCount;
+
     public Product(Integer id) {
         this.id = id;
     }
@@ -329,6 +332,12 @@ public class Product extends IdentifiedEntity {
         if (this.averageRating == null) return 0;
 
         return this.reviewCount;
+    }
+
+    public Integer getQuestionCount() {
+        if (this.questionCount == null) return 0;
+
+        return this.questionCount;
     }
 
     @Override
