@@ -45,6 +45,12 @@ public class Question extends IdentifiedEntity {
     @Column(name = "votes", nullable = true)
     private Integer votes;
 
+    @Transient
+    private boolean upVotedByCurrentCustomer;
+
+    @Transient
+    private boolean downVotedByCurrentCustomer;
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

@@ -14,9 +14,9 @@
                     <strong th:text="${question.customer.firstName}"></strong>
                     <span th:text="${question.askTime}" class="fs-6 fw-lighter"></span>
                 </div>
-<!--                <div class="me-4 vote-container">-->
-<!--                    <th:block th:replace="vote/vote_fragments :: thumbs('vote_question', ${question})"></th:block>-->
-<!--                </div>-->
+                <div class="me-4 vote-container">
+                    <th:block th:replace="vote/vote_fragments :: thumbs('vote_question', ${question})"></th:block>
+                </div>
             </div>
 
 

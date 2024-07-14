@@ -4,7 +4,6 @@ $(function () {
 
     $(".vote-container").on("click", ".vote-up, .vote-down", async function (event) {
         event.preventDefault();
-        console.log("ABC");
 
         const url = event.currentTarget.href;
         const $currentThumb = $(event.currentTarget).find("i");
