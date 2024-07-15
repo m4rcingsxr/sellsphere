@@ -129,4 +129,47 @@
     <ul th:replace="review/review_list :: content()"></ul>
 </div>
 
+<!--Product carousel card-->
+<div class="product-carousel-card p-2 rounded-2" th:fragment="product_card()">
+    <a th:href="@{|/p/${product.alias}|}" class="product-carousel-img-container mt-4">
+        <img th:src="${product.mainImagePath}" class="card-img-top" th:alt="${product.name}">
+    </a>
+
+    <!--carousel product card body-->
+    <div class="mt-4 p-1">
+        <div th:replace="~{common :: product_rating(${product.averageRating}, ${product.reviewCount})}"></div>
+        <a th:href="@{|/p/${product.alias}|}"
+           class="link-dark link-underline link-underline-opacity-0 fs-7 product-title"><span
+                class="product-title" th:text="${product.name}"></span></a>
+
+        <div th:replace="~{common :: product_price(${product.discountPrice}, ${product.discountPercent}, ${product.price})}"></div>
+    </div>
+
+    <!--Discount badge-->
+    <div th:if="${product.discountPercent > 0}" class="position-absolute top-0 p-1">
+                            <span class="badge bg-danger text-center fs-7"
+                                  th:text="${'-' + product.discountPercent + '%'}"></span>
+    </div>
+
+    <div class="position-absolute top-0 end-0">
+        <a href="#" class="cart-icon link-dark d-block add-to-cart">
+            <i class="bi bi-cart cart-icon-size"></i>
+        </a>
+
+        <a href="#" class="heart-icon link-dark">
+            <i class="bi bi-heart cart-icon-size"></i>
+        </a>
+    </div>
+
+    <div class="product-carousel-card-details">
+        <div class="row g-2">
+            <th:block th:each="detail, stat : ${product.details}" th:if="${stat.index < 3}">
+                <div class="col-sm-8 detail">
+                    <span th:text="${detail.name + ':'}" class="text-light-emphasis"></span>
+                </div>
+                <div class="col-sm-4 detail fw-bolder" th:text="${detail.value}"></div>
+            </th:block>
+        </div>
+    </div>
+</div>
 

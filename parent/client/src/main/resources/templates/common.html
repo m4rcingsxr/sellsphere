@@ -64,6 +64,14 @@
 
 </div>
 
+<div th:fragment="product_rating(averageRating, reviewCount)">
+     <span th:each="i : ${#numbers.sequence(1, 5)}">
+                <i th:if="${i <= averageRating}" class="fa-solid fa-star fa-xs text-warning"></i>
+                <i th:if="${i > averageRating}" class="fa-regular fa-star fa-xs text-warning"></i>
+            </span>
+    <span class="fw-lighter fs-7" th:text="' (' + ${reviewCount} + ')'"></span>
+</div>
+
 <section th:fragment="splide_product_images_carousel(id, imageList)" th:id="${id}" class="splide">
     <div class="splide__track">
         <ul class="splide__list">

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{common :: common_head('Product Reviews')}"></th:block>
+    <th:block th:replace="~{common :: rateYo()}"></th:block>
+</head>
+<body>
+
+<header th:replace="~{navigations :: header()}"></header>
+
+<section>
+    <div class="container">
+        <nav th:replace="~{navigations :: breadcrumbCategory(${listCategoryParents})}"></nav>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <div th:replace="~{product/product_fragments :: product_card()}"></div>
+            </div>
+            <div class="col-sm-8">
+                <div id="reviews" class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Reviews ([[${product.reviewCount}]])</h4>
+                    </div>
+                    <div class="card-body row p-4">
+                        <div class="col-sm-4">
+                            <div th:replace="~{review/review_fragments :: rating_summary(${product.averageRating}, 'rateYo2', ${product.reviewCount})}"></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div th:replace="~{review/review_fragments :: rating_percentages(${ratingPercentages})}"></div>
+                        </div>
+                        <div class="col-sm-4 d-flex align-items-center">
+                            <select id="sort_review" class="form-select" onchange="pageSortedReviews()">
+                                <option value="default" th:selected="${sortField == 'default'}">Most recent</option>
+                                <option value="mostPopular" th:selected="${sortField == 'mostPopular'}">Sort by: Most
+                                    popular
+                                </option>
+                                <option value="leastPopular" th:selected="${sortField == 'leastPopular'}">Sort by: Least
+                                    popular
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <ul th:replace="~{review/review_list :: content()}"></ul>
+                </div>
+
+                <nav th:replace="~{navigations :: small_pagination(|/reviews/p/${product.alias}/page/|)}"></nav>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: close_modal('info_modal')}"></div>
+<div th:replace="~{review/review_fragments :: review_toast()}"></div>
+
+<script type="text/javascript">
+    const MODULE_URL = "[[@{/}]]";
+    const LOGGED_IN = "[[${#authorization.expression('isAuthenticated()')}]]" === "true";
+    const REVIEW_PERMISSION = "[[${reviewPermission}]]" === "true";
+    const AVG_RATING = '[[${product.averageRating}]]';
+    const PRODUCT_ALIAS = '[(${product.alias})]';
+
+    $(function() {
+        const readOnlyOptions = {
+            rating : parseFloat(AVG_RATING),
+            ratedFill: "#0d6efd",
+            maxValue: 5,
+            numStars: 5,
+            precision: 2,
+            fullStar: true,
+            spacing: "3px",
+            starWidth: "20px",
+            readOnly: true,
+        }
+
+        $("#rateYo2").rateYo(readOnlyOptions);
+
+        const options = {
+            rating : parseFloat(AVG_RATING),
+            ratedFill: "#0d6efd",
+            maxValue: 5,
+            numStars: 5,
+            precision: 2,
+            fullStar: true,
+            spacing: "3px",
+            starWidth: "40px",
+            onChange: function (rating, rateYoInstance) {
+                $("#rate").val(rating);
+            }
+        }
+        $("#rateYo3").rateYo(options);
+
+
+    });
+
+    function pageSortedReviews() {
+        const url = `${MODULE_URL}reviews/p/${PRODUCT_ALIAS}/page/0?sortField=${$("#sort_review").val()}`;
+        console.log(url);
+        window.location.href = url;
+    }
+</script>
+<script type="text/javascript" th:src="@{/js/votes_reviews.js}"></script>
+<script type="text/javascript" th:src="@{/js/review_toast.js}"></script>
+</body>
+</html>

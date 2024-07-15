@@ -139,3 +139,25 @@
         </div>
     </div>
 </footer>
+
+<nav th:if="${totalPages > 1}" th:fragment="small_pagination(endpoint)" class="mt-4 small-pagination small">
+    <ul class="pagination d-flex justify-content-center pagination-sm">
+        <li class="page-item">
+            <a th:replace=":: page_link(${endpoint}, 0, 'angles-left', ${null})"></a>
+        </li>
+        <li th:class="${currentPage >= 1 ? 'page-item' : 'page-item disabled'}">
+            <a th:replace=":: page_link(${endpoint}, ${currentPage - 1}, 'chevron-left', ${null})"></a>
+        </li>
+
+        <li th:class="${currentPage != i - 1 ? 'page-item' : 'page-item active'}"
+            th:each="i : ${#numbers.sequence(1, totalPages)}">
+            <a th:replace=":: page_link(${endpoint}, ${i - 1}, ${null}, ${i})"></a>
+        </li>
+        <li th:class="${currentPage < totalPages - 1? 'page-item' : 'page-item disabled'}">
+            <a th:replace=":: page_link(${endpoint}, ${currentPage + 1}, 'chevron-right', ${null})"></a>
+        </li>
+        <li class="page-item">
+            <a th:replace=":: page_link(${endpoint}, ${totalPages - 1}, 'angles-right', ${null})"></a>
+        </li>
+    </ul>
+</nav>

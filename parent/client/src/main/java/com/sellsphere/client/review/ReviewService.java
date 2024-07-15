@@ -3,6 +3,7 @@ package com.sellsphere.client.review;
 import com.sellsphere.client.order.OrderRepository;
 import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,6 +19,8 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+
+    private static final int REVIEWS_PER_PAGE = 10;
 
     private final ReviewRepository reviewRepository;
     private final OrderRepository orderRepository;
@@ -87,5 +90,22 @@ public class ReviewService {
 
     public boolean hasCustomerPostedReview(Customer customer, Product product) {
         return customer != null && getReview(customer, product) != null;
+    }
+
+    public Page<Review> pageReviews(Product product, Integer pageNum, String sortField) {
+        Sort sort;
+
+        if(sortField != null) {
+            switch (sortField) {
+                case "mostPopular" -> sort = Sort.by("votes").ascending();
+                case "leastPopular" -> sort = Sort.by("votes").descending();
+                default -> sort = Sort.by("reviewTime");
+            }
+        } else {
+            sort = Sort.by("reviewTime");
+        }
+
+        Pageable pageable = PageRequest.of(pageNum, REVIEWS_PER_PAGE, sort);
+        return reviewRepository.findAllByProductAndApprovedIsTrue(product, pageable);
     }
 }

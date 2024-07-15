@@ -70,7 +70,8 @@ public class ProductController {
     public String viewProduct(
             @PathVariable("product_alias") String productAlias,
             Model model,
-            Principal principal) throws ProductNotFoundException, CustomerNotFoundException {
+            Principal principal
+    ) throws ProductNotFoundException, CustomerNotFoundException {
         Product product = productService.findByAlias(productAlias);
         Customer customer = principal != null ? getAuthenticatedCustomer(principal) : null;
         List<Category> categoryParentList = categoryService.getCategoryParents(
