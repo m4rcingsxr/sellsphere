@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{common :: common_head('abc')}"></th:block>
+    <th:block th:replace="~{common :: rateYo()}"></th:block>
+</head>
+<body>
+
+<header th:replace="~{navigations :: header()}"></header>
+
+<section>
+    <div class="container">
+        <nav th:replace="~{navigations :: breadcrumbCategory(${listCategoryParents})}"></nav>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <div th:replace="~{product/product_fragments :: product_card()}"></div>
+            </div>
+
+            <div class="col-sm-8">
+                <div th:replace="~{question/question_fragments :: question_card()}"></div>
+
+                <nav th:replace="~{navigations :: small_pagination(|/questions/p/${product.alias}/page/|)}"></nav>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<nav th:replace="~{navigations :: footer()}"></nav>
+<div th:replace="~{modal_fragments :: close_modal('info_modal')}"></div>
+
+<script type="text/javascript">
+    const MODULE_URL = "[[@{/}]]";
+    const LOGGED_IN = "[[${#authorization.expression('isAuthenticated()')}]]" === "true";
+    const REVIEW_PERMISSION = "[[${reviewPermission}]]" === "true";
+    const AVG_RATING = '[[${product.averageRating}]]';
+    const PRODUCT_ALIAS = '[(${product.alias})]';
+
+    function pageSortedQuestions() {
+        const url = `${MODULE_URL}questions/${PRODUCT_ALIAS}/page/0?sortField=${$("#sort_questions").val()}`;
+        console.log(url);
+        window.location.href = url;
+    }
+</script>
+
+<script type="text/javascript" th:src="@{/js/votes_reviews.js}"></script>
+</body>
+</html>

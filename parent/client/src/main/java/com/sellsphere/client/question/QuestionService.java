@@ -3,6 +3,7 @@ package com.sellsphere.client.question;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.Question;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,6 +15,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class QuestionService {
+
+    private static final int QUESTION_PER_PAGE = 10;
 
     private final QuestionRepository questionRepository;
 
@@ -31,4 +34,16 @@ public class QuestionService {
         return questionRepository.findAllByProductAndApprovalStatusIsTrue(product, pageable).getContent();
     }
 
+    public Page<Question> pageQuestions(Product product, Integer pageNum, String sortField) {
+        Sort sort;
+
+        switch (sortField != null ? sortField : "askTime") {
+            case "mostPopular" -> sort = Sort.by("votes").ascending();
+            case "leastPopular" -> sort = Sort.by("votes").descending();
+            default -> sort = Sort.by("askTime");
+        }
+
+        Pageable pageable = PageRequest.of(pageNum, QUESTION_PER_PAGE, sort);
+        return questionRepository.findAllByProductAndApprovalStatusIsTrue(product, pageable);
+    }
 }
