@@ -2,11 +2,14 @@
 <html lang="en">
 <head th:replace="~{form_fragments :: head('Edit Review')}"></head>
 <body>
-<nav th:replace="~{navigations :: header()}"></nav>
+<header th:replace="~{navigations :: header()}"></header>
 
 <section class="content">
+
     <div class="container mt-7">
-        <h1 class="subheading text-center" th:text="${'EDIT REVIEW ' + review.id}"></h1>
+
+        <h1 class="text-center" th:text="${'EDIT REVIEW ' + review.id}"></h1>
+
         <form id="mainForm" th:action="@{/reviews/save}" method="POST" th:object="${review}">
             <div class="mx-auto mt-5">
                 <div th:replace="~{common :: alerts()}"></div>
