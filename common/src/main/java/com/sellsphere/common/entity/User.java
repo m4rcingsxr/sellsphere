@@ -72,6 +72,11 @@ public class User extends IdentifiedEntity {
                 .collect(Collectors.joining(",", "[", "]"));
     }
 
+    @Transient
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

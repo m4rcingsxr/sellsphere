@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{list_fragments :: head('Question Management')}"></head>
+<body>
+
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="mt-4 content">
+
+    <h1 class="text-center">Manage Questions</h1>
+
+    <div class="container-md mt-5">
+
+        <div th:replace="~{common :: alerts()}"></div>
+
+        <form th:replace="~{list_fragments :: search_bar('/questions/page/0', 'Search for the review', 'reviewTime', ${keyword}, ${totalItems}, null)}"></form>
+
+        <table class="table table-hover mt-4">
+            <thead class="table-dark">
+            <tr>
+                <th th:replace="~{list_fragments :: column_link('/questions/page',${currentPage}, 'id',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/questions/page', ${currentPage}, 'product.name', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Product')}"></th>
+                <th>Question</th>
+                <th th:replace="~{list_fragments :: column_link('/questions/page',${currentPage}, 'customer.firstName',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Asker')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/questions/page',${currentPage}, 'askTime',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Ask time')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/questions/page', ${currentPage}, 'approvalStatus', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Approved')}"></th>
+                <th>Answered</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="question : ${questionList}">
+                <td th:text="${question.id}"></td>
+                <td th:text="${question.product.name}"></td>
+                <td th:text="${question.questionContent}"></td>
+                <td th:text="${question.customer.fullName}"></td>
+                <td th:text="${question.askTime}"></td>
+                <td>
+                    <th:block
+                            th:replace="~{list_fragments :: status(${question.approvalStatus}, |/questions/${question.id}/enabled/${!question.approvalStatus}|)}"></th:block>
+                </td>
+                <td>
+                    <i class="fa-regular fa-lg" th:classappend="${question.answerContent != null ? 'fa-square-check' : 'fa-square'}"></i>
+                </td>
+                <td>
+                    <th:block th:replace="~{list_fragments :: delete_entity(|/questions/delete/${question.id}|)}"></th:block>
+                    <th:block th:replace="~{list_fragments :: edit_entity(|/questions/edit/${question.id}|)}"></th:block>
+                    <th:block th:replace="~{list_fragments :: detail_entity(|/questions/detail/${question.id}|)}"></th:block>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav th:replace="~{list_fragments :: large_pagination('/questions/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}" class="mt-4"></nav>
+
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal','Delete')}"></div>
+<div th:replace="~{modal_fragments :: close_modal('detailModal')}"></div>
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+</body>
+</html>
