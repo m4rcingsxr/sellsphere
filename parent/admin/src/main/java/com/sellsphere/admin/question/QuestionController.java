@@ -63,6 +63,13 @@ public class QuestionController {
         return DEFAULT_REDIRECT_URL;
     }
 
+    @GetMapping("/questions/detail/{id}")
+    public String viewQuestionDetail(@PathVariable Integer id, Model model) throws QuestionNotFoundException {
+        prepareModalForQuestionForm(id, model);
+        return "question/question_detail_modal";
+    }
+
+
     private void prepareModalForQuestionForm(Integer id, Model model) throws QuestionNotFoundException {
         Question question = questionService.get(id);
         model.addAttribute("question", question);

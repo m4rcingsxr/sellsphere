@@ -1,0 +1,33 @@
+<form th:object="${question}">
+    <div class="row g-4 p-3">
+        <div class="col-sm-6 d-flex justify-content-center align-items-center gap-2 fw-bold">
+            Approved:
+            <i class="fa-regular" th:classappend="${question.approvalStatus ? 'fa-square-check' : 'fa-square'}"></i>
+        </div>
+        <div class="col-sm-6 d-flex justify-content-center align-items-center gap-2 fw-bold">
+            Answered:
+            <i class="fa-regular" th:classappend="${question.answerContent != null ? 'fa-square-check' : 'fa-square'}"></i>
+        </div>
+
+        <th:block th:replace="form_fragments :: text_input('Product', product.name, true)"></th:block>
+
+        <label class="form-label col-sm-label col-sm-4">Question</label>
+        <div class="col-sm-8">
+            <textarea class="form-control" th:field="*{questionContent}" rows="3" readonly="readonly"></textarea>
+        </div>
+
+        <th:block th:replace="~{form_fragments :: text_input('Asked by', customer.fullName, true)}"></th:block>
+        <th:block th:replace="~{form_fragments :: text_input('Asked time', askTime, true)}"></th:block>
+        <th:block th:replace="~{form_fragments :: text_input('Votes', votes, true)}"></th:block>
+
+        <th:block th:if="${question.answerContent != null}">
+            <label class="form-label col-sm-label col-sm-4">Answer</label>
+            <div class="col-sm-8">
+                <textarea class="form-control" th:field="*{answerContent}" rows="3" readonly="readonly"></textarea>
+            </div>
+
+            <th:block th:replace="~{form_fragments :: text_input('Answered by', answerer, true)}"></th:block>
+            <th:block th:replace="~{form_fragments :: text_input('Answer time', answerTime, true)}"></th:block>
+        </th:block>
+    </div>
+</form>
