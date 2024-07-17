@@ -1,6 +1,7 @@
 package com.sellsphere.admin.question;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
+import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.Question;
 import com.sellsphere.common.entity.QuestionNotFoundException;
 import com.sellsphere.common.entity.User;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
+    private final QuestionVoteRepository questionVoteRepository;
 
     private static final int QUESTION_PER_PAGE = 10;
 
@@ -34,4 +36,22 @@ public class QuestionService {
 
         return questionRepository.save(question);
     }
+
+    public void delete(Integer id) throws QuestionNotFoundException {
+        Question question = questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
+        questionVoteRepository.deleteAllByQuestion(question);
+
+        questionRepository.delete(question);
+    }
+
+    public void changeApprovalStatus(Integer id, Boolean status) throws QuestionNotFoundException {
+        Question question = questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
+        question.setApprovalStatus(status);
+
+        Product product = question.getProduct();
+        product.setQuestionCount(product.getQuestionCount() + 1);
+
+        questionRepository.save(question);
+    }
+
 }

@@ -69,6 +69,22 @@ public class QuestionController {
         return "question/question_detail_modal";
     }
 
+    @GetMapping("/questions/delete/{id}")
+    public String deleteQuestion(@PathVariable Integer id, RedirectAttributes ra) throws QuestionNotFoundException {
+        questionService.delete(id);
+
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Successfully removed question with id " + id);
+        return DEFAULT_REDIRECT_URL;
+    }
+
+    @GetMapping("/questions/{id}/enabled/{status}")
+    public String changeQuestionStatus(@PathVariable Integer id, @PathVariable Boolean status, RedirectAttributes ra) throws QuestionNotFoundException {
+        questionService.changeApprovalStatus(id, status);
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Successfully " + (status ? "approved": "not approved") + " the question.");
+
+        return DEFAULT_REDIRECT_URL;
+    }
+
 
     private void prepareModalForQuestionForm(Integer id, Model model) throws QuestionNotFoundException {
         Question question = questionService.get(id);
