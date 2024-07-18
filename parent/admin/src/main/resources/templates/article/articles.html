@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{list_fragments :: head('Articles Management')}"></head>
+<body>
+
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content mt-3">
+
+    <h1 class="subheading text-center">Manage Articles</h1>
+
+    <div class="container mt-4">
+
+        <div th:replace="~{common :: alerts()}"></div>
+
+        <form th:replace="~{list_fragments :: search_bar('/articles/page/0', 'Search for the article', 'updatedTime', ${keyword}, ${totalItems}, null)}"></form>
+
+        <table class="table table-hover mt-4">
+            <thead class="table-dark">
+            <tr>
+                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'id',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'title',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Title')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'user.firstName',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Updated by')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'articleType',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Type')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'updatedTime',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Updated time')}"></th>
+                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'published',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Published')}"></th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="article : ${articleList}">
+                <td th:text="${article.id}"></td>
+                <td th:text="${article.title}"></td>
+                <td th:text="${article.createdBy.fullName}"></td>
+                <td th:text="${article.articleType}"></td>
+                <td th:text="${article.updatedTime}"></td>
+                <td>
+                    <th:block th:replace="~{list_fragments :: status(${article.published}, |/articles/${article.id}/published/${!article.published}|)}"></th:block>
+                </td>
+                <td>
+                    <th:block th:replace="~{list_fragments :: detail_entity(|/articles/details/${article.id}|)}"></th:block>
+                    <th:block th:replace="~{list_fragments :: edit_entity(|/articles/edit/${article.id}|)}"></th:block>
+                    <th:block th:replace="~{list_fragments :: delete_entity(|/articles/delete/${article.id}|)}"></th:block>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav th:replace="~{list_fragments :: large_pagination('/articles/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+         class="mt-4"></nav>
+
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
+<div th:replace="~{modal_fragments :: close_modal('detailModal')}"></div>
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+</body>
+</html>
+
+
