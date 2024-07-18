@@ -55,20 +55,14 @@
 
     <include file="db/changelog/db.changelog-add-refunds-table.xml"/>
 
-    <!--
-        add missing constraints, create charge, payment_method,
-        card, balance_transaction, metadata_entry
-    -->
+    <!-- add missing constraints, create charge, payment_method,
+        card, balance_transaction, metadata_entry -->
     <include file="db/changelog/19-06-24-changelog.xml"/>
 
     <!-- Change type of unit amount in currency table to decimal   -->
     <include file="db/changelog/20-06-24-changelog.xml"/>
 
-    <!--
-        Remove shipment object - easyship has limited test environment.
-        Change PaymentIntent object to contain tax and shipping information.
-        Simplify order by providing transaction.
-     -->
+    <!-- Remove shipment object -->
     <include file="db/changelog/22-06-24-changelog.xml"/>
 
     <!-- Remove redundant easyship product integration  -->
@@ -77,18 +71,21 @@
     <!-- Add constraints for Stripe integration related entities  -->
     <include file="db/changelog/24-06-2024-changelog.xml"/>
 
-    <!-- Add order track entity  -->
+    <!-- Add order_tracks table  -->
     <include file="db/changelog/25-06-2024-changelog.xml"/>
 
-    <!-- Add review & review_votes tables  -->
+    <!-- Add reviews & review votes tables  -->
     <include file="db/changelog/07-07-24-changelog.xml"/>
 
-    <!-- Add review count and average rating to products table   -->
+    <!-- Update products table, add review count and average rating columns  -->
     <include file="db/changelog/08-07-24-changelog.xml"/>
 
     <!-- Add questions table   -->
     <include file="db/changelog/13-07-24-changelog.xml"/>
 
-    <!-- Add question_votes table  -->
+    <!-- Add question votes table  -->
     <include file="db/changelog/14-07-24-changelog.xml"/>
+
+    <!-- Add article and promotion table -->
+    <include file="db/changelog/18-07-24-changelog.xml"/>
 </databaseChangeLog>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
+    <changeSet id="1723029703901-5" author="Marcin Seweryn">
+        <createTable tableName="articles">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_articles"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="CLOB">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="INT"/>
+            <column name="updated_time" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="published" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="article_image" type="VARCHAR(255)"/>
+            <column name="article_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1723029703901-6" author="Marcin Seweryn">
+        <createTable tableName="promotion">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_promotion"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="article_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1723029703901-7" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="article_id" constraintName="uc_promotion_article" tableName="promotion"/>
+    </changeSet>
+    <changeSet id="1723029703901-8" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="articles" constraintName="FK_ARTICLES_ON_USER"
+                                 referencedColumnNames="id" referencedTableName="users"/>
+    </changeSet>
+    <changeSet id="1723029703901-9" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="article_id" baseTableName="promotion"
+                                 constraintName="FK_PROMOTION_ON_ARTICLE" referencedColumnNames="id"
+                                 referencedTableName="articles"/>
+    </changeSet>
+</databaseChangeLog>
