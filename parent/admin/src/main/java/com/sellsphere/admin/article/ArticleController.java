@@ -2,15 +2,17 @@ package com.sellsphere.admin.article;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
+import com.sellsphere.admin.user.UserService;
 import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.security.Principal;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,6 +22,7 @@ public class ArticleController {
 
     public static final String DEFAULT_REDIRECT_URL =
             "redirect:/articles/page/0?sortField=updatedTime&sortDir=asc";
+    private final UserService userService;
 
     @GetMapping("/articles")
     public String listFirstPage() {
@@ -38,13 +41,12 @@ public class ArticleController {
     }
 
     @GetMapping({"/articles/new", "/articles/edit/{id}"})
-    public String showArticleForm(@PathVariable(required = false) Integer id,
-                                  Model model)
+    public String showArticleForm(@PathVariable(required = false) Integer id, Model model)
             throws ArticleNotFoundException {
 
         Article article;
         String pageTitle;
-        if(id == null) {
+        if (id == null) {
             article = new Article();
             pageTitle = "Create new Article";
         } else {
@@ -58,6 +60,27 @@ public class ArticleController {
         return "article/article_form";
     }
 
+    @PostMapping("/articles/save")
+    public String saveArticle(@ModelAttribute("article") Article article,
+                              @RequestParam(value = "newImage", required = false) MultipartFile newImage,
+                              Principal principal,
+                              RedirectAttributes redirectAttributes)
+            throws UserNotFoundException, IOException {
+        String successMessage = "Successfully " + (article.getId() != null ? "updated" : "created"
+        ) + " article.";
+
+        User user = getAuthenticatedUser(principal);
+
+        Article savedArticle = articleService.save(article, newImage, user);
+
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
+
+        return DEFAULT_REDIRECT_URL + "&keyword=" + savedArticle.getId();
+    }
+
+    private User getAuthenticatedUser(Principal principal) throws UserNotFoundException {
+        return userService.get(principal.getName());
+    }
 
 
 }
