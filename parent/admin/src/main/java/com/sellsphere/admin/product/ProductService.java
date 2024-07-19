@@ -6,8 +6,10 @@ import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductNotFoundException;
 import com.sellsphere.common.entity.SettingNotFoundException;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -148,6 +150,19 @@ public class ProductService {
         product.setEnabled(status);
 
         productRepository.save(product);
+    }
+
+    public List<Product> findAllByBrand(Integer brandId) {
+        return productRepository.findAllByBrandId(brandId);
+    }
+
+    public List<Product> findAllByCategory(Integer id) {
+        return productRepository.findAllByCategoryId(id);
+    }
+
+    public List<Product> findAllByKeyword(String keyword) {
+        return productRepository.findAll(keyword, Sort.by(Sort.Direction.ASC, "name"));
+
     }
 }
 

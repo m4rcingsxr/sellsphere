@@ -28,6 +28,7 @@ public class ArticleController {
     private final NavigationItemService navigationItemService;
     private final FooterSectionService footerSectionService;
     private final FooterItemRepository footerItemRepository;
+    private final PromotionService promotionService;
 
     @GetMapping("/articles")
     public String listFirstPage() {
@@ -47,7 +48,7 @@ public class ArticleController {
 
     @GetMapping({"/articles/new", "/articles/edit/{id}"})
     public String showArticleForm(@PathVariable(required = false) Integer id, Model model)
-            throws ArticleNotFoundException {
+            throws ArticleNotFoundException, PromotionNotFoundException {
 
         Article article;
         String pageTitle;
@@ -63,12 +64,18 @@ public class ArticleController {
                 model.addAttribute("navItem", navItem);
             }
 
-            if(article.getArticleType().equals(ArticleType.FOOTER)) {
-                FooterItem footerItem = footerItemRepository.findByArticle(article).orElseThrow(IllegalStateException::new);
+            if (article.getArticleType().equals(ArticleType.FOOTER)) {
+                FooterItem footerItem = footerItemRepository.findByArticle(article).orElseThrow(
+                        IllegalStateException::new);
                 FooterSection footerSection = footerItem.getFooterSection();
 
                 model.addAttribute("footerItem", footerItem);
                 model.addAttribute("footerSection", footerSection);
+            }
+
+            if(article.getArticleType().equals(ArticleType.PROMOTION)) {
+                Promotion promotion = promotionService.getByArticle(article);
+                model.addAttribute("promotion", promotion);
             }
 
         }
@@ -101,7 +108,7 @@ public class ArticleController {
                 }
 
                 for (FooterItem footerItem : section.getFooterItems()) {
-                    if(footerItem.getItemNumber() >= 1 && footerItem.getItemNumber() <= 5) {
+                    if (footerItem.getItemNumber() >= 1 && footerItem.getItemNumber() <= 5) {
                         preparedFooterItemList.set(footerItem.getItemNumber() - 1, footerItem);
                     }
                 }
@@ -110,6 +117,9 @@ public class ArticleController {
             }
         }
 
+        List<Promotion> promotionList = promotionService.listAll();
+
+        model.addAttribute("promotionList", promotionList);
         model.addAttribute("footerSectionList", preparedFooterSectionList);
         model.addAttribute("navigationItemList", preparedNavigationItemList);
         model.addAttribute("article", article);
@@ -123,6 +133,8 @@ public class ArticleController {
                               @RequestParam(value = "newImage", required = false) MultipartFile newImage,
                               @RequestParam(value = "itemNumber", required = false) Integer itemNumber,
                               @RequestParam(value = "sectionNumber", required = false) Integer sectionNumber,
+                              @RequestParam(value = "selectedProducts") List<Integer> promotionProducts,
+                              @RequestParam(value = "promotionName") String promotionName,
                               Principal principal,
                               RedirectAttributes redirectAttributes)
             throws UserNotFoundException, IOException {
@@ -131,8 +143,15 @@ public class ArticleController {
             throw new IllegalStateException("Article type navigation require item number");
         }
 
-        if(article.getArticleType().equals(ArticleType.FOOTER) && (sectionNumber == null || itemNumber == null)) {
-            throw new IllegalStateException("Article type footer require section number and item number");
+        if (article.getArticleType().equals(
+                ArticleType.FOOTER) && (sectionNumber == null || itemNumber == null)) {
+            throw new IllegalStateException(
+                    "Article type footer require section number and item number");
+        }
+
+        if (article.getArticleType().equals(ArticleType.PROMOTION) &&
+                (promotionProducts == null || promotionProducts.isEmpty() || promotionName == null)) {
+            throw new IllegalStateException("Promotion article must have defined promotion that includes products and promotion name");
         }
 
         String successMessage = "Successfully " + (article.getId() != null ? "updated" : "created"
@@ -140,7 +159,20 @@ public class ArticleController {
 
         User user = getAuthenticatedUser(principal);
 
-        Article savedArticle = articleService.save(article, newImage, user, itemNumber, sectionNumber);
+        Article savedArticle;
+        switch (article.getArticleType()) {
+            case PROMOTION:
+                savedArticle = articleService.savePromotionArticle(article, newImage, user,
+                                                                   promotionName,
+                                                                   promotionProducts
+                );
+                break;
+            default:
+                savedArticle = articleService.save(article, newImage, user, itemNumber,
+                                                   sectionNumber
+                );
+                break;
+        }
 
 
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);

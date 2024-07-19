@@ -258,6 +258,10 @@ public class Product extends IdentifiedEntity {
     @Column(name = "question_count")
     private Integer questionCount;
 
+    // synchronized with product details
+    @ManyToMany(mappedBy = "products")
+    private List<Promotion> promotions;
+
     public Product(Integer id) {
         this.id = id;
     }

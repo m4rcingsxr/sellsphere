@@ -1,10 +1,16 @@
 package com.sellsphere.admin.category;
 
+import com.sellsphere.admin.brand.CategoryDTO;
+import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * REST controller for managing Category-related operations.
@@ -49,6 +55,17 @@ public class CategoryRestController {
 
         boolean isUnique = service.isNameUnique(categoryId, name);
         return ResponseEntity.ok(isUnique);
+    }
+
+
+    @GetMapping("/categories/fetch-all")
+    public ResponseEntity<List<CategoryDTO>> listAllCategories() {
+        List<Category> parentList = service.listAllRootCategoriesSorted("name",
+                                                                                Constants.SORT_ASCENDING
+        );
+        List<Category> hierarchy = service.createHierarchy(parentList);
+
+        return ResponseEntity.ok(hierarchy.stream().map(CategoryDTO::new).toList());
     }
 
 }

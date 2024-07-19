@@ -4,6 +4,8 @@ import com.sellsphere.admin.category.CategoryService;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.Constants;
+import com.sellsphere.common.entity.payload.BrandDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +50,12 @@ public class BrandRestController {
         List<CategoryDTO> hierarchyDTO = hierarchy.stream().map(CategoryDTO::new).toList();
 
         return ResponseEntity.ok(hierarchyDTO);
+    }
+
+    @GetMapping("/brands/fetch-all")
+    public ResponseEntity<List<BrandDTO>> listAllBrands() {
+        List<Brand> brandList = service.listAll("name", Constants.SORT_ASCENDING);
+        return ResponseEntity.ok(brandList.stream().map(BrandDTO::new).toList());
     }
 
 }

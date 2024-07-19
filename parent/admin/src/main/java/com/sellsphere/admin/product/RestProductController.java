@@ -1,7 +1,9 @@
 package com.sellsphere.admin.product;
 
+import com.sellsphere.admin.brand.BrandService;
 import com.sellsphere.common.entity.ProductTax;
 import com.sellsphere.common.entity.TaxType;
+import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.easyship.payload.HsCodeResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class RestProductController {
     private final ProductService productService;
     private final ProductTaxRepository productTaxRepository;
     private final EasyshipService easyshipService;
+    private final BrandService brandService;
 
     /**
      * Checks if a product name is unique.
@@ -60,6 +63,28 @@ public class RestProductController {
     ) {
         HsCodeResponse response = easyshipService.fetchHsCodes(page, code, description);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/brand/{id}")
+    public ResponseEntity<List<BasicProductDTO>> listProductsByBrand(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(
+                productService.findAllByBrand(id).stream().map(BasicProductDTO::new).toList()
+        );
+    }
+
+    @GetMapping("/category/{id}")
+    public ResponseEntity<List<BasicProductDTO>> listProductsByCategory(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(
+                productService.findAllByCategory(id).stream().map(BasicProductDTO::new).toList()
+        );
+    }
+
+    @GetMapping("/search/{keyword}")
+    public ResponseEntity<List<BasicProductDTO>> listProductsByKeyword(
+            @PathVariable("keyword") String keyword) {
+        return ResponseEntity.ok(
+                productService.findAllByKeyword(keyword).stream().map(BasicProductDTO::new).toList()
+        );
     }
 
 }

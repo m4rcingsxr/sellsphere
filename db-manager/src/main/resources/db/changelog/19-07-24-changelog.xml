@@ -67,5 +67,57 @@
                                  constraintName="FK_NAVIGATION_ITEMS_ON_ARTICLE" referencedColumnNames="id"
                                  referencedTableName="articles"/>
     </changeSet>
+    <changeSet id="1723141360415-11" author="Marcin Seweryn">
+        <dropForeignKeyConstraint baseTableName="promotion" constraintName="FK_PROMOTION_ON_ARTICLE"/>
+    </changeSet>
+
+    <!-- Update promotions table - add products many to many relationship, change table name   -->
+    <changeSet id="1723141360415-5" author="Marcin Seweryn">
+        <createTable tableName="promotion_product">
+            <column name="product_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="promotion_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+
+    <changeSet id="1723141360415-6" author="Marcin Seweryn">
+        <createTable tableName="promotions">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_promotions"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="article_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1723141360415-7" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="article_id" constraintName="uc_promotions_article" tableName="promotions"/>
+    </changeSet>
+    <changeSet id="1723141360415-8" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="article_id" baseTableName="promotions"
+                                 constraintName="FK_PROMOTIONS_ON_ARTICLE" referencedColumnNames="id"
+                                 referencedTableName="articles"/>
+    </changeSet>
+    <changeSet id="1723141360415-9" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="promotion_product"
+                                 constraintName="fk_propro_on_product" referencedColumnNames="id"
+                                 referencedTableName="products"/>
+    </changeSet>
+    <changeSet id="1723141360415-10" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="promotion_id" baseTableName="promotion_product"
+                                 constraintName="fk_propro_on_promotion" referencedColumnNames="id"
+                                 referencedTableName="promotions"/>
+    </changeSet>
+    <changeSet id="1723141360415-13" author="Marcin Seweryn">
+        <dropTable cascadeConstraints="true" tableName="promotion"/>
+    </changeSet>
+
 
 </databaseChangeLog>

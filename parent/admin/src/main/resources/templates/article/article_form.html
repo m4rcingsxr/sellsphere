@@ -44,7 +44,8 @@
                 </div>
 
                 <div class="row mt-3 d-none" id="navigation">
-                    <input type="hidden" id="navigation-order" th:value="${navItem != null ? navItem.itemNumber : (footerItem != null ? footerItem.itemNumber : '')}"
+                    <input type="hidden" id="navigation-order"
+                           th:value="${navItem != null ? navItem.itemNumber : (footerItem != null ? footerItem.itemNumber : '')}"
                            name="itemNumber"/>
 
                     <div class="col-sm-8 offset-sm-4">
@@ -83,13 +84,15 @@
                 </div>
 
                 <div class="row mt-3" id="footer">
-                    <input type="hidden" id="section-order" th:value="${footerSection != null ? footerSection.sectionNumber : ''}"
+                    <input type="hidden" id="section-order"
+                           th:value="${footerSection != null ? footerSection.sectionNumber : ''}"
                            name="sectionNumber"/>
 
                     <div class="col-sm-8 offset-sm-4 p-4">
                         <footer class="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 border-top">
                             <div class="col mb-3">
-                                <a href="/" class="d-flex align-items-center mb-3 link-body-emphasis text-decoration-none">
+                                <a href="/"
+                                   class="d-flex align-items-center mb-3 link-body-emphasis text-decoration-none">
                                     <svg class="bi me-2" width="40" height="32">
                                         <use xlink:href="#bootstrap"></use>
                                     </svg>
@@ -102,19 +105,30 @@
                             <div th:each="section, sectionStat : ${footerSectionList}" class="col mb-3">
                                 <h5 th:text="'Section ' + (${sectionStat.index + 1})"></h5>
                                 <ul class="nav flex-column">
-                                    <li th:if="${section != null}" th:each="i : ${#numbers.sequence(1, 5)}" class="nav-item mb-2">
+                                    <li th:if="${section != null}" th:each="i : ${#numbers.sequence(1, 5)}"
+                                        class="nav-item mb-2">
                                             <span th:with="item=${section.footerItems[i - 1]}">
                                                 <span th:if="${item != null}">
-                                                    <a th:if="${item.article.id != article.id}" th:href="@{/}" class="nav-link p-0 text-body-secondary" th:text="${item.article.title}" th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}" disabled></a>
-                                                    <a th:if="${item.article.id == article.id}" th:href="@{/}" class="nav-link p-0 text-body-secondary" th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}">Current Article</a>
+                                                    <a th:if="${item.article.id != article.id}" th:href="@{/}"
+                                                       class="nav-link p-0 text-body-secondary"
+                                                       th:text="${item.article.title}" th:data-item-number="${i}"
+                                                       th:data-section-number="${sectionStat.index + 1}" disabled></a>
+                                                    <a th:if="${item.article.id == article.id}" th:href="@{/}"
+                                                       class="nav-link p-0 text-body-secondary"
+                                                       th:data-item-number="${i}"
+                                                       th:data-section-number="${sectionStat.index + 1}">Current Article</a>
                                                 </span>
                                                 <span th:if="${item == null}">
-                                                    <a href="#" class="nav-link p-0 text-body-secondary fw-lighter" th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}">empty</a>
+                                                    <a href="#" class="nav-link p-0 text-body-secondary fw-lighter"
+                                                       th:data-item-number="${i}"
+                                                       th:data-section-number="${sectionStat.index + 1}">empty</a>
                                                 </span>
                                             </span>
                                     </li>
-                                    <li th:if="${section == null}" th:each="i : ${#numbers.sequence(1, 5)}" class="nav-item mb-2">
-                                        <a href="#" class="nav-link p-0 text-body-secondary fw-lighter" th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}">empty</a>
+                                    <li th:if="${section == null}" th:each="i : ${#numbers.sequence(1, 5)}"
+                                        class="nav-item mb-2">
+                                        <a href="#" class="nav-link p-0 text-body-secondary fw-lighter"
+                                           th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}">empty</a>
                                     </li>
                                 </ul>
                             </div>
@@ -123,8 +137,74 @@
 
                 </div>
 
-                <div class="row mt-3" id="promotion">
+                <div class="row mt-3 d-none" id="save-promotion-type">
+                    <label class="col-form-label col-sm-4">How would you crate promotion for this Article?</label>
+                    <div class="col-sm-8">
+                        <select id="save-promotion-article-type" class="form-control">
+                            <option value="EXISTING">Existing
+                                Promotion
+                            </option>
+                            <option value="NEW">New Promotion</option>
+                        </select>
+                    </div>
+                </div>
 
+                <div class="row mt-3 g-3 d-none" id="existing-promotions">
+                    <label class="col-form-label col-sm-4">Existing Promotions</label>
+                    <div class="col-sm-8">
+                        <select name="existingPromotions" id="existing-promotions-input" class="form-control">
+                            <option th:each="promo : ${promotionList}"
+                                    th:value="${promo.name}"
+                                    th:text="${promo.name}"
+                                    th:selected="${promotion != null && promotion.id == promo.id} ? true : false">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-3 g-3 d-none" id="new-product">
+                    <label class="col-form-label col-sm-4">New Promotion Name</label>
+
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="promotionName" name="promotionName" th:value="${promotion != null ? promotion.name : ''}"/>
+                    </div>
+
+                    <div class="col-sm-8 offset-sm-4">
+                        <select class="form-control" id="promotion-type">
+                            <option value="BRAND">Brand</option>
+                            <option value="CATEGORY">Category</option>
+                            <option value="KEYWORD">Keyword</option>
+                        </select>
+                    </div>
+
+                    <div class="col-sm-8 offset-sm-4">
+                        <input type="text" class="form-control" id="keyword" placeholder="keyword"/>
+
+                        <select class="form-control" id="brands">
+                            <option>brands</option>
+                        </select>
+
+                        <select class="form-control" id="categories">
+                            <option>categories</option>
+                        </select>
+                    </div>
+
+                    <div class="col-sm-8 offset-sm-4">
+                        <!-- by brand and category -->
+                        <select class="form-control" multiple id="select-products">
+                        </select>
+                        <!-- by keyword -->
+                    </div>
+
+                </div>
+
+                <div class="row mt-3">
+                    <label class="col-form-label col-sm-4">Selected products</label>
+                    <div class="col-sm-8">
+                        <select class="form-control" name="selectedProducts" id="selected-products" multiple>
+
+                        </select>
+                    </div>
                 </div>
 
                 <div th:replace="~{form_fragments :: form_buttons(${article})}"></div>
