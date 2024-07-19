@@ -13,6 +13,8 @@
 
         <div th:replace="~{common :: alerts()}"></div>
 
+        <ul th:replace="~{navigations :: export_nav('articles', true)}"></ul>
+
         <form th:replace="~{list_fragments :: search_bar('/articles/page/0', 'Search for the article', 'updatedTime', ${keyword}, ${totalItems}, null)}"></form>
 
         <table class="table table-hover mt-4">

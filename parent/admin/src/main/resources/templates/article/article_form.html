@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{form_fragments :: head_with_editor(${pageTitle})}"></head>
+<body>
+<header th:replace="~{navigations :: header()}"></header>
+
+<main class="content">
+    <div class="container-md mt-4">
+        <h2 class="text-center mt-4" th:text="${pageTitle}"></h2>
+
+        <div class="p-4 border border-1 shadow-sm rounded-3 mt-4">
+            <form id="mainForm" enctype="multipart/form-data" method="POST" th:object="${article}"
+                  th:action="@{/products/save}">
+                <th:block th:replace="~{form_fragments :: hidden_input('id')}"></th:block>
+                <th:block th:replace="~{form_fragments :: hidden_input('createdBy')}"></th:block>
+                <th:block th:replace="~{form_fragments :: hidden_input('updatedTime')}"></th:block>
+                <th:block th:replace="~{form_fragments :: hidden_input('articleImage')}"></th:block>
+
+                <div class="row g-3">
+                    <th:block th:replace="~{form_fragments :: text_input('Title', 'title', false)}"></th:block>
+                    <th:block
+                            th:replace="~{form_fragments :: text_input_placeholder('Alias', 'alias', 'Leaving this empty will generate alias from title')}"></th:block>
+
+                    <label class="col-form-label col-sm-4">Content</label>
+                    <div class="col-sm-8">
+                        <textarea class="form-control" th:field="*{content}"></textarea>
+                    </div>
+
+                    <label class="col-form-label col-sm-4">Article type</label>
+                    <div class="col-sm-8">
+                        <select class="form-control">
+                            <option th:each="type : ${T(com.sellsphere.common.entity.ArticleType).values()}"
+                                    th:value="${type}"
+                                    th:text="${type}">
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+</body>
+</html>
