@@ -15,4 +15,5 @@ public class ArticleService {
     public void listPage(PagingAndSortingHelper helper, Integer pageNum) {
         helper.listEntities(pageNum, ARTICLE_PER_PAGE, articleRepository);
     }
+
 }

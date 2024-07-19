@@ -88,4 +88,7 @@
 
     <!-- Add article and promotion table -->
     <include file="db/changelog/18-07-24-changelog.xml"/>
+
+    <!-- Adding entities to store information about article placement in navigation and footers -->
+    <include file="db/changelog/19-07-24-changelog.xml"/>
 </databaseChangeLog>

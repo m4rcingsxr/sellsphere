@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1723034964039-5" author="Marcin Seweryn">
+        <createTable tableName="footer_items">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_footer_items"/>
+            </column>
+            <column name="item_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="article_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="footer_section_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1723034964039-6" author="Marcin Seweryn">
+        <createTable tableName="footer_sections">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_footer_sections"/>
+            </column>
+            <column name="section_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1723034964039-7" author="Marcin Seweryn">
+        <createTable tableName="navigation_items">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_navigation_items"/>
+            </column>
+            <column name="item_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="article_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1723034964039-8" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="article_id" constraintName="uc_footer_items_article"
+                             tableName="footer_items"/>
+    </changeSet>
+    <changeSet id="1723034964039-9" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="article_id" constraintName="uc_navigation_items_article"
+                             tableName="navigation_items"/>
+    </changeSet>
+    <changeSet id="1723034964039-10" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="article_id" baseTableName="footer_items"
+                                 constraintName="FK_FOOTER_ITEMS_ON_ARTICLE" referencedColumnNames="id"
+                                 referencedTableName="articles"/>
+    </changeSet>
+    <changeSet id="1723034964039-11" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="footer_section_id" baseTableName="footer_items"
+                                 constraintName="FK_FOOTER_ITEMS_ON_FOOTER_SECTION" referencedColumnNames="id"
+                                 referencedTableName="footer_sections"/>
+    </changeSet>
+    <changeSet id="1723034964039-12" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="article_id" baseTableName="navigation_items"
+                                 constraintName="FK_NAVIGATION_ITEMS_ON_ARTICLE" referencedColumnNames="id"
+                                 referencedTableName="articles"/>
+    </changeSet>
+
+</databaseChangeLog>
