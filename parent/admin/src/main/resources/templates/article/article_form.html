@@ -44,7 +44,8 @@
                 </div>
 
                 <div class="row mt-3 d-none" id="navigation">
-                    <input type="hidden" id="navigation-order" th:value="${navItem != null ? navItem.itemNumber : ''}" name="itemNumber"/>
+                    <input type="hidden" id="navigation-order" th:value="${navItem != null ? navItem.itemNumber : (footerItem != null ? footerItem.itemNumber : '')}"
+                           name="itemNumber"/>
 
                     <div class="col-sm-8 offset-sm-4">
                         <div class="border-1 border p-4">
@@ -61,8 +62,11 @@
                                             <li th:each="i : ${#numbers.sequence(1, 5)}" class="nav-item">
                                                 <span th:with="navItem=${navigationItemList[i - 1]}">
                                                     <span th:if="${navItem != null}">
-                                                        <a th:if="${navItem.article.id == article.id}" th:data-index="${i}" class="nav-link" th:href="@{/}">Current Article</a>
-                                                        <a th:if="${navItem.article.id != article.id}" th:data-index="${i}" class="nav-link" th:href="@{/}" th:text="${navItem.article.title}" disabled></a>
+                                                        <a th:if="${navItem.article.id == article.id}"
+                                                           th:data-index="${i}" class="nav-link" th:href="@{/}">Current Article</a>
+                                                        <a th:if="${navItem.article.id != article.id}"
+                                                           th:data-index="${i}" class="nav-link" th:href="@{/}"
+                                                           th:text="${navItem.article.title}" disabled></a>
                                                     </span>
                                                     <span th:if="${navItem == null}">
                                                         <a th:data-index="${i}" class="nav-link fw-lighter" href="#">empty</a>
@@ -79,6 +83,43 @@
                 </div>
 
                 <div class="row mt-3" id="footer">
+                    <input type="hidden" id="section-order" th:value="${footerSection != null ? footerSection.sectionNumber : ''}"
+                           name="sectionNumber"/>
+
+                    <div class="col-sm-8 offset-sm-4 p-4">
+                        <footer class="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 border-top">
+                            <div class="col mb-3">
+                                <a href="/" class="d-flex align-items-center mb-3 link-body-emphasis text-decoration-none">
+                                    <svg class="bi me-2" width="40" height="32">
+                                        <use xlink:href="#bootstrap"></use>
+                                    </svg>
+                                </a>
+                                <p class="text-body-secondary">© 2024</p>
+                            </div>
+
+                            <div class="col mb-3"></div>
+
+                            <div th:each="section, sectionStat : ${footerSectionList}" class="col mb-3">
+                                <h5 th:text="'Section ' + (${sectionStat.index + 1})"></h5>
+                                <ul class="nav flex-column">
+                                    <li th:if="${section != null}" th:each="i : ${#numbers.sequence(1, 5)}" class="nav-item mb-2">
+                                            <span th:with="item=${section.footerItems[i - 1]}">
+                                                <span th:if="${item != null}">
+                                                    <a th:if="${item.article.id != article.id}" th:href="@{/}" class="nav-link p-0 text-body-secondary" th:text="${item.article.title}" th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}" disabled></a>
+                                                    <a th:if="${item.article.id == article.id}" th:href="@{/}" class="nav-link p-0 text-body-secondary" th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}">Current Article</a>
+                                                </span>
+                                                <span th:if="${item == null}">
+                                                    <a href="#" class="nav-link p-0 text-body-secondary fw-lighter" th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}">empty</a>
+                                                </span>
+                                            </span>
+                                    </li>
+                                    <li th:if="${section == null}" th:each="i : ${#numbers.sequence(1, 5)}" class="nav-item mb-2">
+                                        <a href="#" class="nav-link p-0 text-body-secondary fw-lighter" th:data-item-number="${i}" th:data-section-number="${sectionStat.index + 1}">empty</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </footer>
+                    </div>
 
                 </div>
 

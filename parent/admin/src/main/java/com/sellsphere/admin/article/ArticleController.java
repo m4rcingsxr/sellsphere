@@ -26,6 +26,8 @@ public class ArticleController {
     private final ArticleService articleService;
     private final UserService userService;
     private final NavigationItemService navigationItemService;
+    private final FooterSectionService footerSectionService;
+    private final FooterItemRepository footerItemRepository;
 
     @GetMapping("/articles")
     public String listFirstPage() {
@@ -61,22 +63,55 @@ public class ArticleController {
                 model.addAttribute("navItem", navItem);
             }
 
+            if(article.getArticleType().equals(ArticleType.FOOTER)) {
+                FooterItem footerItem = footerItemRepository.findByArticle(article).orElseThrow(IllegalStateException::new);
+                FooterSection footerSection = footerItem.getFooterSection();
+
+                model.addAttribute("footerItem", footerItem);
+                model.addAttribute("footerSection", footerSection);
+            }
+
         }
 
         List<NavigationItem> navigationItemList = navigationItemService.findAll();
         // Create a list with nulls to ensure correct indexing
-        List<NavigationItem> preparedList = new ArrayList<>(5);
+        List<NavigationItem> preparedNavigationItemList = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            preparedList.add(null);
+            preparedNavigationItemList.add(null);
         }
 
         for (NavigationItem item : navigationItemList) {
             if (item.getItemNumber() >= 1 && item.getItemNumber() <= 5) {
-                preparedList.set(item.getItemNumber() - 1, item);
+                preparedNavigationItemList.set(item.getItemNumber() - 1, item);
             }
         }
 
-        model.addAttribute("navigationItemList", preparedList);
+        List<FooterSection> footerSectionList = footerSectionService.findAll();
+        List<FooterSection> preparedFooterSectionList = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            preparedFooterSectionList.add(null);
+        }
+
+        for (FooterSection section : footerSectionList) {
+            if (section.getSectionNumber() >= 1 && section.getSectionNumber() <= 3) {
+                preparedFooterSectionList.set(section.getSectionNumber() - 1, section);
+                List<FooterItem> preparedFooterItemList = new ArrayList<>();
+                for (int i = 0; i < 5; i++) {
+                    preparedFooterItemList.add(null);
+                }
+
+                for (FooterItem footerItem : section.getFooterItems()) {
+                    if(footerItem.getItemNumber() >= 1 && footerItem.getItemNumber() <= 5) {
+                        preparedFooterItemList.set(footerItem.getItemNumber() - 1, footerItem);
+                    }
+                }
+
+                section.setFooterItems(preparedFooterItemList);
+            }
+        }
+
+        model.addAttribute("footerSectionList", preparedFooterSectionList);
+        model.addAttribute("navigationItemList", preparedNavigationItemList);
         model.addAttribute("article", article);
         model.addAttribute("pageTitle", pageTitle);
 
@@ -87,6 +122,7 @@ public class ArticleController {
     public String saveArticle(@ModelAttribute("article") Article article,
                               @RequestParam(value = "newImage", required = false) MultipartFile newImage,
                               @RequestParam(value = "itemNumber", required = false) Integer itemNumber,
+                              @RequestParam(value = "sectionNumber", required = false) Integer sectionNumber,
                               Principal principal,
                               RedirectAttributes redirectAttributes)
             throws UserNotFoundException, IOException {
@@ -95,13 +131,16 @@ public class ArticleController {
             throw new IllegalStateException("Article type navigation require item number");
         }
 
+        if(article.getArticleType().equals(ArticleType.FOOTER) && (sectionNumber == null || itemNumber == null)) {
+            throw new IllegalStateException("Article type footer require section number and item number");
+        }
+
         String successMessage = "Successfully " + (article.getId() != null ? "updated" : "created"
         ) + " article.";
 
         User user = getAuthenticatedUser(principal);
 
-        Article savedArticle = articleService.save(article, newImage, user, itemNumber);
-
+        Article savedArticle = articleService.save(article, newImage, user, itemNumber, sectionNumber);
 
 
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);

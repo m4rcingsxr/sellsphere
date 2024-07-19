@@ -26,8 +26,7 @@ public class FooterSection extends IdentifiedEntity {
     private Integer sectionNumber;
 
     @OneToMany(mappedBy = "footerSection", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @OrderBy("itemNumber")
-    @JsonManagedReference
+    @OrderBy("itemNumber asc")
     private List<FooterItem> footerItems = new ArrayList<>();
 
     public void addFooterItem(FooterItem footerItem) {

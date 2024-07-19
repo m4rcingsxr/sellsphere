@@ -22,13 +22,19 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final NavigationItemService navigationItemService;
+    private final FooterSectionService footerSectionService;
 
     public void listPage(PagingAndSortingHelper helper, Integer pageNum) {
         helper.listEntities(pageNum, ARTICLE_PER_PAGE, articleRepository);
     }
 
     @Transactional
-    public Article save(Article article, MultipartFile newImage, User user, Integer itemNumber) throws IOException {
+    public Article save(Article article,
+                        MultipartFile newImage,
+                        User user,
+                        Integer itemNumber,
+                        Integer sectionNumber
+    ) throws IOException {
 
         article.setUpdatedTime(LocalDate.now());
 
@@ -56,6 +62,7 @@ public class ArticleService {
 
         switch (savedArticle.getArticleType()) {
             case NAVIGATION -> navigationItemService.save(savedArticle, itemNumber);
+            case FOOTER -> footerSectionService.save(savedArticle, itemNumber, sectionNumber);
             case FREE -> {
                 // check for association with ui elements
                 navigationItemService.deleteByArticle(savedArticle);
