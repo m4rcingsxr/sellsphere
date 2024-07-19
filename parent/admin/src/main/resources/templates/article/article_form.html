@@ -14,7 +14,6 @@
                 <th:block th:replace="~{form_fragments :: hidden_input('id')}"></th:block>
                 <th:block th:replace="~{form_fragments :: hidden_input('createdBy')}"></th:block>
                 <th:block th:replace="~{form_fragments :: hidden_input('updatedTime')}"></th:block>
-                <th:block th:replace="~{form_fragments :: hidden_input('articleImage')}"></th:block>
 
                 <div class="row g-3">
                     <th:block th:replace="~{form_fragments :: text_input('Title', 'title', false)}"></th:block>
@@ -44,8 +43,39 @@
 
                 </div>
 
-                <div class="row mt-3" id="navigation">
+                <div class="row mt-3 d-none" id="navigation">
+                    <input type="hidden" id="navigation-order" th:value="${navItem != null ? navItem.itemNumber : ''}" name="itemNumber"/>
 
+                    <div class="col-sm-8 offset-sm-4">
+                        <div class="border-1 border p-4">
+                            <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                                <div class="container-fluid">
+                                    <a class="navbar-brand" href="#">Navbar</a>
+                                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                                            aria-label="Toggle navigation">
+                                        <span class="navbar-toggler-icon"></span>
+                                    </button>
+                                    <div class="collapse navbar-collapse" id="navbarNav">
+                                        <ul class="navbar-nav">
+                                            <li th:each="i : ${#numbers.sequence(1, 5)}" class="nav-item">
+                                                <span th:with="navItem=${navigationItemList[i - 1]}">
+                                                    <span th:if="${navItem != null}">
+                                                        <a th:if="${navItem.article.id == article.id}" th:data-index="${i}" class="nav-link" th:href="@{/}">Current Article</a>
+                                                        <a th:if="${navItem.article.id != article.id}" th:data-index="${i}" class="nav-link" th:href="@{/}" th:text="${navItem.article.title}" disabled></a>
+                                                    </span>
+                                                    <span th:if="${navItem == null}">
+                                                        <a th:data-index="${i}" class="nav-link fw-lighter" href="#">empty</a>
+                                                    </span>
+                                                </span>
+                                            </li>
+                                        </ul>
+
+                                    </div>
+                                </div>
+                            </nav>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="row mt-3" id="footer">
@@ -75,13 +105,9 @@
     const HEIGHT = 700; // Image height
     const QUALITY = 1; // Image quality (0.0 to 1.0)
 
-    const validationRules = {
+    const validationRules = {};
 
-    };
-
-    const validationMessages = {
-
-    };
+    const validationMessages = {};
 
     const dynamicRules = [];
 </script>

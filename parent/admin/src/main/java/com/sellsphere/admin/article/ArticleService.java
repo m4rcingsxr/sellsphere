@@ -3,6 +3,7 @@ package com.sellsphere.admin.article;
 import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Article;
+import com.sellsphere.common.entity.ArticleNotFoundException;
 import com.sellsphere.common.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +21,14 @@ public class ArticleService {
     private static final int ARTICLE_PER_PAGE = 10;
 
     private final ArticleRepository articleRepository;
+    private final NavigationItemService navigationItemService;
 
     public void listPage(PagingAndSortingHelper helper, Integer pageNum) {
         helper.listEntities(pageNum, ARTICLE_PER_PAGE, articleRepository);
     }
 
     @Transactional
-    public Article save(Article article, MultipartFile newImage, User user) throws IOException {
+    public Article save(Article article, MultipartFile newImage, User user, Integer itemNumber) throws IOException {
 
         article.setUpdatedTime(LocalDate.now());
 
@@ -38,20 +40,32 @@ public class ArticleService {
             article.setAlias(article.getTitle().toLowerCase());
         }
 
-
+        Article savedArticle;
         if(newImage != null && !newImage.isEmpty()) {
             article.setArticleImage(newImage.getOriginalFilename());
-            Article savedArticle = articleRepository.save(article);
+            savedArticle = articleRepository.save(article);
 
             String fileName = newImage.getOriginalFilename();
 
             String folderName = S3_FOLDER_NAME + savedArticle.getId();
 
             FileService.saveSingleFile(newImage, folderName, fileName);
-
-            return savedArticle;
         } else {
-            return articleRepository.save(article);
+            savedArticle = articleRepository.save(article);
         }
+
+        switch (savedArticle.getArticleType()) {
+            case NAVIGATION -> navigationItemService.save(savedArticle, itemNumber);
+            case FREE -> {
+                // check for association with ui elements
+                navigationItemService.deleteByArticle(savedArticle);
+            }
+        }
+
+        return savedArticle;
+    }
+
+    public Article get(Integer id) throws ArticleNotFoundException {
+        return articleRepository.findById(id).orElseThrow(ArticleNotFoundException::new);
     }
 }

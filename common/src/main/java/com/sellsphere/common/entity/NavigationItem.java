@@ -22,7 +22,7 @@ public class NavigationItem  extends IdentifiedEntity {
     private Integer itemNumber;
 
     @OneToOne
-    @JoinColumn(name = "article_id", nullable = false)
+    @JoinColumn(name = "article_id", nullable = false, unique = true)
     private Article article;
 
 }
