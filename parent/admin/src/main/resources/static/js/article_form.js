@@ -1,308 +1,369 @@
 $(function () {
-   init();
+    init();
 });
 
+/**
+ * Initializes the form and event listeners.
+ */
 async function init() {
-    const articleType = $("#articleType").val();
-    showArticleForm(articleType);
-    await handleChangePromotionArticleType($("#save-promotion-article-type").val());
-    await handleChangePromotionProductType($("#promotion-type").val());
-    await handleChangeOfExistingPromotions($("#existing-promotions-input").val());
+    try {
+        const articleType = $("#articleType").val();
+        showArticleForm(articleType);
 
-    initListeners();
+        await handleChangePromotionArticleType($("#save-promotion-article-type").val());
+        await handleChangePromotionProductType($("#promotion-type").val());
+        await handleChangeOfExistingPromotions($("#existing-promotions-input").val());
+
+        initListeners();
+    } catch (error) {
+        handleInitializationError(error);
+    }
 }
 
+/**
+ * Initializes all event listeners for the form elements.
+ */
 function initListeners() {
     $("#articleType").on("change", function () {
         showArticleForm(this.value);
-    })
+    });
+
     $("#navigation").on("click", ".nav-link", handleSelectNavigationItemNumber);
     $("#footer").on("click", ".nav-link", handleSelectFooterItemNumber);
 
-    $("#promotion-type").on("change", async function() {
-        await handleChangePromotionProductType(this.value);
-    });
-
-    $("#save-promotion-article-type").on("change", async function() {
-        await handleChangePromotionArticleType(this.value);
-        if(this.value === 'EXISTING') {
-            $("#existing-promotions").removeClass("d-none");
-            $("#new-product").addClass("d-none");
-        } else {
-            $("#existing-promotions").addClass("d-none");
-            $("#new-product").removeClass("d-none");
+    $("#promotion-type").on("change", async function () {
+        try {
+            await handleChangePromotionProductType(this.value);
+        } catch (error) {
+            handleError(error);
         }
-    })
-
-    $("#categories").on("change", async function() {
-        await loadProductsForSelectedCategory(this.value);
     });
+
+    $("#save-promotion-article-type").on("change", async function () {
+        try {
+            await handleChangePromotionArticleType(this.value);
+            togglePromotionSections(this.value);
+        } catch (error) {
+            handleError(error);
+        }
+    });
+
+    $("#categories").on("change", async function () {
+        try {
+            await loadProductsForSelectedCategory(this.value);
+        } catch (error) {
+            handleError(error);
+        }
+    });
+
     $("#brands").on("change", async function () {
-        await loadProductsForSelectedBrand(this.value);
+        try {
+            await loadProductsForSelectedBrand(this.value);
+        } catch (error) {
+            handleError(error);
+        }
     });
-    $("#keyword").on("change", loadProductsForKeyword);
-    $("#select-products").on("change", loadSelectedProducts)
-    $("#selected-products").on("change", removeUnselectedOptions)
 
-    $("#existing-promotions-input").on("change", async function() {
-        await handleChangeOfExistingPromotions(this.value);
-    })
+    $("#keyword").on("change", async function () {
+        try {
+            await loadProductsForKeyword();
+        } catch (error) {
+            handleError(error);
+        }
+    });
+
+    $("#select-products").on("change", loadSelectedProducts);
+    $("#selected-products").on("change", removeUnselectedOptions);
+
+    $("#existing-promotions-input").on("change", async function () {
+        try {
+            await handleChangeOfExistingPromotions(this.value);
+        } catch (error) {
+            handleError(error);
+        }
+    });
 }
 
+/**
+ * Displays the appropriate article form based on the selected article type.
+ * @param {string} articleType - The selected article type.
+ */
 function showArticleForm(articleType) {
     hideAllArticleForms();
 
     switch (articleType) {
-        case "NAVIGATION" : {
+        case "NAVIGATION":
             showArticleNavigationForm();
             break;
-        }
-        case "PROMOTION" : {
+        case "PROMOTION":
             showArticlePromotionForm();
             break;
-        }
-        case "FOOTER" : {
+        case "FOOTER":
             showArticleFooterForm();
             break;
-        }
-        default: {
+        default:
             break;
-        }
     }
-
 }
 
+/**
+ * Hides all article forms.
+ */
 function hideAllArticleForms() {
-    $("#navigation").addClass("d-none");
-    $("#save-promotion-type").addClass("d-none");
-    $("#footer").addClass("d-none");
-    $("#existing-promotions").addClass("d-none");
-    $("#new-product").addClass("d-none");
-    $("#selected-products").addClass("d-none");
+    $("#navigation, #save-promotion-type, #footer, #existing-promotions, #new-product, #selected-products-container").addClass("d-none");
 }
 
+/**
+ * Displays the navigation article form.
+ */
 function showArticleNavigationForm() {
     $("#navigation").removeClass("d-none");
 }
 
-function showArticlePromotionForm() {
-    $("#save-promotion-type").removeClass("d-none");
-    $("#selected-products").removeClass("d-none");
+/**
+ * Displays the promotion article form.
+ */
+async function showArticlePromotionForm() {
+    $("#save-promotion-type, #selected-products-container").removeClass("d-none");
+    try {
+        await handleChangePromotionArticleType($("#save-promotion-article-type").val());
+    } catch (error) {
+        handleError(error);
+    }
 }
 
+/**
+ * Displays the footer article form.
+ */
 function showArticleFooterForm() {
     $("#footer").removeClass("d-none");
 }
 
+/**
+ * Handles the selection of a navigation item.
+ * @param {Event} event - The event object.
+ */
 function handleSelectNavigationItemNumber(event) {
     event.preventDefault();
-    const isDisabled = $(this).attr("disabled");
+    if ($(this).attr("disabled")) return;
 
-    if (isDisabled) return;
+    const currentIndex = this.dataset.index;
+    const selectedOrder = $("#navigation-order").val();
 
-    if (this.dataset.index === $("#navigation-order").val()) {
-        return;
-    }
+    if (currentIndex === selectedOrder) return;
 
-    // consider if current article exist - and already take nav slot
-    if ($("#id").val()) {
-        const selectedOrder = $("#navigation-order").val();
-        if (selectedOrder) {
-            $(`a[data-index="${selectedOrder}"`).removeClass("selected").addClass("fw-lighter").text("empty");
-        }
+    if ($("#id").val() && selectedOrder) {
+        $(`a[data-index="${selectedOrder}"]`).removeClass("selected").addClass("fw-lighter").text("empty");
     } else {
-        // reset all which are not disabled
         $(".selected").addClass("fw-lighter").text("empty");
     }
 
-    $("#navigation-order").val(this.dataset.index);
+    $("#navigation-order").val(currentIndex);
     $(this).removeClass("fw-lighter").addClass("selected").text("Current Article");
 }
 
+/**
+ * Handles the selection of a footer item.
+ * @param {Event} event - The event object.
+ */
 function handleSelectFooterItemNumber(event) {
     event.preventDefault();
-    const isDisabled = $(this).attr("disabled");
+    if ($(this).attr("disabled")) return;
 
-    if (isDisabled) return;
+    const currentItemNumber = this.dataset.itemNumber;
+    const currentSectionNumber = this.dataset.sectionNumber;
+    const selectedOrder = $("#navigation-order").val();
+    const selectedSection = $("#section-order").val();
 
-    if (this.dataset.itemNumber === $("#navigation-order").val() && this.dataset.sectionNumber === $("#section-order")) {
-        return;
-    }
+    if (currentItemNumber === selectedOrder && currentSectionNumber === selectedSection) return;
 
-    // consider if current article exist - and already take nav slot
-    if ($("#id").val()) {
-        const selectedOrder = $("#navigation-order").val();
-        const selectedSection = $("#section-order").val();
-        if (selectedOrder && selectedSection) {
-            $(`a[data-item-number="${selectedOrder}"][data-section-number="${selectedSection}"]`).removeClass("selected").addClass("fw-lighter").text("empty");
-        }
+    if ($("#id").val() && selectedOrder && selectedSection) {
+        $(`a[data-item-number="${selectedOrder}"][data-section-number="${selectedSection}"]`).removeClass("selected").addClass("fw-lighter").text("empty");
     } else {
-        // reset all which are not disabled
         $(".selected").addClass("fw-lighter").text("empty");
     }
 
-    $("#navigation-order").val(this.dataset.itemNumber);
-    $("#section-order").val(this.dataset.sectionNumber);
+    $("#navigation-order").val(currentItemNumber);
+    $("#section-order").val(currentSectionNumber);
     $(this).removeClass("fw-lighter").addClass("selected").text("Current Article");
 }
 
+/**
+ * Handles the change of promotion product type.
+ * @param {string} type - The selected promotion product type.
+ */
 async function handleChangePromotionProductType(type) {
-
-
-    switch (type) {
-        case "BRAND" : {
-            try {
-                const brands = await fetchAllBrands();
-                const brandsContainer = $("#brands");
-                brandsContainer.empty();
-                brands.forEach(brand => {
-                    brandsContainer.append(
-                        `<option value="${brand.id}">${brand.name}</option>`
-                    );
-                })
-
-                await loadProductsForSelectedBrand(brandsContainer.val());
-
-                $("#keyword").addClass("d-none");
-                $("#brands").removeClass("d-none");
-                $("#categories").addClass("d-none");
-            } catch (error) {
-                console.error(error);
-                showErrorModal(error.response);
-            }
-            break;
+    try {
+        switch (type) {
+            case "BRAND":
+                await populateDropdown("#brands", fetchAllBrands);
+                await loadProductsForSelectedBrand($("#brands").val());
+                togglePromotionFilters(["#brands"], ["#keyword", "#categories"]);
+                break;
+            case "CATEGORY":
+                await populateDropdown("#categories", fetchAllCategories);
+                await loadProductsForSelectedCategory($("#categories").val());
+                togglePromotionFilters(["#categories"], ["#keyword", "#brands"]);
+                break;
+            case "KEYWORD":
+                togglePromotionFilters(["#keyword"], ["#brands", "#categories"]);
+                $("#select-products").empty();
+                break;
         }
-        case "CATEGORY" : {
-            try {
-                const categories = await fetchAllCategories();
-
-                const categoriesContainer = $("#categories");
-                categoriesContainer.empty();
-                categories.forEach(category => {
-                    categoriesContainer.append(
-                        `<option value="${category.id}">${category.name}</option>`
-                    );
-                })
-
-                await loadProductsForSelectedCategory(categoriesContainer.val());
-
-                $("#keyword").addClass("d-none");
-                $("#brands").addClass("d-none");
-                $("#categories").removeClass("d-none");
-            } catch (error) {
-                console.error(error);
-                showErrorModal(error.response);
-            }
-            break;
-        }
-        case "KEYWORD" : {
-            $("#keyword").removeClass("d-none");
-            $("#brands").addClass("d-none");
-            $("#categories").addClass("d-none");
-            $("#select-products").empty();
-            break;
-        }
+    } catch (error) {
+        handleError(error);
     }
-
 }
 
+/**
+ * Populates a dropdown element with data from an async function.
+ * @param {string} selector - The dropdown selector.
+ * @param {function} fetchData - The async function to fetch data.
+ */
+async function populateDropdown(selector, fetchData) {
+    try {
+        const container = $(selector);
+        container.empty();
+        const data = await fetchData();
+        data.forEach(item => {
+            container.append(`<option value="${item.id}">${item.name}</option>`);
+        });
+    } catch (error) {
+        handleError(error);
+    }
+}
 
+/**
+ * Toggles the visibility of promotion filters.
+ * @param {Array<string>} showSelectors - Array of selectors to show.
+ * @param {Array<string>} hideSelectors - Array of selectors to hide.
+ */
+function togglePromotionFilters(showSelectors, hideSelectors) {
+    showSelectors.forEach(selector => $(selector).removeClass("d-none"));
+    hideSelectors.forEach(selector => $(selector).addClass("d-none"));
+}
+
+/**
+ * Toggles the visibility of promotion sections based on the selected type.
+ * @param {string} type - The selected promotion article type.
+ */
+function togglePromotionSections(type) {
+    if (type === 'EXISTING') {
+        $("#existing-promotions").removeClass("d-none");
+        $("#new-product").addClass("d-none");
+    } else {
+        $("#existing-promotions").addClass("d-none");
+        $("#new-product").removeClass("d-none");
+    }
+}
+
+/**
+ * Fetches all brands.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of brands.
+ */
 async function fetchAllBrands() {
     return ajaxUtil.get(`${MODULE_URL}brands/fetch-all`);
 }
 
+/**
+ * Fetches all categories.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of categories.
+ */
 async function fetchAllCategories() {
     return ajaxUtil.get(`${MODULE_URL}categories/fetch-all`);
 }
 
+/**
+ * Loads products for the selected brand.
+ * @param {string} brandId - The selected brand ID.
+ */
 async function loadProductsForSelectedBrand(brandId) {
-    const products = await ajaxUtil.get(`${MODULE_URL}products/brand/${brandId}`);
-    const productContainer = $("#select-products");
-    productContainer.empty();
-    products.forEach(product => {
-        productContainer.append(
-            `
-                <option value="${product.id}">${product.name}</option>
-            `
-        );
-    })
-
+    await loadProducts(`${MODULE_URL}products/brand/${brandId}`);
 }
 
+/**
+ * Loads products for the selected category.
+ * @param {string} categoryId - The selected category ID.
+ */
 async function loadProductsForSelectedCategory(categoryId) {
-    const products = await ajaxUtil.get(`${MODULE_URL}products/category/${categoryId}`);
-    const productContainer = $("#select-products");
-    productContainer.empty();
-    products.forEach(product => {
-        productContainer.append(
-            `
-                <option value="${product.id}">${product.name}</option>
-            `
-        );
-    })
+    await loadProducts(`${MODULE_URL}products/category/${categoryId}`);
 }
 
-async function loadProductsForKeyword() {
-    const productContainer = $("#select-products");
-    productContainer.empty();
-
-    if(!this.value) {
-
-        return;
+/**
+ * Loads products based on a URL.
+ * @param {string} url - The URL to fetch products from.
+ */
+async function loadProducts(url) {
+    try {
+        const products = await ajaxUtil.get(url);
+        const productContainer = $("#select-products");
+        productContainer.empty();
+        products.forEach(product => {
+            productContainer.append(`<option value="${product.id}">${product.name}</option>`);
+        });
+    } catch (error) {
+        handleError(error);
     }
-    const products = await ajaxUtil.get(`${MODULE_URL}products/search/${this.value}`);
-
-    products.forEach(product => {
-        productContainer.append(
-            `
-                <option value="${product.id}">${product.name}</option>
-            `
-        );
-    })
 }
 
+/**
+ * Loads products based on a keyword.
+ */
+async function loadProductsForKeyword() {
+    try {
+        const keyword = $("#keyword").val();
+        if (!keyword) return;
+
+        await loadProducts(`${MODULE_URL}products/search/${keyword}`);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+/**
+ * Adds selected products to the selected products list.
+ */
 function loadSelectedProducts() {
     const selectElement = document.getElementById('select-products');
-    const selectedOptions = [];
-    for (let i = 0; i < selectElement.options.length; i++) {
-        if (selectElement.options[i].selected) {
-            selectedOptions.push({
-                value: selectElement.options[i].value,
-                text: selectElement.options[i].text
-            });
-        }
-    }
-
     const selectedProducts = $("#selected-products");
-    selectedOptions.forEach(option => {
-        if (selectedProducts.find(`option[value='${option.value}']`).length === 0) {
-            selectedProducts.append(
-                `<option value="${option.value}" selected>${option.text}</option>`
-            );
+
+    // Clear all existing options in selected-products first (if required)
+
+    // Iterate over the options in select-products and add selected ones to selected-products
+    [...selectElement.options].forEach(option => {
+        if (option.selected && !selectedProducts.find(`option[value='${option.value}']`).length) {
+            // Append the selected option to selected-products only if it doesn't already exist
+            selectedProducts.append(`<option value="${option.value}" selected>${option.text}</option>`);
         }
     });
 }
 
-
+/**
+ * Removes unselected options from the selected products list.
+ */
 function removeUnselectedOptions() {
     const selectElement = document.getElementById('selected-products');
     const selectedProducts = $("#selected-products");
 
-    selectedProducts.find('option').each(function() {
+    selectedProducts.find('option').each(function () {
         const value = $(this).val();
         const isSelectedInSource = [...selectElement.options].some(option => option.value === value && option.selected);
-
         if (!isSelectedInSource) {
             $(this).remove();
         }
     });
 }
 
+/**
+ * Handles the change of promotion article type.
+ * @param {string} type - The selected promotion article type.
+ */
 async function handleChangePromotionArticleType(type) {
     $("#selected-products").empty();
-    if(type === 'EXISTING') {
+    if (type === 'EXISTING') {
+        $("#existing-promotions").removeClass("d-none");
         const name = $("#existing-promotions-input").val();
-        if(!name) return;
+        if (!name) return;
 
         $("#promotionName").val(name);
         await handleChangeOfExistingPromotions(name);
@@ -311,26 +372,43 @@ async function handleChangePromotionArticleType(type) {
     }
 }
 
+/**
+ * Handles the change of existing promotions by loading associated products.
+ * @param {string} name - The selected promotion name.
+ */
 async function handleChangeOfExistingPromotions(name) {
-    try {
-        if(!name) return;
+    if (!name) return;
 
+    try {
         const promotion = await ajaxUtil.get(`${MODULE_URL}promotions/${name}`);
         const products = $("#selected-products");
-
         products.empty();
+
         promotion.products.forEach(product => {
-            products.append(
-                `
-            <option value="${product.id}" selected>${product.name}</option>
-           `
-            )
+            products.append(`<option value="${product.id}" selected>${product.name}</option>`);
         });
 
         $('input[name="promotionName"]').val(name);
         console.log("Promotion name set to:", name);
-    } catch(error) {
-        console.error(error);
-        showErrorModal(error.response);
+    } catch (error) {
+        handleError(error);
     }
+}
+
+/**
+ * Handles errors during initialization.
+ * @param {Error} error - The error object.
+ */
+function handleInitializationError(error) {
+    console.error('Initialization failed:', error);
+    showErrorModal(error.response);
+}
+
+/**
+ * Handles generic errors in async operations.
+ * @param {Error} error - The error object.
+ */
+function handleError(error) {
+    console.error('An error occurred:', error);
+    showErrorModal(error.response);
 }
