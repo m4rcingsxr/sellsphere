@@ -25,45 +25,54 @@ public class ArticleService {
     private final FooterSectionService footerSectionService;
     private final PromotionService promotionService;
     private final ProductRepository productRepository;
-    private final PromotionRepository promotionRepository;
+    private final FooterItemRepository footerItemRepository;
 
     public void listPage(PagingAndSortingHelper helper, Integer pageNum) {
         helper.listEntities(pageNum, ARTICLE_PER_PAGE, articleRepository);
     }
 
     @Transactional
-    public Article save(Article article,
-                        MultipartFile newImage,
-                        User user,
-                        Integer itemNumber,
-                        Integer sectionNumber
-    ) throws IOException {
+    public Article saveArticle(Article article,
+                               MultipartFile newImage,
+                               User user,
+                               Integer itemNumber,
+                               Integer sectionNumber,
+                               String promotionName,
+                               List<Integer> promotionProducts) throws IOException {
 
-        article.setUpdatedTime(LocalDate.now());
-
-        if(article.getCreatedBy() == null) {
-            article.setCreatedBy(user);
+        Article savedArticle;
+        if (article.getArticleType() == ArticleType.PROMOTION) {
+            savedArticle = savePromotionArticle(article, newImage, user, promotionName, promotionProducts);
+        } else {
+            savedArticle = save(article, newImage, user);
         }
 
-        if(article.getAlias() == null) {
-            article.setAlias(article.getTitle().toLowerCase());
-        }
-
-        Article savedArticle = save(article, newImage, user);
-
-        switch (savedArticle.getArticleType()) {
-            case NAVIGATION -> navigationItemService.save(savedArticle, itemNumber);
-            case FOOTER -> footerSectionService.save(savedArticle, itemNumber, sectionNumber);
-            case FREE -> {
-                navigationItemService.deleteByArticle(savedArticle);
-            }
-        }
-
+        handleArticleTypeSpecifics(savedArticle, itemNumber, sectionNumber);
         return savedArticle;
     }
 
-    public Article get(Integer id) throws ArticleNotFoundException {
-        return articleRepository.findById(id).orElseThrow(ArticleNotFoundException::new);
+    private void handleArticleTypeSpecifics(Article article, Integer itemNumber, Integer sectionNumber) {
+        switch (article.getArticleType()) {
+            case NAVIGATION -> {
+                promotionService.delete(article);
+                footerItemRepository.deleteByArticle(article);
+                navigationItemService.save(article, itemNumber);
+            }
+            case FOOTER -> {
+                promotionService.delete(article);
+                footerSectionService.save(article, itemNumber, sectionNumber);
+                navigationItemService.deleteByArticle(article);
+            }
+            case PROMOTION -> {
+                footerItemRepository.deleteByArticle(article);
+                navigationItemService.deleteByArticle(article);
+            }
+            case FREE -> {
+                promotionService.delete(article);
+                footerItemRepository.deleteByArticle(article);
+                navigationItemService.deleteByArticle(article);
+            }
+        }
     }
 
     @Transactional
@@ -71,65 +80,49 @@ public class ArticleService {
                                         MultipartFile newImage,
                                         User user,
                                         String promotionName,
-                                        List<Integer> promotionProducts)
-            throws IOException {
+                                        List<Integer> promotionProducts) throws IOException {
+
         Article savedArticle = save(article, newImage, user);
+        Promotion promotion;
+
+        unlinkExistingPromotion(article);
 
         try {
-            Promotion promotion = promotionService.get(promotionName);
+            promotion = promotionService.get(promotionName);
 
-            if(!promotion.getArticle().getId().equals(article.getId())) {
-                promotion.getArticle().setArticleType(ArticleType.FREE);
-                articleRepository.saveAndFlush(article);
+            if (!promotion.getArticle().getId().equals(article.getId())) {
+                unlinkExistingPromotion(article);
             }
-
-            // check if saved article currently is not assigned to promotion
-
-            try {
-                Promotion existingPromotion = promotionService.getByArticle(savedArticle);
-                if(existingPromotion.getArticle().getId().equals(article.getId())) {
-                    // current article is assigned to the new promotion from previous promotion - delete promotion
-                    promotionService.delete(existingPromotion);
-                    promotionRepository.flush();
-                }
-            } catch(PromotionNotFoundException ex) {
-                // ignore
-            }
-
-
-            promotion.setArticle(savedArticle);
-            promotion.setProducts(productRepository.findAllById(promotionProducts));
-            promotion.setName(promotionName);
-            promotionService.save(promotion);
         } catch (PromotionNotFoundException e) {
-            Promotion promotion = new Promotion();
-            promotion.setArticle(savedArticle);
-            promotion.setName(promotionName);
-            promotion.setProducts(productRepository.findAllById(promotionProducts));
-            promotionService.save(promotion);
+            promotion = new Promotion();
         }
+
+        promotion.setArticle(savedArticle);
+        promotion.setName(promotionName);
+        promotion.setProducts(productRepository.findAllById(promotionProducts));
+        promotionService.save(promotion);
 
         return savedArticle;
     }
 
-    private Article save(Article article, MultipartFile newImage, User user) throws IOException {
-        article.setUpdatedTime(LocalDate.now());
-
-        if(article.getCreatedBy() == null) {
-            article.setCreatedBy(user);
+    private void unlinkExistingPromotion(Article article) {
+        try {
+            Promotion existingPromotion = promotionService.getByArticle(article);
+            promotionService.delete(existingPromotion);
+        } catch (PromotionNotFoundException ex) {
+            // no need for unlink, promo does not exist.
         }
+    }
 
-        if(article.getAlias() == null) {
-            article.setAlias(article.getTitle().toLowerCase());
-        }
+    @Transactional
+    public Article save(Article article, MultipartFile newImage, User user) throws IOException {
+        setCommonArticleProperties(article, user);
 
-        Article savedArticle;
-        if(newImage != null && !newImage.isEmpty()) {
+        if (newImage != null && !newImage.isEmpty()) {
             article.setArticleImage(newImage.getOriginalFilename());
-            savedArticle = articleRepository.save(article);
+            Article savedArticle = articleRepository.save(article);
 
             String fileName = newImage.getOriginalFilename();
-
             String folderName = S3_FOLDER_NAME + savedArticle.getId();
 
             FileService.saveSingleFile(newImage, folderName, fileName);
@@ -139,4 +132,17 @@ public class ArticleService {
         }
     }
 
+    private void setCommonArticleProperties(Article article, User user) {
+        article.setUpdatedTime(LocalDate.now());
+        if (article.getCreatedBy() == null) {
+            article.setCreatedBy(user);
+        }
+        if (article.getAlias() == null) {
+            article.setAlias(article.getTitle().toLowerCase().replaceAll("\\s+", "-"));
+        }
+    }
+
+    public Article get(Integer id) throws ArticleNotFoundException {
+        return articleRepository.findById(id).orElseThrow(ArticleNotFoundException::new);
+    }
 }

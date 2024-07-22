@@ -34,4 +34,8 @@ public class PromotionService {
     public void delete(Promotion existingPromotion) {
         promotionRepository.delete(existingPromotion);
     }
+
+    public void delete(Article article) {
+        promotionRepository.deleteByArticle(article);
+    }
 }

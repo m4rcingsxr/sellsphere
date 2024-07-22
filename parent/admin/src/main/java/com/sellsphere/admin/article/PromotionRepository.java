@@ -13,4 +13,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
     Optional<Promotion> findByName(String name);
 
     Optional<Promotion> findByArticle(Article article);
+
+    void deleteByArticle(Article article);
 }

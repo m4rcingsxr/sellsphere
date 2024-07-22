@@ -10,4 +10,6 @@ public interface FooterItemRepository extends JpaRepository<FooterItem, Integer>
     Optional<FooterItem> findByArticle(Article article);
 
     Optional<FooterItem> findByItemNumber(Integer itemNumber);
+
+    void deleteByArticle(Article savedArticle);
 }
