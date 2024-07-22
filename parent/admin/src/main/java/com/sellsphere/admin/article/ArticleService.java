@@ -1,7 +1,9 @@
 package com.sellsphere.admin.article;
 
 import com.sellsphere.admin.FileService;
+import com.sellsphere.admin.S3Utility;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
+import com.sellsphere.admin.product.ProductDetailRepository;
 import com.sellsphere.admin.product.ProductRepository;
 import com.sellsphere.common.entity.*;
 import jakarta.transaction.Transactional;
@@ -11,7 +13,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,8 +60,8 @@ public class ArticleService {
         switch (article.getArticleType()) {
             case NAVIGATION -> {
                 promotionService.delete(article);
-                footerItemRepository.deleteByArticle(article);
                 navigationItemService.save(article, itemNumber);
+                removeFooterItemByArticle(article, sectionNumber);
             }
             case FOOTER -> {
                 promotionService.delete(article);
@@ -66,12 +71,27 @@ public class ArticleService {
             case PROMOTION -> {
                 footerItemRepository.deleteByArticle(article);
                 navigationItemService.deleteByArticle(article);
+                removeFooterItemByArticle(article, sectionNumber);
+
             }
             case FREE -> {
                 promotionService.delete(article);
-                footerItemRepository.deleteByArticle(article);
                 navigationItemService.deleteByArticle(article);
+                removeFooterItemByArticle(article, sectionNumber);
             }
+        }
+    }
+
+    void removeFooterItemByArticle(Article article, Integer sectionNumber) {
+        if(sectionNumber == null) return;
+        Optional<FooterSection> footerSection = footerSectionService.get(sectionNumber);
+        if(footerSection.isPresent()) {
+            List<FooterItem> footerItems = footerSection.get().getFooterItems();
+            Optional<FooterItem> footerItem = footerItems.stream().filter(
+                    item -> item.getArticle().getId().equals(article.getId())).findAny();
+            footerItem.ifPresent(footerItems::remove);
+            footerSection.get().setFooterItems(footerItems);
+            footerSectionService.save(footerSection.get());
         }
     }
 
@@ -81,17 +101,16 @@ public class ArticleService {
                                         User user,
                                         String promotionName,
                                         List<Integer> promotionProducts) throws IOException {
-
         Article savedArticle = save(article, newImage, user);
         Promotion promotion;
 
-        unlinkExistingPromotion(article);
 
         try {
             promotion = promotionService.get(promotionName);
 
             if (!promotion.getArticle().getId().equals(article.getId())) {
                 unlinkExistingPromotion(article);
+                unlinkExistingPromotionDetails(promotion);
             }
         } catch (PromotionNotFoundException e) {
             promotion = new Promotion();
@@ -100,9 +119,32 @@ public class ArticleService {
         promotion.setArticle(savedArticle);
         promotion.setName(promotionName);
         promotion.setProducts(productRepository.findAllById(promotionProducts));
-        promotionService.save(promotion);
+        Promotion savedPromotion = promotionService.save(promotion);
+
+        linkPromotionToProductDetails(savedPromotion);
 
         return savedArticle;
+    }
+
+    private void unlinkExistingPromotionDetails(Promotion promotion) {
+        List<Product> products = promotion.getProducts();
+        products.forEach(product -> {
+            Optional<ProductDetail> detailOpt = product.getDetails().stream().filter(detail -> detail.getValue().equals(promotion.getName())).findAny();
+            detailOpt.ifPresent(productDetail -> product.getDetails().remove(productDetail));
+        });
+        productRepository.saveAll(products);
+    }
+
+    private void linkPromotionToProductDetails(Promotion promotion) {
+        promotion.getProducts().forEach(
+                product -> {
+                    ProductDetail productDetail = new ProductDetail();
+                    productDetail.setName("Promotion");
+                    productDetail.setValue(promotion.getName());
+                    product.addProductDetail(productDetail);
+                    productRepository.save(product);
+                }
+        );
     }
 
     private void unlinkExistingPromotion(Article article) {
@@ -117,6 +159,13 @@ public class ArticleService {
     @Transactional
     public Article save(Article article, MultipartFile newImage, User user) throws IOException {
         setCommonArticleProperties(article, user);
+        if(article.getId() != null) {
+            Optional<Article> articleOpt = articleRepository.findById(article.getId());
+            if(articleOpt.isPresent() && articleOpt.get().getArticleType().equals(ArticleType.PROMOTION)) {
+                unlinkExistingPromotion(article);
+                unlinkExistingPromotionDetails(articleOpt.get().getPromotion());
+            }
+        }
 
         if (newImage != null && !newImage.isEmpty()) {
             article.setArticleImage(newImage.getOriginalFilename());
@@ -144,5 +193,17 @@ public class ArticleService {
 
     public Article get(Integer id) throws ArticleNotFoundException {
         return articleRepository.findById(id).orElseThrow(ArticleNotFoundException::new);
+    }
+
+    @Transactional
+    public void deleteArticle(Integer articleId) throws ArticleNotFoundException {
+        Article article = get(articleId);
+        if (article.getArticleType().equals(ArticleType.PROMOTION)) {
+            unlinkExistingPromotion(article);
+            unlinkExistingPromotionDetails(article.getPromotion());
+        }
+
+        S3Utility.removeFolder("article-photos/" + article.getId());
+        articleRepository.delete(article);
     }
 }

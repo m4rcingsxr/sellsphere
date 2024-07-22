@@ -93,5 +93,11 @@ public class FooterSectionService {
         }
     }
 
+    public Optional<FooterSection> get(Integer sectionNumber) {
+        return footerSectionRepository.findBySectionNumber(sectionNumber);
+    }
 
+    public FooterSection save(FooterSection footerSection) {
+        return footerSectionRepository.save(footerSection);
+    }
 }

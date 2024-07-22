@@ -2,6 +2,7 @@ package com.sellsphere.admin.article;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
+import com.sellsphere.admin.product.ProductService;
 import com.sellsphere.admin.user.UserService;
 import com.sellsphere.common.entity.*;
 import jakarta.transaction.Transactional;
@@ -30,6 +31,7 @@ public class ArticleController {
     private final FooterSectionService footerSectionService;
     private final FooterItemRepository footerItemRepository;
     private final PromotionService promotionService;
+    private final ProductService productService;
 
     @GetMapping("/articles")
     public String listFirstPage() {
@@ -118,14 +120,13 @@ public class ArticleController {
         return preparedFooterSectionList;
     }
 
-    @Transactional
     @PostMapping("/articles/save")
     public String saveArticle(@ModelAttribute("article") Article article,
                               @RequestParam(value = "newImage", required = false) MultipartFile newImage,
                               @RequestParam(value = "itemNumber", required = false) Integer itemNumber,
                               @RequestParam(value = "sectionNumber", required = false) Integer sectionNumber,
-                              @RequestParam(value = "selectedProducts") List<Integer> promotionProducts,
-                              @RequestParam(value = "promotionName") String promotionName,
+                              @RequestParam(value = "selectedProducts", required = false) List<Integer> promotionProducts,
+                              @RequestParam(value = "promotionName", required = false) String promotionName,
                               Principal principal,
                               RedirectAttributes redirectAttributes)
             throws UserNotFoundException, IOException {
@@ -151,6 +152,15 @@ public class ArticleController {
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
 
         return DEFAULT_REDIRECT_URL + "&keyword=" + savedArticle.getId();
+    }
+
+    @GetMapping("/articles/delete/{id}")
+    public String deleteArticle(@PathVariable("id") Integer articleId, RedirectAttributes redirectAttributes)
+            throws ArticleNotFoundException {
+        articleService.deleteArticle(articleId);
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Successfully removed article");
+
+        return DEFAULT_REDIRECT_URL;
     }
 
     private void validateArticle(Article article, Integer itemNumber, Integer sectionNumber, List<Integer> promotionProducts, String promotionName) {

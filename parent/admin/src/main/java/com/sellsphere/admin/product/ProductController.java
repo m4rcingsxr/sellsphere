@@ -167,7 +167,7 @@ public class ProductController {
     @GetMapping("/products/delete/{id}")
     public String deleteProduct(@PathVariable("id") Integer id,
                                 RedirectAttributes redirectAttributes)
-            throws ProductNotFoundException, StripeException {
+            throws ProductNotFoundException {
         productService.deleteProduct(id);
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
                                              "The product has been deleted successfully."
