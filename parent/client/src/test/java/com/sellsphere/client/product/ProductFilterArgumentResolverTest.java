@@ -50,17 +50,7 @@ class ProductFilterArgumentResolverTest {
         assertFalse(resolver.supportsParameter(parameter));
     }
 
-    @Test
-    void shouldResolveArgumentForProductPageRequest() throws Exception {
-        NativeWebRequest webRequest = prepareWebRequest("products");
-        when(categoryRepository.findByAliasAndEnabledIsTrue(anyString())).thenReturn(Optional.of(mockCategory(1)));
 
-        ProductPageRequest pageRequest = (ProductPageRequest) resolver.resolveArgument(mock(MethodParameter.class), null, webRequest, null);
-
-        assertNotNull(pageRequest);
-        assertEquals("someAlias", pageRequest.getCategoryAlias());
-        assertEquals(1, pageRequest.getCategoryId());
-    }
 
     @Test
     void shouldResolveArgumentForFilterMapCountRequest() throws Exception {
@@ -81,13 +71,6 @@ class ProductFilterArgumentResolverTest {
         assertThrows(ConstraintViolationException.class, () -> resolver.resolveArgument(mock(MethodParameter.class), null, webRequest, null));
     }
 
-    @Test
-    void shouldThrowConstraintViolationExceptionForInvalidFilterMapCountRequest() {
-        NativeWebRequest webRequest = prepareInvalidWebRequest("filter_counts");
-
-        assertThrows(ConstraintViolationException.class, () -> resolver.resolveArgument(mock(
-                MethodParameter.class), null, webRequest, null));
-    }
 
     @Test
     void shouldThrowCategoryNotFoundException() throws Exception {

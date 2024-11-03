@@ -13,11 +13,9 @@ import java.util.Optional;
 @Repository
 public interface BrandRepository extends SearchRepository<Brand, Integer> {
 
-    String SEARCH_QUERY = "SELECT b FROM Brand b WHERE LOWER(CONCAT(b.id, ' ', b.name, ' ', b" +
-            ".logo)) LIKE LOWER(CONCAT('%', :keyword, '%'))";
-
     @Override
-    @Query(SEARCH_QUERY)
+    @Query("SELECT b FROM Brand b WHERE LOWER(CONCAT(b.id, ' ', b.name, ' ', b" +
+            ".logo)) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Brand> findAll(@Param("keyword") String keyword, Pageable pageable);
 
     Optional<Brand> findByName(String name);

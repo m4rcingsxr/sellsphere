@@ -43,9 +43,11 @@ class ProductFilterRestControllerTest {
 
         BasicProductDTO product1 = new BasicProductDTO();
         product1.setId(1);
+        product1.setPrice(BigDecimal.TEN);
         product1.setName("Product1");
         BasicProductDTO product2 = new BasicProductDTO();
         product2.setId(2);
+        product2.setPrice(BigDecimal.TEN);
         product2.setName("Product2");
 
         ProductPageResponse pageResponse = ProductPageResponse.builder()

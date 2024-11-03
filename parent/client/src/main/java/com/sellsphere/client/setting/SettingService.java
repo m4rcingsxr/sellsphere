@@ -83,4 +83,8 @@ public class SettingService {
     public Setting getTaxBehavior() throws SettingNotFoundException {
         return repository.findById("TAX").orElseThrow(SettingNotFoundException::new);
     }
+
+    public String getByKey(String key) {
+        return repository.findByKey(key).getValue();
+    }
 }

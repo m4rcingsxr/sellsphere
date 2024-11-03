@@ -44,27 +44,40 @@
             <div class="card">
                 <h5 class="card-header">Write new review</h5>
                 <div class="card-body">
-                    <form th:action="@{/reviews/create}" method="POST" th:object="${review}">
+                    <form id="reviewForm" th:action="@{/reviews/create}" method="POST" th:object="${review}">
                         <div>
                             <input type="hidden" name="product" th:value="${product.id}"/>
                             <input type="hidden" name="customer" th:value="${customer.id}"/>
-                            <input type="hidden" name="rate" id="rate"/>
 
                             <div class="d-flex justify-content-between pe-4">
                                 <div class="form-floating w-75">
                                     <input type="text" class="form-control" placeholder="Headline"
                                            th:field="*{headline}"/>
+                                    <span class="invalid-feedback"></span>
                                     <label>Headline</label>
                                 </div>
-                                <div id="rateYo3" class="mt-2 col-sm-4"></div>
+
+                                <div>
+                                    <div id="rateYo3" class="mt-2 col-sm-4"></div>
+                                    <input type="hidden" name="rate" id="rate"/>
+                                    <span class="invalid-feedback"></span>
+                                </div>
                             </div>
 
 
                             <label class="form-label mt-2">Comment</label>
                             <textarea class="form-control" th:field="*{comment}"></textarea>
+                            <span class="invalid-feedback"></span>
+
+                            <div class="g-recaptcha mt-3"
+                                 data-sitekey="6LdxhXEqAAAAAEHwZGkaURuibbEy6qFTNkhCNv9C"
+                                 data-callback="onRecaptchaSuccess"></div>
+                            <div id="recaptcha-error" class="invalid-feedback">
+                                Please verify
+                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary mt-3">Post review</button>
+                        <button id="submit-button" type="submit" class="btn btn-primary mt-3">Post review</button>
                     </form>
                 </div>
             </div>

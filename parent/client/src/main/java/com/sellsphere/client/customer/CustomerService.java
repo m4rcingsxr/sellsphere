@@ -3,6 +3,7 @@ package com.sellsphere.client.customer;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Retrieve a customer entity by its email.
@@ -35,9 +37,15 @@ public class CustomerService {
             throws CustomerNotFoundException {
 
         Customer existingCustomer = getByEmail(newCustomer.getEmail());
-        newCustomer.setPassword(existingCustomer.getPassword());
+        existingCustomer.setFirstName(newCustomer.getFirstName());
+        existingCustomer.setLastName(newCustomer.getLastName());
+        existingCustomer.setEmail(newCustomer.getEmail());
 
-        return customerRepository.save(newCustomer);
+        if(newCustomer.getPassword() != null) {
+            existingCustomer.setPassword(passwordEncoder.encode(newCustomer.getPassword()));
+        }
+
+        return customerRepository.save(existingCustomer);
     }
 
     public Customer getById(Integer id) throws CustomerNotFoundException {

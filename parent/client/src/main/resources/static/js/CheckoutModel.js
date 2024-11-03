@@ -2,7 +2,6 @@ class CheckoutModel {
 
     customerAddresses = null;
 
-    exchangeRateResponse = null;
     targetCurrency = null;
     baseCurrency = null;
     selectedCurrency = null;
@@ -13,7 +12,6 @@ class CheckoutModel {
     }
 
     clearSummaryData() {
-        this.exchangeRateResponse = null;
         this.targetCurrency = null;
         this.baseCurrency = null;
         this.selectedCurrency = null;
@@ -72,32 +70,6 @@ class CheckoutModel {
         return await ajaxUtil.post(`${MODULE_URL}checkout/calculate`, request);
     }
 
-    async getExchangeRateWithPrice(amount, baseCode, targetCode) {
-        return await ajaxUtil.post(`${MODULE_URL}exchange-rates/amount/${amount}/currency/${baseCode}/${targetCode}`);
-    }
-
-    /**
-     * Fetches the country information based on the client's IP address.
-     * @returns {Promise<Object>} - A promise that resolves to the country information object.
-     */
-    async getCountryForClientIp() {
-        const clientIpJson = await this.getClientIp();
-        const response = await clientIpJson.json();
-        return await ajaxUtil.post(`${MODULE_URL}countries/country-ip`, {ip: response.ip});
-    }
-
-    /**
-     * Fetches the client's IP address.
-     * @returns {Promise<Response>} - A promise that resolves to the client's IP address.
-     */
-    async getClientIp() {
-        return await fetch('https://api.ipify.org?format=json');
-    }
-
-    async getCountryDetails(countryCode) {
-        return await ajaxUtil.get(`https://restcountries.com/v3.1/alpha/${countryCode}`);
-    }
-
     // on persist - update final collected payment intent data
     async savePaymentIntent() {
 
@@ -125,12 +97,6 @@ class CheckoutModel {
 
         const selectedRate = this.rateResponse.rates[this.selectedRateIndex];
 
-        if (!this?.exchangeRateResponse) {
-            throw new Error("Illegal state. Exchange rates should be presented.")
-        }
-
-        const exchangeRate = this.exchangeRateResponse.result["rate"];
-
         return await ajaxUtil.post(`${MODULE_URL}checkout/save-payment-intent`, {
             address,
             currencyCode: appliedCalculation.currencyCode,
@@ -142,7 +108,6 @@ class CheckoutModel {
             courierLogoUrl: selectedRate.courierLogoUrl,
             maxDeliveryTime: selectedRate.maxDeliveryTime,
             minDeliveryTime: selectedRate.minDeliveryTime,
-            exchangeRate
         });
     }
 

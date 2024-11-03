@@ -2,6 +2,7 @@ package com.sellsphere.client.order;
 
 import com.sellsphere.client.shoppingcart.CartItemRepository;
 import com.sellsphere.common.entity.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class OrderService {
 
@@ -49,6 +51,8 @@ public class OrderService {
                         .notes(OrderStatus.NEW.getNote())
                         .build()
         );
+
+        transaction.setOrder(order);
 
         return orderRepository.save(order);
     }

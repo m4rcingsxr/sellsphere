@@ -1,9 +1,9 @@
 /**
- * Formats bytes into a human-readable string.
+ * Formats bytes into a human-readable string with optional decimal precision.
  *
- * @param {number} bytes - The number of bytes.
- * @param {number} [decimals=2] - The number of decimals to include in the formatted string.
- * @returns {string} The formatted byte size string.
+ * @param {number} bytes - The number of bytes to format.
+ * @param {number} [decimals=2] - The number of decimals for formatting.
+ * @returns {string} The formatted string.
  */
 const formatBytes = (bytes, decimals = 2) => {
     if (bytes === 0) return '0 Bytes';
@@ -11,7 +11,7 @@ const formatBytes = (bytes, decimals = 2) => {
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    return `${(bytes / Math.pow(k, i)).toFixed(dm)} ${sizes[i]}`;
 };
 
 /**
@@ -19,32 +19,22 @@ const formatBytes = (bytes, decimals = 2) => {
  */
 const goToListPage = () => {
     const currentURL = window.location.href;
-    const lastIndex = currentURL.indexOf("/edit");
-    window.location.href = currentURL.substring(0, lastIndex);
+    window.location.href = currentURL.split("/edit")[0];
 };
 
 /**
- * Displays a modal dialog with the specified content.
+ * Displays a modal dialog with specified content and optional primary button URL.
  *
- * @param {string} modalId - The ID of the modal element.
- * @param {string} title - The title of the modal.
- * @param {string} content - The content to display in the modal.
- * @param {string} [contentType='text'] - The type of content ('text' or 'html').
- * @param {string} [btnURL] - The URL for the modal's primary button (optional).
+ * @param {string} modalId - The modal element's ID.
+ * @param {string} title - The modal's title.
+ * @param {string} content - The content to display.
+ * @param {string} [contentType='text'] - Type of content, either 'text' or 'html'.
+ * @param {string} [btnURL] - Optional URL for the primary button.
  */
 const showModalDialog = (modalId, title, content, contentType = 'text', btnURL) => {
     const $modal = $(`#${modalId}`);
-    const $modalTitle = $modal.find('.modal-title');
-    const $modalBody = $modal.find('.modal-body');
-
-    $modalTitle.text(title);
-    $modalBody.empty();
-
-    if (contentType === 'html') {
-        $modalBody.html(content);
-    } else {
-        $modalBody.text(content);
-    }
+    $modal.find('.modal-title').text(title);
+    $modal.find('.modal-body')[contentType](content);  // Directly use .html() or .text() based on contentType
 
     if (btnURL) {
         $modal.find('.btn-primary').attr('href', btnURL);
@@ -54,7 +44,7 @@ const showModalDialog = (modalId, title, content, contentType = 'text', btnURL) 
 };
 
 /**
- * Shows an error modal with the provided error response.
+ * Displays an error modal with the provided error response.
  *
  * @param {Object} errorResponse - The error response object.
  */
@@ -63,90 +53,69 @@ const showErrorModal = (errorResponse) => {
     $("#errorModal .modal-footer").text(date);
 
     const userFriendlyMessage = handleErrorResponse(errorResponse.status, errorResponse.message);
-    showModalDialog('errorModal', '⚠ Error occurred', userFriendlyMessage, 'text');
+    showModalDialog('errorModal', '⚠ Error occurred', userFriendlyMessage);
 };
 
-
 /**
- * Returns a user-friendly error message based on the status code.
+ * Generates a user-friendly message based on the HTTP status code.
  *
- * @param {number} status - The HTTP status code.
- * @returns {string} The user-friendly error message.
+ * @param {number} status - HTTP status code.
+ * @param {string} [message] - Optional server-provided message.
+ * @returns {string} A user-friendly error message.
  */
 const handleErrorResponse = (status, message) => {
-    let userFriendlyMessage;
+    const errorMessages = {
+        400: `Bad Request: ${message || 'The server could not understand the request.'}`,
+        401: "Unauthorized: You are not authorized to access this resource.",
+        403: "Forbidden: Access to this resource is forbidden.",
+        404: "Not Found: The requested resource could not be found.",
+        500: "Internal Server Error: An error occurred on the server.",
+        502: "Bad Gateway: The server received an invalid response from the upstream server.",
+        503: "Service Unavailable: The server is currently unable to handle the request."
+    };
 
-    switch (Number(status)) {
-        case 400:
-            userFriendlyMessage = `Bad Request: ${message || 'The server could not understand the request.'}`;
-            return userFriendlyMessage;
-        case 401:
-            userFriendlyMessage = "Unauthorized: You are not authorized to access this resource.";
-            break;
-        case 403:
-            userFriendlyMessage = "Forbidden: Access to this resource is forbidden.";
-            break;
-        case 404:
-            userFriendlyMessage = "Not Found: The requested resource could not be found.";
-            break;
-        case 500:
-            userFriendlyMessage = "Internal Server Error: An error occurred on the server.";
-            break;
-        case 502:
-            userFriendlyMessage = "Bad Gateway: The server received an invalid response from the upstream server.";
-            break;
-        case 503:
-            userFriendlyMessage = "Service Unavailable: The server is currently unable to handle the request.";
-            break;
-        default:
-            userFriendlyMessage = "An unexpected error occurred: Please try again later.";
-            break;
-    }
-
-    return `${userFriendlyMessage} Please contact administration or try again later.`;
+    return errorMessages[status] || "An unexpected error occurred. Please try again later.";
 };
 
 /**
- * Parses a timestamp into a formatted date string.
+ * Parses a timestamp into a formatted date string (YYYY-MM-DD HH:MM:SS).
  *
  * @param {number} timestamp - The timestamp to parse.
- * @returns {string} The formatted date string in 'YYYY-MM-DD HH:MM:SS' format.
+ * @returns {string} Formatted date string.
  */
 const parseTimestampToDate = (timestamp) => {
     const date = new Date(timestamp);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const format = (num) => String(num).padStart(2, '0');
+    return `${date.getFullYear()}-${format(date.getMonth() + 1)}-${format(date.getDate())} ${format(date.getHours())}:${format(date.getMinutes())}:${format(date.getSeconds())}`;
+};
 
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+/**
+ * Shows a full-screen spinner overlay while processing.
+ */
+const showFullScreenSpinner = () => {
+    const spinnerOverlay = `
+        <div id="spinner-overlay">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+            </div>
+        </div>`;
+    $('body').append(spinnerOverlay);
+};
+
+/**
+ * Hides the full-screen spinner overlay.
+ */
+const hideFullScreenSpinner = () => {
+    $('#spinner-overlay').remove();
+};
+
+/**
+ * Outputs a debug message to the console.
+ *
+ * @param {string} message - The message to debug.
+ */
+const debug = (message) => {
+    console.debug(message);
 };
 
 
-const showFullScreenSpinner = () => {
-    const spinnerOverlay = document.createElement('div');
-    spinnerOverlay.id = 'spinner-overlay';
-    spinnerOverlay.innerHTML = `
-        <div class="spinner-container">
-            <div class="spinner"></div>
-        </div>
-    `;
-    document.body.appendChild(spinnerOverlay);
-}
-
-const hideFullScreenSpinner = () => {
-    const spinnerOverlay = document.getElementById('spinner-overlay');
-    if (spinnerOverlay) {
-        document.body.removeChild(spinnerOverlay);
-    }
-}
-
-/**
- * Logs debugging messages to the console.
- * @param {string} message - The message to log.
- */
-function debug(message) {
-    console.debug(message);
-}

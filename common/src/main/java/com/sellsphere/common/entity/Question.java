@@ -51,6 +51,13 @@ public class Question extends IdentifiedEntity {
     @Transient
     private boolean downVotedByCurrentCustomer;
 
+    public Integer getVotes() {
+        if(votes == null) {
+            return 0;
+        }
+        return votes;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{common :: common_head('Customer Questions')}"></th:block>
+</head>
+<body>
+<nav th:replace="~{navigations :: header()}"></nav>
+
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
+        </div>
+    </div>
+</div>
+<div class="container  mt-2">
+
+    <div th:replace="~{common :: alerts()}"></div>
+
+    <div class="row m-0 p-0">
+        <div class="col-lg-3 col-3 d-none d-lg-block">
+            <div th:replace="~{customer/customer_navigation :: nav()}"></div>
+        </div>
+
+        <div class="col-lg-9 col-12 p-3">
+
+            <div th:if="${questionList.isEmpty()}" class="d-flex justify-content-center">
+                <div class="d-flex flex-column gap-3 align-items-center">
+                    <h2>You do not ask any questions yet!</h2>
+                    <a class="btn btn-outline-primary" th:href="@{/}">Check our offer and ask questions!</a>
+                </div>
+            </div>
+
+            <div th:if="${!questionList.isEmpty()}">
+                <h2>Asked Questions</h2>
+
+                <ul class="list-group list-group-flush my-4" id="reviews">
+                    <li th:each="question : ${questionList}" class="list-group-item w-100">
+                        <div class="row gap-4">
+                            <div style="height: 75px; width: 90px;" class="p-1 col-6 col-sm-2">
+                                <img th:src="${question.product.mainImagePath}"
+                                     style="width: 100%; height: 100%; object-fit: contain;"/>
+                            </div>
+                            <div class="col-5 col-sm-6 d-flex align-items-center overflow-hidden">
+                                <a th:href="@{'/p/' + ${question.product.alias}}"
+                                   class="d-block link-dark link-underline link-underline-opacity-50-hover link-underline-opacity-0 fs-7 product-title">
+                                    <span th:text="${question.product.name}"></span>
+                                </a>
+                            </div>
+
+                            <div class="col-1 col-sm-4 d-flex align-items-center justify-content-end">
+                                <div class="d-flex justify-content-end gap-4 align-items-center">
+
+                                    <a th:replace="~{common :: chevron_right(${question.id})}"></a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="d-lg-none sticky-bottom bg-dark py-2">
+    <div class="container text-center">
+        <button id="toggleSidebar" class="btn btn-dark w-100"><i class="bi bi-layout-sidebar-inset"
+                                                                 style="font-size: 1.5rem;"></i>
+        </button>
+    </div>
+</div>
+
+<div class="sidebar-nav" id="sidebarNav">
+    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
+</div>
+<div id="overlay" class="overlay"></div>
+<div id="sidebar" class="sidebar"></div>
+
+<nav th:replace="~{navigations :: footer()}"></nav>
+
+<script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
+<script type="text/javascript" th:src="@{/js/questions.js}"></script>
+<script type="text/javascript" th:src="@{/js/votes.js}"></script>
+<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
+</body>
+</html>

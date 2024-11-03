@@ -1,71 +1,83 @@
 package com.sellsphere.admin.category;
 
-import com.sellsphere.admin.brand.CategoryDTO;
 import com.sellsphere.common.entity.Category;
-import com.sellsphere.common.entity.Constants;
+import com.sellsphere.common.entity.payload.CategoryDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
- * REST controller for managing Category-related operations.
+ * REST controller responsible for category management operations,
+ * including checking uniqueness and listing categories in a hierarchical structure.
  */
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/categories")
 public class CategoryRestController {
 
-    private final CategoryService service;
+    private final CategoryService categoryService;
 
     /**
-     * Checks the uniqueness of a category alias.
+     * Checks if the alias of a category is unique, with an optional category ID for updating scenarios.
      *
-     * @param categoryId the category ID (optional)
-     * @param alias the category alias
-     * @return ResponseEntity with a Boolean indicating uniqueness
+     * @param categoryId the category ID (optional, used for update scenarios)
+     * @param alias      the alias of the category to check for uniqueness
+     * @return ResponseEntity containing a Boolean indicating whether the alias is unique
      */
-    @PostMapping("/categories/check_alias_uniqueness")
-    public ResponseEntity<Boolean> isAliasUnique(@RequestParam(value = "id", required = false) Integer categoryId,
-                                                 @RequestParam(value = "alias") String alias) {
-        if(alias.length() > 64) {
-            throw new IllegalArgumentException("Alias length should not exceed 64 characters");
+    @PostMapping("/check-alias-uniqueness")
+    public ResponseEntity<Boolean> checkAliasUniqueness(
+            @RequestParam(value = "id", required = false) Integer categoryId,
+            @RequestParam("alias") String alias) {
+
+        // Validate alias length
+        if (alias.length() > 64) {
+            throw new IllegalArgumentException("Category alias should not exceed 64 characters.");
         }
 
-        boolean isUnique = service.isAliasUnique(categoryId, alias);
+        // Check if the alias is unique
+        boolean isUnique = categoryService.isCategoryAliasUnique(categoryId, alias);
         return ResponseEntity.ok(isUnique);
     }
 
     /**
-     * Checks the uniqueness of a category name.
+     * Checks if the name of a category is unique, with an optional category ID for updating scenarios.
      *
-     * @param categoryId the category ID (optional)
-     * @param name the category name
-     * @return ResponseEntity with a Boolean indicating uniqueness
+     * @param categoryId the category ID (optional, used for update scenarios)
+     * @param name       the name of the category to check for uniqueness
+     * @return ResponseEntity containing a Boolean indicating whether the name is unique
      */
-    @PostMapping("/categories/check_name_uniqueness")
-    public ResponseEntity<Boolean> isNameUnique(@RequestParam(value = "id", required = false) Integer categoryId,
-                                                @RequestParam(value = "name") String name) {
-        if(name.length() > 128) {
-            throw new IllegalArgumentException("Name length should not exceed 128 characters");
+    @PostMapping("/check-name-uniqueness")
+    public ResponseEntity<Boolean> checkNameUniqueness(
+            @RequestParam(value = "id", required = false) Integer categoryId,
+            @RequestParam("name") String name) {
+
+        // Validate name length
+        if (name.length() > 128) {
+            throw new IllegalArgumentException("Category name should not exceed 128 characters.");
         }
 
-        boolean isUnique = service.isNameUnique(categoryId, name);
+        // Check if the name is unique
+        boolean isUnique = categoryService.isCategoryNameUnique(categoryId, name);
         return ResponseEntity.ok(isUnique);
     }
 
+    /**
+     * Fetches all categories in a hierarchical structure, sorted by name in ascending order.
+     *
+     * @return ResponseEntity containing a list of CategoryDTOs representing the hierarchical category structure
+     */
+    @GetMapping("/fetch-all")
+    public ResponseEntity<List<CategoryDTO>> fetchAllCategories() {
 
-    @GetMapping("/categories/fetch-all")
-    public ResponseEntity<List<CategoryDTO>> listAllCategories() {
-        List<Category> parentList = service.listAllRootCategoriesSorted("name",
-                                                                                Constants.SORT_ASCENDING
-        );
-        List<Category> hierarchy = service.createHierarchy(parentList);
+        // Retrieve root categories and create the hierarchy
+        List<Category> rootCategories = categoryService.listAllRootCategoriesSorted("name", Sort.Direction.ASC);
+        List<Category> categoryHierarchy = categoryService.createHierarchy(rootCategories);
 
-        return ResponseEntity.ok(hierarchy.stream().map(CategoryDTO::new).toList());
+        // Convert to DTOs and return
+        List<CategoryDTO> categoryDTOs = categoryHierarchy.stream().map(CategoryDTO::new).toList();
+        return ResponseEntity.ok(categoryDTOs);
     }
-
 }

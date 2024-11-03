@@ -22,7 +22,6 @@ public class Brand extends IdentifiedEntity{
     @Column(name = "name", length = 45, nullable = false, unique = true)
     private String name;
 
-    @Size(min = 1, max = 45, message = "logo name must be between 1 and 45 characters")
     @Column(name = "logo", length = 45, nullable = false)
     private String logo;
 
@@ -34,6 +33,11 @@ public class Brand extends IdentifiedEntity{
 
     public Brand(Integer id) {
         this.id = id;
+    }
+
+    public Brand(Integer id, String name) {
+        this(id);
+        this.name = name;
     }
 
     public String getLogoImagePath() {

@@ -8,28 +8,6 @@ import java.math.BigDecimal;
 @UtilityClass
 public class RequestValidatorUtils {
 
-    public static boolean validateCategoryAndKeyword(String categoryAlias, String keyword, ConstraintValidatorContext context) {
-        boolean valid = true;
-
-        if ((categoryAlias == null || categoryAlias.isEmpty()) && (keyword == null || keyword.isEmpty())) {
-            context.buildConstraintViolationWithTemplate("Either categoryAlias or keyword must be provided")
-                    .addPropertyNode("categoryAlias")
-                    .addPropertyNode("keyword")
-                    .addConstraintViolation();
-            valid = false;
-        }
-
-        if (categoryAlias != null && !categoryAlias.isEmpty() && keyword != null && !keyword.isEmpty()) {
-            context.buildConstraintViolationWithTemplate("Only one of categoryAlias or keyword must be provided")
-                    .addPropertyNode("categoryAlias")
-                    .addPropertyNode("keyword")
-                    .addConstraintViolation();
-            valid = false;
-        }
-
-        return valid;
-    }
-
     public static boolean validatePriceRange(BigDecimal minPrice, BigDecimal maxPrice, ConstraintValidatorContext context) {
         boolean valid = true;
 

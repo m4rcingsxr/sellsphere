@@ -1,51 +1,79 @@
 package com.sellsphere.admin.export;
 
-import com.sellsphere.admin.category.TestCategoryHelper;
-import com.sellsphere.common.entity.Category;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sellsphere.common.entity.Brand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletResponse;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CSVExporterTest {
-    private CSVExporter<Category> csvExporter;
-    private HttpServletResponse response;
+
+    private CSVExporter<Brand> csvExporter;
+    private String[] headers;
+    private Function<Brand, String[]> brandExtractor;
 
     @BeforeEach
-    public void setUp() {
-        String[] headers = {"ID", "Name", "Alias", "Enabled"};
-        csvExporter = new CSVExporter<>(headers, this::extractCategoryData);
-        response = mock(HttpServletResponse.class);
+    void setUp() {
+        // Define the headers for the CSV
+        headers = new String[]{"ID", "Name", "Logo"};
+
+        // Define the extractor function that maps a Brand entity to a CSV line
+        brandExtractor = brand -> new String[]{
+                brand.getId().toString(),
+                brand.getName(),
+                brand.getLogo()
+        };
+
+        // Initialize the CSVExporter with headers and the extractor function
+        csvExporter = new CSVExporter<>(headers, brandExtractor);
     }
 
     @Test
-    void testExport() throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    void givenBrandList_whenExportToCSV_thenCorrectCSVIsWritten() throws IOException {
+        // Given
+        Supplier<List<Brand>> brandSupplier = () -> List.of(
+                new Brand(1, "Brand1"),
+                new Brand(2, "Brand2")
+        );
+        MockHttpServletResponse response = new MockHttpServletResponse();
 
-        when(response.getWriter()).thenReturn(new PrintWriter(outputStream));
+        // When
+        csvExporter.export(brandSupplier, response);
 
-        csvExporter.export(TestCategoryHelper::generateRootCategories, response);
+        // Then
+        String expectedCsvContent = """
+                ID,Name,Logo
+                1,Brand1,null
+                2,Brand2,null
+                """;
 
-        String csvContent = outputStream.toString();
-
-        // Verify CSV content using helper method
-        List<Category> categories = TestCategoryHelper.generateRootCategories();
-        ExportTestHelper.assertCSVContent(csvContent, categories);
+        assertEquals("text/csv", response.getContentType());
+        assertEquals("attachment; filename=\"export.csv\"", response.getHeader("Content-Disposition"));
+        assertEquals(expectedCsvContent, response.getContentAsString());
     }
 
-    private String[] extractCategoryData(Category category) {
-        return new String[] {
-                category.getId().toString(),
-                category.getName(),
-                category.getAlias(),
-                String.valueOf(category.isEnabled())
-        };
+    @Test
+    void givenEmptyBrandList_whenExportToCSV_thenOnlyHeadersAreWritten() throws IOException {
+        // Given
+        Supplier<List<Brand>> brandSupplier = List::of; // Empty brand list
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        // When
+        csvExporter.export(brandSupplier, response);
+
+        // Then
+        String expectedCsvContent = """
+                ID,Name,Logo
+                """;
+
+        assertEquals("text/csv", response.getContentType());
+        assertEquals("attachment; filename=\"export.csv\"", response.getHeader("Content-Disposition"));
+        assertEquals(expectedCsvContent, response.getContentAsString());
     }
 }

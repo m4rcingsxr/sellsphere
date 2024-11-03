@@ -1,10 +1,12 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.common.entity.Country;
+import com.sellsphere.common.entity.CountryNotFoundException;
 import com.sellsphere.common.entity.State;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
+import com.sellsphere.common.entity.StateNotFoundException;
+import com.sellsphere.common.entity.payload.StateDTO;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,90 +14,146 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
+import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class RestStateControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private CountryRepository countryRepository;
-
-    @MockBean
-    private StateRepository stateRepository;
+    private SettingService settingService;
 
     @Test
-    void givenStateDTO_whenSave_thenReturnSavedState() throws Exception {
+    void givenValidCountryId_whenListStates_thenReturnStates() throws Exception {
+        // Given
+        Integer countryId = 1;
+        Country country = new Country();
+        country.setId(countryId);
+        country.setName("United States");
+
+        State state1 = new State();
+        state1.setId(1);
+        state1.setName("California");
+        state1.setCountry(country);
+
+        State state2 = new State();
+        state2.setId(2);
+        state2.setName("Texas");
+        state2.setCountry(country);
+
+        List<State> states = List.of(state1, state2);
+
+        given(settingService.listStatesByCountry(countryId)).willReturn(states);
+
+        // When / Then
+        mockMvc.perform(get("/states/by_country/{countryId}", countryId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("California"))
+                .andExpect(jsonPath("$[1].name").value("Texas"));
+
+        then(settingService).should().listStatesByCountry(countryId);
+    }
+
+    @Test
+    void givenInvalidCountryId_whenListStates_thenThrowCountryNotFoundException() throws Exception {
+        // Given
+        Integer invalidCountryId = 999;
+        given(settingService.listStatesByCountry(invalidCountryId))
+                .willThrow(new CountryNotFoundException());
+
+        // When / Then
+        mockMvc.perform(get("/states/by_country/{countryId}", invalidCountryId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        then(settingService).should().listStatesByCountry(invalidCountryId);
+    }
+
+    @Test
+    void givenValidStateDTO_whenSaveState_thenReturnSavedState() throws Exception {
+        // Given
+        StateDTO stateDTO = new StateDTO();
+        stateDTO.setName("California");
+        stateDTO.setCountryId(1);
+
         Country country = new Country();
         country.setId(1);
-        country.setName("USA");
-        country.setCode("US");
+        country.setName("United States");
 
-        State state = new State();
-        state.setId(1);
-        state.setName("California");
-        state.setCountry(country);
+        State savedState = new State();
+        savedState.setId(1);
+        savedState.setName("California");
+        savedState.setCountry(country);
 
-        when(countryRepository.findById(anyInt())).thenReturn(Optional.of(country));
-        when(stateRepository.save(any(State.class))).thenReturn(state);
+        given(settingService.saveState(ArgumentMatchers.any(StateDTO.class))).willReturn(savedState);
 
-        String stateJson = "{\"id\":1,\"name\":\"California\",\"countryId\":1}";
+        // When / Then
+        mockMvc.perform(post("/states/save")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\": \"California\", \"countryId\": 1}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("California"))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.countryId").value(1)); // Assert that the countryId is returned
 
-        mockMvc.perform(post("/states/save").contentType(MediaType.APPLICATION_JSON).content(
-                stateJson)).andExpect(status().isOk()).andExpect(
-                jsonPath("$.id").value(1)).andExpect(
-                jsonPath("$.name").value("California")).andExpect(jsonPath("$.countryId").value(1));
-
-        verify(countryRepository, times(1)).findById(1);
-        verify(stateRepository, times(1)).save(any(State.class));
+        then(settingService).should().saveState(ArgumentMatchers.any(StateDTO.class));
     }
 
     @Test
-    void givenInvalidCountryId_whenSave_thenThrowCountryNotFoundException() throws Exception {
-        when(countryRepository.findById(anyInt())).thenReturn(Optional.empty());
+    void givenInvalidCountryId_whenSaveState_thenThrowCountryNotFoundException() throws Exception {
+        // Given
+        StateDTO stateDTO = new StateDTO();
+        stateDTO.setName("Invalid State");
+        stateDTO.setCountryId(999);
 
-        String stateJson = "{\"id\":1,\"name\":\"California\",\"countryId\":999}";
+        given(settingService.saveState(ArgumentMatchers.any(StateDTO.class)))
+                .willThrow(new CountryNotFoundException());
 
-        mockMvc.perform(post("/states/save").contentType(MediaType.APPLICATION_JSON).content(
-                stateJson)).andExpect(status().isNotFound());
+        // When / Then
+        mockMvc.perform(post("/states/save")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"Invalid State\", \"countryId\": 999}"))
+                .andExpect(status().isNotFound());
 
-        verify(countryRepository, times(1)).findById(999);
-        verify(stateRepository, times(0)).save(any(State.class));
+        then(settingService).should().saveState(ArgumentMatchers.any(StateDTO.class));
     }
 
     @Test
-    void givenStateId_whenDeleteState_thenReturnStatusOk() throws Exception {
-        State state = new State();
-        state.setId(1);
-        state.setName("California");
+    void givenValidStateId_whenDeleteState_thenReturnOk() throws Exception {
+        // Given
+        Integer stateId = 1;
 
-        when(stateRepository.findById(anyInt())).thenReturn(Optional.of(state));
+        // When / Then
+        mockMvc.perform(delete("/states/delete/{id}", stateId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
 
-        mockMvc.perform(delete("/states/delete/1")).andExpect(status().isOk());
-
-        verify(stateRepository, times(1)).findById(1);
-        verify(stateRepository, times(1)).delete(any(State.class));
+        then(settingService).should().deleteState(stateId);
     }
 
     @Test
     void givenInvalidStateId_whenDeleteState_thenThrowStateNotFoundException() throws Exception {
-        when(stateRepository.findById(anyInt())).thenReturn(Optional.empty());
+        // Given
+        Integer invalidStateId = 999;
+        doThrow(new StateNotFoundException()).when(settingService).deleteState(invalidStateId);
 
-        mockMvc.perform(delete("/states/delete/999")).andExpect(status().isNotFound());
+        // When / Then
+        mockMvc.perform(delete("/states/delete/{id}", invalidStateId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
 
-        verify(stateRepository, times(1)).findById(999);
-        verify(stateRepository, times(0)).delete(any(State.class));
+        then(settingService).should().deleteState(invalidStateId);
     }
+
 }

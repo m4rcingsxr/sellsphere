@@ -27,12 +27,35 @@ public class QuestionController {
     private final CategoryService categoryService;
     private final QuestionVoteService questionVoteService;
 
+    @GetMapping("/questions/detail/{id}")
+    public String detail(@PathVariable("id") Integer id, Model model, Principal principal)
+            throws QuestionNotFoundException, CustomerNotFoundException {
+
+        Question question = questionService.findById(id);
+        model.addAttribute("question", question);
+
+        questionVoteService.markQuestionVotedForProductByCustomer(List.of(question), question.getProduct(), getAuthenticatedCustomer(principal));
+
+        return "question/question_detail_sidebar";
+    }
+
+    @GetMapping("/questions")
+    public String showCustomerAskedQuestions(Principal principal, Model model) throws CustomerNotFoundException {
+        Customer authenticatedCustomer = getAuthenticatedCustomer(principal);
+        List<Question> questionList = questionService.findQuestionsByCustomer(authenticatedCustomer);
+
+        model.addAttribute("questionList", questionList);
+        model.addAttribute("customer", authenticatedCustomer);
+
+        return "question/questions";
+    }
+
     @PostMapping("/questions/create")
     public String createQuestion(Question question, RedirectAttributes ra) {
         questionService.save(question);
 
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Question has been asked, waiting for approve.");
-        return "redirect:/p/" + question.getProduct().getAlias();
+        return "redirect:/questions";
     }
 
     @GetMapping("/questions/p/{product_alias}/page/{pageNum}")

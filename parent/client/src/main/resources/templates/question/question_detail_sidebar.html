@@ -1,0 +1,33 @@
+<div class="p-4 bg-white h-100">
+    <h4 class="fw-bolder mb-2">My question</h4>
+
+    <div class="p-3 d-flex gap-4">
+        <div class="order-sidebar-img-container">
+            <a th:href="@{'/p/' + ${question.product.alias}}" class="link-dark link-underline-opacity-50-hover link-underline link-underline-opacity-0"><img th:src="${question.product.mainImagePath}" th:alt="${question.product.name}"/></a>
+        </div>
+
+        <div class="fs-5">
+            <a th:href="@{'/p/' + ${question.product.alias}}" class="link-dark link-underline-opacity-50-hover link-underline link-underline-opacity-0"><span th:text="${#strings.length(question.product.name) > 60 ? #strings.substring(question.product.name, 0, 60) + '...' : question.product.name}"></span></a>
+            <div th:replace="~{common :: product_price(${question.product.discountPrice}, ${question.product.discountPercent}, ${question.product.price})}"></div>
+        </div>
+    </div>
+
+    <hr class="text-light-emphasis"/>
+
+    <div class="d-flex justify-content-between p-3 ">
+        <p th:text="${question.questionContent}"></p>
+    </div>
+
+    <div class="bg-body-tertiary mx-4 p-3">
+        <p th:if="${question.answerContent != null}" th:text="${question.answerContent}"></p>
+        <p th:if="${question.answerContent == null}"><b>Our team will answer asap!</b></p>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 me-4 mt-2">
+        <th:block th:replace="~{vote/vote_fragments :: thumbs('vote_question', ${question})}"></th:block>
+    </div>
+
+
+
+</div>
+

@@ -7,9 +7,11 @@ import com.sellsphere.common.entity.QuestionNotFoundException;
 import com.sellsphere.common.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Transactional
 @RequiredArgsConstructor
@@ -54,4 +56,7 @@ public class QuestionService {
         questionRepository.save(question);
     }
 
+    public List<Question> listAll(String field, Sort.Direction direction) {
+        return questionRepository.findAll(Sort.by(direction, field));
+    }
 }

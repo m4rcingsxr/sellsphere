@@ -1,7 +1,7 @@
 package com.sellsphere.admin.customer;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
-import com.sellsphere.common.entity.Constants;
+import com.sellsphere.admin.page.PagingHelper;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class CustomerService {
                 .orElseThrow(CustomerNotFoundException::new);
     }
 
-    public List<Customer> findAll() {
+    public List<Customer> listAll() {
         return customerRepository.findAll();
     }
 
@@ -55,14 +55,8 @@ public class CustomerService {
      * @param sortDir The direction of the sort (ascending or descending).
      * @return A list of all customers, sorted according to the specified parameters.
      */
-    public List<Customer> listAll(String sortField, String sortDir) {
-        return customerRepository.findAll(createSort(sortField, sortDir));
-    }
-
-    private Sort createSort(String sortField, String sortDir) {
-        Sort sort = Sort.by(sortField);
-        return sortDir.equals(
-                Constants.SORT_ASCENDING) ? sort.ascending() : sort.descending();
+    public List<Customer> listAll(String sortField, Sort.Direction sortDir) {
+        return customerRepository.findAll(PagingHelper.getSort(sortField, sortDir));
     }
 
     /**

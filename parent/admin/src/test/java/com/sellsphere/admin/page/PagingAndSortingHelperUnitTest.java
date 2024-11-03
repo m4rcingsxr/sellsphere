@@ -33,7 +33,7 @@ class PagingAndSortingHelperUnitTest {
 
     @BeforeEach
     void setUp() {
-        helper = new PagingAndSortingHelper(model, "entities", "name", "asc", "");
+        helper = new PagingAndSortingHelper(model, "entities", "name", Sort.Direction.ASC, "");
     }
 
     @Test
@@ -55,7 +55,7 @@ class PagingAndSortingHelperUnitTest {
     void whenListEntitiesWithKeyword_thenFilteredPageRequestedAndModelUpdated() {
         // Given
         String keyword = "test";
-        helper = new PagingAndSortingHelper(model, "entities", "name", "asc", keyword);
+        helper = new PagingAndSortingHelper(model, "entities", "name", Sort.Direction.ASC, keyword);
         List<Object> content = Arrays.asList(new Object(), new Object());
         Page<Object> expectedPage = new PageImpl<>(content);
         given(repo.findAll(eq(keyword), any(PageRequest.class))).willReturn(expectedPage);
@@ -84,12 +84,12 @@ class PagingAndSortingHelperUnitTest {
     @Test
     void whenCreatePageable_thenSortDirectionIsCorrect() {
         // Ascending
-        helper = new PagingAndSortingHelper(model, "entities", "name", "asc", "");
+        helper = new PagingAndSortingHelper(model, "entities", "name", Sort.Direction.ASC, "");
         PageRequest pageRequestAsc = (PageRequest) helper.createPageable(5, 0);
         assertEquals(Sort.Direction.ASC, pageRequestAsc.getSort().getOrderFor("name").getDirection(), "Sort direction should be ascending");
 
         // Descending
-        helper = new PagingAndSortingHelper(model, "entities", "name", "desc", "");
+        helper = new PagingAndSortingHelper(model, "entities", "name", Sort.Direction.DESC, "");
         PageRequest pageRequestDesc = (PageRequest) helper.createPageable(5, 0);
         assertEquals(Sort.Direction.DESC, pageRequestDesc.getSort().getOrderFor("name").getDirection(), "Sort direction should be descending");
     }

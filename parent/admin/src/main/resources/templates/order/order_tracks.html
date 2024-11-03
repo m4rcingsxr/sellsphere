@@ -1,0 +1,65 @@
+<div th:fragment="order_tracks()" class="tab-pane fade" id="nav-track" role="tabpanel" aria-labelledby="nav-track-tab"
+     tabindex="0">
+    <div class="border rounded-3 shadow-sm p-3 my-3" th:if="${order.orderTracks.size() > 0}">
+        <input type="hidden" th:name="${'orderTracks[0].id'}" th:value="${order.orderTracks[0].id}"/>
+        <input type="hidden" th:name="${'orderTracks[0].order'}" th:value="${order.orderTracks[0].order.id}"/>
+
+        <label>Updated Time:</label>
+        <input class="form-control" th:name="${'orderTracks[0].updatedTime'}" th:value="${order.orderTracks[0].updatedTime}" readonly/>
+
+        <label>Status:</label>
+        <input type="text" th:field="*{orderTracks[0].status}" class="form-control" readonly/>
+
+        <label>Notes:</label>
+        <input class="form-control" type="text" th:field="*{orderTracks[0].notes}" readonly/>
+    </div>
+
+    <div th:each="track, trackStat : ${order.orderTracks}" th:if="${trackStat.index != 0}">
+
+        <div class="border rounded-3 shadow-sm p-3 my-3 position-relative">
+            <a href="#" class="link-primary position-absolute top-0 end-0 p-2 delete-track"><i
+                    class="fa-solid fa-trash fa-lg"></i></a>
+
+            <input type="hidden" th:name="${'orderTracks[' + trackStat.index + '].id'}"
+                   th:value="${order.orderTracks[__${trackStat.index}__].id}"/>
+
+            <input type="hidden" th:name="${'orderTracks[' + trackStat.index + '].order'}"
+                   th:value="${order.orderTracks[__${trackStat.index}__].order.id}"/>
+
+            <label>Updated Time:</label>
+            <input class="form-control" type="date" th:name="${'orderTracks[' + trackStat.index + '].updatedTime'}"
+                   th:value="${order.orderTracks[__${trackStat.index}__].updatedTime}"/>
+
+            <label>Status:</label>
+            <select class="form-control" th:field="*{orderTracks[__${trackStat.index}__].status}">
+                <option th:each="status : ${T(com.sellsphere.common.entity.OrderStatus).values()}"
+                        th:value="${status}" th:text="${status}"></option>
+            </select>
+
+            <label>Notes:</label>
+            <input class="form-control" type="text" th:field="*{orderTracks[__${trackStat.index}__].notes}"/>
+        </div>
+
+    </div>
+
+    <a href="#" class="link-primary" id="addTrack"><i class="fa-solid fa-plus fa-2xl"></i></a>
+</div>
+
+<div th:fragment="order_tracks_read_only()" class="table-responsive">
+    <table class="table">
+        <thead class="table-dark">
+        <tr>
+            <th scope="col">Time</th>
+            <th scope="col">Status</th>
+            <th scope="col">Notes</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="track : ${order.orderTracks}">
+            <td th:text="${track.updatedTime}"></td>
+            <td th:text="${track.status}"></td>
+            <td class="text-truncate" style="max-width: 200px;" th:text="${track.notes}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

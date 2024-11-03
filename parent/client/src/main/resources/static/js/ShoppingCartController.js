@@ -28,13 +28,27 @@ class ShoppingCartController {
         if (this.model.data.length !== 0) {
             this.model.initializeProducts()
                 .then(() => {
-                    this.view.renderProducts(this.model.products, this.model.data);
+                    if(this.model.products.length > 0) {
+                        this.view.renderProducts(this.model.products, this.model.data);
 
-                    this.initializeEventListeners();
-                    this.updateCartView();
+                        this.initializeEventListeners();
+                        this.updateCartView();
+
+                        this.showCart(true);
+                    }
                 });
         } else {
-            // hide shopping cart
+            this.showCart(false);
+        }
+    }
+
+    showCart(show) {
+        if(show) {
+            $("#shopping-cart").removeClass("d-none");
+            $("#empty-shopping-cart").addClass("d-none");
+        } else {
+            $("#shopping-cart").addClass("d-none");
+            $("#empty-shopping-cart").removeClass("d-none");
         }
     }
 
@@ -103,7 +117,7 @@ class ShoppingCartController {
      * Initializes the remove cart item event listener. All elements that trigger this event must hava dataset attr - data-product-id
      */
     initializeRemoveCartItemListener() {
-        $(".container").on('click', '.delete-cart-item', event => {
+        $(".container-md").on('click', '.delete-cart-item', event => {
             const productId = Number($(event.currentTarget).data("product-id"));
 
             this.model.removeItem(productId);
@@ -111,7 +125,11 @@ class ShoppingCartController {
             this.view.removeItem(productId);
             this.view.updateNavigationQuantity(this.model.data.length);
 
-            this.updateCartView();
+            if(this.model.data.length !== 0) {
+                this.updateCartView();
+            } else {
+                this.showCart(false);
+            }
         })
 
     }
@@ -128,6 +146,9 @@ class ShoppingCartController {
                     this.view.updateNavigationQuantity(this.model.data.length);
                     this.view.clear();
 
+                    $("#shopping-cart").addClass("d-none");
+                    $("#empty-shopping-cart").removeClass("d-none");
+
                     console.debug("Successfully removed all items from cart")
                 })
                 .catch(error => {
@@ -141,7 +162,7 @@ class ShoppingCartController {
      * Initializes the quantity change event listeners. All elements that trigger this event must hava dataset attr - data-product-id
      */
     initializeQuantityDecreaseAndIncreaseListeners() {
-        $(".container").on("click", ".quantity-plus, .quantity-minus", event => {
+        $(".container-md").on("click", ".quantity-plus, .quantity-minus", event => {
             event.preventDefault();
             const $target = $(event.currentTarget);
             const productId = Number($target.data("product-id"));

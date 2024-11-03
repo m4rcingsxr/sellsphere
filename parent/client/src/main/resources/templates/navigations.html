@@ -1,71 +1,274 @@
-<header th:fragment="header()" class="text-bg-dark py-3">
+<header th:fragment="header()" class="text-bg-dark pt-1">
     <div class="container">
         <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
-        <div class="row">
 
-            <div class="d-flex align-items-center gap-2 col-sm-3">
+        <div class="row p-3">
+
+            <div class="d-flex align-items-center gap-sm-2  col-sm-3 col-5">
+
+                <div class="d-lg-none">
+                    <button class="btn btn-dark" type="button" id="navDropdown">
+                        <i class="bi bi-border-width" style="font-size: 1.7rem"></i>
+                    </button>
+                </div>
+
                 <a th:href="@{/}" class=" mb-2 mb-lg-0 text-white text-decoration-none d-block">
-                    <img class="logo img-fluid" th:src="${S3_BASE_URI + SITE_LOGO}" alt="SellSphere ecommerce shop logo"/>
+                    <img class="logo img-fluid overflow-hidden hidden-xs" style="min-width: 90px; min-height: 80px"
+                         th:src="${S3_BASE_URI != null and SITE_LOGO != null ? S3_BASE_URI + SITE_LOGO : ''}"
+                         alt="SellSphere ecommerce shop logo"/>
                 </a>
 
                 <a class="nav-link px-2 text-white fs-4 fw-bolder d-block" th:href="@{/}"
                    th:text="${SITE_NAME}"></a>
             </div>
 
-
-            <div class="col-sm-9 d-flex justify-content-between align-items-center">
+            <div class="col-sm-9 col-7 d-flex justify-content-between align-items-center">
                 <form class="mb-3 mb-lg-0 me-lg-3" role="search"
                       th:action="@{'/p/search'}"
                       method="GET">
-                    <div class="input-group">
-                        <button type="submit"
-                                class="p-3 input-group-text border border-white rounded-start-5 bg-dark text-white">
-                            <i class="fa-solid fa-magnifying-glass"></i></button>
-                        <input type="text" name="keyword" th:value="${keyword}" id="searchForm"
-                               class="navigation-form p-3 border border-white p-2 rounded-end-5 bg-dark text-white fs-6"
-                               placeholder="Search for the product">
+                    <div class="d-lg-block d-none">
+                        <div class="input-group ">
+                            <button type="submit"
+                                    class="p-3 input-group-text border border-white rounded-start-5 bg-dark text-white">
+                                <i class="fa-solid fa-magnifying-glass"></i></button>
+                            <input type="text" name="keyword" th:value="${keyword}"
+                                   class="navigation-form p-3 border border-white p-2 rounded-end-5 bg-dark text-white fs-6"
+                                   placeholder="Search for the product">
+                        </div>
                     </div>
                 </form>
 
-                <div class="d-flex align-items-center gap-3">
-                    <a th:href="@{/customer/wishilist}" class="link-light">
-                        <i class="bi bi-heart" style="font-size: 1.7rem;"></i>
+                <div class="d-flex align-items-center gap-sm-3 gap-2">
+                    <a data-bs-toggle="collapse" href="#md-search-bar" role="button" aria-expanded="false"
+                       aria-controls="md-search-bar" class="d-lg-none link-light" id="show-md-search-bar">
+                        <i class="bi bi-search fs-4 d-sm-none"></i>
+                        <i class="bi bi-search fs-2 d-sm-block d-none"></i>
                     </a>
 
-                    <a th:href="@{/orders}" class="link-light">
-                        <i th:if="${!#authorization.expression('isAuthenticated()')}" class="bi bi-person"
-                           style="font-size: 2rem;"></i>
+                    <a th:href="@{/wishilist}" class="link-light">
+                        <i class="bi bi-heart fs-4 d-sm-none"></i>
+                        <i class="bi bi-heart fs-2 d-sm-block d-none"></i>
                     </a>
 
-                    <a th:href="@{/orders}" th:if="${#authorization.expression('isAuthenticated()')}"
+                    <a th:href="@{/customer}"
                        class="link-light link-underline link-underline-opacity-0">
-                            <span class="text-uppercase fs-4"
-                                  th:text="${#authentication.principal.name.substring(0, 1)}"
-                                  style="font-size: 2rem;"></span>
+                        <i class="bi bi-person fs-4 d-sm-none"></i>
+                        <i class="bi bi-person fs-2 d-sm-block d-none"></i>
                     </a>
 
-                    <a th:href="@{/cart}" class="ms-2 btn btn-dark position-relative p-1">
-                        <i class="bi bi-bag" style="font-size: 2rem;"></i>
-                        <span id="quantity-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    <a th:href="@{/cart}" class="btn btn-dark position-relative p-1">
+                        <i class="bi bi-bag fs-4 d-sm-none"></i>
+                        <i class="bi bi-bag fs-2 d-sm-block d-none"></i>
+                        <span id="quantity-count"
+                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
                     </a>
                 </div>
-
 
             </div>
 
         </div>
     </div>
+
+    <div class="container  collapse" id="md-search-bar">
+        <form class="mb-3 w-100" role="search"
+              th:action="@{'/p/search'}"
+              method="GET">
+
+            <div class="input-group">
+                <button type="submit"
+                        class="p-3 input-group-text border border-white rounded-start-5 bg-dark text-white">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <input type="text" name="keyword" th:value="${keyword}"
+                       class="form-control border border-white rounded-end-5 bg-dark text-white"
+                       placeholder="Search for the product">
+            </div>
+        </form>
+    </div>
+
+    <div class="container d-lg-block d-none">
+        <div class="row d-flex align-items-center">
+
+            <!--Category list-->
+            <div class="dropdown col-sm-3 position-relative px-0 ">
+                <button class="btn rounded-2 rounded-bottom-0 w-100 start-0 p-2 text-white shadow-sm" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #4d5154;">
+                    <div class="ms-2 d-flex gap-3 align-items-center mt-2">
+                        <i class="fa-solid fa-layer-group fa-lg"></i><span class="fs-5">Categories</span>
+                    </div>
+                </button>
+                <ul class="dropdown-menu rounded-2 rounded-top-0 w-100 start-0 p-2 shadow-sm"
+                    th:classappend="${isMainPage != null && isMainPage ? 'show' : ''}">
+                    <li th:each="category : ${categoryList}"
+                        class="dropdown-item ms-2 d-flex gap-3 align-items-center mt-2 category-item list-group-item-action rounded rounded-3">
+                        <th:block th:if="${category.categoryIcon != null}"
+                                  th:utext="${category.categoryIcon.iconPath}"></th:block>
+                        <a th:href="@{|/c/${category.alias}|}"
+                           class="link-dark link-underline link-underline-opacity-0 fs-5 d-block"
+                           th:text="${category.name}"></a>
+                        <i class="fa-solid fa-angle-right fa-lg d-block ms-auto me-2"></i>
+                    </li>
+                </ul>
+            </div>
+
+
+            <!--  Navigation items  -->
+            <div class="col-sm-9">
+                <ul class="d-flex gap-3">
+                    <li th:each="navItem : ${navigationItemList}" class="list-unstyled"><a
+                            th:href="@{'/articles/' + ${navItem.article.alias}}"
+                            th:text="${navItem.article.title}"
+                            class="link-underline-opacity-0 link-underline fs-6 text-light fw-bold"></a>
+                    </li>
+
+                    <!--  Free articles -->
+                    <li class="list-unstyled dropdown">
+                        <a href="#"
+                           class="dropdown-toggle link-underline-opacity-0 link-underline fs-6 text-light fw-bold"
+                           data-bs-toggle="dropdown" aria-expanded="false">Articles</a>
+                        <ul class="dropdown-menu">
+                            <li th:each="article : ${freeArticleList}"><a class="dropdown-item"
+                                                                          th:href="@{|/articles/${article.alias}|}"
+                                                                          th:text="${article.title}"></a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="sidebar-nav p-4" id="sidebarHeader">
+        <div class="d-flex flex-column h-100">
+            <div class="accordion accordion-flush" id="accordionCategory">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-light-subtle rounded rounded-2" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#flush-collapseCategory" aria-expanded="false"
+                                aria-controls="flush-collapseCategory">
+                            <i class="fa-solid fa-layer-group fa-lg"></i><span class="ps-3 fs-5">Categories</span>
+                        </button>
+                    </h2>
+                    <div id="flush-collapseCategory" class="accordion-collapse collapse overflow-y-scroll"
+                         data-bs-parent="#accordionCategory" style="max-height: 80vh">
+                        <div class="accordion-body">
+                            <div th:each="category, stat : ${categoryList}" class="accordion accordion-flush"
+                                 th:id="${'accordion' + category.name}">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header bg-light-subtle rounded rounded-2">
+                                        <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse"
+                                                th:data-bs-target="${'#flush-collapseOne' + stat.index}"
+                                                aria-expanded="false"
+                                                th:aria-controls="${'flush-collapseOne' + stat.index}">
+                                            <th:block th:if="${category.categoryIcon != null}"
+                                                      th:utext="${category.categoryIcon.iconPath}"></th:block>
+                                            <a th:href="@{|/c/${category.alias}|}"
+                                               class="ps-3 link-dark link-underline link-underline-opacity-0 fs-5 d-block"
+                                               th:text="${category.name}"></a>
+                                        </button>
+                                    </h2>
+                                    <div th:id="${'flush-collapseOne' + stat.index}" class="accordion-collapse collapse"
+                                         th:data-bs-parent="${'accordion' + category.name}">
+                                        <div class="accordion-body ">
+                                            <div th:each="subCategory : ${category.children}" class="mt-3">
+                                                <a class="link-dark link-underline-opacity-50-hover link-underline-opacity-0 fw-bolder"
+                                                   th:href="@{'/c/' + ${subCategory.alias}}"
+                                                   th:text="${subCategory.name}"></a>
+                                                <hr/>
+                                                <div th:each="subCategoryChild : ${subCategory.children}" class="ps-4">
+                                                    <a class="link-dark link-underline-opacity-0 link-underline-opacity-50-hover"
+                                                       th:href="@{'/c/' + ${subCategoryChild.alias}}"
+                                                       th:text="${subCategoryChild.name}"></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-light-subtle rounded rounded-2" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#flush-collapseNavigation"
+                                aria-expanded="false"
+                                aria-controls="flush-collapseNavigation">
+                            <i class="fa-solid fa-layer-group fa-lg"></i><span class="ps-3 fs-5">About us</span>
+                        </button>
+                    </h2>
+                    <div id="flush-collapseNavigation" class="accordion-collapse collapse overflow-y-scroll"
+                         data-bs-parent="#accordionCategory" style="max-height: 80vh">
+                        <div class="accordion-body">
+                            <ul>
+                                <li th:each="navItem : ${navigationItemList}" class="list-unstyled mt-2"><a
+                                        th:href="@{'/articles/' + ${navItem.article.alias}}"
+                                        th:text="${navItem.article.title}"
+                                        class="link-dark link-underline-opacity-0 link-underline fs-6  fw-bold"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a th:href="@{'/articles/' + ${navigationItemList[1].article.alias}}"
+               class="btn bg-light-subtle rounded rounded-2 w-100 mt-3   p-2">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <i class="fa-solid fa-layer-group fa-lg ps-2"></i><span class="ps-3 fs-5">Articles</span>
+                    </div>
+                    <div>
+                        <i class="bi bi-chevron-right pe-3 fw-bolder"></i>
+                    </div>
+                </div>
+            </a>
+
+
+            <div class="mt-auto" th:if="${!#authorization.expression('isAuthenticated()')}">
+                <a th:href="@{/customer}"
+                   class="d-flex align-items-center gap-2 btn btn-outline-dark justify-content-center"
+                   aria-current="page">
+                    <i class="bi bi-person d-block" style="font-size: 2rem;"></i>
+                    <span class="d-block">Sign in</span>
+                </a>
+            </div>
+            <div class="mt-auto" th:if="${#authorization.expression('isAuthenticated()')}">
+
+                <ul class="nav nav-pills flex-column mb-auto list-group list-group-flush mt-4">
+                    <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+                        <a th:href="@{/customer}" class="nav-link text-dark d-flex align-items-center gap-2"
+                           aria-current="page">
+                            <i class="bi bi-person d-block" style="font-size: 1.5rem;"></i>
+                            <span class="d-block">Account</span>
+                        </a>
+                    </li>
+                    <li class="nav-item list-group-item list-group-item-action p-0 m-0">
+                        <form th:action="@{/logout}" method="post"
+                              class="nav-link text-dark d-flex align-items-center gap-2">
+                            <i class="bi bi-box-arrow-right d-block" style="font-size: 1.5rem;"></i>
+                            <button type="submit" class="btn d-block p-0">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
 </header>
 
-<nav th:if="${categoryParentList != null}"  th:fragment="breadcrumbCategory(listCategoryParents)" aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb text-ellipsis d-flex flex-nowrap">
-        <li class="breadcrumb-item">
-            <a th:href="@{/}">Home</a>
-        </li>
+
+<nav th:if="${categoryParentList != null}" th:fragment="breadcrumbCategory(listCategoryParents)"
+     style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb text-nowrap">
+        <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
         <th:block th:each="category, status : ${listCategoryParents}">
             <li th:if="${!status.last}" class="breadcrumb-item"><a th:href="@{'/c/' + ${category.alias}}"
                                                                    th:text="${category.name}"></a></li>
-            <li th:if="${status.last}" class="breadcrumb-item active text-ellipsis w-75" th:text="${category.name}"></li>
+            <li th:if="${status.last}" class="breadcrumb-item active text-truncate"
+                th:text="${category.name}"></li>
         </th:block>
     </ol>
 </nav>
@@ -83,39 +286,17 @@
 <footer th:fragment="footer()" class="bg-dark">
     <div class="py-5 container text-white">
         <div class="row">
-            <div class="col-6 col-md-2 mb-3">
-                <h5>Section</h5>
+            <div th:each="section : ${footerSectionList}" class="col-6 col-md-2 mb-3">
+                <h5 th:text="${section.sectionHeader}">Section Header</h5>
                 <ul class="nav flex-column">
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Home</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Features</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Pricing</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">FAQs</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">About</a></li>
+                    <li th:each="item : ${section.footerItems}" class="nav-item mb-2">
+                        <a th:href="@{/articles/{alias}(alias=${item.article.alias})}"
+                           th:text="${item.article.title}"
+                           class="nav-link p-0 text-white">
+                        </a>
+                    </li>
                 </ul>
             </div>
-
-            <div class="col-6 col-md-2 mb-3">
-                <h5>Section</h5>
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Home</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Features</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Pricing</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">FAQs</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">About</a></li>
-                </ul>
-            </div>
-
-            <div class="col-6 col-md-2 mb-3">
-                <h5>Section</h5>
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Home</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Features</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">Pricing</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">FAQs</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-white">About</a></li>
-                </ul>
-            </div>
-
             <div class="col-md-5 offset-md-1 mb-3">
                 <form>
                     <h5>Subscribe to our newsletter</h5>
@@ -132,9 +313,21 @@
         <div class="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
             <p>© 2024 Company, Inc. All rights reserved.</p>
             <ul class="list-unstyled d-flex">
-                <li class="ms-3"><a class="link-body-emphasis" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#twitter"></use></svg></a></li>
-                <li class="ms-3"><a class="link-body-emphasis" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#instagram"></use></svg></a></li>
-                <li class="ms-3"><a class="link-body-emphasis" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#facebook"></use></svg></a></li>
+                <li class="ms-3"><a class="link-body-emphasis" href="#">
+                    <svg class="bi" width="24" height="24">
+                        <use xlink:href="#twitter"></use>
+                    </svg>
+                </a></li>
+                <li class="ms-3"><a class="link-body-emphasis" href="#">
+                    <svg class="bi" width="24" height="24">
+                        <use xlink:href="#instagram"></use>
+                    </svg>
+                </a></li>
+                <li class="ms-3"><a class="link-body-emphasis" href="#">
+                    <svg class="bi" width="24" height="24">
+                        <use xlink:href="#facebook"></use>
+                    </svg>
+                </a></li>
             </ul>
         </div>
     </div>
@@ -161,3 +354,10 @@
         </li>
     </ul>
 </nav>
+
+<a th:fragment="page_link(endpoint, currentPage, icon, body)"
+   th:href="@{|${endpoint}${currentPage}?sortField=${sortField}&sortDir=${sortDir}|}"
+   class="page-link">
+    <i th:if="${icon != null}" th:class="'fa-solid fa-' + ${icon}"></i>
+    <span th:if="${body != null}" th:text="${body}"></span>
+</a>

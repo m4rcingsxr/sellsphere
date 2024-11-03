@@ -18,28 +18,35 @@ public class AddressDTO implements Serializable {
 
     @NotNull(message = "First name is required")
     @Size(message = "First name cannot exceed 45 characters", max = 45)
+    @NotBlank(message = "First name cannot be blank")
     private String firstName;
 
     @NotNull(message = "Last name is required")
     @Size(message = "Last name cannot exceed 45 characters", max = 45)
+    @NotBlank(message = "Last name cannot be blank")
     private String lastName;
 
     @NotNull(message = "Phone number is required")
     @Size(message = "Phone number cannot exceed 15 characters", max = 15)
+    @NotBlank(message = "Phone number code cannot be blank")
     private String phoneNumber;
 
     @NotNull(message = "Address Line 1 is required")
     @Size(message = "Address Line 1 cannot exceed 64 characters", max = 64)
+    @NotBlank(message = "Addres line 1 code cannot be blank")
     private String addressLine1;
 
     private String addressLine2;
 
     @NotNull(message = "City is required")
     @Size(message = "City cannot exceed 45 characters", max = 45)
+    @NotBlank(message = "City cannot be blank")
     private String city;
 
     @Size(message = "City cannot exceed 45 characters", max = 45)
     private String state;
+
+    private Integer country;
 
     private String countryCode;
 
@@ -52,4 +59,6 @@ public class AddressDTO implements Serializable {
 
     // easyship selected courier
     private String courierId;
+
+    private String email;
 }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -26,9 +27,15 @@ public class Promotion extends IdentifiedEntity {
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     private List<Product> products;
-    
-    @OneToOne
-    @JoinColumn(name = "article_id", nullable = false)
-    private Article article;
 
+    @OneToMany(mappedBy = "promotion")
+    private List<Article> articles;
+
+    public void addArticle(Article savedArticle) {
+        if (articles == null) {
+            articles = new ArrayList<>();
+        }
+        savedArticle.setPromotion(this);
+        articles.add(savedArticle);
+    }
 }

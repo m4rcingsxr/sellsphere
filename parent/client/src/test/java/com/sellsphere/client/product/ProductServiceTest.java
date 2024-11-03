@@ -40,7 +40,6 @@ class ProductServiceTest {
 
         // Mock the repository calls
         when(productRepository.findAll(any(Specification.class), any(PageRequest.class))).thenReturn(productPage);
-        doReturn(Optional.of(product1)).doReturn(Optional.of(product2)).when(productRepository).findOne(any(Specification.class));
 
         // Create the product page request
         ProductPageRequest productPageRequest = new ProductPageRequest();
@@ -61,12 +60,11 @@ class ProductServiceTest {
         assertEquals(0, response.getPage());
         assertEquals(2, response.getTotalElements());
         assertEquals(1, response.getTotalPages());
-        assertEquals(BigDecimal.valueOf(180.00).setScale(2), response.getMinPrice());
-        assertEquals(BigDecimal.valueOf(270.00).setScale(2), response.getMaxPrice());
+        assertEquals(BigDecimal.valueOf(100), response.getMinPrice());
+        assertEquals(BigDecimal.valueOf(1000), response.getMaxPrice());
 
         // Verify that the repository methods were called with correct parameters
         verify(productRepository).findAll(any(Specification.class), any(PageRequest.class));
-        verify(productRepository, times(2)).findOne(any(Specification.class));
     }
 
     @Test

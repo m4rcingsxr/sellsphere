@@ -1,10 +1,6 @@
-INSERT INTO categories (NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
-VALUES ('Electronics', 'electronics', 'electronics.png', 1, NULL, NULL);
-
-
-INSERT INTO categories (NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
-VALUES ('Laptops', 'laptops', 'laptops.png', 1, NULL, NULL);
-
+-- Insert categories with explicit IDs
+INSERT INTO categories ( NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
+VALUES ( 'Electronics', 'electronics', 'electronics.png', 1, NULL, NULL);
 
 INSERT INTO categories (NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
 VALUES ('Computers', 'computers', 'computers.png', 1, 1, '-1-'),
@@ -15,8 +11,15 @@ VALUES ('Computers', 'computers', 'computers.png', 1, 1, '-1-'),
        ('Internal Optical Drives', 'computer_optical_drives', 'internal optical drives.png', 1, 3, '-1-2-3-'),
        ('Power Supplies', 'computer_power_supplies', 'power supplies.png', 1, 3, '-1-2-3-'),
        ('Solid State Drives', 'solid_state_drives', 'solid state drives.png', 1, 3, '-1-2-3-'),
-       ('Sound Cards', 'computer_sound_cards', 'sound cards.png', 1, 3, '-1-2-3-'),
-       ('Memory', 'computer_memory', 'computer memory.png', 1, 3, '-1-2-3-'),
-       ('Motherboard', 'computer_motherboard', 'motherboards.png', 1, 3, '-1-2-3-'),
-       ('Network Cards', 'computer_network_cards', 'network cards.png', 1, 3, '-1-2-3-');
+       ( 'Sound Cards', 'computer_sound_cards', 'sound cards.png', 1, 3, '-1-2-3-'),
+       ( 'Memory', 'computer_memory', 'computer memory.png', 1, 3, '-1-2-3-'),
+       ( 'Motherboard', 'computer_motherboard', 'motherboards.png', 1, 3, '-1-2-3-'),
+       ( 'Network Cards', 'computer_network_cards', 'network cards.png', 1, 3, '-1-2-3-');
 
+-- Insert vacuum cleaners with explicit ID
+INSERT INTO categories (NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
+VALUES ('Vacuum cleaners', 'vacuum_cleaners', 'vacuum_cleaners.png', 1, NULL, NULL);
+
+-- Insert into category_icons with explicit category_id
+INSERT INTO category_icons (id, icon_path, category_id)
+VALUES (1, '<i>icon</i>', 1);

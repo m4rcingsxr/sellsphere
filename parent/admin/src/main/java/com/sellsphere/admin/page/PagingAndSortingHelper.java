@@ -27,7 +27,7 @@ public class PagingAndSortingHelper {
 
     private String sortField;
 
-    private String sortDir;
+    private Sort.Direction sortDir;
 
     private String keyword;
 
@@ -87,8 +87,7 @@ public class PagingAndSortingHelper {
      * @return A Pageable object with the specified configurations.
      */
     public Pageable createPageable(int pageSize, int pageNum) {
-        Sort sort = Sort.by(sortField);
-        sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
+        Sort sort = Sort.by(sortDir, sortField);
         return PageRequest.of(pageNum, pageSize, sort);
     }
 
@@ -99,5 +98,14 @@ public class PagingAndSortingHelper {
      */
     public String getKeyword() {
         return (keyword != null && keyword.isEmpty()) ? null : keyword;
+    }
+
+    /**
+     * Retrieves the content (e.g., list of entities) stored in the model.
+     * @return The list of entities from the model (e.g., list of users).
+     */
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getContent() {
+        return (List<T>) model.getModel().get(listName);
     }
 }

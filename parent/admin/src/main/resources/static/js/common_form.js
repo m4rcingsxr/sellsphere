@@ -1,80 +1,101 @@
 $(document).ready(() => {
-    const form = document.getElementById("mainForm");
-    if (!form) {
+    // Get the form element by its ID. If not found, log an error and exit.
+    const form = $("#mainForm");
+    if (!form.length) {
         console.error("mainForm not found.");
         return;
     }
 
-    const fileInput = form.querySelector('input[name="newImage"]');
-    const previewImage = document.getElementById("previewImage");
-    if (!fileInput || !previewImage) {
+    const fileInput = form.find('input[name="newImage"]');
+    const previewImage = $("#previewImage");
+    if (!fileInput.length || !previewImage.length) {
         console.error("Required elements (fileInput or previewImage) not found.");
         return;
     }
 
-    fileInput.addEventListener("change", handleFileChange);
+    // Attach a 'change' event listener to the file input to handle file selection.
+    fileInput.on("change", handleFileChange);
 });
 
 /**
- * Handles the file input change event.
+ * Handles the file input change event by compressing the selected image file,
+ * updating the file input with the compressed image, and previewing the image.
+ *
  * @param {Event} event - The file input change event.
  */
 const handleFileChange = async (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files[0]; // Get the first selected file.
+
+    // Ensure the file exists and meets the maximum file size constraint.
     if (file && file.size <= MAX_FILE_SIZE) {
         try {
-            showSpinner();
+            showImageSpinner();
+
+            // Compress the selected image with given quality, width, and height.
             const compressedFile = await compressImage(file, QUALITY, WIDTH, HEIGHT);
+
+            // Update the file input with the newly compressed image.
             updateFileInput(compressedFile);
+
+            // Show a preview of the compressed image to the user.
             previewCompressedImage(compressedFile);
         } catch (error) {
+            // Log the error if something goes wrong during the compression process.
             console.error("Error during image compression:", error.response);
             showErrorModal(error.response);
         } finally {
-            hideSpinner();
+            hideImageSpinner();
         }
     }
 };
 
 /**
- * Shows a spinner while processing.
+ * Displays a spinner to indicate the image is being processed.
+ * The spinner is appended to the same parent element as the preview image.
  */
-const showSpinner = () => {
-    const spinner = document.createElement("div");
-    spinner.classList.add("spinner");
-    document.getElementById("previewImage").parentNode.appendChild(spinner);
+const showImageSpinner = () => {
+    // Create a spinner element using jQuery.
+    const spinner = $("<div>").addClass("spinner");
+
+    // Append the spinner to the parent of the preview image.
+    $("#previewImage").parent().append(spinner);
 };
 
 /**
- * Hides the spinner after processing.
+ * Hides the spinner by removing it from the DOM once processing is complete.
  */
-const hideSpinner = () => {
-    const spinner = document.querySelector(".spinner");
-    if (spinner) {
-        spinner.remove();
-    }
+const hideImageSpinner = () => {
+    $(".spinner").remove();
 };
 
 /**
- * Updates the file input with the compressed image.
- * @param {File} compressedFile - The compressed file.
+ * Updates the file input with the newly compressed image.
+ * This replaces the selected file with the compressed one in the input field.
+ *
+ * @param {File} compressedFile - The compressed image file.
  */
 const updateFileInput = (compressedFile) => {
     const dataTransfer = new DataTransfer();
     dataTransfer.items.add(compressedFile);
-    document.querySelector('input[name="newImage"]').files = dataTransfer.files;
+
+    $('input[name="newImage"]')[0].files = dataTransfer.files;
 };
 
 /**
- * Previews the compressed image.
- * @param {File} compressedFile - The compressed file.
+ * Displays a preview of the compressed image by updating the source of the preview image element.
+ *
+ * @param {File} compressedFile - The compressed image file to preview.
  */
 const previewCompressedImage = (compressedFile) => {
     const reader = new FileReader();
+
+    // Define the 'onload' event to display the image preview once it's loaded.
     reader.onload = (e) => {
-        const previewImage = document.getElementById("previewImage");
-        previewImage.src = e.target.result;
-        previewImage.classList.add("loaded");
+        $("#previewImage")
+            .attr("src", e.target.result)
+            .addClass("loaded"); // Add a class to indicate that the image is loaded.
     };
+
+    // Read the compressed file as a Data URL to display in the preview.
     reader.readAsDataURL(compressedFile);
 };

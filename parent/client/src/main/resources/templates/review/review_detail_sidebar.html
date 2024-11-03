@@ -3,28 +3,33 @@
 
     <div class="p-3 d-flex gap-4">
         <div class="order-sidebar-img-container">
-            <a th:href="@{'/p/' + ${review.product.alias}}" class="link-dark link-underline-opacity-50-hover link-underline link-underline-opacity-0"><img th:src="${review.product.mainImagePath}" th:alt="${review.product.name}"/></a>
+            <a th:href="@{'/p/' + ${review.product.alias}}"
+               class="link-dark link-underline-opacity-50-hover link-underline link-underline-opacity-07"><img
+                    th:src="${review.product.mainImagePath}" th:alt="${review.product.name}"/></a>
         </div>
 
         <div class="fs-5">
-            <a th:href="@{'/p/' + ${review.product.alias}}" class="link-dark link-underline-opacity-50-hover link-underline link-underline-opacity-0"><span th:text="${#strings.length(review.product.name) > 60 ? #strings.substring(review.product.name, 0, 60) + '...' : review.product.name}"></span></a>
+            <a th:href="@{'/p/' + ${review.product.alias}}"
+               class="link-dark link-underline-opacity-50-hover link-underline link-underline-opacity-0 fs-6 mb-3 "><span
+                    th:text="${review.product.name}"></span></a>
             <div th:replace="~{common :: product_price(${review.product.discountPrice}, ${review.product.discountPercent}, ${review.product.price})}"></div>
         </div>
     </div>
 
     <hr class="text-light-emphasis"/>
 
-    <div class="d-flex justify-content-between p-3">
+    <div class="d-flex justify-content-between p-3 border-1 border bg-body-tertiary">
         <div th:replace="~{review/review_fragments :: review_stars(${review.rate})}"></div>
         <span th:text="${review.reviewTime}" class="text-light-emphasis"></span>
     </div>
+    <div class="border border-start border-end border-bottom border-1">
 
-    <p class="p-3 text-light-emphasis fw-lighter lh-base" th:text="${review.comment}"></p>
+        <p class="p-3 text-light-emphasis fw-lighter lh-base" th:text="${review.comment}"></p>
 
-    <div class="d-flex justify-content-end gap-2 me-4">
-        <th:block th:replace="~{vote/vote_fragments :: thumbs('vote_review', ${review})}"></th:block>
+        <div class="d-flex justify-content-end gap-2 me-4 p-3">
+            <th:block th:replace="~{vote/vote_fragments :: thumbs('vote_review', ${review})}"></th:block>
+        </div>
     </div>
-
 
 
 </div>

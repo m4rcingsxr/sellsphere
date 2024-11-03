@@ -2,50 +2,84 @@
 <html lang="en">
 <head>
     <th:block th:replace="~{common :: common_head('Order ')}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/orders.css}"/>
+    <link rel="stylesheet" th:href="@{/css/customer.css}"/>
 </head>
-<body>
+<body class="overflow-x-hidden">
 <nav th:replace="~{navigations :: header()}"></nav>
 
-<div class="container p-0 mt-2 content">
+<div class="container p-0 mt-2">
 
-    <div class="row mt-5">
-        <div class="col-sm-3">
+
+    <div class="row mt-2 p-0 m-0">
+
+
+        <div class="col-lg-3 col-3 d-none d-lg-block">
             <div th:replace="~{customer/customer_navigation :: nav()}"></div>
         </div>
 
-        <div class="col-sm-9 mt-4">
-            <div>
-                <h2>Orders</h2>
+        <div class="col-lg-9 col-12 mt-4">
+            <div th:if="${orderList.isEmpty()}" class="d-flex justify-content-center">
+                <div class="d-flex flex-column gap-3 align-items-center">
+                    <h2>You do not have any orders yet!</h2>
+                    <a class="btn btn-outline-primary" th:href="@{/}">Start shopping</a>
+                </div>
+            </div>
 
-                <table class="table mt-4">
-                    <thead>
-                    <tr>
-                        <th scope="col" class="p-4 fw-light">Order #ID</th>
-                        <th scope="col" class="p-4 fw-light">Order date</th>
-                        <th scope="col" class="p-4 fw-light">Status</th>
-                        <th scope="col" class="p-4 fw-light">Total</th>
-                        <th scope="col" class="p-4 fw-light"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="order : ${orderList}">
-                        <th class="p-4">
-                            <a href="#" class="link-dark link-underline-opacity-0 link-underline entity-detail"
-                               th:text="${order.id}" th:data-id="${order.id}"></a>
-                        </th>
-                        <td th:text="${order.orderTime.toLocalDate()}" class="p-4"></td>
-                        <td class="p-4" th:id="${'orderStatus' + order.id}">
+            <div th:if="${!orderList.isEmpty()}">
+                <h2 class="subheading px-3">Orders</h2>
+
+                <div class="d-none d-md-block">
+                    <table class="table mt-4" style="table-layout: auto;">
+                        <thead>
+                        <tr>
+                            <th scope="col" class="py-4 px-2 fw-light d-md-table-cell d-none">Order #ID</th>
+                            <th scope="col" class="py-4 px-2 fw-light d-md-table-cell d-none">Order Date</th>
+                            <th scope="col" class="py-4 px-2 fw-light d-sm-table-cell d-none">Status</th>
+                            <th scope="col" class="py-4 px-2 fw-light d-sm-table-cell d-none">Total</th>
+                            <th scope="col" class="py-4 px-2 fw-light "></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="order : ${orderList}">
+                            <th class="px-2 py-4 text-truncate d-md-table-cell d-none">
+                                <a href="#" class="link-dark link-underline-opacity-0 link-underline entity-detail"
+                                   th:text="${order.id}" th:data-id="${order.id}"></a>
+                            </th>
+                            <td th:text="${order.orderTime.toLocalDate()}"
+                                class="px-2 py-4 text-truncate d-md-table-cell d-none"></td>
+                            <td class="px-2 py-4 text-truncate d-sm-table-cell d-none"
+                                th:id="${'orderStatus' + order.id}">
+                                <div th:replace="~{order/order_fragments :: table_order_status(${order.orderStatus})}"></div>
+                            </td>
+                            <td class="px-2 py-4 text-truncate d-sm-table-cell d-none">
+                                <div th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></div>
+                            </td>
+                            <td class="p-2 ">
+                                <div th:replace="~{order/order_fragments :: table_order_images(${order.orderDetails}, ${order.id})}"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <div class="d-md-none mt-3 p-2">
+                    <div th:each="order : ${orderList}" class="d-flex mt-3 bg-light-subtle rounded rounded-2 p-2">
+                        <div class="d-flex flex-column gap-1" style="width:25%">
+                            <span class="fw-bolder" th:text="${'#' + order.id}"></span>
+                            <span class="fs-6" th:text="${ order.orderTime.toLocalDate()}"></span>
                             <div th:replace="~{order/order_fragments :: table_order_status(${order.orderStatus})}"></div>
-                        </td>
-                        <td class="p-4">
-                            <div th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></div>
-                        </td>
-                        <td style="width: 300px;">
+                            <div class="fw-bolder" th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></div>
+                        </div>
+                        <div class="w-75">
                             <div th:replace="~{order/order_fragments :: table_order_images(${order.orderDetails}, ${order.id})}"></div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <nav th:replace="~{navigations :: small_pagination(|/orders/page/|)}"></nav>
             </div>
         </div>
     </div>
@@ -53,17 +87,31 @@
 
 <nav th:replace="~{navigations :: footer()}"></nav>
 
+<div class="d-lg-none sticky-bottom bg-dark py-2">
+    <div class="container text-center">
+        <button id="toggleSidebar" class="btn btn-dark w-100"><i class="bi bi-layout-sidebar-inset"
+                                                                 style="font-size: 1.5rem;"></i>
+        </button>
+    </div>
+</div>
+
+<div class="sidebar-nav" id="sidebarNav">
+    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
+</div>
 
 <div id="overlay" class="overlay"></div>
 <div id="returnSidebar" class="sidebar">
     <div th:replace="~{order/return_order_modal :: return_sidebar()}"></div>
 </div>
-<div id="sidebar" class="sidebar"></div>
+<div id="sidebar" class="sidebar">
+</div>
 
-<script type="text/javascript">
-    const MODULE_URL = "[[@{/}]]";
-</script>
+<script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
 <script type="text/javascript" th:src="@{/js/customer_order.js}"></script>
 <script type="text/javascript" th:src="@{/js/return_customer_order.js}"></script>
+<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
+
+
 </body>
 </html>

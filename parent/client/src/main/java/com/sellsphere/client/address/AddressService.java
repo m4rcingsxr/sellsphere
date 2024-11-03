@@ -14,6 +14,10 @@ public class AddressService {
 
     private final AddressRepository addressRepository;
 
+    public List<Address> listAllByCustomer(Customer customer) {
+        return addressRepository.findByCustomer(customer);
+    }
+
     /**
      * Retrieves an address by its ID.
      *

@@ -1,61 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head th:replace="~{list_fragments :: head('Articles Management')}"></head>
+
 <body>
 
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="content mt-3">
+<div class="container-fluid">
 
-    <h1 class="subheading text-center">Manage Articles</h1>
+    <div class="row">
 
-    <div class="container mt-4">
+        <div th:replace="~{navigations :: sidebar('Articles')}"></div>
 
-        <div th:replace="~{common :: alerts()}"></div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Articles</h1>
+                <div th:replace="~{navigations :: export_nav('articles', true)}"></div>
+            </div>
 
-        <ul th:replace="~{navigations :: export_nav('articles', true)}"></ul>
+            <section class="content mb-5">
+                <div class="container-md mt-7">
 
-        <form th:replace="~{list_fragments :: search_bar('/articles/page/0', 'Search for the article', 'updatedTime', ${keyword}, ${totalItems}, null)}"></form>
+                    <div th:replace="~{common :: alerts()}"></div>
 
-        <table class="table table-hover mt-4">
-            <thead class="table-dark">
-            <tr>
-                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'id',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'title',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Title')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'user.firstName',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Updated by')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'articleType',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Type')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'updatedTime',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Updated time')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'published',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Published')}"></th>
-                <th></th>
-            </tr>
-            </thead>
+                    <form th:replace="~{list_fragments :: search_bar('/articles/page/0', 'Search for the article', 'updatedTime', ${keyword}, ${totalItems}, null)}"></form>
 
-            <tbody>
-            <tr th:each="article : ${articleList}">
-                <td th:text="${article.id}"></td>
-                <td th:text="${article.title}"></td>
-                <td th:text="${article.createdBy.fullName}"></td>
-                <td th:text="${article.articleType}"></td>
-                <td th:text="${article.updatedTime}"></td>
-                <td>
-                    <th:block th:replace="~{list_fragments :: status(${article.published}, |/articles/${article.id}/published/${!article.published}|)}"></th:block>
-                </td>
-                <td>
-                    <th:block th:replace="~{list_fragments :: detail_entity(|/articles/details/${article.id}|)}"></th:block>
-                    <th:block th:replace="~{list_fragments :: edit_entity(|/articles/edit/${article.id}|)}"></th:block>
-                    <th:block th:replace="~{list_fragments :: delete_entity(|/articles/delete/${article.id}|)}"></th:block>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                    <div class="con-lg-xl-xxl">
+                        <table class="table table-hover mt-4">
+                            <thead class="table-dark">
+                            <tr>
+                                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'id',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'title',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Title')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'user.firstName',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Updated by')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'articleType',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Type')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'updatedTime',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Updated time')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/articles/page', ${currentPage},'published',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Published')}"></th>
+                                <th></th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="article : ${articleList}">
+                                <td th:text="${article.id}"></td>
+                                <td th:text="${article.title}"></td>
+                                <td th:text="${article.createdBy.fullName}"></td>
+                                <td th:text="${article.articleType}"></td>
+                                <td th:text="${article.updatedTime}"></td>
+                                <td>
+                                    <th:block
+                                            th:replace="~{list_fragments :: status(${article.published}, |/articles/${article.id}/published/${!article.published}|)}"></th:block>
+                                </td>
+                                <td>
+                                    <th:block
+                                            th:replace="~{list_fragments :: detail_entity(|/articles/details/${article.id}|)}"></th:block>
+                                    <th:block
+                                            th:replace="~{list_fragments :: edit_entity(|/articles/edit/${article.id}|)}"></th:block>
+                                    <th:block
+                                            th:replace="~{list_fragments :: delete_entity(|/articles/delete/${article.id}|)}"></th:block>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mobile-Friendly Container for Articles -->
+                <div class="con-xs-s-md  px-3">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="article : ${articleList}"
+                            class="list-group-item p-4 border rounded bg-light shadow-sm mb-3">
+                            <div class="d-flex flex-column gap-3">
+
+                                <!-- Article ID -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <div class="fw-bold">Article ID</div>
+                                    <div th:text="${article.id}"></div>
+                                </div>
+
+                                <!-- Title -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Title</div>
+                                    <div th:text="${article.title}"></div>
+                                </div>
+
+                                <!-- Updated By -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Updated by</div>
+                                    <div th:text="${article.createdBy.fullName}"></div>
+                                </div>
+
+                                <!-- Article Type -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Type</div>
+                                    <div th:text="${article.articleType}"></div>
+                                </div>
+
+                                <!-- Updated Time -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Updated time</div>
+                                    <div th:text="${article.updatedTime}"></div>
+                                </div>
+
+                                <!-- Published -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Published</div>
+                                    <div th:replace="~{list_fragments :: status(${article.published}, |/articles/${article.id}/published/${!article.published}|)}"></div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex justify-content-between align-items-center pt-2">
+                                    <div class="fw-bold">Actions</div>
+                                    <div>
+                                        <a th:replace="~{list_fragments :: detail_entity(|/articles/details/${article.id}|)}"></a>
+                                        <a th:replace="~{list_fragments :: edit_entity(|/articles/edit/${article.id}|)}"></a>
+                                        <a th:replace="~{list_fragments :: delete_entity(|/articles/delete/${article.id}|)}"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Mobile-Friendly List View -->
+                <div class="con-xs-s-md px-3">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="carousel, stat : ${carouselList}" class="list-group-item p-4 border rounded bg-light shadow-sm mb-3">
+                            <div class="d-flex flex-column gap-3">
+
+                                <!-- Carousel ID -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <div class="fw-bold">ID</div>
+                                    <div th:text="${carousel.id}"></div>
+                                </div>
+
+                                <!-- Type -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Type</div>
+                                    <div th:text="${carousel.type}"></div>
+                                </div>
+
+                                <!-- Header -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Header</div>
+                                    <div th:text="${carousel.header}"></div>
+                                </div>
+
+                                <!-- Order -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Order</div>
+                                    <div th:text="${carousel.carouselOrder}"></div>
+                                </div>
+
+                                <!-- Change Order Controls -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Change Order</div>
+                                    <div>
+                                        <!-- Ordering logic for mobile -->
+                                        <a th:if="${stat.index == 0}" th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index == carouselList.size() - 1}" th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                        <a th:if="${stat.index != 0 && stat.index != carouselList.size() - 1}" th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index != 0 && stat.index != carouselList.size() - 1}" th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex justify-content-between align-items-center pt-2">
+                                    <div class="fw-bold">Actions</div>
+                                    <div>
+                                        <a th:replace="~{list_fragments :: edit_entity(|/main_page/edit/${carousel.id}|)}"></a>
+                                        <a th:replace="~{list_fragments :: delete_entity(|/main_page/delete/${carousel.id}|)}"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <nav th:replace="~{list_fragments :: large_pagination('/articles/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+                     class="mt-4"></nav>
+            </section>
+        </main>
+
     </div>
 
-    <nav th:replace="~{list_fragments :: large_pagination('/articles/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
-         class="mt-4"></nav>
+</div>
 
-</main>
-
-<footer th:replace="~{navigations :: footer()}"></footer>
 
 <div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
 <div th:replace="~{modal_fragments :: close_modal('detailModal')}"></div>

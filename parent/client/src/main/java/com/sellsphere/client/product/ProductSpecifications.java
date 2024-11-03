@@ -25,7 +25,9 @@ public class ProductSpecifications {
 
     public static Specification<Product> hasKeyword(String keyword) {
         return (root, query, criteriaBuilder) -> {
-            // Create the match predicate with multiple columns
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Use MySQL full-text search with multiple columns
             Expression<Double> matchExpression = criteriaBuilder.function(
                     "match",
                     Double.class,
@@ -36,8 +38,19 @@ public class ProductSpecifications {
                     criteriaBuilder.literal(keyword)
             );
 
-            // Convert the match expression to a predicate
-            return criteriaBuilder.greaterThan(matchExpression, 0.0);
+            // Full-text search predicate
+            predicates.add(criteriaBuilder.greaterThan(matchExpression, 0.0));
+
+            // Use LIKE expressions for partial matching
+            String likePattern = "%" + keyword + "%";
+            predicates.add(criteriaBuilder.or(
+                    criteriaBuilder.like(root.get("name"), likePattern),
+                    criteriaBuilder.like(root.get("fullDescription"), likePattern),
+                    criteriaBuilder.like(root.get("shortDescription"), likePattern),
+                    criteriaBuilder.like(root.get("alias"), likePattern)
+            ));
+
+            return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
         };
     }
 
@@ -79,34 +92,6 @@ public class ProductSpecifications {
             );
 
             return criteriaBuilder.between(discountedPrice, minPrice, maxPrice);
-        };
-    }
-
-    public static Specification<Product> hasMinOrMaxDiscountPrice(Integer categoryId, String keyword, boolean isMinPrice) {
-        return (root, query, criteriaBuilder) -> {
-            Expression<BigDecimal> discountedPrice = getDiscountPriceExpression(root, criteriaBuilder);
-
-            // Create subquery
-            Subquery<BigDecimal> subquery = query.subquery(BigDecimal.class);
-            Root<Product> subRoot = subquery.from(Product.class);
-            Expression<BigDecimal> subDiscountedPrice = getDiscountPriceExpression(subRoot, criteriaBuilder);
-            subquery.select(isMinPrice ? criteriaBuilder.min(subDiscountedPrice) : criteriaBuilder.max(subDiscountedPrice));
-
-            // Apply criteria based on categoryId or keyword to both main query and subquery
-            List<Predicate> predicates = new ArrayList<>();
-            if (categoryId != null) {
-                predicates.add(hasCategory(categoryId).toPredicate(root, query, criteriaBuilder));
-                predicates.add(hasCategory(categoryId).toPredicate(subRoot, query, criteriaBuilder));
-            }
-            if (keyword != null && !keyword.isEmpty()) {
-                predicates.add(hasKeyword(keyword).toPredicate(subRoot, query, criteriaBuilder));
-            }
-
-            // Combine all predicates with AND
-            subquery.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
-
-            // Apply main query condition to match discountedPrice with subquery result
-            return criteriaBuilder.equal(discountedPrice, subquery);
         };
     }
 

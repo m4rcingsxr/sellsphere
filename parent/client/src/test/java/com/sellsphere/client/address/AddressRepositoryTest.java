@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts = {
-        "classpath:sql/customers.sql", "classpath:sql/countries.sql"} )
+        "classpath:sql/customers.sql", "classpath:sql/currencies.sql", "classpath:sql/countries.sql"} )
 class AddressRepositoryTest {
 
     @Autowired

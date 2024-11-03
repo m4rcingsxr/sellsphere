@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controller class handling address-related operations such as
@@ -58,7 +59,7 @@ public class AddressController {
 
         model.addAttribute("customer", customer);
         model.addAttribute("countryList", countryList);
-        model.addAttribute("address", new AddressValidationRequest());
+        model.addAttribute("address", new Address());
 
         return ADDRESSES_URL;
     }
@@ -68,14 +69,25 @@ public class AddressController {
                                   RedirectAttributes ra)
             throws CustomerNotFoundException {
         String successMessage = "Successfully updated addresses";
+
+        Customer existingCustomer = customerService.getById(customer.getId());
+        Optional<Address> primaryAddress = existingCustomer.getAddresses().stream().filter(Address::isPrimary).findAny();
+        primaryAddress.ifPresent(address -> {
+            Optional<Address> oldPrimary = customer.getAddresses().stream().filter(
+                    oldPrimaryAddress -> oldPrimaryAddress.getId().equals(address.getId())).findFirst();
+            oldPrimary.ifPresent(old -> old.setPrimary(false));
+        });
+
         customerService.update(customer);
+
+
 
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
 
         return ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
     }
 
-    @PostMapping("/address_book/save")
+    @PostMapping("/save")
     public String saveAddress(@ModelAttribute("address") Address address,
                               RedirectAttributes ra) {
         String successMessage = "Successfully " + (address.getId() != null ?

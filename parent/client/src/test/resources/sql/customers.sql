@@ -1,4 +1,4 @@
-INSERT INTO customers (email, customer_password, first_name, last_name, enabled, email_verified, created_time)
+INSERT INTO customers (email, password, first_name, last_name, enabled, email_verified, created_time)
 VALUES ('alice.smith@example.com', 'password123', 'Alice', 'Smith', 1, 1, CURRENT_TIMESTAMP),
        ('bob.johnson@example.com', 'password123', 'Bob', 'Johnson', 1, 1, CURRENT_TIMESTAMP),
        ('carol.wilson@example.com', 'password123', 'Carol', 'Wilson', 1, 1, CURRENT_TIMESTAMP),

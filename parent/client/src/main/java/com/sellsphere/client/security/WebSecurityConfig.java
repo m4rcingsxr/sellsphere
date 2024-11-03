@@ -1,5 +1,8 @@
 package com.sellsphere.client.security;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.sellsphere.payment.StripeModule;
 import com.sellsphere.payment.checkout.StripeCheckoutService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -33,8 +36,13 @@ public class WebSecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/customer/**").authenticated()
-                        .requestMatchers("/reviews/**").authenticated()
+                        .requestMatchers("/orders/**").authenticated()
+                        .requestMatchers("/wishlist/**").authenticated()
+                        .requestMatchers("/questions/**").authenticated()
                         .requestMatchers("/checkout/**").authenticated()
+                        .requestMatchers("/addresses/**").authenticated()
+                        .requestMatchers("/addresses/**").authenticated()
+                        .requestMatchers("/reviews").authenticated()
                         .anyRequest().permitAll()
                 )
                 .csrf(csrf -> csrf
@@ -63,7 +71,8 @@ public class WebSecurityConfig {
 
     @Bean
     public StripeCheckoutService stripeService() {
-        return new StripeCheckoutService();
+        Injector injector = Guice.createInjector(new StripeModule());
+        return injector.getInstance(StripeCheckoutService.class);
     }
 
     @Bean
@@ -73,7 +82,7 @@ public class WebSecurityConfig {
 
     @Bean
     public ExecutorService taskExecutor() {
-        return Executors.newFixedThreadPool(10);
+        return Executors.newFixedThreadPool(100);
     }
 
 }

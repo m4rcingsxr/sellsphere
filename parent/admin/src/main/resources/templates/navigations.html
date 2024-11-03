@@ -1,66 +1,198 @@
-<header th:fragment="header()" class="bg-dark">
-    <nav class="navbar navbar-expand-md">
-        <div class="container-md">
-            <a class="navbar-brand text-white" href="#">SellSphere </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
-                    data-bs-theme="dark" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+<header th:fragment="header()" class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">SellSphere</a>
+
+    <ul class="navbar-nav flex-row d-md-none">
+        <li class="nav-item text-nowrap">
+            <button class="nav-link px-3 text-white" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false"
+                    aria-label="Toggle search">
+                <svg class="bi">
+                    <use xlink:href="#search"></use>
+                </svg>
             </button>
-            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar"
-                 aria-labelledby="offcanvasNavbarLabel">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Offcanvas</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                        <li class="nav-item">
-                            <a class="nav-link active text-white" aria-current="page" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <form th:action="@{/logout}" method="POST">
-                                <a class="nav-link text-white" href="#">Logout</a>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </nav>
+        </li>
+        <li class="nav-item text-nowrap">
+            <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <svg class="bi">
+                    <use xlink:href="#list"></use>
+                </svg>
+            </button>
+        </li>
+    </ul>
+
+    <div id="navbarSearch" class="navbar-search w-100 collapse">
+        <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="Search" aria-label="Search">
+    </div>
 </header>
 
-<footer th:fragment="footer()" class="bg-dark mt-5">
-    <div class="container">
-        <nav class="py-3">
-            <ul class="nav justify-content-center border-bottom pb-3 mb-3">
-                <li class="nav-item"><a href="#" class="nav-link px-2 text-white">Home</a></li>
-                <li class="nav-item"><a href="#" class="nav-link px-2 text-white">Features</a></li>
-                <li class="nav-item"><a href="#" class="nav-link px-2 text-white">Pricing</a></li>
-                <li class="nav-item"><a href="#" class="nav-link px-2 text-white">FAQs</a></li>
-                <li class="nav-item"><a href="#" class="nav-link px-2 text-white">About</a></li>
+<div th:fragment="sidebar(active)" class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
+    <div class="offcanvas-md offcanvas-end bg-body-tertiary" tabindex="-1" id="sidebarMenu"
+         aria-labelledby="sidebarMenuLabel" style="height: 100vh;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu"
+                    aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" aria-current="page" th:href="@{/}"
+                       th:classappend="${active == 'Dashboard' ? 'active' : ''}">
+                        <i class="fa-solid fa-circle-info"
+                           th:classappend="${active == 'Dashboard' ? 'active' : 'link-primary'}"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SALESPERSON')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/reports}"
+                       th:classappend="${active == 'Reports' ? 'active' : ''}">
+                        <i class="fa-solid fa-chart-line"
+                           th:classappend="${active == 'Reports' ? 'active' : 'link-primary'}"></i>
+                        Reports
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/main_page}"
+                       th:classappend="${active == 'Main Page' ? 'active' : ''}">
+                        <i class="fa-solid fa-house"
+                           th:classappend="${active == 'Main Page' ? 'active' : 'link-primary'}"></i>
+                        Main Page
+                    </a>
+                </li>
+                <li sec:authorize="hasRole('ROLE_ADMIN')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/users}"
+                       th:classappend="${active == 'Users' ? 'active' : ''}">
+                        <i class="fa-solid fa-user"
+                           th:classappend="${active == 'Users' ? 'active' : 'link-primary'}"></i>
+                        Users
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/categories}"
+                       th:classappend="${active == 'Categories' ? 'active' : ''}">
+                        <i class="fa-solid fa-layer-group link-primary"
+                           th:classappend="${active == 'Categories' ? 'active' : 'link-primary'}"></i>
+                        Categories
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/brands}"
+                       th:classappend="${active == 'Brands' ? 'active' : ''}">
+                        <i class="fa-brands fa-apple link-primary"
+                           th:classappend="${active == 'Brands' ? 'active' : 'link-primary'}"></i>
+                        Brands
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SALESPERSON', 'ROLE_SHIPPER')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/orders}"
+                       th:classappend="${active == 'Orders' ? 'active' : ''}">
+                        <i class="fa-solid fa-truck link-primary"
+                           th:classappend="${active == 'Orders' ? 'active' : 'link-primary'}"></i>
+                        Orders
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/products}"
+                       th:classappend="${active == 'Products' ? 'active' : ''}">
+                        <i class="fa-solid fa-cart-shopping link-primary"
+                           th:classappend="${active == 'Products' ? 'active' : 'link-primary'}"></i>
+                        Products
+                    </a>
+                </li>
+                <li sec:authorize="hasRole('ROLE_ADMIN')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/customers}"
+                       th:classappend="${active == 'Customers' ? 'active' : ''}">
+                        <i class="fa-solid fa-person-walking link-primary"
+                           th:classappend="${active == 'Customers' ? 'active' : 'link-primary'}"></i>
+                        Customers
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_ASSISTANT')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/articles}"
+                       th:classappend="${active == 'Articles' ? 'active' : ''}">
+                        <i class="fa-solid fa-newspaper"
+                           th:classappend="${active == 'Articles' ? 'active' : 'link-primary'}"></i>
+                        Articles
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_ASSISTANT')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/reviews}"
+                       th:classappend="${active == 'Reviews' ? 'active' : ''}">
+                        <i class="fa-solid fa-star link-primary"
+                           th:classappend="${active == 'Reviews' ? 'active' : 'link-primary'}"></i>
+                        Reviews
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_ASSISTANT')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/questions}"
+                       th:classappend="${active == 'Questions' ? 'active' : ''}">
+                        <i class="fa-solid fa-circle-question"
+                           th:classappend="${active == 'Questions' ? 'active' : 'link-primary'}"></i>
+                        Questions
+                    </a>
+                </li>
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SALESPERSON')" class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/transactions}"
+                       th:classappend="${active == 'Transactions' ? 'active' : ''}">
+                        <i class="fa-solid fa-wallet"
+                           th:classappend="${active == 'Transactions' ? 'active' : 'link-primary'}"></i>
+                        Transactions
+                    </a>
+                </li>
             </ul>
-            <p class="text-center text-white">© 2024 Company, Inc</p>
-        </nav>
-    </div>
-</footer>
 
-<ul th:fragment="export_nav(entities, newEntity)" class="nav mb-3">
-    <li th:if="${newEntity}" class="nav-item">
-        <a th:href="@{'/' + ${entities} + '/new'}" class="nav-link"><i th:class="${'fa-solid fa-plus fa-2xl'}"></i></a>
-    </li>
-    <li class="nav-item">
-        <a th:replace="~{ :: file_link('/' + ${entities} + '/export/', 'csv')}"></a>
-    </li>
-    <li class="nav-item">
-        <a th:replace="~{ :: file_link('/' + ${entities} + '/export/', 'excel')}"></a>
-    </li>
-    <li class="nav-item">
-        <a th:replace="~{ :: file_link('/' + ${entities} + '/export/', 'pdf')}"></a>
-    </li>
-</ul>
+            <hr class="my-3">
+
+            <ul class="nav flex-column mb-auto">
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2"
+                       th:if="${#authentication != null}"
+                       th:href="@{/account(email=${#authentication.principal.username})}"
+                       th:classappend="${active == 'Account' ? 'active' : ''}">
+                        <i class="fa-solid fa-id-card"
+                           th:classappend="${active == 'Account' ? 'active' : 'link-primary'}"></i>
+                        Account
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" th:href="@{/settings}"
+                       th:classappend="${active == 'Settings' ? 'active' : ''}">
+                        <i class="fa-solid fa-gear"
+                           th:classappend="${active == 'Settings' ? 'active' : 'link-primary'}"></i>
+                        Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <form th:action="@{/logout}" method="POST">
+                        <button type="submit" class="nav-link d-flex align-items-center gap-2" href="#">
+                            <i class="fa-solid fa-door-closed link-primary"></i>
+                            Sign out
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="export_nav(entities, newEntity)" class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+        <a th:if="${newEntity}"  class="btn btn-sm btn-outline-secondary" th:href="@{'/' + ${entities} + '/new'}">New</a>
+        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
+                aria-expanded="false">Export
+        </button>
+        <ul class="dropdown-menu dropdown-menu-dark">
+            <li><a th:replace="~{ :: file_link('/' + ${entities} + '/export/', 'pdf')}"></a></li>
+            <li><a th:replace="~{ :: file_link('/' + ${entities} + '/export/', 'csv')}"></a></li>
+            <li><a th:replace="~{ :: file_link('/' + ${entities} + '/export/', 'excel')}"></a></li>
+        </ul>
+    </div>
+</div>
 
 <a th:fragment="file_link(href, fileType)"
    th:href="@{${href} + ${fileType}}"
-   class="nav-link">
-    <i th:class="'fa-solid fa-file-' + ${fileType} + ' fa-xl'"></i>
+   class="dropdown-item">
+    [[${fileType}]]
 </a>

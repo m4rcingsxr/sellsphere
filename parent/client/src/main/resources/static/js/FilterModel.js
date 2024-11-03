@@ -9,7 +9,11 @@ class FilterModel {
 
     extractFiltersFromUrl(url) {
         const urlParams = new URLSearchParams(new URL(url).search);
-        return [...urlParams.entries()].filter(([key]) => key === 'filter').map(([, value]) => value);
+
+        // Extract 'filter' parameters and decode them
+        return [...urlParams.getAll('filter')].map(filter => {
+            return decodeURIComponent(filter);
+        });
     }
 
     async fetchAndHandleFilterCounts(filters) {
@@ -68,10 +72,11 @@ class FilterModel {
 
     async updateFilterDisplay(filters, minPrice, maxPrice) {
         try {
-            const countMap = await this.fetchFilterCounts(filters, minPrice, maxPrice);
+            const countMap = await this.fetchFilterCounts(this.formatFilters(filters), minPrice, maxPrice);
+            console.log(filters, minPrice, maxPrice, countMap)
             this.view.renderAllFilters(countMap);
             this.view.renderProductFilters(countMap, filters);
-            this.view.checkFilters(filters);
+            this.view.checkFilters(this.formatFilters(filters));
         } catch (error) {
             throw error;
         }
@@ -81,13 +86,15 @@ class FilterModel {
         if (filters != null) {
             return filters.map(filter => {
                 const [name, value] = filter.split(/,(.+)/);
-                const formattedValue = value.includes(',') ? `'${value}'` : value;
+                const trimmedValue = value.trim();  // Trim the value before checking for commas
+                const formattedValue = trimmedValue.includes(',') ? `'${trimmedValue}'` : trimmedValue;
                 return `${name},${formattedValue}`;
             });
         } else {
             return filters;
         }
     }
+
 
     async fetchProductsPage(filters, pageNum, minPrice, maxPrice) {
         const baseUrl = `${MODULE_URL}filter/products`;
@@ -102,7 +109,7 @@ class FilterModel {
             const selectedCheckboxes = group.querySelectorAll('input.form-check-input:checked');
             selectedCheckboxes.forEach(checkbox => {
                 let value = decodeURIComponent(checkbox.value).trim();
-                selectedFiltersSet.add(`${filterName},${value}`);
+                selectedFiltersSet.add(`${filterName}, ${value}`);
             });
         });
 
@@ -134,14 +141,12 @@ class FilterModel {
         const url = new URL(window.location.href);
         const pathname = url.pathname;
         const keywordParam = url.searchParams.get('keyword');
-        if (keywordParam) {
+        if(keywordParam) {
             params.append("keyword", keywordParam);
-        } else if (pathname.includes('/c/')) {
+            console.log("keyword", keywordParam);
+        }
+        if (pathname.includes('/c/')) {
             params.append("category_alias", decodeURIComponent(pathname.split('/c/')[1].split('/')[0]));
-        } else if (pathname.includes('/p/search')) {
-            params.append("keyword", decodeURIComponent(pathname.split('/p/search/')[1].split('/')[0]));
-        } else {
-            throw new Error("Not supported URL. Supported['/c/{category_alias}','/p/search/{keyword}']");
         }
 
         return `${baseUrl}?${params.toString()}`;
@@ -153,12 +158,16 @@ class FilterModel {
      * @returns {Object} - The grouped filters as an object with names as keys and arrays of values.
      */
     groupFilters(filters) {
+        console.log("groupFilters", filters);
         return filters.reduce((acc, filter) => {
-            const [name, value] = filter.split(',');
+            const [name, value] = filter.split(/,(.+)/);  // Split on the first comma only
+            const trimmedValue = value.trim();  // Trim any whitespace from the value
+            const formattedValue = trimmedValue.includes(',') ? `'${trimmedValue}'` : trimmedValue;  // Wrap in single quotes if it contains a comma
+
             if (!acc[name]) {
                 acc[name] = [];
             }
-            acc[name].push(value);
+            acc[name].push(formattedValue);  // Push the formatted value to the accumulator
             return acc;
         }, {});
     }

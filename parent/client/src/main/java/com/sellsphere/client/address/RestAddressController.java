@@ -6,7 +6,9 @@ import com.sellsphere.common.entity.CustomerNotFoundException;
 import com.sellsphere.common.entity.payload.AddressDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.util.List;
@@ -17,7 +19,6 @@ import java.util.List;
 public class RestAddressController {
 
     private final CustomerService customerService;
-    private final AddressValidationService validationService;
 
     @GetMapping
     public ResponseEntity<List<AddressDTO>> getAddresses(Principal principal)
@@ -44,15 +45,6 @@ public class RestAddressController {
                         .toList()
         );
     }
-
-    // simple validation true/false
-    @PostMapping("/validate")
-    public ResponseEntity<Boolean> validateAddress(
-            @RequestBody AddressValidationRequest addressRequest) {
-        boolean addressValid = validationService.isAddressValid(addressRequest);
-        return ResponseEntity.ok(addressValid);
-    }
-
 
     private Customer getAuthenticatedCustomer(Principal principal)
             throws CustomerNotFoundException {

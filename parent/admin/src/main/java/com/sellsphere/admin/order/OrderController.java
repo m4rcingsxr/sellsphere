@@ -2,13 +2,18 @@ package com.sellsphere.admin.order;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
+import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Order;
 import com.sellsphere.common.entity.OrderNotFoundException;
 import com.sellsphere.common.entity.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -45,7 +50,8 @@ public class OrderController {
     }
 
     @GetMapping("/details/{id}")
-    public String showOrderDetails(@PathVariable Integer id, Model model) {
+    public String showOrderDetails(@PathVariable Integer id, Model model) throws OrderNotFoundException {
+        model.addAttribute("order", orderService.getById(id));
         return "order/order_detail_modal";
     }
 
@@ -54,46 +60,11 @@ public class OrderController {
         return DEFAULT_REDIRECT_URL;
     }
 
-    // before buying label - available to modify
-    @PostMapping("/delete-product")
-    public String deleteProduct(@RequestParam("orderId") Integer orderId) {
+    @GetMapping("{id}/status/{status}")
+    public String setOrderStatus(@PathVariable Integer id, @PathVariable String status, RedirectAttributes ra)
+            throws OrderNotFoundException {
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Order #" + id + " has been updated to status:" + status);
+        orderService.setOrderStatus(id, OrderStatus.valueOf(status));
         return DEFAULT_REDIRECT_URL;
     }
-
-    @GetMapping("/buy-label")
-    public String buyLabel(
-            @RequestParam("shipmentId") String shipmentId,
-            @RequestParam("courierId") String courierId) {
-
-        return DEFAULT_REDIRECT_URL;
-    }
-
-    @PostMapping("/select-pickup")
-    public String selectPickup(@RequestParam("orderId") Integer orderId) {
-        return DEFAULT_REDIRECT_URL;
-    }
-
-    // track
-    // label, status
-    // courier name/logo
-    // ship price
-    // buy label
-    // select pickup
-
-    // functionality:
-    // create label (asynchronous) - paid for shipment (final: get money from stripe)
-    // show ui loading
-    // wait for the webhook (label generated)
-    // update ui  show link to download pdf
-    // add possibility to select pickup
-    // select pickup (From to time)
-    // return order - generate return order - send to the client - he send the request
-    //                i accept the return request generate return label - give it to the client
-    //              - Return money to the client after i recieve items
-    //              - Client must pay for return shipment
-
-
-    // email send after buying with invoice
-    // invoice + order details
-
 }

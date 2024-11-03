@@ -1,1 +1,2 @@
 com.sellsphere.provider.listener.CustomerEventListenerProviderFactory
+com.sellsphere.provider.listener.EmailSettingsEventListenerProviderFactory

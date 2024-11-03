@@ -3,6 +3,7 @@ package com.sellsphere.common.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -41,7 +42,7 @@ public class Charge extends IdentifiedEntity {
     private PaymentIntent paymentIntent;
 
     @OrderBy("created desc")
-    @OneToMany(mappedBy = "charge")
-    private List<Refund> refunds;
+    @OneToMany(mappedBy = "charge", cascade = CascadeType.ALL)
+    private List<Refund> refunds = new ArrayList<>();
 
 }

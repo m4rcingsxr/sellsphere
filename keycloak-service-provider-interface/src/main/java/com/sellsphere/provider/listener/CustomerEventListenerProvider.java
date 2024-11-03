@@ -1,5 +1,8 @@
 package com.sellsphere.provider.listener;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.sellsphere.payment.StripeModule;
 import com.sellsphere.payment.customer.StripeCustomerService;
 import com.sellsphere.provider.UserModelTransaction;
 import com.sellsphere.provider.UserModelTransactionManager;
@@ -25,7 +28,8 @@ public class CustomerEventListenerProvider implements EventListenerProvider {
 
     public CustomerEventListenerProvider(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.customerService = new StripeCustomerService();
+        Injector injector = Guice.createInjector(new StripeModule());
+        this.customerService = injector.getInstance(StripeCustomerService.class);
         this.tx = UserModelTransactionManager.getInstance(this::updateUser);
     }
 
@@ -55,7 +59,7 @@ public class CustomerEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(AdminEvent adminEvent, boolean includeRepresentation) {
-        // Handle admin events
+        System.out.println(adminEvent);
     }
 
     @Override

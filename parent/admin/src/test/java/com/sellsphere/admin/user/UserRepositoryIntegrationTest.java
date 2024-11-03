@@ -1,27 +1,21 @@
 package com.sellsphere.admin.user;
 
-import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.jdbc.Sql;
+import util.PagingTestHelper;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static util.PagingTestHelper.assertPagingResults;
-import static util.PagingTestHelper.createPageRequest;
 
 @DataJpaTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -29,206 +23,173 @@ import static util.PagingTestHelper.createPageRequest;
 @Sql(scripts = {"classpath:sql/users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class UserRepositoryIntegrationTest {
 
-    private final UserRepository userRepository;
-    private final TestUserHelper testUserHelper;
-
-
     @Autowired
-    public UserRepositoryIntegrationTest(EntityManager entityManager, UserRepository userRepository) {
-        this.testUserHelper = new TestUserHelper(entityManager);
-        this.userRepository = userRepository;
-    }
-
+    private UserRepository userRepository;
 
     @Test
-    void whenFindUserByEmail_thenReturnUser() {
-
+    void givenKeyword_whenFindingAllUsers_thenReturnMatchingUsers() {
         // Given
-        String expectedEmail = "john.doe@example.com";
-        Set<Role> expectedRoles = testUserHelper.getRoles("ROLE_ADMIN", "ROLE_SALESPERSON");
+        String keyword = "john";
+        Pageable pageable = PagingTestHelper.createPageRequest(0, 5, "firstName",
+                                                               Sort.Direction.ASC
+        );
 
         // When
-        Optional<User> user = userRepository.findByEmail(expectedEmail);
+        Page<User> result = userRepository.findAll(keyword, pageable);
 
         // Then
-        assertTrue(user.isPresent(), "User should be present");
-        assertEquals(expectedEmail, user.get().getEmail(), "Email should match");
-        assertNotNull(user.get().getRoles(), "User roles should not be null");
-        assertFalse(user.get().getRoles().isEmpty(), "User should have at least one role");
-        assertIterableEquals(expectedRoles, user.get().getRoles(), "Roles should match");
+        PagingTestHelper.assertPagingResults(result, 1, 1, 1, "firstName", true);
+        assertEquals("john.doe@example.com", result.getContent().get(0).getEmail(),
+                     "The user's email should match 'john.doe@example.com'."
+        );
     }
 
     @Test
-    void givenNotExistingEmail_whenFindUserByEmail_thenReturnEmptyOptional() {
-
+    void givenInvalidKeyword_whenFindingAllUsers_thenReturnEmptyResult() {
         // Given
-        String email = "notfound@example.com";
+        String keyword = "nomatch";
+        Pageable pageable = PagingTestHelper.createPageRequest(0, 5, "firstName",
+                                                               Sort.Direction.ASC
+        );
 
         // When
+        Page<User> result = userRepository.findAll(keyword, pageable);
+
+        // Then
+        PagingTestHelper.assertPagingResults(result, 0, 0, 0, "firstName", true);
+    }
+
+    @Test
+    void givenValidEmail_whenFindingUserByEmail_thenReturnUser() {
+        // Given
+        String email = "john.doe@example.com";
+
+        // When
+        Optional<User> result = userRepository.findByEmail(email);
+
+        // Then
+        assertTrue(result.isPresent(),
+                   "A user with the email 'john.doe@example.com' should be present."
+        );
+        assertEquals("John", result.get().getFirstName(), "The first name should match 'John'.");
+        assertEquals("Doe", result.get().getLastName(), "The last name should match 'Doe'.");
+    }
+
+    @Test
+    void givenNonExistentEmail_whenFindingUserByEmail_thenReturnEmptyOptional() {
+        // Given
+        String email = "nonexistent@example.com";
+
+        // When
+        Optional<User> result = userRepository.findByEmail(email);
+
+        // Then
+        assertFalse(result.isPresent(),
+                    "No user should be found with the email 'nonexistent@example.com'."
+        );
+    }
+
+    @Test
+    void givenValidUserId_whenDeletingUserById_thenUserIsDeleted() {
+        // Given
+        String email = "john.doe@example.com";
         Optional<User> user = userRepository.findByEmail(email);
-
-        // Then
-        assertTrue(user.isEmpty(), "User should not be present");
-    }
-
-    @Test
-    void whenFindById_thenReturnUser() {
-
-        // Given
-        Integer userId = 6;
-        String expectedEmail = "diana.miller@example.com";
-        Set<Role> expectedRoles = testUserHelper.getRoles("ROLE_ADMIN", "ROLE_SHIPPER");
+        assertTrue(user.isPresent(), "User 'john.doe@example.com' should exist.");
+        Integer userId = user.get().getId();
 
         // When
-        Optional<User> foundUser = userRepository.findById(userId);
+        userRepository.deleteById(userId);
 
         // Then
-        assertTrue(foundUser.isPresent(), "User should be found");
-        assertEquals(expectedEmail, foundUser.get().getEmail(), "Email should match");
-        assertIterableEquals(expectedRoles, foundUser.get().getRoles(), "Roles should match");
+        Optional<User> deletedUser = userRepository.findById(userId);
+        assertFalse(deletedUser.isPresent(), "User with ID " + userId + " should be deleted.");
     }
 
     @Test
-    void whenFindByIdWithNonExistingId_thenReturnEmpty() {
-
+    void givenUsersExist_whenFindingAll_thenReturnAllUsers() {
         // Given
-        int userId = -1;
+        Pageable pageable = PagingTestHelper.createPageRequest(0, 10, "firstName",
+                                                               Sort.Direction.ASC
+        );
 
         // When
-        Optional<User> notFoundUser = userRepository.findById(userId);
+        Page<User> users = userRepository.findAll(pageable);
 
         // Then
-        assertFalse(notFoundUser.isPresent(), "Non-existing user should not be found");
+        PagingTestHelper.assertPagingResults(users, 10, 1, 10,
+                                             "firstName", true
+        );
     }
 
     @Test
-    void whenFindAll_thenShouldReturnUsers() {
-
+    void givenValidUserId_whenFindingUserById_thenReturnCorrectUser() {
         // Given
-        Integer expectedSize = 10;
+        String email = "jane.smith@example.com";
+        Optional<User> user = userRepository.findByEmail(email);
+        assertTrue(user.isPresent(), "User 'jane.smith@example.com' should exist.");
+        Integer userId = user.get().getId();
 
         // When
-        List<User> allUsers = userRepository.findAll();
+        Optional<User> result = userRepository.findById(userId);
 
         // Then
-        assertEquals(expectedSize, allUsers.size(), "Should be 10 users");
+        assertTrue(result.isPresent(), "User with ID " + userId + " should be found.");
+        assertEquals("Jane", result.get().getFirstName(), "The first name should match 'Jane'.");
+        assertEquals("Smith", result.get().getLastName(), "The last name should match 'Smith'.");
     }
 
-
     @Test
-    void whenSaveUser_thenUserIsSaved() {
-
+    void givenNewUser_whenSavingUser_thenUserIsSavedSuccessfully() {
         // Given
-        int expectedId = 11;
-        String expectedEmail = "JohnDoe@example.com";
-        Role admin = testUserHelper.getRole("ROLE_ADMIN");
-
         User newUser = new User();
-        newUser.setEmail(expectedEmail);
-        newUser.setFirstName("John");
-        newUser.setLastName("Doe");
-        newUser.setPassword("password");
-        newUser.setMainImage("image.jpg");
-        newUser.addRole(admin);
+        newUser.setEmail("new.user@example.com");
+        newUser.setFirstName("New");
+        newUser.setLastName("User");
+        newUser.setPassword("password123");
+        newUser.setMainImage("default.png");
+        newUser.setEnabled(true);
+
+        Role role = new Role();
+        role.setName("ROLE_USER");
+        newUser.addRole(role);
 
         // When
         User savedUser = userRepository.save(newUser);
 
         // Then
-        assertNotNull(savedUser.getId(), "Saved user should have a non-null ID");
-        assertEquals(expectedId, savedUser.getId(), "Saved user should have a non-null ID");
-        assertEquals(expectedEmail, savedUser.getEmail(), "Email should match");
-        assertFalse(savedUser.getRoles().isEmpty(), "User should have at least one role");
-        assertFalse(savedUser.isEnabled(), "User shouldn't be enabled by default");
+        assertNotNull(savedUser.getId(), "User ID should not be null after saving.");
+
+        Optional<User> result = userRepository.findById(savedUser.getId());
+        assertTrue(result.isPresent(), "Saved user should be present in the repository.");
+
+        User retrievedUser = result.get();
+        assertEquals("new.user@example.com", retrievedUser.getEmail(),
+                     "Email should match the saved user."
+        );
+        assertEquals("New", retrievedUser.getFirstName(),
+                     "First name should match the saved user."
+        );
+        assertEquals("User", retrievedUser.getLastName(), "Last name should match the saved user.");
+        assertEquals("default.png", retrievedUser.getMainImage(),
+                     "Main image should match the saved user."
+        );
+        assertTrue(retrievedUser.isEnabled(), "User should be enabled.");
+        assertFalse(retrievedUser.getRoles().isEmpty(),
+                    "User should have at least one role assigned."
+        );
     }
 
     @Test
-    void whenDeleteById_thenUserIsDeleted() {
-
+    void givenInvalidUserId_whenDeletingUserById_thenNoExceptionIsThrown() {
         // Given
-        int existingUserId = 1; // Sql
-        Optional<User> user = userRepository.findById(existingUserId);
-        assertTrue(user.isPresent(), "User should be present");
+        Integer nonExistentUserId = 99999;
 
         // When
-        userRepository.deleteById(existingUserId);
-        user = userRepository.findById(existingUserId);
+        userRepository.deleteById(nonExistentUserId);
 
         // Then
-        assertTrue(user.isEmpty(), "User should not be present");
+        Optional<User> deletedUser = userRepository.findById(nonExistentUserId);
+        assertFalse(deletedUser.isPresent(), "User with ID " + nonExistentUserId + " should not exist.");
     }
-
-    @Test
-    void whenCount_thenReturnCorrectNumber() {
-        // Given
-        long expectedCount = 10;
-
-        // When
-        long actualCount = userRepository.count();
-
-        // Then
-        assertEquals(expectedCount, actualCount, "User count should match expected value");
-    }
-
-    @Test
-    void whenExistsById_thenReturnTrue() {
-
-        // given
-        Integer userId = 1;
-
-        // when
-        boolean exists = userRepository.existsById(userId);
-
-        // then
-        assertTrue(exists, "User should exist");
-    }
-
-    @Test
-    void whenListWithPageRequest_thenReturnPageOfUsers() {
-
-        // Given
-        String sortField = "firstName";
-        PageRequest pageRequest = createPageRequest(0, 5, sortField,
-                                                    Constants.SORT_ASCENDING
-        );
-        int expectedTotalElements = 10;
-        int expectedPages = 2;
-        int expectedContentSize = 5;
-
-        // When
-        Page<User> users = userRepository.findAll(pageRequest);
-
-        // Then
-        assertPagingResults(users, expectedContentSize, expectedPages,
-                            expectedTotalElements, sortField, true
-        );
-    }
-
-    @ParameterizedTest(name = "Keyword: {0}, Expected Total: {1}, Expected Pages: {2}, Expected " +
-            "Content Size: {3}")
-    @CsvSource({
-            "@example, 10, 2, 5",
-            "john, 1, 1, 1",
-            "ALICE.JONES@EXAMPLE.COM, 1, 1, 1",
-            "HANNAH, 1, 1, 1",
-            "notExisting, 0, 0, 0"
-    })
-    void whenFindAllByKeyword_thenReturnMatchingUsers(String keyword, int expectedTotalElements,
-                                                      int expectedPages, int expectedContentSize) {
-        // given
-        String sortField = "firstName";
-        PageRequest pageRequest = createPageRequest(0, 5, sortField,
-                                                    Constants.SORT_ASCENDING
-        );
-
-        // when
-        Page<User> result = userRepository.findAll(keyword, pageRequest);
-
-        // then
-        assertPagingResults(result, expectedContentSize, expectedPages, expectedTotalElements,
-                            sortField, true
-        );
-    }
-
 
 }

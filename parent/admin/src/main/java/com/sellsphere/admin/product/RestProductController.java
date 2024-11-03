@@ -1,12 +1,12 @@
 package com.sellsphere.admin.product;
 
-import com.sellsphere.admin.brand.BrandService;
 import com.sellsphere.common.entity.ProductTax;
 import com.sellsphere.common.entity.TaxType;
 import com.sellsphere.common.entity.payload.BasicProductDTO;
 import com.sellsphere.easyship.EasyshipService;
 import com.sellsphere.easyship.payload.HsCodeResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +24,6 @@ public class RestProductController {
     private final ProductService productService;
     private final ProductTaxRepository productTaxRepository;
     private final EasyshipService easyshipService;
-    private final BrandService brandService;
 
     /**
      * Checks if a product name is unique.
@@ -43,7 +42,7 @@ public class RestProductController {
             @RequestParam(value = "id", required = false) Integer id,
             @RequestParam("name") String name
     ) {
-        return productService.isNameUnique(id, name);
+        return productService.isProductNameUnique(id, name);
     }
 
     @GetMapping("/tax/{type}")
@@ -68,14 +67,14 @@ public class RestProductController {
     @GetMapping("/brand/{id}")
     public ResponseEntity<List<BasicProductDTO>> listProductsByBrand(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(
-                productService.findAllByBrand(id).stream().map(BasicProductDTO::new).toList()
+                productService.listAllProductsByBrand(id).stream().map(BasicProductDTO::new).toList()
         );
     }
 
     @GetMapping("/category/{id}")
     public ResponseEntity<List<BasicProductDTO>> listProductsByCategory(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(
-                productService.findAllByCategory(id).stream().map(BasicProductDTO::new).toList()
+                productService.listAllProductsByCategory(id).stream().map(BasicProductDTO::new).toList()
         );
     }
 
@@ -83,8 +82,20 @@ public class RestProductController {
     public ResponseEntity<List<BasicProductDTO>> listProductsByKeyword(
             @PathVariable("keyword") String keyword) {
         return ResponseEntity.ok(
-                productService.findAllByKeyword(keyword).stream().map(BasicProductDTO::new).toList()
+                productService.searchProductsByKeyword(keyword).stream().map(BasicProductDTO::new).toList()
         );
     }
+
+    @PostMapping("/names")
+    public ResponseEntity<List<BasicProductDTO>> findProductByNames(
+            @RequestBody List<String> ids) {
+        List<BasicProductDTO> products = productService.findByIds(ids).stream().map(BasicProductDTO::new).toList();
+        if (products.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.ok(products);
+    }
+
 
 }

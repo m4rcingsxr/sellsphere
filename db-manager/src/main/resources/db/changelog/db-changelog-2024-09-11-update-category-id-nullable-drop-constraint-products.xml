@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="2024-09-11-update-category-id-nullable-and-constraint" author="your-name">
+
+        <modifyDataType tableName="products" columnName="category_id" newDataType="INT NULL"/>
+
+        <dropForeignKeyConstraint baseTableName="products" constraintName="FK_PRODUCTS_ON_CATEGORY"/>
+
+        <addForeignKeyConstraint baseTableName="products"
+                                 baseColumnNames="category_id"
+                                 constraintName="FK_PRODUCTS_ON_CATEGORY"
+                                 referencedTableName="categories"
+                                 referencedColumnNames="id"
+                                 onDelete="SET NULL"/>
+    </changeSet>
+
+</databaseChangeLog>

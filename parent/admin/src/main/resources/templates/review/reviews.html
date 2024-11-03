@@ -5,50 +5,121 @@
 
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="mt-4 content">
-    <h1 class="text-center">Manage Reviews</h1>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{navigations :: sidebar('Reviews')}"></div>
 
-    <div class="container-md mt-5">
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Reviews</h1>
+                <div th:replace="~{navigations :: export_nav('reviews', false)}"></div>
+            </div>
 
-        <div th:replace="~{common :: alerts()}"></div>
+            <section class="content mb-5">
+                <div class="container-md mt-7">
 
-        <form th:replace="~{list_fragments :: search_bar('/reviews/page/0', 'Search for the review', 'reviewTime', ${keyword}, ${totalItems}, null)}"></form>
+                    <div th:replace="~{common :: alerts()}"></div>
 
-        <table class="table table-hover mt-4">
-            <thead class="table-dark">
-            <tr>
-                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'id',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'product.name',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Product')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'customer',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'rate',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Rating')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'reviewTime',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Review Time')}"></th>
-                <th>Approved</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="review : ${reviewList}">
-                <td th:text="${review.id}"></td>
-                <td th:text="${review.product.name}"></td>
-                <td th:text="${review.customer.fullName}"></td>
-                <td th:text="${review.rate}"></td>
-                <td th:text="${review.reviewTime}"></td>
-                <td><th:block th:replace="~{list_fragments :: status(${review.approved}, |/reviews/${review.id}/approved/${!review.approved}|)}"></th:block></td>
-                <td>
-                    <th:block th:replace="~{list_fragments :: detail_entity(|/reviews/details/${review.id}|)}"></th:block>
-                    <th:block th:replace="~{list_fragments :: delete_entity(|/reviews/delete/${review.id}|)}"></th:block>
-                    <th:block th:replace="~{list_fragments :: edit_entity(|/reviews/edit/${review.id}|)}"></th:block>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                    <form th:replace="~{list_fragments :: search_bar('/reviews/page/0', 'Search for the review', 'reviewTime', ${keyword}, ${totalItems}, null)}"></form>
+
+                    <!-- Desktop Table View -->
+                    <div class="con-lg-xl-xxl">
+                        <table class="table table-hover mt-4">
+                            <thead class="table-dark">
+                            <tr>
+                                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'id',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'product.name',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Product')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'customer',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'rate',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Rating')}"></th>
+                                <th th:replace="~{list_fragments :: column_link('/reviews/page', ${currentPage},'reviewTime',${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Review Time')}"></th>
+                                <th>Approved</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="review : ${reviewList}">
+                                <td th:text="${review.id}"></td>
+                                <td th:text="${review.product.name}"></td>
+                                <td th:text="${review.customer.fullName}"></td>
+                                <td th:text="${review.rate}"></td>
+                                <td th:text="${review.reviewTime}"></td>
+                                <td>
+                                    <th:block th:replace="~{list_fragments :: status(${review.approved}, |/reviews/${review.id}/approved/${!review.approved}|)}"></th:block>
+                                </td>
+                                <td>
+                                    <th:block th:replace="~{list_fragments :: detail_entity(|/reviews/details/${review.id}|)}"></th:block>
+                                    <th:block th:replace="~{list_fragments :: delete_entity(|/reviews/delete/${review.id}|)}"></th:block>
+                                    <th:block th:replace="~{list_fragments :: edit_entity(|/reviews/edit/${review.id}|)}"></th:block>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile-Friendly List View -->
+                    <div class="con-xs-s-md px-3">
+                        <ul class="list-group list-group-flush">
+                            <li th:each="review : ${reviewList}" class="list-group-item p-4 border rounded bg-light shadow-sm mb-3">
+                                <div class="d-flex flex-column gap-3">
+
+                                    <!-- Review ID -->
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                        <div class="fw-bold">ID</div>
+                                        <div th:text="${review.id}"></div>
+                                    </div>
+
+                                    <!-- Product Name -->
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                        <div class="fw-bold">Product</div>
+                                        <div class="text-end" th:text="${review.product.name}"></div>
+                                    </div>
+
+                                    <!-- Customer Name -->
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                        <div class="fw-bold">Customer</div>
+                                        <div th:text="${review.customer.fullName}"></div>
+                                    </div>
+
+                                    <!-- Rating -->
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                        <div class="fw-bold">Rating</div>
+                                        <div th:text="${review.rate}"></div>
+                                    </div>
+
+                                    <!-- Review Time -->
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                        <div class="fw-bold">Review Time</div>
+                                        <div th:text="${review.reviewTime}"></div>
+                                    </div>
+
+                                    <!-- Approval Status -->
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                        <div class="fw-bold">Approved</div>
+                                        <div th:replace="~{list_fragments :: status(${review.approved}, |/reviews/${review.id}/approved/${!review.approved}|)}"></div>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="d-flex justify-content-between align-items-center pt-2">
+                                        <div class="fw-bold">Actions</div>
+                                        <div>
+                                            <a th:replace="~{list_fragments :: detail_entity(|/reviews/details/${review.id}|)}"></a>
+                                            <a th:replace="~{list_fragments :: edit_entity(|/reviews/edit/${review.id}|)}"></a>
+                                            <a th:replace="~{list_fragments :: delete_entity(|/reviews/delete/${review.id}|)}"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <nav th:replace="~{list_fragments :: large_pagination('/reviews/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}" class="mt-4"></nav>
+            </section>
+        </main>
     </div>
+</div>
 
-    <nav th:replace="~{list_fragments :: large_pagination('/reviews/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}" class="mt-4"></nav>
-
-</main>
-
-<footer th:replace="~{navigations :: footer()}"></footer>
 
 <div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal','Delete')}"></div>
 <div th:replace="~{modal_fragments :: close_modal('detailModal')}"></div>

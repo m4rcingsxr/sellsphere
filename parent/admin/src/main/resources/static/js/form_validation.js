@@ -5,6 +5,7 @@ $(function () {
     configureFormValidation();
 });
 
+
 /**
  * Initializes custom validators for form validation.
  *
@@ -23,7 +24,61 @@ function initializeValidators() {
     addBasicValidators();
     addFileValidators();
     addCategoryIconValidator();
+    addArticleValidators();
 }
+
+
+
+function addArticleValidators() {
+    $.validator.addMethod('articleItemNumber', function (value, element) {
+        const articleType = $('#article\\.articleType').val();
+
+        if(articleType === "NAVIGATION" || articleType === "FOOTER") {
+            return !(value.trim() === '');
+        } else {
+            return true;
+        }
+    }, 'Item number is required')
+
+    $.validator.addMethod('articlePromotionName', function (value, element) {
+        const articleType = $('#article\\.articleType').val();
+        const promotionType = $('input[name="promotionType"]').val();
+
+        if(articleType === "PROMOTION" && promotionType === "NEW") {
+            return !(value.trim() === '');
+        } else {
+            return true;
+        }
+    }, 'For new promotion name is required')
+
+    $.validator.addMethod('articleFooterSectionHeader', function (value, element) {
+        const articleType = $('#article\\.articleType').val();
+
+        // Check if the article type is "FOOTER"
+        if (articleType === "FOOTER") {
+            // Use the name selector to target all inputs with the same name
+            const allHeaders = $('[name="sectionHeader"]');
+            let isValid = true; // Start assuming all are valid
+
+            // Check each section header
+            allHeaders.each(function() {
+                if ($(this).val().trim() === '') {
+                    isValid = false; // If any are empty, set to invalid
+                    // Optionally, you can highlight the empty input
+                    $(this).addClass('is-invalid'); // Add a class for styling
+                } else {
+                    $(this).removeClass('is-invalid'); // Remove the invalid class if filled
+                }
+            });
+
+            return isValid; // Return whether all inputs are valid
+        }
+
+        // If not FOOTER, validation passes
+        return true;
+    }, 'Each section header is required.');
+}
+
 
 function addCategoryIconValidator() {
     $.validator.addMethod('categoryIcon', function (value, element) {
@@ -34,6 +89,8 @@ function addCategoryIconValidator() {
 
         return categoryId !== -1 || categoryId === -1 && categoryIcon;
     }, 'Category icon must be presented for root categories.')
+
+
 }
 
 /**

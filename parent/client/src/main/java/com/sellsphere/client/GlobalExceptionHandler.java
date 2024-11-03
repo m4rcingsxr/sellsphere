@@ -1,6 +1,7 @@
 package com.sellsphere.client;
 
 import com.sellsphere.client.address.AddressController;
+import com.sellsphere.client.customer.RecaptchaVerificationFailed;
 import com.sellsphere.common.entity.*;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -52,6 +53,15 @@ public class GlobalExceptionHandler {
         log.error(ex.getMessage(), ex);
 
         return "error/404";
+    }
+
+    @ExceptionHandler({RecaptchaVerificationFailed.class})
+    public String handleRecaptchaVerificationFailed(RecaptchaVerificationFailed ex, RedirectAttributes ra) {
+        log.error(ex.getMessage(), ex);
+
+        ra.addFlashAttribute(Constants.ERROR_MESSAGE, ex.getMessage());
+
+        return "redirect:" + ex.getRedirectUrl();
     }
 
     @ExceptionHandler(ForbiddenException.class)

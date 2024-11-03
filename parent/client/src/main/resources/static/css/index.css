@@ -1,0 +1,62 @@
+.icon-circle {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background-color: rgb(245, 247, 250);
+}
+
+@media (max-width: 576px) {
+  .icon-circle {
+    width: 3rem;
+    height: 3rem;
+  }
+  .icon-text {
+    font-size: 13px;
+  }
+  .icon-header {
+    font-size: 15px;
+  }
+  .icon-circle i {
+    font-size: 1.7rem;
+  }
+}
+.icon-circle i {
+  font-size: 2rem;
+}
+
+.product-carousels {
+  height: 500px !important;
+}
+
+.article-carousels {
+  height: 400px !important;
+}
+
+#categoryList {
+  max-height: 550px;
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide-main {
+  text-align: center;
+  font-size: 18px;
+  background: #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 500px;
+}
+
+.swiper-slide .main-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

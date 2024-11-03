@@ -12,6 +12,7 @@ import com.sellsphere.common.entity.Constants;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,15 +26,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Controller class for managing Brand-related operations.
+ * Controller class responsible for managing CRUD operations for brands.
+ * Includes functionality for creating, updating, listing, deleting, and exporting brands.
  */
 @RequiredArgsConstructor
 @Controller
 public class BrandController {
 
-    public static final String DEFAULT_REDIRECT_URL = "redirect:/brands/page/0?sortField=name" +
-            "&sortDir=asc";
-    public static final String BRAND_FORM = "brand/brand_form";
+    public static final String DEFAULT_REDIRECT_URL = "redirect:/brands/page/0?sortField=name&sortDir=asc";
+    public static final String BRAND_FORM_VIEW = "brand/brand_form";
 
     private final BrandService brandService;
     private final CategoryService categoryService;
@@ -41,162 +42,140 @@ public class BrandController {
     /**
      * Redirects to the first page of the brand list.
      *
-     * @return the redirect URL for the first page
+     * @return the redirect URL for the first page of brand list
      */
     @GetMapping("/brands")
-    public String listFirstPage() {
+    public String redirectToFirstPage() {
         return DEFAULT_REDIRECT_URL;
     }
 
 
     /**
-     * Lists brands by page.
+     * Lists brands by page with optional sorting.
      *
-     * @param helper  the PagingAndSortingHelper
-     * @param pageNum the page number
-     * @return the view name for the brand list
+     * @param helper  the PagingAndSortingHelper for managing pagination and sorting
+     * @param pageNum the page number to display
+     * @return the view name for the paginated brand list
      */
     @GetMapping("/brands/page/{pageNum}")
-    public String listPage(
+    public String listBrandsByPage(
             @PagingAndSortingParam(listName = "brandList", moduleURL = "/brand") PagingAndSortingHelper helper,
             @PathVariable("pageNum") Integer pageNum) {
-        brandService.listPage(pageNum, helper);
-
+        brandService.listBrandsByPage(pageNum, helper);
         return "brand/brands";
     }
 
     /**
-     * Shows the form for creating or editing a brand.
+     * Displays the form for creating a new brand or editing an existing one.
      *
-     * @param id    the brand ID (optional)
-     * @param model the model
+     * @param id    the brand ID (optional, null if creating a new brand)
+     * @param model the model to hold form data
      * @return the view name for the brand form
-     * @throws BrandNotFoundException if the brand is not found
+     * @throws BrandNotFoundException if the brand is not found when editing
      */
     @GetMapping({"/brands/new", "/brands/edit/{id}"})
     public String showBrandForm(@PathVariable(required = false) Integer id, Model model)
             throws BrandNotFoundException {
-        Brand brand;
-
-        if (id != null) {
-            brand = brandService.get(id);
-        } else {
-            brand = new Brand();
-        }
-
+        Brand brand = (id != null) ? brandService.getBrandById(id) : new Brand();
         model.addAttribute("brand", brand);
-        prepareModelFormAttributes(id, model);
-
-        return BRAND_FORM;
+        populateModelWithCategoriesAndPageTitle(id, model);
+        return BRAND_FORM_VIEW;
     }
 
     /**
-     * Saves a brand.
+     * Handles the submission of the brand form to create or update a brand.
+     * Performs validation and saves the brand along with an optional logo image.
      *
-     * @param brand              the brand
-     * @param bindingResult      the binding result
-     * @param redirectAttributes the redirect attributes
-     * @param model              the model
-     * @param file               the brand logo file
-     * @return the redirect URL after saving
-     * @throws IOException if an I/O error occurs
+     * @param brand              the brand object from the form
+     * @param bindingResult      the result of form validation
+     * @param redirectAttributes attributes for storing messages to be displayed after redirection
+     * @param model              the model for holding form data
+     * @param file               the optional logo file for the brand
+     * @return the redirect URL to the brand list after saving
+     * @throws IOException if there is an error handling the file upload
      */
     @PostMapping("/brands/save")
     public String saveBrand(@Valid @ModelAttribute("brand") Brand brand,
                             BindingResult bindingResult, RedirectAttributes redirectAttributes,
                             Model model, @RequestParam(value = "newImage") MultipartFile file)
             throws IOException {
+
+        // Validate the brand logo and process form validation errors
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.brand");
-        validationHelper.validateMultipartFile(file, brand.getId(), "logo",
-                                               "Brand logo is required"
-        );
+        validationHelper.validateMultipartFile(file, brand.getId(), "logo", "Brand logo is required");
 
         if (!validationHelper.validate()) {
-            prepareModelFormAttributes(brand.getId(), model);
-
-            return BRAND_FORM;
+            populateModelWithCategoriesAndPageTitle(brand.getId(), model);
+            return BRAND_FORM_VIEW; // Return to the form if validation fails
         }
 
-        String successMessage =
-                "Successfully " + (brand.getId() != null ? "updated" : "saved") + " a brand '" + brand.getName() + "'";
-
-        brandService.save(brand, file);
-
+        // Save the brand and add a success message
+        brandService.saveBrand(brand, file);
+        String action = (brand.getId() != null) ? "updated" : "saved";
+        String successMessage = String.format("Successfully %s the brand '%s'", action, brand.getName());
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
 
-        return DEFAULT_REDIRECT_URL;
+        return DEFAULT_REDIRECT_URL; // Redirect to the brand list
     }
 
-
     /**
-     * Prepares model attributes for the brand form.
+     * Populates the model with category data and the appropriate page title for the brand form.
      *
-     * @param id    the brand ID
-     * @param model the model
+     * @param id    the brand ID (optional, null if creating a new brand)
+     * @param model the model to populate
      */
-    private void prepareModelFormAttributes(Integer id, Model model) {
-        String pageTitle;
-
-        if (id != null) {
-            pageTitle = "Edit Brand [ID: " + id + "]";
-        } else {
-            pageTitle = "Create New Brand";
-        }
-
-        List<Category> categoryList = categoryService.listAllRootCategoriesSorted("name",
-                                                                                  Constants.SORT_ASCENDING
-        );
-
+    private void populateModelWithCategoriesAndPageTitle(Integer id, Model model) {
+        String pageTitle = (id != null) ? "Edit Brand [ID: " + id + "]" : "Create New Brand";
+        List<Category> categoryList = categoryService.listAllRootCategoriesSorted("name", Sort.Direction.ASC);
         model.addAttribute("categoryList", categoryList);
         model.addAttribute("pageTitle", pageTitle);
-
     }
 
     /**
-     * Deletes a brand.
+     * Deletes a brand by its ID.
      *
-     * @param id                 the brand ID
-     * @param redirectAttributes the redirect attributes
-     * @return the redirect URL after deletion
+     * @param id                 the brand ID to delete
+     * @param redirectAttributes attributes for storing messages to be displayed after redirection
+     * @return the redirect URL to the brand list after deletion
      * @throws BrandNotFoundException if the brand is not found
      */
     @GetMapping("/brands/delete/{id}")
     public String deleteBrand(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes)
             throws BrandNotFoundException {
-        brandService.delete(id);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
-                                             "The Brand [ID: " + id + "] has been deleted " +
-                                                     "successfully"
-        );
-
+        brandService.deleteBrandById(id);
+        String successMessage = String.format("The Brand [ID: %d] has been deleted successfully.", id);
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
         return DEFAULT_REDIRECT_URL;
     }
 
     /**
-     * Exports brand entities.
+     * Exports brand data in the specified format (e.g., CSV, Excel).
      *
-     * @param format   the export format
-     * @param response the HTTP response
-     * @throws IOException if an I/O error occurs
+     * @param format   the export format (csv, excel, etc.)
+     * @param response the HTTP response to write the exported data to
+     * @throws IOException if there is an error writing the response
      */
     @GetMapping("/brands/export/{format}")
-    public void exportEntities(@PathVariable String format, HttpServletResponse response)
+    public void exportBrandData(@PathVariable String format, HttpServletResponse response)
             throws IOException {
         String[] headers = {"Id", "Name", "Categories"};
+        Function<Brand, String[]> dataExtractor = brand -> new String[]{
+                String.valueOf(brand.getId()),
+                brand.getName(),
+                brand.getCategories().stream()
+                        .map(Category::getName)
+                        .collect(Collectors.joining(",", "\"", "\""))
+        };
 
-        Function<Brand, String[]> extractor = brand -> new String[]{String.valueOf(brand.getId()),
-                                                                    brand.getName(),
-                                                                    brand.getCategories().stream().map(
-                                                                            Category::getName).collect(
-                                                                            Collectors.joining(",",
-                                                                                               "\"",
-                                                                                               "\""
-                                                                            ))};
-        ExportUtil.export(format, this::listAll, headers, extractor, response);
+        ExportUtil.export(format, this::listAllBrands, headers, dataExtractor, response);
     }
 
-    private List<Brand> listAll() {
-        return brandService.listAll("name", Constants.SORT_ASCENDING);
+    /**
+     * Returns a list of all brands, sorted by name in ascending order.
+     *
+     * @return the list of all brands
+     */
+    private List<Brand> listAllBrands() {
+        return brandService.listAllBrands("name", Sort.Direction.ASC);
     }
-
 }

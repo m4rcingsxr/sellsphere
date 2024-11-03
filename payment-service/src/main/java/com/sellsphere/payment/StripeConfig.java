@@ -1,18 +1,17 @@
 package com.sellsphere.payment;
 
 import com.stripe.Stripe;
-import lombok.experimental.UtilityClass;
+import jakarta.inject.Singleton;
 
 /**
  * Utility class for initializing Stripe configuration.
  */
-@UtilityClass
+@Singleton
 public class StripeConfig {
 
-    public static void init() {
-        if(Stripe.apiKey == null) {
+    public StripeConfig() {
+        if (Stripe.apiKey == null) {
             Stripe.apiKey = System.getenv("STRIPE_API_KEY");
         }
     }
-
 }

@@ -1,35 +1,36 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.admin.FileService;
-import com.sellsphere.common.entity.Currency;
-import com.sellsphere.common.entity.Setting;
+import com.sellsphere.common.entity.*;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
+import org.mockito.MockitoAnnotations;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class SettingServiceTest {
+class SettingServiceUnitTest {
 
     @Mock
     private SettingRepository settingRepository;
+
+    @Mock
+    private CountryRepository countryRepository;
+
+    @Mock
+    private StateRepository stateRepository;
 
     @Mock
     private CurrencyRepository currencyRepository;
@@ -37,93 +38,185 @@ class SettingServiceTest {
     @InjectMocks
     private SettingService settingService;
 
-    @Mock
-    private HttpServletRequest request;
-
-    @Mock
-    private MultipartFile file;
-
-    @Mock
-    private GeneralSettingManager generalSettingManager;
-
-    @Test
-    void givenCurrencies_whenListAllCurrencies_thenReturnAllCurrencies() {
-        // Given
-        Currency currency1 = new Currency();
-        currency1.setName("USD");
-        Currency currency2 = new Currency();
-        currency2.setName("EUR");
-        when(currencyRepository.findAll(Sort.by(Sort.Direction.ASC, "name"))).thenReturn(
-                Arrays.asList(currency1, currency2));
-
-        // When
-        List<Currency> currencies = settingService.listAllCurrencies();
-
-        // Then
-        assertEquals(2, currencies.size());
-        verify(currencyRepository, times(1)).findAll(Sort.by(Sort.Direction.ASC, "name"));
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void givenSettings_whenListAllSettings_thenReturnAllSettings() {
+    void givenValidFile_whenSaveSiteLogo_thenFileIsSavedInS3() throws IOException {
         // Given
-        Setting setting1 = new Setting();
-        Setting setting2 = new Setting();
-        when(settingRepository.findAll()).thenReturn(Arrays.asList(setting1, setting2));
+        MultipartFile file = mock(MultipartFile.class);
+        GeneralSettingManager generalSettingManager = mock(GeneralSettingManager.class);
 
-        // When
-        List<Setting> settings = settingService.listAllSettings();
+        given(file.isEmpty()).willReturn(false);
+        given(file.getOriginalFilename()).willReturn("logo.png");
 
-        // Then
-        assertEquals(2, settings.size());
-        verify(settingRepository, times(1)).findAll();
-    }
-
-    @Test
-    void givenRequestData_whenSave_thenShouldPersistSettings() throws IOException {
         try (MockedStatic<FileService> mockedFileService = mockStatic(FileService.class)) {
+            // When
+            settingService.saveSiteLogo(file, generalSettingManager);
 
-            List<Setting> generalSettings = SettingDataGenerator.generateGeneralSettings();
-            List<Setting> templateSettings = SettingDataGenerator.generateMailTemplateSettings();
-            List<Setting> mailServerSettings = SettingDataGenerator.generateMailServerSettings();
-
-            List<Setting> allSettings = new ArrayList<>();
-            allSettings.addAll(generalSettings);
-            allSettings.addAll(templateSettings);
-            allSettings.addAll(mailServerSettings);
-
-            Currency currency = new Currency();
-            currency.setId(1);
-            currency.setName("United States Dollar");
-            currency.setSymbol("$");
-            currency.setCode("USD");
-
-            when(settingRepository.findAllByCategoryIn(anyList())).thenReturn(allSettings);
-            when(file.isEmpty()).thenReturn(false);
-            when(file.getOriginalFilename()).thenReturn("logo.png");
-            when(currencyRepository.findById(anyInt())).thenReturn(Optional.of(currency));
-            when(request.getParameter("CURRENCY_ID")).thenReturn("1");
-
-            doNothing().when(generalSettingManager).updateSiteLogo(anyString());
-            doNothing().when(generalSettingManager).updateCurrencySymbol(anyString());
-
-            // Create a spy for SettingService
-            SettingService spySettingService = spy(settingService);
-            doReturn(generalSettingManager).when(spySettingService).populateGeneralSettingManager();
-
-            spySettingService.save(request, file);
-
-            // Verify that FileService.saveSingleFile was called
-            mockedFileService.verify(() -> FileService.saveSingleFile(any(), any(), any()), times(1));
-
-            // Verify that GeneralSettingManager methods were called
-            verify(generalSettingManager, times(1)).updateSiteLogo("/site-logo/logo.png");
-            verify(generalSettingManager, times(1)).updateCurrencySymbol("$");
-
-            // Verify that settings were saved
-            verify(settingRepository, times(3)).saveAll(anyList());
+            // Then
+            mockedFileService.verify(() -> FileService.saveSingleFile(file, "site-logo", "logo.png"));
+            verify(generalSettingManager).updateSiteLogo("/site-logo/logo.png");
         }
     }
 
+    @Test
+    void givenEmptyFile_whenSaveSiteLogo_thenFileIsNotSaved() throws IOException {
+        // Given
+        MultipartFile file = mock(MultipartFile.class);
+        GeneralSettingManager generalSettingManager = mock(GeneralSettingManager.class);
+
+        given(file.isEmpty()).willReturn(true);
+
+        try (MockedStatic<FileService> mockedFileService = mockStatic(FileService.class)) {
+            // When
+            settingService.saveSiteLogo(file, generalSettingManager);
+
+            // Then
+            mockedFileService.verifyNoInteractions();
+            verify(generalSettingManager, never()).updateSiteLogo(anyString());
+        }
+    }
+
+    @Test
+    void givenCurrencySymbolUpdateRequest_whenUpdateCurrencySymbol_thenCurrencySymbolIsUpdated() {
+        // Given
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        GeneralSettingManager generalSettingManager = mock(GeneralSettingManager.class);
+        given(request.getParameter("CURRENCY_ID")).willReturn("1");
+
+        Currency currency = new Currency();
+        currency.setSymbol("$");
+        given(currencyRepository.findById(1)).willReturn(Optional.of(currency));
+
+        // When
+        settingService.updateCurrencySymbol(request, generalSettingManager);
+
+        // Then
+        verify(generalSettingManager).updateCurrencySymbol("$");
+    }
+
+    @Test
+    void givenInvalidCurrencyId_whenUpdateCurrencySymbol_thenExceptionIsThrown() {
+        // Given
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        GeneralSettingManager generalSettingManager = mock(GeneralSettingManager.class);
+        given(request.getParameter("CURRENCY_ID")).willReturn("1");
+
+        given(currencyRepository.findById(1)).willReturn(Optional.empty());
+
+        // When/Then
+        assertThrows(IllegalStateException.class, () -> settingService.updateCurrencySymbol(request, generalSettingManager));
+    }
+
+    @Test
+    void givenSupportedCountries_whenSaveSupportedCountries_thenSettingIsUpdated() {
+        // Given
+        List<String> countryIds = List.of("1", "2");
+        Setting setting = new Setting();
+        given(settingRepository.save(any(Setting.class))).willReturn(setting);
+
+        // When
+        settingService.saveSupportedCountries(countryIds);
+
+        // Then
+        verify(settingRepository).save(any(Setting.class));
+    }
+
+    @Test
+    void givenGeneralSettings_whenListGeneralSettings_thenReturnSettings() {
+        // Given
+        Setting generalSetting = new Setting();
+        generalSetting.setCategory(SettingCategory.GENERAL);
+
+        Setting currencySetting = new Setting();
+        currencySetting.setCategory(SettingCategory.CURRENCY);
+
+        given(settingRepository.findAllByCategoryIn(List.of(SettingCategory.GENERAL, SettingCategory.CURRENCY)))
+                .willReturn(List.of(generalSetting, currencySetting));
+
+        // When
+        List<Setting> settings = settingService.listGeneralSettings();
+
+        // Then
+        assertEquals(2, settings.size());
+        assertTrue(settings.stream().anyMatch(s -> s.getCategory() == SettingCategory.GENERAL));
+        assertTrue(settings.stream().anyMatch(s -> s.getCategory() == SettingCategory.CURRENCY));
+    }
+
+    @Test
+    void givenMailServerSettings_whenListMailServerSettings_thenReturnSettings() {
+        // Given
+        Setting mailServerSetting = new Setting();
+        mailServerSetting.setCategory(SettingCategory.MAIL_SERVER);
+
+        given(settingRepository.findAllByCategoryIn(List.of(SettingCategory.MAIL_SERVER)))
+                .willReturn(List.of(mailServerSetting));
+
+        // When
+        List<Setting> settings = settingService.listMailServerSettings();
+
+        // Then
+        assertEquals(1, settings.size());
+        assertEquals(SettingCategory.MAIL_SERVER, settings.get(0).getCategory());
+    }
+
+    @Test
+    void givenMailTemplateSettings_whenListMailTemplateSettings_thenReturnSettings() {
+        // Given
+        Setting mailTemplateSetting = new Setting();
+        mailTemplateSetting.setCategory(SettingCategory.MAIL_TEMPLATES);
+
+        given(settingRepository.findAllByCategoryIn(List.of(SettingCategory.MAIL_TEMPLATES)))
+                .willReturn(List.of(mailTemplateSetting));
+
+        // When
+        List<Setting> settings = settingService.listMailTemplateSettings();
+
+        // Then
+        assertEquals(1, settings.size());
+        assertEquals(SettingCategory.MAIL_TEMPLATES, settings.get(0).getCategory());
+    }
+
+    @Test
+    void givenPaymentSettings_whenListPaymentSettings_thenReturnSettings() {
+        // Given
+        Setting paymentSetting = new Setting();
+        paymentSetting.setCategory(SettingCategory.PAYMENT);
+
+        given(settingRepository.findAllByCategoryIn(List.of(SettingCategory.PAYMENT)))
+                .willReturn(List.of(paymentSetting));
+
+        // When
+        List<Setting> settings = settingService.listPaymentSettings();
+
+        // Then
+        assertEquals(1, settings.size());
+        assertEquals(SettingCategory.PAYMENT, settings.get(0).getCategory());
+    }
+
+    @Test
+    void givenValidCountryId_whenFindCountryById_thenReturnCountry() throws CountryNotFoundException {
+        // Given
+        Country country = new Country();
+        given(countryRepository.findById(1)).willReturn(Optional.of(country));
+
+        // When
+        Country foundCountry = settingService.findCountryById(1);
+
+        // Then
+        assertNotNull(foundCountry);
+    }
+
+    @Test
+    void givenInvalidCountryId_whenFindCountryById_thenThrowCountryNotFoundException() {
+        // Given
+        given(countryRepository.findById(1)).willReturn(Optional.empty());
+
+        // When/Then
+        assertThrows(CountryNotFoundException.class, () -> settingService.findCountryById(1));
+    }
 
 }

@@ -15,6 +15,6 @@ public class OrderTrackDTO {
     private Integer orderId;
     private String status;
     private String note;
-    private LocalDate updateTime;
+    private LocalDate updatedTime;
 
 }

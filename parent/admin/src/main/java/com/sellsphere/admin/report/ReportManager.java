@@ -3,7 +3,6 @@ package com.sellsphere.admin.report;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Abstract class serving as a base for report generation services.
@@ -19,7 +18,7 @@ public abstract class ReportManager {
      * @param reportType The type of sales report needed.
      * @return A list of report units representing sales data.
      */
-    public List<ReportUnit> getSalesReportFromLast7Days(SaleReportType reportType) {
+    public ReportResponse getSalesReportFromLast7Days(SaleReportType reportType) {
         return getSalesReportFromLastXDays(7, reportType);
     }
 
@@ -29,7 +28,7 @@ public abstract class ReportManager {
      * @param reportType The type of sales report needed.
      * @return A list of report units representing sales data.
      */
-    public List<ReportUnit> getSalesReportFromLast28Days(SaleReportType reportType) {
+    public ReportResponse getSalesReportFromLast28Days(SaleReportType reportType) {
         return getSalesReportFromLastXDays(28, reportType);
     }
 
@@ -39,7 +38,7 @@ public abstract class ReportManager {
      * @param reportType The type of sales report needed.
      * @return A list of report units representing sales data.
      */
-    public List<ReportUnit> getSalesReportFromLast6Months(SaleReportType reportType) {
+    public ReportResponse getSalesReportFromLast6Months(SaleReportType reportType) {
         return getSalesReportFromLastXMonths(6, reportType);
     }
 
@@ -49,17 +48,17 @@ public abstract class ReportManager {
      * @param reportType The type of sales report needed.
      * @return A list of report units representing sales data.
      */
-    public List<ReportUnit> getSalesReportFromLastYear(SaleReportType reportType) {
+    public ReportResponse getSalesReportFromLastYear(SaleReportType reportType) {
         return getSalesReportFromLastXMonths(12, reportType);
     }
 
-    private List<ReportUnit> getSalesReportFromLastXDays(int days, SaleReportType reportType) {
+    private ReportResponse getSalesReportFromLastXDays(int days, SaleReportType reportType) {
         LocalDate endTime = LocalDate.now();
         LocalDate startTime = endTime.minusDays(days - 1);
         return getSalesReportByDateRange(startTime, endTime, reportType);
     }
 
-    private List<ReportUnit> getSalesReportFromLastXMonths(int months, SaleReportType reportType) {
+    private ReportResponse getSalesReportFromLastXMonths(int months, SaleReportType reportType) {
         LocalDate endTime = LocalDate.now();
         LocalDate startTime = endTime.minusMonths(months - 1).withDayOfMonth(1);
         return getSalesReportByDateRange(startTime, endTime, reportType);
@@ -73,7 +72,7 @@ public abstract class ReportManager {
      * @param saleReportType The type of report being requested.
      * @return A list of report units.
      */
-    public List<ReportUnit> getSalesReportByDateRange(LocalDate start,
+    public ReportResponse getSalesReportByDateRange(LocalDate start,
                                                       LocalDate end,
                                                       SaleReportType saleReportType) {
         return getSalesReportByDateRangeInternal(start, end, saleReportType);
@@ -88,6 +87,6 @@ public abstract class ReportManager {
      * @param reportType The type of the report.
      * @return A list of report units detailing the sales in the given period.
      */
-    protected abstract List<ReportUnit> getSalesReportByDateRangeInternal(LocalDate start, LocalDate end, SaleReportType reportType);
+    protected abstract ReportResponse getSalesReportByDateRangeInternal(LocalDate start, LocalDate end, SaleReportType reportType);
 
 }

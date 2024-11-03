@@ -6,9 +6,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public interface UserRepository extends SearchRepository<User,Integer> {
 
     @Override
@@ -17,4 +19,6 @@ public interface UserRepository extends SearchRepository<User,Integer> {
     Page<User> findAll(@Param("keyword") String keyword, Pageable pageable);
 
     Optional<User> findByEmail(String username);
+
+    long countAllByEnabledIsTrue();
 }

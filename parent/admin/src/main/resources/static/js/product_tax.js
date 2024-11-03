@@ -10,7 +10,7 @@ $(function() {
         .then(handleLoadTaxes)
         .catch(error => {
             console.error(error);
-            showErrorModal(error.response())
+            showErrorModal(error.response)
         });
 
     initializeTaxCategoryChangeListener();

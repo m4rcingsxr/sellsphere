@@ -1,7 +1,20 @@
-<div class="card" id="questions" th:fragment="question_card()">
+<div class="card" id="questions" th:fragment="question_card(sortAvailable)">
     <div class="card-header d-flex align-items-center justify-content-between p-3">
         <h4>Questions and answers ([[${product.questionCount}]])</h4>
         <a href="#ask_question" class="me-5 btn btn-outline-primary">Ask question</a>
+
+        <div th:if="${sortAvailable}" class="col-sm-4 d-flex align-items-center">
+            <select id="sort_question" class="form-select" onchange="pageSortedQuestions()">
+                <option value="default" th:selected="${sortField == 'default'}">Most recent</option>
+                <option value="mostPopular" th:selected="${sortField == 'mostPopular'}">Sort by: Most
+                    popular
+                </option>
+                <option value="leastPopular" th:selected="${sortField == 'leastPopular'}">Sort by: Least
+                    popular
+                </option>
+            </select>
+        </div>
+
     </div>
     <ul th:replace=" :: question_list()"></ul>
 </div>
@@ -44,8 +57,8 @@
         <div class="card" th:if="${#authorization.expression('isAuthenticated()')}">
             <h5 class="card-header">Ask new question</h5>
             <div class="card-body">
-                <form  method="POST"
-                       th:action="@{/questions/create}" th:object="${question}">
+                <form id="questionForm" method="POST"
+                      th:action="@{/questions/create}" th:object="${question}">
                     <div class="row p-4">
                         <input type="hidden" th:name="product" th:value="${product.id}">
                         <input type="hidden" th:name="customer" th:value="${customer.id}">
@@ -54,11 +67,21 @@
                         <div class="col-sm-9">
                                         <textarea class="form-control" th:field="*{questionContent}"
                                                   rows="3"></textarea>
+                            <span class="invalid-feedback"></span>
+
+                            <div class="g-recaptcha mt-3"
+                                 data-sitekey="6LdxhXEqAAAAAEHwZGkaURuibbEy6qFTNkhCNv9C"
+                                 data-callback="onRecaptchaSuccess"></div>
+                            <div id="recaptcha-error" class="invalid-feedback">
+                                Please verify
+                            </div>
                         </div>
+
+
 
                     </div>
                     <div class="text-center p-3">
-                        <button type="submit" class="btn btn-primary mt-3">Ask question</button>
+                        <button id="submit-button"  type="submit" class="btn btn-primary mt-3">Ask question</button>
                     </div>
                 </form>
             </div>

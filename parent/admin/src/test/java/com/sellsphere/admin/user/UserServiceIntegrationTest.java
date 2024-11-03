@@ -1,107 +1,139 @@
 package com.sellsphere.admin.user;
 
+import com.adobe.testing.s3mock.junit5.S3MockExtension;
+import com.sellsphere.admin.S3Utility;
+import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Sort;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.web.method.support.ModelAndViewContainer;
+import software.amazon.awssdk.services.s3.S3Client;
+import util.PagingTestHelper;
+import util.S3TestUtils;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-@Sql(scripts = {"classpath:sql/roles.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(scripts = {"classpath:sql/users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Transactional
+@ExtendWith(S3MockExtension.class)
+@Sql(scripts = {"classpath:sql/roles.sql", "classpath:sql/users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class UserServiceIntegrationTest {
 
-    private final UserService userService;
-
-    private final TestUserHelper testUserHelper;
-
-    private final PasswordEncoder passwordEncoder;
-
-    private final EntityManager entityManager;
+    private static final String BUCKET_NAME = "my-demo-test-bucket";
+    private static S3Client s3Client;
 
     @Autowired
-    public UserServiceIntegrationTest(UserService userService, EntityManager entityManager,
-                                      PasswordEncoder passwordEncoder) {
-        this.testUserHelper = new TestUserHelper(entityManager);
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-        this.entityManager = entityManager;
+    private UserService userService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @BeforeAll
+    static void setUpS3(final S3Client client) {
+        s3Client = client;
+        S3Utility.setBucketName(BUCKET_NAME);
+        S3Utility.setS3Client(s3Client);
+
+        S3TestUtils.createBucket(s3Client, BUCKET_NAME);
     }
 
     @Test
     void givenExistingUserId_whenGetUser_thenReturnUser() throws UserNotFoundException {
-        // given
+        // Given
         Integer userId = 1;
 
-        // when
-        User foundUser = userService.get(userId);
-
-        // then
-        assertNotNull(foundUser);
-        assertEquals(userId, foundUser.getId());
-    }
-
-    @Test
-    void givenNonExistingUserId_whenGetUser_thenShouldThrowUserNotFoundException() {
-
-        // given
-        Integer userId = -1;
-
-        // when, then
-        assertThrows(UserNotFoundException.class, () -> userService.get(userId));
-    }
-
-    @Test
-    void givenNewUserWithoutFile_whenSave_thenUserIsSavedSuccessfully()
-            throws IOException, UserNotFoundException {
-        // Given
-        Set<Role> expectedRoles = testUserHelper.getRoles("ROLE_ADMIN", "ROLE_EDITOR");
-        String expectedRawPassword = "password";
-
-        User newUser = new User();
-        newUser.setEmail("newusernofile@example.com");
-        newUser.setFirstName("NoFile");
-        newUser.setLastName("User");
-        newUser.setMainImage("image.jpg");
-        newUser.setPassword(expectedRawPassword);
-        newUser.setRoles(expectedRoles);
-
         // When
-        User savedUser = userService.save(newUser, null);
+        User user = userService.get(userId);
 
         // Then
-        assertNotNull(savedUser, "Expected saved user to not be null");
-        assertNotNull(savedUser.getId(), "Expected saved user to have an ID");
-        assertEquals("newusernofile@example.com", savedUser.getEmail(), "Expected email to match");
-        assertIterableEquals(savedUser.getRoles(), expectedRoles);
-        assertTrue(passwordEncoder.matches(expectedRawPassword, savedUser.getPassword()));
+        assertNotNull(user);
+        assertEquals("John", user.getFirstName());
+        assertEquals("Doe", user.getLastName());
+        assertEquals("john.doe@example.com", user.getEmail());
     }
 
-
     @Test
-    void givenNoExistingId_whenSave_thenUserNotFoundExceptionIsThrown() {
+    void givenNonExistingUserId_whenGetUser_thenThrowUserNotFoundException() {
         // Given
-        User userWithNonExistentId = new User();
-        userWithNonExistentId.setId(999);
+        Integer nonExistingUserId = 999;
 
-        // Expect exception to be thrown
-        assertThrows(UserNotFoundException.class, () -> userService.save(userWithNonExistentId));
+        // When/Then
+        assertThrows(UserNotFoundException.class, () -> userService.get(nonExistingUserId));
     }
 
     @Test
-    void givenExistingEmail_whenCheckEmailUniqueness_thenEmailIsNotUnique() {
+    void givenExistingEmail_whenGetUserByEmail_thenReturnUser() throws UserNotFoundException {
+        // Given
+        String email = "jane.smith@example.com";
+
+        // When
+        User user = userService.get(email);
+
+        // Then
+        assertNotNull(user);
+        assertEquals("Jane", user.getFirstName());
+        assertEquals("Smith", user.getLastName());
+    }
+
+    @Test
+    void givenNonExistingEmail_whenGetUserByEmail_thenThrowUserNotFoundException() {
+        // Given
+        String nonExistingEmail = "non.existing@example.com";
+
+        // When/Then
+        assertThrows(UserNotFoundException.class, () -> userService.get(nonExistingEmail));
+    }
+
+    @Test
+    void whenListAllRoles_thenReturnAllRolesSortedByName() {
+        // When
+        List<Role> roles = userService.listAllRoles();
+
+        // Then
+        assertFalse(roles.isEmpty());
+        assertEquals(5, roles.size());
+        assertEquals("ROLE_ADMIN", roles.get(0).getName());
+        assertEquals("ROLE_ASSISTANT", roles.get(1).getName());
+    }
+
+    @Test
+    void whenListAllUsersSorted_thenReturnAllUsersSortedByField() {
+        // When
+        List<User> users = userService.listAll("firstName", Sort.Direction.ASC);
+
+        // Then
+        assertFalse(users.isEmpty());
+        assertEquals("Alice", users.get(0).getFirstName());
+        assertEquals("Bob", users.get(1).getFirstName());
+    }
+
+    @Test
+    void givenUniqueEmail_whenCheckEmailUnique_thenReturnTrue() {
+        // Given
+        String uniqueEmail = "unique.email@example.com";
+
+        // When
+        boolean isUnique = userService.isEmailUnique(null, uniqueEmail);
+
+        // Then
+        assertTrue(isUnique);
+    }
+
+    @Test
+    void givenExistingEmail_whenCheckEmailUnique_thenReturnFalse() {
         // Given
         String existingEmail = "john.doe@example.com";
 
@@ -109,67 +141,193 @@ class UserServiceIntegrationTest {
         boolean isUnique = userService.isEmailUnique(null, existingEmail);
 
         // Then
-        assertFalse(isUnique, "Expected email to be not unique");
+        assertFalse(isUnique);
     }
 
     @Test
-    void givenNewEmail_whenCheckEmailUniqueness_thenEmailIsUnique() {
+    void givenValidUserId_whenUpdateUserEnabledStatus_thenStatusIsUpdated()
+            throws UserNotFoundException {
         // Given
-        String newEmail = "unique@example.com";
+        Integer userId = 1;
+        boolean newStatus = false;
 
         // When
-        boolean isUnique = userService.isEmailUnique(null, newEmail);
+        userService.updateUserEnabledStatus(userId, newStatus);
 
         // Then
-        assertTrue(isUnique, "Expected email to be unique");
+        User updatedUser = userService.get(userId);
+        assertFalse(updatedUser.isEnabled());
     }
 
     @Test
-    void givenExistingUserEmailWithCorrectId_whenCheckEmailUniqueness_thenEmailIsUnique() {
+    void givenNonExistingUserId_whenUpdateUserEnabledStatus_thenThrowUserNotFoundException() {
         // Given
-        String newEmail = "john.doe@example.com";
+        Integer nonExistingUserId = 999;
 
-        // When
-        boolean isUnique = userService.isEmailUnique(1, newEmail);
-
-        // Then
-        assertTrue(isUnique, "Expected email to be unique");
+        // When/Then
+        assertThrows(UserNotFoundException.class,
+                     () -> userService.updateUserEnabledStatus(nonExistingUserId, true)
+        );
     }
 
     @Test
-    void givenUserId_whenDeleteUser_thenUserIsDeletedSuccessfully() {
-
+    void givenValidUserId_whenDeleteUser_thenUserIsDeleted() throws UserNotFoundException {
         // Given
-        Integer userId = 2; // Assume this user exists in your database
-
-        // Ensure user exists before delete
-        assertNotNull(entityManager.find(User.class, userId), "User should exist before deletion");
+        Integer userId = 1;
 
         // When
-        assertDoesNotThrow(() -> userService.delete(userId), "Expected delete not to throw");
+        userService.delete(userId);
 
         // Then
-        assertNull(entityManager.find(User.class, userId), "Expected user to be deleted");
+        assertThrows(UserNotFoundException.class, () -> userService.get(userId));
     }
 
     @Test
-    void givenUserIdAndStatusTrue_whenUpdateUserEnabledStatus_thenStatusIsUpdatedToTrue() {
-
+    void givenNonExistingUserId_whenDeleteUser_thenThrowUserNotFoundException() {
         // Given
-        Integer userId = 3;
+        Integer nonExistingUserId = 999;
 
-        // Ensure user has enabled status false before update
-        User userBeforeUpdate = entityManager.find(User.class, userId);
-        assertNotNull(userBeforeUpdate);
-        assertFalse(userBeforeUpdate.isEnabled(), "User should be disabled before update");
-
-        // When
-        assertDoesNotThrow(() -> userService.updateUserEnabledStatus(userId, true), "Expected update not to throw");
-
-        // Then
-        User userAfterUpdate = entityManager.find(User.class, userId);
-        assertNotNull(userAfterUpdate);
-        assertTrue(userAfterUpdate.isEnabled(), "Expected user's enabled status to be updated to true");
+        // When/Then
+        assertThrows(UserNotFoundException.class, () -> userService.delete(nonExistingUserId));
     }
 
+    @Test
+    void givenNewUserWithPasswordAndRoles_whenSaveUser_thenPasswordShouldBeEncodedAndRolesAssigned()
+            throws Exception {
+        // Given
+        User newUser = new User();
+        newUser.setFirstName("Test");
+        newUser.setLastName("User");
+        newUser.setEmail("test.user@example.com");
+        newUser.setPassword("plainPassword");
+        newUser.setMainImage("test_image.png");
+
+        Role roleAdmin = new Role();
+        roleAdmin.setName("ROLE_ADMIN");
+
+        Role roleSales = new Role();
+        roleSales.setName("ROLE_SALESPERSON");
+
+        newUser.addRole(roleAdmin);
+        newUser.addRole(roleSales);
+
+        // When
+        User savedUser = userService.save(newUser, null);
+
+        // Then
+        assertNotNull(savedUser);
+        assertNotEquals("plainPassword", savedUser.getPassword());
+        assertTrue(passwordEncoder.matches("plainPassword", savedUser.getPassword()));
+
+        // Check if the roles are saved
+        assertNotNull(savedUser.getRoles());
+        assertEquals(2, savedUser.getRoles().size());
+    }
+
+    @Test
+    void givenNewUserWithFile_whenSaveUser_thenSaveFileInS3AndReturnUser()
+            throws IOException, UserNotFoundException {
+        // Given
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-profile.jpg",
+                "image/jpeg",
+                "Sample profile image".getBytes()
+        );
+
+        User newUser = new User();
+        newUser.setFirstName("Test");
+        newUser.setLastName("User");
+        newUser.setEmail("test.user@example.com");
+        newUser.setPassword("plainPassword");
+
+        Role roleAdmin = new Role();
+        roleAdmin.setName("ROLE_ADMIN");
+
+        Role roleSales = new Role();
+        roleSales.setName("ROLE_SALESPERSON");
+
+        newUser.addRole(roleAdmin);
+        newUser.addRole(roleSales);
+
+        // When
+        User savedUser = userService.save(newUser, file);
+
+        // Then
+        assertNotNull(savedUser.getId());
+        assertEquals("test-profile.jpg", savedUser.getMainImage());
+
+        // Verify the file is saved in S3
+        S3TestUtils.verifyFileContent(s3Client, BUCKET_NAME,
+                                      "user-photos/" + savedUser.getId() + "/test-profile.jpg",
+                                      file.getInputStream()
+        );
+
+        // Check if the password is encoded
+        assertNotEquals("plainPassword", savedUser.getPassword());
+        assertTrue(passwordEncoder.matches("plainPassword", savedUser.getPassword()));
+    }
+
+    @Test
+    void givenPageNumber_whenListUsersByPage_thenReturnUsersForSpecificPage() {
+        // Given
+        int pageNum = 0;
+        int expectedPageSize = 10;
+        int expectedTotalElements = 10;
+        int expectedPages = 1;
+        String sortField = "firstName";
+        PagingAndSortingHelper helper = new PagingAndSortingHelper(new ModelAndViewContainer(),
+                                                                   "userList", sortField,
+                                                                   Sort.Direction.ASC, null
+        );
+
+        // When
+        userService.listPage(pageNum, helper);
+
+        // Then
+        PagingTestHelper.assertPagingResults(helper, expectedPages, expectedPageSize,
+                                             expectedTotalElements, sortField, true
+        );
+    }
+
+    @Test
+    void givenKeyword_whenSearchUsers_thenReturnFilteredResults() {
+        // Given
+        int pageNum = 0;
+        String keyword = "john";
+        String sortField = "firstName";
+        PagingAndSortingHelper helper = new PagingAndSortingHelper(new ModelAndViewContainer(),
+                                                                   "userList", sortField,
+                                                                   Sort.Direction.ASC, keyword
+        );
+
+        // When
+        userService.listPage(pageNum, helper);
+
+        // Then
+        List<User> users = helper.getContent();  // Use the new method to get users
+        assertNotNull(users);
+        assertFalse(users.isEmpty());
+        assertTrue(users.stream()
+                           .allMatch(user -> user.getFirstName().toLowerCase().contains(keyword) ||
+                                   user.getLastName().toLowerCase().contains(keyword)));
+    }
+
+    @Test
+    void givenPageZero_whenListUsersByPage_thenReturnFirstPageUsers() {
+        // Given
+        String sortField = "firstName";
+        PagingAndSortingHelper helper = new PagingAndSortingHelper(new ModelAndViewContainer(),
+                                                                   "userList", sortField,
+                                                                   Sort.Direction.ASC, null
+        );
+
+        // When
+        userService.listPage(0, helper);
+
+        // Then
+        List<User> users = helper.getContent();  // Use the new method to get users
+        assertFalse(users.isEmpty());
+        assertEquals("Alice", users.get(0).getFirstName());
+    }
 }

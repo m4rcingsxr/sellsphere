@@ -85,6 +85,10 @@ public class ProductHelper {
             throw new IllegalStateException("Saved product must have assigned id.");
         }
 
+        if (extraImages == null || extraImages.length == 0) {
+            return;
+        }
+
         List<String> existingExtraImageS3Objects = new ArrayList<>();
         String extrasFolderName = PRODUCT_PHOTOS_DIR + savedProduct.getId() +
                 "/extras";
@@ -94,7 +98,9 @@ public class ProductHelper {
         }
 
         FileService.removeNotMatchingFiles(extrasFolderName, existingExtraImageS3Objects);
-        FileService.uploadFiles(extraImages, extrasFolderName);
+        for (MultipartFile extraImage : extraImages) {
+            FileService.saveFile(extraImage, extrasFolderName, extraImage.getOriginalFilename());
+        }
     }
 
     /**

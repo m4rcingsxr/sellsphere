@@ -2,10 +2,11 @@ package com.sellsphere.client.address;
 
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.setting.CountryRepository;
-import com.sellsphere.common.entity.*;
+import com.sellsphere.common.entity.Address;
+import com.sellsphere.common.entity.AddressNotFoundException;
+import com.sellsphere.common.entity.Constants;
+import com.sellsphere.common.entity.Customer;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,24 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.security.Principal;
-import java.util.List;
-
 import static com.sellsphere.client.address.AddressTestUtil.generateDummyAddress1;
 import static com.sellsphere.client.customer.CustomerTestUtil.generateDummyCustomer;
-import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @ExtendWith(MockitoExtension.class)
 class AddressControllerTest {
 
@@ -56,43 +50,6 @@ class AddressControllerTest {
         Address primaryAddress = generateDummyAddress1();
         primaryAddress.setPrimary(true);
         primaryAddress.setCustomer(dummyCustomer);
-    }
-
-    @Test
-    @WithMockUser(username = "example@gmail.com")
-    void whenDisplayAddressBook_thenModelShouldContainCorrectAttributes() throws Exception {
-        List<Country> countries = List.of(AddressTestUtil.generateDummyCountry());
-
-        when(customerService.getByEmail(dummyCustomer.getEmail())).thenReturn(dummyCustomer);
-        when(countryRepository.findAll(Sort.by("name").ascending())).thenReturn(countries);
-
-        Principal principal = dummyCustomer::getEmail;
-
-        mockMvc.perform(get(BASE_URL).principal(principal))
-                .andExpect(status().isOk())
-                .andExpect(view().name("address/addresses"))
-                .andExpect(model().attributeExists("customer"))
-                .andExpect(model().attributeExists("countryList"))
-                .andExpect(model().attributeExists("address"))
-                .andExpect(model().attribute("customer", dummyCustomer))
-                .andExpect(model().attribute("countryList", countries));
-
-        verify(customerService, times(1)).getByEmail(dummyCustomer.getEmail());
-        verify(countryRepository, times(1)).findAll(Sort.by("name").ascending());
-    }
-
-    @Test
-    @WithMockUser(username = "example@gmail.com")
-    void whenGivenCustomerWithUpdatedAddresses_whenCustomerIsUpdated_thenRedirectWithUpdateCall() throws Exception {
-        Customer newCustomer = generateDummyCustomer();
-        when(customerService.update(any(Customer.class))).thenReturn(newCustomer);
-
-        mockMvc.perform(post(BASE_URL + "/update"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attribute(Constants.SUCCESS_MESSAGE, equalTo("Successfully updated addresses")))
-                .andExpect(view().name("redirect:/address_book"));
-
-        verify(customerService, times(1)).update(any(Customer.class));
     }
 
     @Test

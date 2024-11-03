@@ -1,137 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head th:replace="~{list_fragments :: head('Customer management')}"></head>
+<header th:replace="navigations :: header()"></header>
 <body>
+<div class="container-fluid">
+    <div class="row">
 
-<header th:replace="~{navigations :: header()}"></header>
+        <div th:replace="navigations :: sidebar('Customers')"></div>
 
-<main class="mt-4 content">
-    <h1 class="text-center">Manage Customers</h1>
 
-    <div class="container-md mt-5">
-        <!-- Alerts -->
-        <div th:replace="~{common :: alerts()}"></div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Customers</h1>
+                <div th:replace="navigations :: export_nav('customers', false)"></div>
+            </div>
 
-        <!-- Export       -->
-        <ul th:replace="~{navigations :: export_nav('customers', false)}"></ul>
+            <section class="content mb-5">
+                <!-- Alerts -->
+                <div th:replace="~{common :: alerts()}"></div>
 
-        <!-- Search Bar -->
-        <form th:replace="~{list_fragments :: search_bar('/customers/page/0', 'Search for the customer', 'email', ${keyword}, ${totalItems}, null)}"></form>
+                <!-- Search Bar -->
+                <form th:replace="~{list_fragments :: search_bar('/customers/page/0', 'Search for the customer', 'email', ${keyword}, ${totalItems}, null)}"></form>
 
-        <table class="table table-hover mt-4 large">
-            <thead class="table-dark">
-            <tr>
-                <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'firstName', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'First Name')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'lastName', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Last Name')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'email', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'E-mail')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'enabled', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Enabled')}"></th>
+                <div class="con-lg-xl-xxl">
+                    <table class="table table-hover mt-4 large">
+                        <thead class="table-dark">
+                        <tr>
+                            <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                            <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'firstName', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'First Name')}"></th>
+                            <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'lastName', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Last Name')}"></th>
+                            <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'email', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'E-mail')}"></th>
+                            <th th:replace="~{list_fragments :: column_link('/customers/page', ${currentPage}, 'enabled', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Enabled')}"></th>
 
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="customer : ${customerList}">
-                <td th:text="${customer.id}"></td>
-                <td th:text="${customer.firstName}"></td>
-                <td th:text="${customer.lastName}"></td>
-                <td th:text="${customer.email}"></td>
-                <td>
-                    <a th:replace="~{list_fragments :: status(${customer.enabled}, |/customers/${customer.id}/enabled/${!customer.enabled}|)}"></a>
-                </td>
-                <td class="pb-4">
-                    <div class="d-flex flex-column gap-4 align-items-center">
-                        <a th:replace="~{list_fragments :: detail_entity(|/customers/details/${customer.id}|)}"></a>
-                        <a th:replace="~{list_fragments :: delete_entity(|/customers/delete/${customer.id}|)}"></a>
-                        <a th:replace="~{list_fragments :: edit_entity(|/customers/edit/${customer.id}|)}"></a>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
-        <!-- Small -->
-        <div class="small">
-            <ul class="list-group list-group-flush">
-                <li th:each="customer : ${customerList}" class="list-group-item p-4">
-
-                    <div class="row">
-
-                        <div class="row col-sm-10">
-                            <div class="col-6">
-                                <div class="fw-light">Email</div>
-                                <div th:text="${customer.email}"></div>
-                            </div>
-                            <div class="col-6">
-                                <div class="fw-light">First name</div>
-                                <div th:text="${customer.firstName}"></div>
-                            </div>
-                            <div class="col-6">
-                                <div class="fw-light">Last name</div>
-                                <div th:text="${customer.lastName}"></div>
-                            </div>
-                            <div class="col-6">
-                                <div class="fw-light">Enabled</div>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="customer : ${customerList}">
+                            <td th:text="${customer.id}"></td>
+                            <td th:text="${customer.firstName}"></td>
+                            <td th:text="${customer.lastName}"></td>
+                            <td th:text="${customer.email}"></td>
+                            <td>
                                 <a th:replace="~{list_fragments :: status(${customer.enabled}, |/customers/${customer.id}/enabled/${!customer.enabled}|)}"></a>
-                            </div>
-                        </div>
+                            </td>
+                            <td class="pb-4">
+                                <div class="d-flex flex-column gap-4 align-items-center">
+                                    <a th:replace="~{list_fragments :: detail_entity(|/customers/details/${customer.id}|)}"></a>
+                                    <a th:replace="~{list_fragments :: delete_entity(|/customers/delete/${customer.id}|)}"></a>
+                                    <a th:replace="~{list_fragments :: edit_entity(|/customers/edit/${customer.id}|)}"></a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                        <div class="col-sm-2 d-flex flex-column gap-4 align-items-center justify-content-center">
-                            <a th:replace="~{list_fragments :: detail_entity(|/customers/details/${customer.id}|)}"></a>
-                            <a th:replace="~{list_fragments :: delete_entity(|/customers/delete/${customer.id}|)}"></a>
-                            <a th:replace="~{list_fragments :: edit_entity(|/customers/edit/${customer.id}|)}"></a>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div>
+                <!-- Small -->
+                <div class="con-s-md">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="customer : ${customerList}" class="list-group-item p-4">
 
-        <div class="x-small">
-            <ul class="list-group list-group-flush">
-                <li th:each="customer : ${customerList}" class="list-group-item p-4">
+                            <div class="row">
 
-                    <div class="row">
-                        <div class="row col-sm-10">
-                            <div class="col-12">
-                                <div class="fw-light">Email</div>
-                                <div th:text="${customer.email}"></div>
-                            </div>
-                            <div class="col-6">
-                                <div class="fw-light">First name</div>
-                                <div th:text="${customer.firstName}"></div>
-                            </div>
-                            <div class="col-6">
-                                <div class="fw-light">Last name</div>
-                                <div th:text="${customer.lastName}"></div>
-                            </div>
-                            <div class="col-6">
-                                <div class="fw-light">Enabled</div>
-                                <a th:replace="~{list_fragments :: status(${customer.enabled}, |/customers/${customer.id}/enabled/${!customer.enabled}|)}"></a>
-                            </div>
-                            <div class="col-6">
-                                <div class="gap-4 align-items-center justify-content-center mt-3">
+                                <div class="row col-sm-10">
+                                    <div class="col-6">
+                                        <div class="fw-light">Email</div>
+                                        <div th:text="${customer.email}"></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-light">First name</div>
+                                        <div th:text="${customer.firstName}"></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-light">Last name</div>
+                                        <div th:text="${customer.lastName}"></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-light">Enabled</div>
+                                        <a th:replace="~{list_fragments :: status(${customer.enabled}, |/customers/${customer.id}/enabled/${!customer.enabled}|)}"></a>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-2 d-flex flex-column gap-4 align-items-center justify-content-center">
                                     <a th:replace="~{list_fragments :: detail_entity(|/customers/details/${customer.id}|)}"></a>
                                     <a th:replace="~{list_fragments :: delete_entity(|/customers/delete/${customer.id}|)}"></a>
                                     <a th:replace="~{list_fragments :: edit_entity(|/customers/edit/${customer.id}|)}"></a>
                                 </div>
                             </div>
-                        </div>
+                        </li>
+                    </ul>
+                </div>
 
-                    </div>
-                </li>
-            </ul>
-        </div>
+                <div class="con-xs">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="customer : ${customerList}" class="list-group-item p-4">
+
+                            <div class="row">
+                                <div class="row col-sm-10">
+                                    <div class="col-12">
+                                        <div class="fw-light">Email</div>
+                                        <div th:text="${customer.email}"></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-light">First name</div>
+                                        <div th:text="${customer.firstName}"></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-light">Last name</div>
+                                        <div th:text="${customer.lastName}"></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-light">Enabled</div>
+                                        <a th:replace="~{list_fragments :: status(${customer.enabled}, |/customers/${customer.id}/enabled/${!customer.enabled}|)}"></a>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="gap-4 align-items-center justify-content-center mt-3">
+                                            <a th:replace="~{list_fragments :: detail_entity(|/customers/details/${customer.id}|)}"></a>
+                                            <a th:replace="~{list_fragments :: delete_entity(|/customers/delete/${customer.id}|)}"></a>
+                                            <a th:replace="~{list_fragments :: edit_entity(|/customers/edit/${customer.id}|)}"></a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:replace="~{list_fragments :: large_pagination('/customers/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+                     class="mt-4"></nav>
+            </section>
+        </main>
+
     </div>
-
-
-    <!-- Pagination -->
-    <nav th:replace="~{list_fragments :: large_pagination('/customers/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
-         class="mt-4"></nav>
-
-</main>
+</div>
 
 <div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
 <div th:replace="~{modal_fragments :: close_modal_xl('detailModal')}"></div>
-<footer th:replace="~{navigations :: footer()}"></footer>
 </body>
 </html>

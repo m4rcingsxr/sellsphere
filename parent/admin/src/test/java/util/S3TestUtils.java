@@ -5,14 +5,11 @@ import lombok.experimental.UtilityClass;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -43,14 +40,4 @@ public class S3TestUtils {
         return Files.newInputStream(filePath);
     }
 
-    private static void listObjectsInBucket(S3Client s3Client, String bucketName) {
-        // List objects in the specified bucket
-        List<S3Object> objects = s3Client.listObjects(ListObjectsRequest.builder().bucket(bucketName).build()).contents();
-
-        // Print keys of the objects
-        System.out.println("Objects in bucket " + bucketName + ":");
-        for (S3Object object : objects) {
-            System.out.println(" - " + object.key());
-        }
-    }
 }

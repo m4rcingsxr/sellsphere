@@ -1,66 +1,162 @@
+<!DOCTYPE html>
 <html lang="en">
-<head th:replace="~{common :: head('Customer management')}"></head>
+<head>
+    <th:block th:replace="~{form_fragments :: common_head('Customer')}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/customer.css}"/>
+</head>
 <body>
-<header th:replace="~{navigations :: header()}"></header>
-<main class="content mt-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-3">
-                <div th:replace="~{customer/customer_navigation :: nav()}"></div>
-            </div>
-            <div class="col-sm-9 p-3">
-                <h2>Personal info</h2>
+<nav th:replace="~{navigations :: header()}"></nav>
 
-                <form method="POST" th:action="@{/customers/update}" th:object="${customer}"
-                      class="mt-5 d-flex flex-column">
-
-                    <h5>Basic</h5>
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div th:replace="~{form_fragments :: field_form_floating_text('firstName', 'First name')}"></div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div th:replace="~{form_fragments :: field_form_floating_text('lastName', 'Last name')}"></div>
-                        </div>
-                    </div>
-
-                    <h5 class="mt-5">Contact</h5>
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div th:replace="~{form_fragments :: field_form_floating_email('email', 'Email')}"></div>
-                        </div>
-
-                    </div>
-
-                    <h5 class="mt-5">Security</h5>
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div th:replace="~{form_fragments :: field_form_floating_password('password')}"></div>
-
-                        </div>
-
-                        <div class="col-sm-6">
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="confirmedPassword"
-                                       placeholder="********">
-                                <label for="confirmedPassword">Confirm password</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-4 mt-5">
-                        <button type="submit" class="btn btn-sm p-2 btn-outline-primary w-25">Save
-                        </button>
-                    </div>
-                </form>
-            </div>
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
         </div>
     </div>
-</main>
+</div>
+
+<div class="container p-0 mt-2 position-relative">
+    <div th:replace="~{common :: alerts()}"></div>
+
+
+    <div class="row mt-2 p-0 m-0">
+        <div class="col-lg-3 col-3 d-none d-lg-block">
+            <div th:replace="~{customer/customer_navigation :: nav()}"></div>
+        </div>
+
+        <div class="col-lg-9 col-12 my-4">
+            <form method="POST" th:action="@{/customer/update}" th:object="${customer}"
+                  class=" d-flex flex-column" name="mainForm" id="mainForm">
+
+                <div class="row gap-3 ">
+                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
+                        <h2>Personal info</h2>
+
+
+                        <h5 class="mt-4 mb-3 display-7">Basic</h5>
+                        <input type="hidden" th:field="*{id}"/>
+                        <div th:replace="~{form_fragments :: field_form_floating_text('firstName', 'First name')}"></div>
+                    </div>
+                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
+                        <div th:replace="~{form_fragments :: field_form_floating_text('lastName', 'Last name')}"></div>
+                    </div>
+                </div>
+
+
+                <div class="row mt-2">
+                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
+                        <h5 class="mt-5 mb-3 display-7">Contact</h5>
+                        <div th:replace="~{form_fragments :: field_form_floating_email('email', 'Email')}"></div>
+                    </div>
+
+                </div>
+
+                <div class="row gap-3">
+                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
+                        <h5 class="mt-5 mb-3 display-7">Security</h5>
+
+                        <div th:replace="~{form_fragments :: field_form_floating_password('password')}"></div>
+                    </div>
+
+                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
+                        <div class="form-floating">
+                            <input type="password" class="form-control" name="confirmedPassword"
+                                   id="confirmedPassword"
+                                   placeholder="********">
+                            <span class="invalid-feedback"></span>
+                            <label for="confirmedPassword">Confirm password</label>
+                        </div>
+
+                        <div class="g-recaptcha mt-3"
+                             data-sitekey="6LdxhXEqAAAAAEHwZGkaURuibbEy6qFTNkhCNv9C"
+                             data-callback="onRecaptchaSuccess"></div>
+                        <div id="recaptcha-error" class="invalid-feedback">
+                            Please verify
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3 gap-3">
+
+                    <input value="Submit" type="submit" id="submit-button"
+                           class="btn btn-sm p-2 btn-outline-primary col-12  offset-md-2 col-md-8 offset-lg-0"/>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="d-lg-none sticky-bottom bg-dark py-2">
+    <div class="container text-center">
+        <button id="toggleSidebar" class="btn btn-dark w-100"><i class="bi bi-layout-sidebar-inset"
+                                                                 style="font-size: 1.5rem;"></i>
+        </button>
+    </div>
+</div>
+
+<div class="sidebar-nav" id="sidebarNav">
+    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
 <footer th:replace="~{navigations :: footer()}"></footer>
-<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
 
 <script th:replace="~{common :: configurations()}"></script>
 <script th:replace="~{common :: cart_initialization()}"></script>
+<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
+
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+<script>
+
+    <!-- require submit btn   -->
+    $(function () {
+
+        var validator = new FormValidator('mainForm', [
+            {
+                name: 'email',
+                display: 'Email',
+                rules: 'required|valid_email|max_length[45]'
+            },
+            {
+                name: 'password',
+                display: 'Password',
+                rules: 'min_length[8]|max_length[64]'
+            },
+            {
+                name: 'confirmedPassword',
+                display: 'Password confirmation',
+                rules: 'matches[password]'
+            },
+            {
+                name: 'firstName',
+                display: 'First name',
+                rules: 'required|alpha|max_length[45]'
+            },
+            {
+                name: 'lastName',
+                display: 'Last name',
+                rules: 'required|alpha|max_length[45]'
+            },
+            {
+                name: "g-recaptcha-response",
+                display: "Recaptcha response",
+                rules: "required"
+            }
+        ], handleValidations);
+
+    })
+
+
+</script>
+
+
 </body>
 </html>
+
+

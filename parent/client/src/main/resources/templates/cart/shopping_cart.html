@@ -11,31 +11,49 @@
 <body>
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="content mb-5">
-    <div class="container mt-4">
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
+        </div>
+    </div>
+</div>
+
+<main class="container-md  p-3 mb-md-8">
+
+    <div id="empty-shopping-cart" class="mt-7 d-flex flex-column align-items-center mb-5 d-none">
+        <p class="fs-5 fw-lighter">You don't have any items in your cart. Let's get shopping!</p>
+        <a th:href="@{'/'}" class="btn btn btn-outline-primary mt-3">Start shopping</a>
+    </div>
+
+    <div id="shopping-cart" class="mt-4">
         <h3>Shopping cart</h3>
 
         <div class="row mt-4">
-            <div class="col-sm-7">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="text-light-emphasis">Product</th>
-                        <th class="text-light-emphasis">Price</th>
-                        <th class="text-light-emphasis">Quantity</th>
-                        <th class="text-light-emphasis">Total</th>
-                        <th class="text-light-emphasis"><a href="#" id="clear-cart" class="link-dark">clear</a>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
+            <div class="col-lg-7 col-12">
 
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th class="text-light-emphasis">Product</th>
+                            <th class="text-light-emphasis ">Price</th>
+                            <th class="text-light-emphasis ">Total</th>
+                            <th class="text-light-emphasis "><a href="#" id="clear-cart" class="link-dark">clear</a></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+
+
 
             </div>
 
-            <div class="col-sm-4 offset-sm-1 bg-body-tertiary align-self-start p-4 rounded-2">
+            <div class="col-lg-4 offset-lg-1 col-12 bg-body-tertiary align-self-start p-4 rounded-2">
                 <h4>Summary</h4>
 
                 <hr class="px-4 my-4 text-dark-emphasis"/>
@@ -73,13 +91,15 @@
             </div>
         </div>
 
-        <a href="#" class="link-dark text-light-emphasis link-underline-opacity-50-hover link-underline-opacity-0"><i
+        <a th:href="@{/}" class="link-dark text-light-emphasis link-underline-opacity-50-hover link-underline-opacity-0"><i
                 class="bi bi-chevron-left"></i> Continue shopping</a>
     </div>
 
 </main>
 
 <footer th:replace="~{navigations :: footer()}"></footer>
+
+<div id="overlay" class="overlay"></div>
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 

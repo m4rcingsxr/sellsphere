@@ -5,11 +5,14 @@ import com.sellsphere.admin.brand.BrandService;
 import com.sellsphere.admin.export.ExportUtil;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
-import com.sellsphere.common.entity.*;
-import com.stripe.exception.StripeException;
+import com.sellsphere.common.entity.Brand;
+import com.sellsphere.common.entity.Constants;
+import com.sellsphere.common.entity.Product;
+import com.sellsphere.common.entity.ProductNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,15 +25,14 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Controller for managing products. This class handles web requests related to
- * products, such as creating, editing, deleting, and listing products. It also
- * includes functionality for exporting product data.
+ * Controller for managing products, including creating, updating, listing, and deleting products.
+ * Provides web interfaces for product management and exporting product data.
  */
 @RequiredArgsConstructor
 @Controller
 public class ProductController {
 
-    public static final String PRODUCT_FORM = "product/product_form";
+    public static final String PRODUCT_FORM_VIEW = "product/product_form";
     public static final String DEFAULT_REDIRECT_URL = "redirect:/products/page/0?sortField=name&sortDir=asc";
 
     private final ProductService productService;
@@ -42,27 +44,27 @@ public class ProductController {
      * @return the redirect URL for the first page of products.
      */
     @GetMapping("/products")
-    public String listFirstPage() {
+    public String redirectToFirstPage() {
         return DEFAULT_REDIRECT_URL;
     }
 
     /**
-     * Lists products with pagination and sorting.
+     * Lists products by page with optional sorting.
      *
      * @param helper  the helper class for pagination and sorting.
      * @param pageNum the current page number.
      * @return the view name for listing products.
      */
     @GetMapping("/products/page/{pageNum}")
-    public String listPage(
+    public String listProductsByPage(
             @PagingAndSortingParam(listName = "productList", moduleURL = "/products") PagingAndSortingHelper helper,
             @PathVariable(name = "pageNum") int pageNum) {
-        productService.listPage(pageNum, helper);
+        productService.paginateProducts(pageNum, helper);
         return "product/products";
     }
 
     /**
-     * Shows the form for creating or editing a product.
+     * Displays the form for creating or editing a product.
      *
      * @param id    the ID of the product to edit, or null to create a new product.
      * @param model the model to add attributes to.
@@ -72,9 +74,9 @@ public class ProductController {
     @GetMapping({"/products/new", "/products/edit/{id}"})
     public String showProductForm(@PathVariable(required = false) Integer id, Model model)
             throws ProductNotFoundException {
-        Product product = (id != null) ? productService.get(id) : new Product();
-        prepareModelForProductForm(product, model);
-        return PRODUCT_FORM;
+        Product product = (id != null) ? productService.getProductById(id) : new Product();
+        populateModelWithBrandsAndPageTitle(product, model);
+        return PRODUCT_FORM_VIEW;
     }
 
     /**
@@ -99,24 +101,20 @@ public class ProductController {
                               @RequestParam(value = "extraImages", required = false) MultipartFile[] extraImages,
                               @RequestParam(value = "values", required = false) String[] detailValues,
                               @RequestParam(value = "names", required = false) String[] detailNames)
-            throws IOException, SettingNotFoundException,
-            CurrencyNotFoundException, StripeException {
+            throws IOException {
         ProductHelper.addProductDetails(product, detailNames, detailValues);
 
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.product");
-        validationHelper.validateMultipartFile(newPrimaryImage, product.getId(), "mainImage",
-                                               "Main image is required"
-        );
+        validationHelper.validateMultipartFile(newPrimaryImage, product.getId(), "mainImage", "Main image is required");
 
         if (!validationHelper.validate()) {
-            prepareModelForProductForm(product, model);
-            return PRODUCT_FORM;
+            populateModelWithBrandsAndPageTitle(product, model);
+            return PRODUCT_FORM_VIEW;
         }
 
-        productService.save(product, newPrimaryImage, extraImages);
-
-        String successMessage = (product.getId() != null) ?
-                "The product has been updated successfully."
+        productService.saveProduct(product, newPrimaryImage, extraImages);
+        String successMessage = (product.getId() != null)
+                ? "The product has been updated successfully."
                 : "A new product has been created successfully.";
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
 
@@ -134,26 +132,30 @@ public class ProductController {
     @GetMapping("/products/details/{id}")
     public String viewProductDetails(@PathVariable("id") Integer id, Model model)
             throws ProductNotFoundException {
-        Product product = productService.get(id);
-        prepareModelForProductForm(product, model);
+        Product product = productService.getProductById(id);
+        model.addAttribute("product", product);
         return "product/product_detail_modal";
     }
 
     /**
-     * Prepares the model for the product form by adding necessary attributes.
+     * Updates the enabled status of a product.
      *
-     * @param product the product to add to the model.
-     * @param model   the model to add attributes to.
+     * @param id        the ID of the product to update.
+     * @param enabled   the new enabled status.
+     * @param redirectAttributes the redirect attributes to add flash messages.
+     * @return the redirect URL after updating the product's enabled status.
+     * @throws ProductNotFoundException if the product with the specified ID is not found.
      */
-    private void prepareModelForProductForm(Product product, Model model) {
-        String pageTitle = (product != null && product.getId() != null) ?
-                "Edit Product [ID: " + product.getId() + "]" : "Create New Product";
+    @GetMapping("/products/{id}/enabled/{status}")
+    public String updateProductStatus(@PathVariable("id") Integer id,
+                                      @PathVariable("status") boolean enabled,
+                                      RedirectAttributes redirectAttributes)
+            throws ProductNotFoundException {
+        productService.updateProductEnabledStatus(id, enabled);
+        String message = String.format("The product ID %d has been %s.", id, (enabled ? "enabled" : "disabled"));
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, message);
 
-        List<Brand> brandList = brandService.listAll("name", Constants.SORT_ASCENDING);
-
-        model.addAttribute("brandList", brandList);
-        model.addAttribute("pageTitle", pageTitle);
-        model.addAttribute("product", product);
+        return DEFAULT_REDIRECT_URL;
     }
 
     /**
@@ -168,31 +170,9 @@ public class ProductController {
     public String deleteProduct(@PathVariable("id") Integer id,
                                 RedirectAttributes redirectAttributes)
             throws ProductNotFoundException {
-        productService.deleteProduct(id);
+        productService.deleteProductById(id);
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
-                                             "The product has been deleted successfully."
-        );
-
-        return DEFAULT_REDIRECT_URL;
-    }
-
-    /**
-     * Updates the enabled status of a product.
-     *
-     * @param id        the ID of the product to update.
-     * @param enabled   the new enabled status.
-     * @param redirectAttributes the redirect attributes to add flash messages.
-     * @return the redirect URL after updating the product's enabled status.
-     * @throws ProductNotFoundException if the product with the specified ID is not found.
-     */
-    @GetMapping("/products/{id}/enabled/{status}")
-    public String updateProductEnabledStatus(@PathVariable("id") Integer id,
-                                             @PathVariable("status") boolean enabled,
-                                             RedirectAttributes redirectAttributes)
-            throws ProductNotFoundException, StripeException {
-        productService.updateProductEnabledStatus(id, enabled);
-        String message = "The product ID " + id + " has been " + (enabled ? "enabled" : "disabled") + ".";
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, message);
+                                             "The product has been deleted successfully.");
 
         return DEFAULT_REDIRECT_URL;
     }
@@ -205,7 +185,7 @@ public class ProductController {
      * @throws IOException if an I/O error occurs during data export.
      */
     @GetMapping("/products/export/{format}")
-    public void exportEntities(@PathVariable String format, HttpServletResponse response)
+    public void exportProducts(@PathVariable String format, HttpServletResponse response)
             throws IOException {
         String[] headers = {"Id", "Name", "Alias", "Created time", "Enabled", "In stock", "Cost",
                             "Price", "Discount percent", "Length", "Width", "Height", "Weight"};
@@ -218,7 +198,25 @@ public class ProductController {
                 String.valueOf(product.getLength()), String.valueOf(product.getWidth()),
                 String.valueOf(product.getHeight()), String.valueOf(product.getWeight())};
 
-        ExportUtil.export(format, () -> productService.listAll("id", Constants.SORT_ASCENDING),
+        ExportUtil.export(format, () -> productService.listAllProducts("id", Sort.Direction.ASC),
                           headers, extractor, response);
+    }
+
+    /**
+     * Populates the model with brands and the page title for the product form.
+     *
+     * @param product the product being edited or created.
+     * @param model   the model to populate with attributes.
+     */
+    private void populateModelWithBrandsAndPageTitle(Product product, Model model) {
+        String pageTitle = (product.getId() != null)
+                ? "Edit Product [ID: " + product.getId() + "]"
+                : "Create New Product";
+
+        List<Brand> brandList = brandService.listAllBrands("name", Sort.Direction.ASC);
+
+        model.addAttribute("brandList", brandList);
+        model.addAttribute("pageTitle", pageTitle);
+        model.addAttribute("product", product);
     }
 }

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="common :: head_all('')"></th:block>
+<body>
+
+<header th:replace="navigations :: header()"></header>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <div th:replace="navigations :: sidebar('Dashboard')"></div>
+
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{common :: alerts()}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard</h1>
+            </div>
+
+            <div class="row mt-5 g-3">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <strong>General information</strong> <a th:href="@{/settings#general}" class="link-primary">Edit</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-md-6">Site Name</div>
+                                <div class="col-md-6 fw-bolder" th:text="${SITE_NAME}"></div>
+
+                                <div class="col-md-6">Currency symbol</div>
+                                <div class="col-md-6 fw-bolder" th:text="${CURRENCY_SYMBOL}"></div>
+
+                                <div class="col-md-6">Decimal Point Type</div>
+                                <div class="col-md-6 fw-bolder" th:text="${DECIMAL_POINT_TYPE}"></div>
+
+                                <div class="col-md-6">Decimal Digits</div>
+                                <div class="col-md-6 fw-bolder" th:text="${DECIMAL_DIGITS}"></div>
+
+                                <div class="col-md-6">Thousands Point Type</div>
+                                <div class="col-md-6 fw-bolder" th:text="${THOUSANDS_POINT_TYPE}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-sm-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Users ([[${userCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/users/new}" class="link-primary d-block">Add User</a>
+                            <a th:href="@{/users/page/0?sortField=enabled&sortDir=desc&keyword=}" class="link-primary d-block">Enabled ([[${enabledUserCount}]])</a>
+                            <a th:href="@{/users/page/0?sortField=enabled&sortDir=asc&keyword=}" class="link-primary d-block">Disabled ([[${userCount - enabledUserCount}]])</a>
+                            <a th:href="@{/users}" class="link-primary d-block">View all</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-sm-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Categories ([[${categoryCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/categories/new}" class="link-primary">Add Category</a>
+                            <a th:href="@{/categories/page/0?sortField=enabled&sortDir=desc&keyword=}" class="link-primary d-block">Enabled ([[${enabledCategoryCount}]])</a>
+                            <a th:href="@{/categories/page/0?sortField=enabled&sortDir=asc&keyword=}" class="link-primary d-block">Disabled ([[${categoryCount - enabledCategoryCount}]])</a>
+                            <a th:href="@{/categories}" class="link-primary d-block">View all</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-sm-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Brands ([[${brandCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/brands/new}" class="link-primary">Add Brand</a>
+                            <a th:href="@{/brands}" class="link-primary d-block">View all</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row g-3 mt-5">
+                <div class="col-sm-6 col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Products ([[${productCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/products/new}" class="link-primary">Add Product</a>
+                            <a th:href="@{/products/page/0?sortField=enabled&sortDir=desc&keyword=}" class="link-primary d-block">Enabled ([[${enabledProductCount}]])</a>
+                            <a th:href="@{/products/page/0?sortField=enabled&sortDir=asc&keyword=}" class="link-primary d-block">Disabled ([[${productCount - enabledProductCount}]])</a>
+                            <a th:href="@{/products/page/0?sortField=inStock&sortDir=desc&keyword=}" class="link-primary d-block">In Stock ([[${inStockProductCount}]])</a>
+                            <a th:href="@{/products/page/0?sortField=inStock&sortDir=asc&keyword=}" class="link-primary d-block">Out of Stock ([[${productCount - inStockProductCount}]])</a>
+                            <a th:href="@{/products}" class="link-primary d-block">View all</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Questions ([[${questionCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/questions}" class="link-primary d-block">View all</a>
+                            <a th:href="@{/questions/page/0?sortField=approvalStatus&sortDir=desc&keyword=}" class="link-primary d-block">Approved ([[${approvedQuestionCount}]])</a>
+                            <a th:href="@{/questions/page/0?sortField=approvalStatus&sortDir=asc&keyword=}" class="link-primary d-block">Un-approved ([[${questionCount - approvedQuestionCount}]])</a>
+                            <span class="d-block">Answered ([[${approvedQuestionCount}]])</span>
+                            <span class="d-block">Un-answered ([[${questionCount - approvedQuestionCount}]])</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Reviews ([[${reviewCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/reviews}" class="link-primary d-block">View all</a>
+                            <span class="d-block">Reviewed Products ([[${reviewCount}]])</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Customers ([[${customerCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/customers}" class="link-primary d-block">View all</a>
+                            <a th:href="@{'/customers/page/0?sortField=enabled&sortDir=desc&keyword='}" class="link-primary d-block">Enabled ([[${enabledCustomerCount}]])</a>
+                            <a th:href="@{'/customers/page/0?sortField=enabled&sortDir=asc&keyword='}" class="link-primary d-block">Disabled ([[${customerCount - enabledCustomerCount}]])</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row mt-5 g-3 mb-4">
+                <div class="col-sm-6 col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Orders ([[${orderCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/orders}" class="link-primary d-block">View all</a>
+                            <span th:each="entry : ${orderStatusMap}" class="d-block">[[${entry.key}]] (<strong>[[${entry.value}]]</strong>)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Articles ([[${articleCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/articles/new}" class="link-primary d-block">Add Article</a>
+                            <a th:href="@{/articles}" class="link-primary d-block">View all</a>
+                            <span th:each="entry : ${articleStatusMap}" class="d-block">[[${entry.key}]] (<strong>[[${entry.value}]]</strong>)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Carousels ([[${carouselCount}]])</strong>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/main_page/new}" class="link-primary d-block">Add carousel</a>
+                            <span th:each="entry : ${carouselTypeMap}" class="d-block">[[${entry.key}]] (<strong>[[${entry.value}]]</strong>)</span>
+                            <a th:href="@{/main_page}" class="link-primary d-block">View all</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Settings</strong>
+                        </div>
+                        <div class="card-body">
+                            <span class="d-block">Countries (<strong>[[${countryCount}]]</strong>)</span>
+                            <a class="link-primary d-block" th:href="@{/settings#country}">Edit countries</a>
+                            <span class="d-block">States (<strong>[[${stateCount}]]</strong>)</span>
+                            <a class="link-primary d-block" th:href="@{/settings#state}">Edit states</a>
+                            <span class="d-block">Mail server (<strong>[[${MAIL_HOST}]]</strong>)</span>
+                            <a class="link-primary d-block" th:href="@{/settings#mail-server}">Edit mail server</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+</div>
+</body>
+</html>

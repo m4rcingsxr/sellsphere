@@ -1,6 +1,5 @@
 package com.sellsphere.client.category;
 
-import com.sellsphere.client.util.FilterUtil;
 import com.sellsphere.common.entity.Category;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,18 +19,36 @@ public class CategoryFilter extends GenericFilter {
 
     private final CategoryService categoryService;
 
+    private static final String[] RESOURCE_EXTENSION = {".css", ".js", ".png"};
+
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(ServletRequest request, ServletResponse response,
+                         FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest servletRequest = (HttpServletRequest) request;
-        boolean allowedUrl = FilterUtil.isRequestForResource(servletRequest);
+        boolean allowedUrl = isRequestForResource(servletRequest);
 
         if (!allowedUrl) {
-            List<Category> categoryList = categoryService.listRootCategories();
-            request.setAttribute("categoryList", categoryList);
+            loadRootCategories(servletRequest);
         }
 
         chain.doFilter(request, response);
+    }
+
+    private void loadRootCategories(HttpServletRequest servletRequest) {
+        List<Category> categoryList = categoryService.listRootCategories();
+        servletRequest.setAttribute("categoryList", categoryList);
+    }
+
+    private boolean isRequestForResource(HttpServletRequest request) {
+        String url = request.getRequestURL().toString();
+        for (String allowedExtension : RESOURCE_EXTENSION) {
+            if (url.endsWith(allowedExtension)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

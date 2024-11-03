@@ -15,8 +15,7 @@ public class FilterMapCountRequestValidator implements ConstraintValidator<Valid
 
         context.disableDefaultConstraintViolation();
 
-        valid &= RequestValidatorUtils.validateCategoryAndKeyword(value.getCategoryAlias(), value.getKeyword(), context);
-        valid &= RequestValidatorUtils.validatePriceRange(value.getMinPrice(), value.getMaxPrice(), context);
+        valid = RequestValidatorUtils.validatePriceRange(value.getMinPrice(), value.getMaxPrice(), context);
 
         return valid;
     }

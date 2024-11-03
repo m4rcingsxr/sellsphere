@@ -5,9 +5,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Constants {
 
-    public static final String SORT_ASCENDING = "asc";
-    public static final String SORT_DESCENDING = "desc";
-
     public static final String S3_BASE_URI;
     public static final String SUCCESS_MESSAGE = "successMessage";
     public static final String ERROR_MESSAGE = "errorMessage";

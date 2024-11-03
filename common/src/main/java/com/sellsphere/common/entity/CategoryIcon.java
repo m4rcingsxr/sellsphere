@@ -23,4 +23,8 @@ public class CategoryIcon extends IdentifiedEntity {
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
+    public CategoryIcon(Integer id, String iconPath) {
+        super(id);
+        this.iconPath = iconPath;
+    }
 }

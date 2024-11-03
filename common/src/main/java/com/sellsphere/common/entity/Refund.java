@@ -65,4 +65,9 @@ public class Refund extends IdentifiedEntity {
         );
     }
 
+    @Transient
+    public String displayAmountString() {
+        return MoneyUtil.formatAmount(getDisplayAmount(), currency.getCode());
+    }
+
 }

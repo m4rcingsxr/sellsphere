@@ -292,8 +292,6 @@ class ShoppingCartModel {
         return this.getSubtotal() + this.getTax() + this.getShipping() - this.getSaving();
     }
 
-
-    // TODO:
     /**
      * Gets the tax for the cart (placeholder).
      * @returns {number} - The tax for the cart.

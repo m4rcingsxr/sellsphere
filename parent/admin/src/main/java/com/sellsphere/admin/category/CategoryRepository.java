@@ -28,4 +28,6 @@ public interface CategoryRepository extends SearchRepository<Category, Integer> 
     Optional<Category> findByName(String name);
 
     Optional<Category> findByAlias(String alias);
+
+    long countAllByEnabledIsTrue();
 }

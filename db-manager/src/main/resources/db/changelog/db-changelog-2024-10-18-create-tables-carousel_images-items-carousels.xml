@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1729279997765-7" author="Marcin Seweryn">
+        <createTable tableName="carousel_images">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_carousel_images"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="article_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1729279997765-8" author="Marcin Seweryn">
+        <createTable tableName="carousel_items">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_carousel_items"/>
+            </column>
+            <column name="entity_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="carousel_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="carousel_item_order" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1729279997765-9" author="Marcin Seweryn">
+        <createTable tableName="carousels">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_carousels"/>
+            </column>
+            <column name="carousel_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="header" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="carousel_order" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="promotion_id" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1729279997765-10" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="article_id" constraintName="uc_carousel_images_article"
+                             tableName="carousel_images"/>
+    </changeSet>
+    <changeSet id="1729279997765-11" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="carousel_order" constraintName="uc_carousels_carousel_order"
+                             tableName="carousels"/>
+    </changeSet>
+    <changeSet id="1729279997765-12" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="promotion_id" constraintName="uc_carousels_promotion" tableName="carousels"/>
+    </changeSet>
+    <changeSet id="1729279997765-13" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="promotion_id" baseTableName="carousels"
+                                 constraintName="FK_CAROUSELS_ON_PROMOTION" referencedColumnNames="id"
+                                 referencedTableName="promotions"/>
+    </changeSet>
+    <changeSet id="1729279997765-14" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="article_id" baseTableName="carousel_images"
+                                 constraintName="FK_CAROUSEL_IMAGES_ON_ARTICLE" referencedColumnNames="id"
+                                 referencedTableName="articles"/>
+    </changeSet>
+    <changeSet id="1729279997765-15" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="carousel_id" baseTableName="carousel_items"
+                                 constraintName="FK_CAROUSEL_ITEMS_ON_CAROUSEL" referencedColumnNames="id"
+                                 referencedTableName="carousels"/>
+    </changeSet>
+    <changeSet id="1729279997765-3" author="Marcin Seweryn">
+        <dropNotNullConstraint columnDataType="varchar(128)" columnName="image" tableName="categories"/>
+    </changeSet>
+
+</databaseChangeLog>

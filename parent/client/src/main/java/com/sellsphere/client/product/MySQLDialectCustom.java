@@ -4,6 +4,7 @@ import org.hibernate.boot.model.FunctionContributions;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.query.sqm.function.SqmFunctionRegistry;
 
+// Required for ProductSpecifications.hasKeyword to perform full text search
 public class MySQLDialectCustom extends MySQLDialect {
 
   public MySQLDialectCustom() {

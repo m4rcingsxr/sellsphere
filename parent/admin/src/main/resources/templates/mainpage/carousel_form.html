@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{form_fragments :: common_head(${pageTitle})}"></th:block>
+    <th:block th:replace="~{common :: swiper()}"></th:block>
+</head>
+<body>
+
+<header th:replace="~{navigations :: header()}"></header>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <div th:replace="navigations :: sidebar('Main Page')"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2" th:text="${pageTitle}">Dashboard</h1>
+            </div>
+
+            <section class="content mb-5">
+                <div class="container-md mt-7">
+                    <form
+                            id="mainForm"
+                            method="POST"
+                            th:action="@{/main_page/save}"
+                            th:object="${carousel}"
+                            enctype="multipart/form-data"
+                    >
+                        <div class="mx-auto mt-5">
+
+                            <div th:replace="common :: alerts()"></div>
+                            <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                                <input type="hidden" th:field="*{id}"/>
+
+                                <input type="text" th:field="*{carouselOrder}" class="d-none"/>
+                                <input type="hidden" id="idSet" th:value="${idsSet}"/>
+
+                                <th:block
+                                        th:replace="form_fragments :: text_input('Header','header',false)"
+                                ></th:block>
+
+                                <label class="col-sm-4">Carousel Type</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" th:field="*{type}">
+                                        <option
+                                                th:each="type : ${carouselTypeList}"
+                                                th:text="${type}"
+                                                th:value="${type}"
+                                        ></option>
+                                    </select>
+                                    <span th:replace="~{form_fragments :: field_error('type')}"></span>
+                                </div>
+
+                                <label class="col-sm-4 article d-none">Promotion Articles</label>
+                                <div class="col-sm-8 article d-none">
+                                    <select multiple class="form-control" id="articles">
+                                        <option
+                                                th:each="article : ${articleList}"
+                                                th:text="${article.title}"
+                                                th:value="${article.title}"
+                                                th:selected="${#lists.contains(idsSet, article.id)}"
+                                        ></option>
+                                    </select>
+                                </div>
+
+                                <label class="col-sm-4 article d-none promotions">Promotions</label>
+                                <div class="col-sm-8 offer d-none promotions">
+                                    <select class="form-control" id="promotionList" name="promotionId">
+                                        <option th:each="promotion : ${promotionList}" th:value="${promotion.id}"
+                                                th:text="${promotion.name}"
+                                                th:selected="${carousel.promotion != null && carousel.promotion.id == promotion.id}"></option>
+                                    </select>
+                                </div>
+
+                                <label class="col-sm-4 product d-none">Products</label>
+                                <div class="col-sm-8 product d-none">
+                                    <select th:if="${carousel.promotion != null}" multiple size="15" class="form-control" th:id="products">
+                                        <option th:each="product : ${carousel.promotion.products}"
+                                                th:text="${product.name}"
+                                                th:value="${product.id}"
+                                                th:selected="${#lists.contains(idsSet, product.id)}"></option>
+                                    </select>
+
+                                    <select th:if="${carousel.promotion == null}" multiple size="15" class="form-control" th:id="products">
+                                    </select>
+                                </div>
+
+
+                                <label class="form-label col-sm-4 d-none images">Select article for new main carousel image</label>
+                                <div class="col-sm-8 d-none images">
+                                    <select class="form-control mt-2" id="carouselImageArticle">
+                                        <option th:each="article : ${articleList}" th:text="${article.title}"
+                                                th:value="${article.id}"></option>
+                                    </select>
+                                    <input class="form-control mt-2" type="file" accept="image/*" id="carouselImage" name="carouselImage">
+                                </div>
+
+                                <label class="control-label col-sm-4 carouselItems">Carousel Items</label>
+                                <div class="col-sm-8 carouselItems" id="carouselItems">
+
+                                </div>
+
+                                <h6 class="subheading fs-6 fw-bolder mt-6">Carousel preview</h6>
+                                <div class="swiper mySwiper border border-1 rounded-2 p-3" id="elementSwiper">
+                                    <div class="swiper-wrapper" id="slideContainer">
+                                        <!-- Slides will be dynamically added here -->
+                                    </div>
+                                    <div class="swiper-pagination"></div>
+                                </div>
+
+                                <select id="entityOrder" class="d-none" th:data-initial-type="${carousel.type}">
+                                    <option th:each="carouselItem : ${carousel.carouselItems}"
+                                            th:value="${carouselItem.entityId}"></option>
+                                </select>
+
+                                <div th:replace="form_fragments :: form_buttons(${carousel})"></div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+</div>
+
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+
+<script th:replace="~{common :: configurations()}"></script>
+<script type="text/javascript" th:src="@{/js/carousel_form.js}"></script>
+
+<script type="text/javascript">
+
+    const validationRules = {
+        header: {
+            required: true,
+            maxlength: 255,
+
+        },
+    };
+
+    const validationMessages = {
+        header: {
+            required: "Please enter article header.",
+            maxlength: "Article header cannot exceed 255 characters. Please shorten it.",
+        },
+    };
+
+    const dynamicRules = [];
+</script>
+
+</body>
+</html>

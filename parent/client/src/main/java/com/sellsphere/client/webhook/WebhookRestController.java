@@ -104,7 +104,6 @@ public class WebhookRestController {
                          ChargeNotFoundException | CurrencyNotFoundException |
                          CountryNotFoundException e) {
                     log.error("Error processing event {}: {}", finalEvent.getId(), e.getMessage(), e);
-                    // send email to dev
                 }
             });
 

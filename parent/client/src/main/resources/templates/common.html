@@ -18,6 +18,7 @@
 
     <!-- Font awesome   -->
     <link rel="stylesheet" th:href="@{/node_modules/@fortawesome/fontawesome-free/css/all.css}">
+    <script type="text/javascript" th:src="@{/node_modules/validate-js/validate.js}"></script>
 
     <!-- JQuery   -->
     <script th:src="@{/node_modules/jquery/dist/jquery.min.js}"></script>
@@ -30,6 +31,7 @@
     <link rel="stylesheet" th:href="@{/node_modules/bootstrap-icons/font/bootstrap-icons.css}"/>
 
     <script type="text/javascript" th:src="@{/js/ajax_util.js}"></script>
+    <script type="text/javascript" th:src="@{/js/main_navigation.js}"></script>
     <script type="text/javascript" th:src="@{/js/common.js}"></script>
 
     <!-- Format price based on price settings   -->
@@ -39,6 +41,10 @@
     <script  type="text/javascript" th:src="@{/js/ShoppingCartModel.js}"></script>
     <script  type="text/javascript" th:src="@{/js/ShoppingCartView.js}"></script>
     <script  type="text/javascript" th:src="@{/js/ShoppingCartController.js}"></script>
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+    <script type="text/javascript" th:src="@{/js/category_list.js}"></script>
 </th:block>
 
 <th:block th:fragment="swiper()">
@@ -52,13 +58,19 @@
     <script th:src="@{/node_modules/@splidejs/splide/dist/js/splide.min.js}" type="text/javascript"></script>
 </th:block>
 
-<div th:fragment="alerts()">
-    <div th:if="${successMessage != null}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>Success!</strong> [[${successMessage}]]
+<div th:fragment="alerts()" class="d-flex justify-content-center">
+
+    <div th:if="${errorMessage != null}"
+         class="alert alert-warning alert-dismissible fade show fixed-top-alert" role="alert">
+        <i class="fa-solid fa-circle-exclamation pe-2"></i>
+        <strong>Warning!</strong> <span th:text="${errorMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div th:if="${errorMessage != null}" class="alert alert-warning alert-dismissible fade show" role="alert">
-        <strong>Warning!</strong> [[${errorMessage}]]
+
+    <div th:if="${successMessage != null}"
+         class="alert alert-success alert-dismissible fade show fixed-top-alert" role="alert">
+        <i class="fa-solid fa-thumbs-up pe-2"></i>
+        <strong>Success!</strong> <span th:text="${successMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
@@ -69,12 +81,15 @@
                 <i th:if="${i <= averageRating}" class="fa-solid fa-star fa-xs text-warning"></i>
                 <i th:if="${i > averageRating}" class="fa-regular fa-star fa-xs text-warning"></i>
             </span>
-    <span class="fw-lighter fs-7" th:text="' (' + ${reviewCount} + ')'"></span>
 </div>
 
-<section th:fragment="splide_product_images_carousel(id, imageList)" th:id="${id}" class="splide">
+
+<section th:fragment="splide_product_images_carousel(id, imageList, mainImage)" th:id="${id}" class="splide">
     <div class="splide__track">
         <ul class="splide__list">
+            <li class="splide__slide position-relative">
+                <img th:src="${mainImage}" th:data-src="${mainImage}" class="lazy">
+            </li>
             <li th:each="image : ${imageList}" class="splide__slide position-relative">
                 <img th:src="${image.extraImagePath}" th:data-src="${image.extraImagePath}" class="lazy">
             </li>
@@ -82,12 +97,12 @@
     </div>
 </section>
 
-<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 fs-2 align-items-center">
+<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 fs-5 align-items-center">
 
     <strong th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(discountPrice, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></strong>
 
     <span th:if="${discountPercent > 0}"
-          class="fw-lighter text-decoration-line-through fs-5"
+          class="fw-lighter text-decoration-line-through fs-6"
           th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></span>
 </div>
 
@@ -100,15 +115,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.js"></script>
 </th:block>
 
-<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 mt-auto">
+<th:block th:fragment="swiper()">
+    <script type="text/javascript" th:src="@{/node_modules/swiper/swiper-bundle.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/node_modules/swiper/swiper-bundle.min.css}"/>
+</th:block>
 
-    <strong th:text="${(CURRENCY_SYMBOL_POSITION == 'Before price' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(discountPrice, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'After price' ? CURRENCY_SYMBOL : '')}"></strong>
-
-    <span th:if="${discountPercent > 0}"
-          class="fw-lighter text-decoration-line-through"
-          th:text="${(CURRENCY_SYMBOL_POSITION == 'Before price' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'After price' ? CURRENCY_SYMBOL : '')}"></span>
-
+<div th:fragment="categoryList()" id="categoryList"
+     class="d-none border border-2 shadow-sm p-4 rounded-2  position-absolute top-0 bg-white w-100" style="z-index: 1995">
+    <div th:each="category : ${categoryList}" th:id="${category.name}"
+         class="d-none row row-cols-1 row-cols-sm-2 row-cols-md-4">
+        <div class="col" th:each="categoryChild : ${category.children}">
+            <a class="link-dark link-underline link-underline-opacity-0 d-block link-underline-opacity-50-hover"
+               th:href="@{|/c/${categoryChild.alias}|}"><strong
+                    th:text="${categoryChild.name}"></strong></a>
+            <a th:each="categorySubChild : ${categoryChild.children}"
+               class="link-dark link-underline link-underline-opacity-0 d-block mt-2 link-underline-opacity-50-hover"
+               th:href="@{|/c/${categorySubChild.alias}|}" th:text="${categorySubChild.name}"></a>
+        </div>
+    </div>
 </div>
+
 
 <script type="text/javascript" th:fragment="configurations()">
     const MODULE_URL = "[[@{/}]]";

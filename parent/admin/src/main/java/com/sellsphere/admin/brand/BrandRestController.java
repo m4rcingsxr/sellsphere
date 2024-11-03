@@ -4,58 +4,85 @@ import com.sellsphere.admin.category.CategoryService;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.Category;
-import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.payload.BrandDTO;
+import com.sellsphere.common.entity.payload.CategoryDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
- * REST controller for managing Brand-related operations.
+ * REST controller for managing brand-related operations such as checking uniqueness,
+ * listing categories, and fetching all brands.
  */
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/brands")
 public class BrandRestController {
 
-    private final BrandService service;
+    private final BrandService brandService;
     private final CategoryService categoryService;
 
     /**
-     * Checks the uniqueness of a brand alias.
+     * Checks if the alias of a brand is unique, with an optional brand ID for updating scenarios.
      *
-     * @param brandId the brand ID (optional)
-     * @param alias the brand alias
-     * @return ResponseEntity with a Boolean indicating uniqueness
+     * @param brandId the brand ID (optional, used for update scenarios)
+     * @param alias   the alias of the brand to check for uniqueness
+     * @return a ResponseEntity containing a boolean indicating whether the alias is unique
      */
-    @PostMapping("/brands/check_uniqueness")
-    public ResponseEntity<Boolean> isAliasUnique(
+    @PostMapping("/check-uniqueness")
+    public ResponseEntity<Boolean> checkBrandAliasUniqueness(
             @RequestParam(value = "id", required = false) Integer brandId,
-            @RequestParam(value = "name") String alias) {
-        if(alias.length() > 45) {
-            throw new IllegalArgumentException("Brand name length should not exceeds 45 characters");
+            @RequestParam("name") String alias) {
+
+        // Validate alias length
+        if (alias.length() > 45) {
+            throw new IllegalArgumentException("Brand alias should not exceed 45 characters.");
         }
 
-        boolean isUnique = service.isNameUnique(brandId, alias);
+        // Check if the alias is unique
+        boolean isUnique = brandService.isBrandNameUnique(brandId, alias);
         return ResponseEntity.ok(isUnique);
     }
 
-    @GetMapping("/brands/{id}/categories")
-    public ResponseEntity<List<CategoryDTO>> listCategoriesForBrand(@PathVariable Integer id)
+    /**
+     * Retrieves the category hierarchy for a specific brand.
+     *
+     * @param brandId the ID of the brand
+     * @return a ResponseEntity containing a list of CategoryDTOs representing the category hierarchy
+     * @throws BrandNotFoundException if the brand is not found
+     */
+    @GetMapping("/{brandId}/categories")
+    public ResponseEntity<List<CategoryDTO>> getBrandCategoryHierarchy(@PathVariable("brandId") Integer brandId)
             throws BrandNotFoundException {
-        Brand brand = service.get(id);
-        List<Category> brandCategories = brand.getCategories().stream().toList();
-        List<Category> hierarchy = categoryService.createHierarchy(brandCategories);
-        List<CategoryDTO> hierarchyDTO = hierarchy.stream().map(CategoryDTO::new).toList();
 
-        return ResponseEntity.ok(hierarchyDTO);
+        // Fetch brand by ID
+        Brand brand = brandService.getBrandById(brandId);
+
+        // Get categories associated with the brand and build the hierarchy
+        Set<Category> brandCategories = brand.getCategories();
+        List<Category> hierarchy = categoryService.createHierarchy(brandCategories.stream().toList());
+        List<CategoryDTO> hierarchyDTOs = hierarchy.stream().map(CategoryDTO::new).toList();
+
+        return ResponseEntity.ok(hierarchyDTOs);
     }
 
-    @GetMapping("/brands/fetch-all")
-    public ResponseEntity<List<BrandDTO>> listAllBrands() {
-        List<Brand> brandList = service.listAll("name", Constants.SORT_ASCENDING);
-        return ResponseEntity.ok(brandList.stream().map(BrandDTO::new).toList());
+    /**
+     * Fetches all brands sorted by name in ascending order.
+     *
+     * @return a ResponseEntity containing a list of BrandDTOs representing all brands
+     */
+    @GetMapping("/fetch-all")
+    public ResponseEntity<List<BrandDTO>> fetchAllBrands() {
+
+        // Retrieve all brands sorted by name in ascending order
+        List<Brand> brandList = brandService.listAllBrands("name", Sort.Direction.ASC);
+        List<BrandDTO> brandDTOs = brandList.stream().map(BrandDTO::new).toList();
+
+        return ResponseEntity.ok(brandDTOs);
     }
 
 }

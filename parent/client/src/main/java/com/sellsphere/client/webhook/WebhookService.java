@@ -1,8 +1,10 @@
 package com.sellsphere.client.webhook;
 
+import com.sellsphere.client.EmailService;
 import com.sellsphere.client.checkout.CurrencyService;
 import com.sellsphere.client.checkout.TransactionService;
 import com.sellsphere.client.customer.CustomerRepository;
+import com.sellsphere.client.order.OrderRepository;
 import com.sellsphere.client.order.OrderService;
 import com.sellsphere.client.setting.SettingService;
 import com.sellsphere.client.shoppingcart.ShoppingCartService;
@@ -16,7 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Service
@@ -36,6 +41,10 @@ public class WebhookService {
     private final ChargeRepository chargeRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final BalanceTransactionRepository balanceTransactionRepository;
+    private final OrderRepository orderRepository;
+    private final EmailService emailService;
+
+    private final ExecutorService executorService;
 
     /**
      * Process the Stripe event.
@@ -174,44 +183,52 @@ public class WebhookService {
      * @throws StripeException              if there is an error with Stripe operations.
      * @throws TransactionNotFoundException if the transaction is not found.
      */
-    private void handlePaymentIntentSucceeded(com.stripe.model.PaymentIntent stripePaymentIntent)
-            throws TransactionNotFoundException, StripeException {
 
-        var serviceTransaction = transactionService.getByStripeId(stripePaymentIntent.getId());
+    private void handlePaymentIntentSucceeded(com.stripe.model.PaymentIntent stripePaymentIntent) throws TransactionNotFoundException, StripeException {
+        CompletableFuture.runAsync(() -> {
+            try {
+                var serviceTransaction = transactionService.getByStripeId(stripePaymentIntent.getId());
+                Customer customer = serviceTransaction.getCustomer();
 
-        serviceTransaction.setStatus(stripePaymentIntent.getStatus());
-        transactionService.save(serviceTransaction);
+                var paymentMethod = com.stripe.model.PaymentMethod.retrieve(stripePaymentIntent.getPaymentMethod());
 
-        Customer customer = serviceTransaction.getCustomer();
+                var servicePaymentMethod = paymentMethodRepository.save(
+                        com.sellsphere.common.entity.PaymentMethod.builder()
+                                .type(paymentMethod.getType())
+                                .customer(customer)
+                                .stripeId(paymentMethod.getId())
+                                .build()
+                );
 
-        var paymentMethod = com.stripe.model.PaymentMethod.retrieve(
-                stripePaymentIntent.getPaymentMethod()
-        );
+                serviceTransaction.setPaymentMethod(servicePaymentMethod);
+                serviceTransaction.setStatus(stripePaymentIntent.getStatus());
+                serviceTransaction.setReceiptUrl(com.stripe.model.Charge.retrieve(stripePaymentIntent.getLatestCharge()).getReceiptUrl());
+                transactionService.save(serviceTransaction);
 
-        var servicePaymentMethod = paymentMethodRepository.save(
-                com.sellsphere.common.entity.PaymentMethod.builder()
-                        .type(paymentMethod.getType())
-                        .customer(customer)
-                        .stripeId(paymentMethod.getId())
-                        .build()
-        );
+                serviceTransaction.getOrder().addOrderTrack(
+                        OrderTrack.builder()
+                                .status(OrderStatus.PAID)
+                                .notes(OrderStatus.PAID.getNote())
+                                .updatedTime(LocalDate.now())
+                                .order(serviceTransaction.getOrder())
+                                .build()
+                );
 
-        serviceTransaction.setPaymentMethod(servicePaymentMethod);
+                Order order = orderRepository.save(serviceTransaction.getOrder());
 
-        Order order = orderService.createOrder(
-                serviceTransaction
-        );
+                // Send confirmation email
+                emailService.sendOrderConfirmationEmail(order);
 
-        serviceTransaction.setStatus(stripePaymentIntent.getStatus());
-        serviceTransaction.setOrder(order);
-        transactionService.save(serviceTransaction);
+                // Clear cart
+                shoppingCartService.clearCart(customer);
 
-        // clean cart
-        shoppingCartService.clearCart(customer);
-
-
-        log.info("Handled payment intent succeeded for: {}", stripePaymentIntent.getId());
+                log.info("Handled payment intent succeeded for: {}", stripePaymentIntent.getId());
+            } catch (Exception e) {
+                log.error("Error handling payment intent succeeded for: {}", stripePaymentIntent.getId(), e);
+            }
+        }, executorService);
     }
+
 
     /**
      * Handles the payment_intent.created event.

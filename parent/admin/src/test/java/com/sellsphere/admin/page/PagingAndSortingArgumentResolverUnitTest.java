@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
@@ -66,7 +67,7 @@ class PagingAndSortingArgumentResolverUnitTest {
         // Then
         assertNotNull(helper);
         assertEquals("name", helper.getSortField());
-        assertEquals("asc", helper.getSortDir());
+        assertEquals(Sort.Direction.ASC, helper.getSortDir());
         assertEquals("test", helper.getKeyword());
         then(model).should().addAttribute("sortField", "name");
         then(model).should().addAttribute("sortDir", "asc");

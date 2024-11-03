@@ -12,7 +12,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
 
     @Query("SELECT NEW com.sellsphere.common.entity.OrderDetail(d.product" +
             ".category.name, d.quantity, d.productCost, d" +
-            ".productPrice, d.subtotal, com.sellsphere.common.entity.DetailContext.CATEGORY) FROM OrderDetail d WHERE d.order" +
+            ".productPrice, d.subtotal, com.sellsphere.common.entity.DetailContext.CATEGORY, d.order) FROM OrderDetail d WHERE d.order" +
             ".orderTime BETWEEN :start AND :end")
     List<OrderDetail> findAllWithCategoryNameAndTimeBetween(
             @Param("start") LocalDateTime startDate,
@@ -20,7 +20,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
 
     @Query("SELECT NEW com.sellsphere.common.entity.OrderDetail(d.product.name," +
             " d.quantity, d.productCost, d" +
-            ".productPrice, d.subtotal, com.sellsphere.common.entity.DetailContext.PRODUCT) FROM OrderDetail d WHERE d.order" +
+            ".productPrice, d.subtotal, com.sellsphere.common.entity.DetailContext.PRODUCT, d.order) FROM OrderDetail d WHERE d.order" +
             ".orderTime BETWEEN :start AND :end")
     List<OrderDetail> findAllWithProductNameAndTimeBetween(
             @Param("start") LocalDateTime startDate,

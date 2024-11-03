@@ -1,2 +1,2 @@
-insert into currencies (id, name, symbol, code, unit_amount)
-                values (1, 'Euro', 'E', 'eur', 100);
+insert into currencies (name, symbol, code, unit_amount)
+                values ( 'Euro', 'E', 'eur', 100);

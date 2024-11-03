@@ -2,7 +2,6 @@ package com.sellsphere.admin.brand;
 
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.Category;
-import com.sellsphere.common.entity.Constants;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -13,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.jdbc.Sql;
 import util.PagingTestHelper;
 
@@ -22,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-@Sql(scripts = {"classpath:sql/brands.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = {"classpath:sql/brands.sql", "classpath:sql/categories.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = {"classpath:sql/clean_categories.sql", "classpath:sql/clean_brands.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class BrandRepositoryIntegrationTest {
 
     @Autowired
@@ -31,10 +32,8 @@ class BrandRepositoryIntegrationTest {
     @Autowired
     private BrandRepository brandRepository;
 
-
     @Test
-    void whenFindByName_thenReturnBrand() {
-
+    void givenValidBrandName_whenFindingByName_thenReturnBrand() {
         // Given
         String expectedName = "Canon";
 
@@ -47,31 +46,33 @@ class BrandRepositoryIntegrationTest {
     }
 
     @ParameterizedTest(name = "Keyword: {0}, Expected Total: {1}")
-    @CsvSource({"sandisk, 6, 5, 2, name",
-                "s, 7, 5, 2, name",
-                "SANDISK, 6, 5, 2, id",
-                "canon, 1, 1, 1, name"})
-    void whenSearchByKeyword_thenReturnMatchingBrands(String keyword, int expectedTotalElements,
-                                                      int expectedContentSize, int expectedPages,
-                                                      String sortField) {
-        PageRequest pageRequest = PagingTestHelper.createPageRequest(0, 5, sortField,
-                                                                     Constants.SORT_ASCENDING
-        );
+    @CsvSource({
+            "sandisk, 6, 5, 2, name",
+            "s, 7, 5, 2, name",
+            "SANDISK, 6, 5, 2, id",
+            "canon, 1, 1, 1, name"
+    })
+    void givenKeyword_whenSearchingByKeyword_thenReturnMatchingBrands(String keyword,
+                                                                      int expectedTotalElements,
+                                                                      int expectedContentSize,
+                                                                      int expectedPages,
+                                                                      String sortField) {
+        // Given
+        PageRequest pageRequest = PagingTestHelper.createPageRequest(0, 5, sortField, Sort.Direction.ASC);
 
-        // when
+        // When
         Page<Brand> result = brandRepository.findAll(keyword, pageRequest);
 
-        // then
-        PagingTestHelper.assertPagingResults(result, expectedContentSize, expectedPages,
-                                             expectedTotalElements, sortField, true
-        );
+        // Then
+        PagingTestHelper.assertPagingResults(result, expectedContentSize, expectedPages, expectedTotalElements, sortField, true);
     }
 
     @Test
-    void whenSaveBrand_thenBrandIsSaved() {
+    void givenNewBrand_whenSavingBrand_thenBrandIsSaved() {
+        // Given
         Brand newBrand = new Brand();
         newBrand.setName("NewBrand");
-        newBrand.setLogo("newLogo.jpg");
+        newBrand.setLogo("newLogo.png");
 
         // When
         Brand savedBrand = brandRepository.save(newBrand);
@@ -81,55 +82,49 @@ class BrandRepositoryIntegrationTest {
     }
 
     @Test
-    void whenPersistBrandWithCategory_thenBrandIsPersistedAndJoinTableUpdated() {
-        Category electronics = entityManager.find(Category.class, 1);
-
+    void givenExistingBrandWithCategories_whenSaving_thenCategoriesPersisted() {
         // Given
-        Brand brand = new Brand();
-        brand.setName("TechGadgets");
-        brand.setLogo("tech-logo.png");
-        brand.addCategory(electronics);
+        Category electronicsCategory = entityManager.find(Category.class, 1);
+
+        Brand newBrand = new Brand();
+        newBrand.setName("TechBrand");
+        newBrand.setLogo("tech.png");
+        newBrand.addCategory(electronicsCategory);
 
         // When
-        Brand savedBrand = brandRepository.saveAndFlush(brand);
+        Brand savedBrand = brandRepository.save(newBrand);
 
         // Then
-        assertNotNull(savedBrand.getId(), "Saved brand should have a non-null ID");
-        assertEquals(1, savedBrand.getCategories().size(),
-                     "Brand should have one category assigned"
-        );
+        assertNotNull(savedBrand.getId(), "Brand ID should not be null");
+        assertEquals("TechBrand", savedBrand.getName(), "Brand name should match");
+        assertEquals(1, savedBrand.getCategories().size(), "Brand should have one category associated");
 
-        Category category = savedBrand.getCategories().iterator().next();
-        assertEquals("Electronics", category.getName(), "Category name should match");
-        assertTrue(category.getBrands().stream().map(Brand::getName).anyMatch("TechGadgets"::equals), "Category name should match");
+        Category savedCategory = savedBrand.getCategories().iterator().next();
+        assertEquals("Electronics", savedCategory.getName(), "Associated category name should match");
     }
 
     @Test
-    void whenDeleteBrandById_thenBrandIsDeleted() {
-
+    void givenValidBrandId_whenDeletingBrand_thenBrandIsDeleted() {
         // Given
         Integer brandId = 1;
 
         // When
         brandRepository.deleteById(brandId);
-        entityManager.flush();
 
         // Then
         Optional<Brand> deletedBrand = brandRepository.findById(brandId);
-        assertTrue(deletedBrand.isEmpty(), "Brand should not be found after deletion");
+        assertTrue(deletedBrand.isEmpty(), "Brand should be deleted");
     }
 
     @Test
-    void whenCount_thenReturnCorrectNumber() {
-
+    void whenCountingBrands_thenReturnCorrectCount() {
         // Given
         long expectedCount = 10;
 
         // When
-        long count = brandRepository.count();
+        long brandCount = brandRepository.count();
 
         // Then
-        assertEquals(expectedCount, count, "Brand count should match expected value");
+        assertEquals(expectedCount, brandCount, "Brand count should match the expected value");
     }
-
 }

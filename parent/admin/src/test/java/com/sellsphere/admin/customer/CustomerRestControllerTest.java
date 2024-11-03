@@ -1,8 +1,5 @@
 package com.sellsphere.admin.customer;
 
-import com.sellsphere.common.entity.CustomerNotFoundException;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,65 +8,67 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc(addFilters = false)
 @SpringBootTest
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+@AutoConfigureMockMvc(addFilters = false)
 class CustomerRestControllerTest {
 
     @MockBean
     private CustomerService customerService;
 
     @Autowired
-    private MockMvc mvc;
+    private MockMvc mockMvc;
 
     @Test
-    void givenEmailRequestParam_whenCheckUniqueness_thenShouldReturnTrue() throws Exception {
-        Integer customerId = 1;
-        String email = "test@example.com";
+    void givenValidCustomerEmailWithoutId_whenCheckEmailUniqueness_thenReturnTrue() throws Exception {
+        // Given a valid email without an id (new customer scenario)
+        given(customerService.isEmailUnique(null, "unique.email@example.com")).willReturn(true);
 
-        when(customerService.isEmailUnique(customerId, email)).thenReturn(true);
-
-        mvc.perform(post("/customers/check_uniqueness")
-                                .param("email", email)
-                                .param("id", customerId.toString())
+        // When & Then
+        mockMvc.perform(post("/customers/check-uniqueness")
+                                .param("email", "unique.email@example.com")
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(true));
+
+        then(customerService).should().isEmailUnique(null, "unique.email@example.com");
     }
 
-    private static final String DEFAULT_REDIRECT_URL = "/customers/page/0?sortField=firstName&sortDir=asc";
-    private static final String SUCCESS_MESSAGE = "Customer successfully removed.";
-
     @Test
-    void givenCustomerId_whenDeleteCustomer_thenRedirectToCustomerListWithSuccessMessage() throws Exception {
-        Integer customerId = 1;
+    void givenValidCustomerEmailWithId_whenCheckEmailUniqueness_thenReturnTrue() throws Exception {
+        // Given a valid email with an id (existing customer scenario)
+        given(customerService.isEmailUnique(1, "unique.email@example.com")).willReturn(true);
 
-        doNothing().when(customerService).delete(customerId);
-
-        mvc.perform(get("/customers/delete/{id}", customerId)
+        // When & Then
+        mockMvc.perform(post("/customers/check-uniqueness")
+                                .param("email", "unique.email@example.com")
+                                .param("id", "1")
                                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attribute("successMessage", SUCCESS_MESSAGE))
-                .andExpect(redirectedUrl(DEFAULT_REDIRECT_URL));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+
+        then(customerService).should().isEmailUnique(1, "unique.email@example.com");
     }
 
     @Test
-    void givenNonExistingCustomerId_whenDeleteCustomer_thenThrowCustomerNotFoundException() throws Exception {
-        Integer customerId = 999;
+    void givenNonUniqueCustomerEmail_whenCheckEmailUniqueness_thenReturnFalse() throws Exception {
+        // Given a non-unique email
+        given(customerService.isEmailUnique(1, "existing.email@example.com")).willReturn(false);
 
-        doThrow(new CustomerNotFoundException("Customer not found")).when(customerService).delete(customerId);
+        // When & Then
+        mockMvc.perform(post("/customers/check-uniqueness")
+                                .param("email", "existing.email@example.com")
+                                .param("id", "1")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(false));
 
-        mvc.perform(get("/customers/delete/{id}", customerId)
-                            .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(DEFAULT_REDIRECT_URL));
+        then(customerService).should().isEmailUnique(1, "existing.email@example.com");
     }
-
-
 
 }

@@ -1,7 +1,9 @@
 package com.sellsphere.client.question;
 
+import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.Question;
+import com.sellsphere.common.entity.QuestionNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,12 +40,21 @@ public class QuestionService {
         Sort sort;
 
         switch (sortField != null ? sortField : "askTime") {
-            case "mostPopular" -> sort = Sort.by("votes").ascending();
-            case "leastPopular" -> sort = Sort.by("votes").descending();
+            case "leastPopular" -> sort = Sort.by("votes").ascending();
+            case "mostPopular" -> sort = Sort.by("votes").descending();
             default -> sort = Sort.by("askTime");
         }
 
         Pageable pageable = PageRequest.of(pageNum, QUESTION_PER_PAGE, sort);
         return questionRepository.findAllByProductAndApprovalStatusIsTrue(product, pageable);
+    }
+
+    public List<Question> findQuestionsByCustomer(Customer customer) {
+        return questionRepository.findAllByCustomer(customer);
+
+    }
+
+    public Question findById(Integer id) throws QuestionNotFoundException {
+        return questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
     }
 }

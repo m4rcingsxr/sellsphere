@@ -13,7 +13,6 @@
   transition: transform 0.3s ease-in-out;
   height: 350px;
   position: relative;
-  overflow: hidden;
 }
 
 
@@ -47,13 +46,6 @@
   object-fit: contain;
 }
 
-.product-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-  display: block;
-}
 
 .product-carousel-card:hover .cart-icon {
   background-color: rgba(220, 53, 69) !important;

@@ -4,7 +4,6 @@ import com.sellsphere.common.entity.Article;
 import com.sellsphere.common.entity.NavigationItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface NavigationItemRepository extends JpaRepository<NavigationItem, Integer> {

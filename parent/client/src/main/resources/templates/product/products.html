@@ -1,19 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <th:block th:replace="~{common :: common_head(${pageTitle})}"></th:block>
+    <th:block th:replace="~{common :: common_head('Products')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/products.css}">
     <link rel="stylesheet" th:href="@{/css/double_range_slider.css}">
 </head>
 <body>
 <header th:replace="~{navigations :: header()}"></header>
 
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
+        </div>
+    </div>
+</div>
+
 <header class="mt-3">
     <div class="container-md">
         <nav th:replace="~{navigations :: breadcrumbCategory(${categoryParentList})}"></nav>
         <nav th:replace="~{navigations :: breadcrumbKeyword()}"></nav>
 
-        <div th:if="${category != null}" class="row bg-body-tertiary p-4 rounded-3">
+        <div th:if="${category != null and category.children.size() > 0}" class="row bg-white p-4 rounded-3 g-3">
             <div th:each="category : ${category.children}" class="col-sm-4">
                 <a th:href="@{'/c/' + ${category.alias}}"
                    class="link-dark link-underline-opacity-0 link-underline-opacity-50-hover">
@@ -25,7 +34,7 @@
     </div>
 </header>
 
-<main class="content my-5">
+<main class="my-5">
     <div class="container-md">
         <div class="row">
             <div class="col-sm-4 col-md-3 bg-body-tertiary rounded-3 d-flex flex-column align-self-start gap-3">
@@ -87,7 +96,6 @@
                             <option value="DEFAULT">default sorting</option>
                             <option value="LOWEST">price - from the lowest</option>
                             <option value="HIGHEST">price - from the highest</option>
-                            <option value="POPULARITY">by popularity</option>
                             <option value="RATINGS">by customer ratings</option>
                             <option value="QUESTIONS">by number of questions</option>
                         </select>
@@ -117,6 +125,8 @@
 </main>
 
 
+
+<div id="overlay" class="overlay"></div>
 <footer th:replace="~{navigations :: footer()}"></footer>
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
@@ -125,6 +135,7 @@
 <script type="text/javascript" th:src="@{/js/FilterController.js}"></script>
 <script type="text/javascript" th:src="@{/js/FilterView.js}"></script>
 <script type="text/javascript" th:src="@{/js/double_range_slider.js}"></script>
+<script type="text/javascript" th:src="@{/js/category_list.js}"></script>
 
 <script th:replace="~{common :: configurations()}"></script>
 <script th:replace="~{common :: cart_initialization()}"></script>

@@ -35,9 +35,9 @@ public class Setting {
      * The value associated with the key.
      * This value stores the actual configuration data.
      */
-    @Column(name = "value", nullable = false, length = 1024)
+    @Column(name = "\"value\"", nullable = false, length = 2048)
     @NotNull(message = "Value must not be null")
-    @Size(max = 1024, message = "Value must be less than or equal to 1024 characters")
+    @Size(max = 2048, message = "Value must be less than or equal to 1024 characters")
     private String value;
 
     /**

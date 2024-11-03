@@ -3,7 +3,7 @@ INSERT INTO currencies (name, symbol, code, unit_amount) values ('PLN', 'zł', '
 INSERT INTO countries (name, code, currency_id) VALUES ('Poland', 'PL', 1);
 
 -- Insert Customers
-INSERT INTO customers (email, customer_password, first_name, last_name, enabled, email_verified, created_time)
+INSERT INTO customers (email, password, first_name, last_name, enabled, email_verified, created_time)
 VALUES ('john.doe@example.com', 'password123', 'John', 'Doe', true, true, '2023-01-01T00:00:00');
 
 -- Insert Addresses

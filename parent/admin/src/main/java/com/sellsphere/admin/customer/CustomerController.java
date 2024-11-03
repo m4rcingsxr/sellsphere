@@ -1,6 +1,5 @@
 package com.sellsphere.admin.customer;
 
-
 import com.sellsphere.admin.ValidationHelper;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
@@ -22,184 +21,148 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 /**
- * Controller for handling customer-related actions including listing customers,
- * showing details for editing, updating customer information, deleting
- * customers,and changing the enabled status of a customer.
+ * Controller class for managing customer-related operations, such as listing, editing, deleting, and updating customers.
  */
 @RequiredArgsConstructor
 @Controller
 public class CustomerController {
 
-    public static final String DEFAULT_REDIRECT_URL = "redirect:/customers" +
-            "/page/0?sortField=firstName&sortDir=asc";
-    private static final String CUSTOMER_FORM = "customer/customer_form";
+    public static final String DEFAULT_REDIRECT_URL = "redirect:/customers/page/0?sortField=firstName&sortDir=asc";
+    public static final String CUSTOMER_FORM_VIEW = "customer/customer_form";
 
     private final CustomerService customerService;
     private final CountryRepository countryRepository;
 
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
-        dataBinder.registerCustomEditor(String.class,
-                                        new StringTrimmerEditor(true)
-        );
+        dataBinder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
     /**
-     * Redirects to the first page of the customer list with default sorting
-     * parameters.
+     * Redirects to the first page of the customer list.
      *
-     * @return A redirection string to the default sorted list of customers.
+     * @return the redirect URL to the first page of customer list.
      */
     @GetMapping("/customers")
-    public String listFirstPage() {
+    public String redirectToFirstPage() {
         return DEFAULT_REDIRECT_URL;
     }
 
     /**
-     * Lists customers on a specific page number with sorting, search keyword
-     * and pagination.
+     * Lists customers by page with sorting and pagination.
      *
-     * @param helper  A helper object containing pagination and sorting logic.
-     * @param pageNum The current page number to display.
-     * @return The view name of the customers list page.
+     * @param helper  the PagingAndSortingHelper for managing pagination and sorting
+     * @param pageNum the page number to display
+     * @return the view name for the paginated customer list
      */
     @GetMapping("/customers/page/{pageNum}")
-    public String listPage(
-            @PagingAndSortingParam(listName = "customerList", moduleURL =
-                    "/customers") PagingAndSortingHelper helper,
-            @PathVariable(name = "pageNum") int pageNum
-    ) {
+    public String listCustomersByPage(
+            @PagingAndSortingParam(listName = "customerList", moduleURL = "/customers") PagingAndSortingHelper helper,
+            @PathVariable("pageNum") int pageNum) {
         customerService.listPage(pageNum, helper);
-
         return "customer/customers";
     }
 
     /**
-     * Shows the form for editing an existing customer's details.
+     * Displays the form for editing an existing customer.
      *
-     * @param id    The ID of the customer to edit.
-     * @param model The Spring MVC {@link Model} object for passing data to
-     *              the view.
-     * @return The path to the customer edit form view.
-     * @throws CustomerNotFoundException If the customer with the specified
-     * ID is not found.
+     * @param id    the customer ID to edit
+     * @param model the model to hold form data
+     * @return the view name for the customer form
+     * @throws CustomerNotFoundException if the customer is not found
      */
     @GetMapping("/customers/edit/{id}")
-    public String showCustomerForm(@PathVariable("id") Integer id, Model model)
-            throws CustomerNotFoundException {
-        prepareModelAttributesForCustomerForm(model);
-
+    public String showCustomerForm(@PathVariable("id") Integer id, Model model) throws CustomerNotFoundException {
+        prepareModelWithCountries(model);
         Customer customer = customerService.get(id);
         model.addAttribute("customer", customer);
-
-
-        return CUSTOMER_FORM;
+        return CUSTOMER_FORM_VIEW;
     }
 
     /**
-     * Processes the form submission for updating an existing customer.
+     * Handles the update of customer details.
      *
-     * @param customer The {@link Customer} object populated from the form data.
-     * @param ra       A {@link RedirectAttributes} object for passing
-     *                 attributes to the redirect target.
-     * @return A redirection string to the edited customer's in customers page.
-     * @throws CustomerNotFoundException If the update operation cannot
-     * proceed due to the customer not being found.
+     * @param customer the customer object from the form
+     * @param bindingResult the result of form validation
+     * @param model the model for holding form data
+     * @param redirectAttributes attributes for storing success message
+     * @return the redirect URL to the customer list
+     * @throws CustomerNotFoundException if the customer is not found
      */
     @PostMapping("/customers/update")
-    public String updateCustomer(@Valid @ModelAttribute("customer") Customer customer,
-                                 BindingResult bindingResult, Model model,
-                                 RedirectAttributes ra)
-            throws CustomerNotFoundException {
+    public String updateCustomer(@Valid @ModelAttribute("customer") Customer customer, BindingResult bindingResult,
+                                 Model model, RedirectAttributes redirectAttributes) throws CustomerNotFoundException {
         ValidationHelper validationHelper = new ValidationHelper(bindingResult, "error.customer");
         validationHelper.validatePassword(customer.getPassword(), customer.getId());
 
-        if(!validationHelper.validate()) {
-            prepareModelAttributesForCustomerForm(model);
-            return CUSTOMER_FORM;
+        if (!validationHelper.validate()) {
+            prepareModelWithCountries(model);
+            return CUSTOMER_FORM_VIEW;
         }
 
         customerService.save(customer);
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Customer successfully updated");
 
-        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Customer successfully updated");
         return DEFAULT_REDIRECT_URL + "&keyword=" + customer.getEmail().split("@")[0];
     }
 
     /**
-     * Deletes a customer based on the provided ID and redirects to the
-     * customer list page.
+     * Deletes a customer by ID.
      *
-     * @param id The ID of the customer to delete.
-     * @param ra A {@link RedirectAttributes} object for passing success
-     *           message.
-     * @return A redirection string to the customers list page.
-     * @throws CustomerNotFoundException If the customer with the specified
-     * ID is not found.
+     * @param id the customer ID
+     * @param redirectAttributes attributes for storing success message
+     * @return the redirect URL to the customer list
+     * @throws CustomerNotFoundException if the customer is not found
      */
     @GetMapping("/customers/delete/{id}")
-    public String deleteCustomer(@PathVariable("id") Integer id,
-                                 RedirectAttributes ra)
+    public String deleteCustomer(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes)
             throws CustomerNotFoundException {
         customerService.delete(id);
-
-        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE,
-                             "Customer successfully removed."
-        );
-
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Customer successfully removed.");
         return DEFAULT_REDIRECT_URL;
     }
 
     /**
-     * Updates the enabled status of a customer and redirects to the customer
-     * list page.
+     * Updates the enabled/disabled status of a customer.
      *
-     * @param id                 The ID of the customer whose status is to be
-     *                          updated.
-     * @param enabled            The new enabled status for the customer.
-     * @param redirectAttributes A {@link RedirectAttributes} object for
-     *                           passing status update message.
-     * @return A redirection string to the customers list page.
-     * @throws CustomerNotFoundException If the customer with the specified
-     * ID is not found.
+     * @param id the customer ID
+     * @param enabled the new enabled status
+     * @param redirectAttributes attributes for storing status update message
+     * @return the redirect URL to the customer list
+     * @throws CustomerNotFoundException if the customer is not found
      */
     @GetMapping("/customers/{id}/enabled/{status}")
     public String updateCustomerEnabledStatus(@PathVariable("id") Integer id,
                                               @PathVariable("status") boolean enabled,
-                                              RedirectAttributes redirectAttributes)
-            throws CustomerNotFoundException {
-
+                                              RedirectAttributes redirectAttributes) throws CustomerNotFoundException {
         customerService.updateCustomerEnabledStatus(id, enabled);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE,
-                                             "The Customer ID " + id + " has " +
-                                                     "been " + (enabled ?
-                                                     "enabled" : "disabled")
-        );
-
+        String statusMessage = "The Customer ID " + id + " has been " + (enabled ? "enabled" : "disabled");
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, statusMessage);
         return DEFAULT_REDIRECT_URL;
     }
 
     /**
-     * Displays the details of a customer in a modal.
+     * Displays customer details.
      *
-     * @param id    The ID of the customer whose details are to be displayed.
-     * @param model The Spring MVC {@link Model} object for passing data to
-     *              the view.
-     * @return The path to the customer detail modal view.
-     * @throws CustomerNotFoundException If the customer with the specified
-     * ID is not found.
+     * @param id    the customer ID
+     * @param model the model for holding customer details
+     * @return the view name for customer details modal
+     * @throws CustomerNotFoundException if the customer is not found
      */
     @GetMapping("/customers/details/{id}")
-    public String customerDetails(@PathVariable("id") Integer id, Model model)
-            throws CustomerNotFoundException {
+    public String showCustomerDetails(@PathVariable("id") Integer id, Model model) throws CustomerNotFoundException {
         Customer customer = customerService.get(id);
         model.addAttribute("customer", customer);
-
         return "customer/customer_details";
     }
 
-    private void prepareModelAttributesForCustomerForm(Model model) {
-        List<Country> countryList = countryRepository.findAllByOrderByName();
-        model.addAttribute("countryList", countryList);
-
+    /**
+     * Prepares the model with a list of countries for use in the customer form.
+     *
+     * @param model the model to populate with country data
+     */
+    private void prepareModelWithCountries(Model model) {
+        List<Country> countries = countryRepository.findAllByOrderByName();
+        model.addAttribute("countryList", countries);
     }
 }

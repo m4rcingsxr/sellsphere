@@ -26,7 +26,9 @@
 
         <th:block
                 th:replace="~{form_fragments :: number_input('Discount percent', 'discountPercent',0.01, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>
-
+        <input th:if="${product.productUpdate != null}" type="hidden" name="productUpdate.id" th:value="${product.productUpdate.id}"/>
+        <input th:if="${product.productUpdate != null}" type="hidden" name="productUpdate.product" th:value="${product.id}"/>
+        <input type="hidden" th:field="*{id}"/>
     </div>
 </div>
 

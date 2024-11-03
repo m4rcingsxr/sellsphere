@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,39 +44,46 @@ public class ProductService {
      */
     public ProductPageResponse listProducts(ProductPageRequest productPageRequest) {
 
-        // Create a specification for filtering products based on the request parameters.
+        // Create the specification for filtering products based on request parameters.
         Specification<Product> spec = ProductSpecification.filterProducts(
                 productPageRequest.getCategoryId(), productPageRequest.getKeyword(),
                 productPageRequest.getFilter(), productPageRequest.getMinPrice(),
                 productPageRequest.getMaxPrice()
         );
 
-        // Generate the sort order based on the provided sort parameter.
+        // Generate sort order and pagination request
         Sort sort = generateSort(productPageRequest.getSortBy());
         PageRequest pageRequest = PageRequest.of(productPageRequest.getPageNum(), PAGE_SIZE, sort);
 
-        // Fetch the products page based on the specification and pagination info.
+        // Fetch products page
         Page<Product> productPage = productRepository.findAll(spec, pageRequest);
 
-        // Find the minimum and maximum discount prices within the filtered products.
-        List<Product> minProduct = productRepository.findAll(
-                ProductSpecification.minDiscountPrice(productPageRequest.getCategoryId(),
-                                                      productPageRequest.getKeyword(), spec));
-        List<Product> maxProduct = productRepository.findAll(
-                ProductSpecification.maxDiscountPrice(productPageRequest.getCategoryId(),
-                                                      productPageRequest.getKeyword(), spec));
+        // Fetch all products matching the specification to calculate the min and max price
+        List<Product> allProducts = productRepository.findAll(spec);
 
-        // Build and return the response containing the products and additional pagination and
-        // price details.
-        return ProductPageResponse.builder().content(
-                productPage.map(BasicProductDTO::new).toList()).page(
-                productPageRequest.getPageNum()).totalElements(
-                productPage.getTotalElements()).totalPages(productPage.getTotalPages()).minPrice(
-                Optional.of(maxProduct.get(0)).map(Product::getDiscountPrice).orElse(
-                        productPageRequest.getMinPrice())).maxPrice(
-                Optional.of(minProduct.get(0)).map(Product::getDiscountPrice).orElse(
-                        productPageRequest.getMinPrice())).build();
+        // Find the minimum and maximum discount prices
+        BigDecimal minPrice = allProducts.stream()
+                .map(Product::getDiscountPrice)
+                .min(BigDecimal::compareTo)
+                .orElse(productPageRequest.getMinPrice());
+
+        BigDecimal maxPrice = allProducts.stream()
+                .map(Product::getDiscountPrice)
+                .max(BigDecimal::compareTo)
+                .orElse(productPageRequest.getMaxPrice());
+
+        // Build and return the response
+        return ProductPageResponse.builder()
+                .content(productPage.map(BasicProductDTO::new).toList())
+                .page(productPageRequest.getPageNum())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .minPrice(minPrice)
+                .maxPrice(maxPrice)
+                .build();
     }
+
+
 
     /**
      * Generates a Sort object based on the provided sort parameter.
@@ -87,6 +95,8 @@ public class ProductService {
         return switch (ProductSort.valueOf(sortBy)) {
             case LOWEST -> Sort.by(Sort.Direction.ASC, "price");
             case HIGHEST -> Sort.by(Sort.Direction.DESC, "price");
+            case RATINGS -> Sort.by(Sort.Direction.DESC, "averageRating");
+            case QUESTIONS -> Sort.by(Sort.Direction.DESC, "questionCount");
             default -> Sort.unsorted();
         };
     }
@@ -132,14 +142,16 @@ public class ProductService {
     private static Map<String, Map<String, Long>> aggregateProductDetails(
             List<Product> filteredProducts) {
 
-        // Group and count product details.
-        Map<String, Map<String, Long>> detailsCounts = filteredProducts.stream().flatMap(
-                product -> product.getDetails().stream()).collect(
-                Collectors.groupingBy(ProductDetail::getName,
-                                      Collectors.groupingBy(ProductDetail::getValue,
-                                                            Collectors.counting()
-                                      )
-                ));
+        Map<String, Map<String, Long>> detailsCounts = filteredProducts.stream()
+                .flatMap(product -> product.getDetails().stream())
+                .collect(
+                        Collectors.groupingBy(detail -> cleanString(detail.getName()),
+                                              Collectors.groupingBy(detail -> cleanString(detail.getValue()), // Apply string cleanup
+                                                                    Collectors.counting()
+                                              )
+                        )
+                );
+
 
         // Group and count brands.
         Map<String, Long> brandCounts = filteredProducts.stream().collect(
@@ -185,12 +197,13 @@ public class ProductService {
         // initializing counts to zero if not already present.
         for (Product product : allProducts) {
             for (ProductDetail detail : product.getDetails()) {
-                counts.computeIfAbsent(detail.getName(), k -> new HashMap<>()).putIfAbsent(
-                        detail.getValue(), 0L);
+                counts.computeIfAbsent(cleanString(detail.getName()), k -> new HashMap<>()).putIfAbsent(cleanString(detail.getValue()), 0L);
             }
+
             String brandName = product.getBrand().getName();
             counts.computeIfAbsent("Brand", k -> new HashMap<>()).putIfAbsent(brandName, 0L);
         }
+
 
         // Sort the filter counts and return the sorted map.
         return sortFilterCounts(counts, mapRequest.getFilter());
@@ -270,5 +283,13 @@ public class ProductService {
 
     public List<Product> getProductsByIds(List<Integer> productIds) {
         return this.productRepository.findAllById(productIds);
+    }
+
+    private static String cleanString(String value) {
+        // Normalize the string and remove any non-printable characters
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")        // Remove diacritics
+                .replaceAll("\\p{C}", "")        // Remove invisible control characters
+                .trim();                         // Trim leading/trailing spaces
     }
 }

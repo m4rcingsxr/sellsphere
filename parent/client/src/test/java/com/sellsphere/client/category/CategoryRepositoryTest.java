@@ -40,7 +40,7 @@ class CategoryRepositoryTest {
         List<Category> categories = categoryRepository.findAllByParentIsNull();
 
         // Then
-        assertThat(categories).hasSize(1);
+        assertThat(categories).hasSize(2);
         assertThat(categories.get(0).getName()).isEqualTo("Electronics");
     }
 

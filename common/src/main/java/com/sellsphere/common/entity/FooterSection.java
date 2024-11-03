@@ -1,6 +1,5 @@
 package com.sellsphere.common.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,6 +23,9 @@ public class FooterSection extends IdentifiedEntity {
     @Max(3)
     @Column(name = "section_number", nullable = false)
     private Integer sectionNumber;
+
+    @Column(name = "section_header", nullable = false)
+    private String sectionHeader;
 
     @OneToMany(mappedBy = "footerSection", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("itemNumber asc")

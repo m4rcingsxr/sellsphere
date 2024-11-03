@@ -79,7 +79,7 @@
                     </div>
                 </a>
 
-                <h4 th:if="${customer.addresses.size == 0}" class="subheading text-center">No addresses for this customer exist</h4>
+                <h4 th:if="${customer.addresses == null or customer.addresses.size == 0}" class="subheading text-center">No addresses for this customer exist</h4>
             </div>
         </div>
     </div>

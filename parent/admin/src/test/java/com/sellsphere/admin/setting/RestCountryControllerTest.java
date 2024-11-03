@@ -1,97 +1,116 @@
 package com.sellsphere.admin.setting;
 
 import com.sellsphere.common.entity.Country;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
+import com.sellsphere.common.entity.Currency;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class RestCountryControllerTest {
+
+    @MockBean
+    private SettingService settingService;
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private CountryRepository countryRepository;
-
     @Test
-    void givenCountries_whenListAll_thenReturnCountries() throws Exception {
-        Country country1 = new Country();
-        country1.setId(1);
-        country1.setName("USA");
-        country1.setCode("US");
-        Country country2 = new Country();
-        country2.setId(2);
-        country2.setName("Poland");
-        country2.setCode("PL");
+    void whenListAllCountries_thenReturnAllCountries() throws Exception {
+        // Given
+        Currency eur = new Currency();
+        eur.setCode("EUR");
+        eur.setSymbol("€");
 
-        when(countryRepository.findAll(any(Sort.class)))
-                .thenReturn(Arrays.asList(country1, country2));
+        Country country1 = Country.builder()
+                .name("Austria")
+                .code("AT")
+                .currency(eur)
+                .build();
 
-        mockMvc.perform(get("/countries/list"))
+        Country country2 = Country.builder()
+                .name("Belgium")
+                .code("BE")
+                .currency(eur)
+                .build();
+
+        given(settingService.listAllCountries()).willReturn(List.of(country1, country2));
+
+        // When/Then
+        mockMvc.perform(get("/countries/list")
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].name").value("USA"))
-                .andExpect(jsonPath("$[0].code").value("US"))
-                .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[1].name").value("Poland"))
-                .andExpect(jsonPath("$[1].code").value("PL"));
+                .andExpect(jsonPath("$[0].name").value("Austria"))
+                .andExpect(jsonPath("$[0].currencyCode").value("EUR"))
+                .andExpect(jsonPath("$[1].name").value("Belgium"))
+                .andExpect(jsonPath("$[1].currencySymbol").value("€"));
 
-        verify(countryRepository, times(1)).findAll(any(Sort.class));
+        then(settingService).should().listAllCountries();
     }
 
     @Test
-    void givenCountryId_whenDeleteCountry_thenReturnStatusOk() throws Exception {
-        Country country = new Country();
-        country.setId(1);
-        country.setName("USA");
-        country.setCode("US");
-
-        when(countryRepository.findById(anyInt())).thenReturn(Optional.of(country));
-
-        mockMvc.perform(get("/countries/delete/1"))
+    void givenValidCountryId_whenDeleteCountry_thenReturnOk() throws Exception {
+        // When/Then
+        mockMvc.perform(delete("/countries/delete/{countryId}", 1)
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(countryRepository, times(1)).findById(1);
-        verify(countryRepository, times(1)).delete(country);
+        then(settingService).should().deleteCountry(1);
     }
 
     @Test
-    void givenCountry_whenSaveCountry_thenReturnSavedCountry() throws Exception {
+    void givenValidCountry_whenSaveCountry_thenReturnSavedCountry() throws Exception {
+        // Given
+        Currency usd = new Currency();
+        usd.setId(1);
+        usd.setCode("USD");
+        usd.setSymbol("$");
+
         Country country = new Country();
         country.setId(1);
-        country.setName("USA");
+        country.setName("United States");
         country.setCode("US");
+        country.setCurrency(usd);
 
-        when(countryRepository.save(any(Country.class))).thenReturn(country);
+        given(settingService.saveCountry(any(Country.class))).willReturn(country);
 
+        // When/Then
         mockMvc.perform(post("/countries/save")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"id\":1,\"name\":\"USA\"}"))
+                                .content("{\"name\": \"United States\", \"code\": \"US\", \"currency\": {\"code\": \"USD\", \"symbol\": \"$\"}}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("USA"));
+                .andExpect(jsonPath("$.name").value("United States"))
+                .andExpect(jsonPath("$.code").value("US"))
+                .andExpect(jsonPath("$.currencyCode").value("USD"))
+                .andExpect(jsonPath("$.currencySymbol").value("$"));
 
-        verify(countryRepository, times(1)).save(any(Country.class));
+        // Verify
+        then(settingService).should().saveCountry(any(Country.class));
+    }
+
+
+    @Test
+    void givenValidCountryIds_whenSetAsSupported_thenReturnNoContent() throws Exception {
+        // When/Then
+        mockMvc.perform(post("/countries/support")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("[1, 2]"))
+                .andExpect(status().isNoContent());
+
+        then(settingService).should().saveSupportedCountries(List.of("1", "2"));
     }
 }

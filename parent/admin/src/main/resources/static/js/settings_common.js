@@ -71,3 +71,52 @@ function generateSuccessAlert(message) {
         </div>
     `;
 }
+
+/**
+ * Fetches states from the server based on the selected country.
+ * @returns {Promise<Array>} - A promise that resolves to an array of states.
+ */
+async function fetchStates(selectId) {
+    try {
+        const countryId = $(`#${selectId}`).val();
+        const url = `${MODULE_URL}states/by_country/${countryId}`;
+        debug(`Fetching states for country ID: ${countryId}`);
+        const states = await ajaxUtil.get(url);
+        debug(`States fetched: ${JSON.stringify(states)}`);
+        return states;
+    } catch (error) {
+        console.error("Error fetching states:", error);
+        throw new Error("Failed to fetch states.");
+    }
+}
+
+/**
+ * Loads states from the server and populates the state dropdown.
+ */
+async function loadStates(countrySelect, stateSelect) {
+    try {
+        debug("Loading states...");
+        const $stateSelect = $(`#${stateSelect}`);
+        const states = await fetchStates(countrySelect);
+
+        $stateSelect.empty();
+        states.forEach((state) => {
+            $stateSelect.append(generateStateOptionHtml(state));
+        });
+
+        handleStateSelectionChange(stateSelect);
+        debug("States loaded and dropdown populated.");
+    } catch (error) {
+        console.error("Error loading states:", error);
+        throw new Error("Failed to load states.");
+    }
+}
+
+/**
+ * Handles state selection change by updating the state input field with the selected state name.
+ */
+function handleStateSelectionChange(stateSelect) {
+    const selectedStateName = $(`#${stateSelect} option:selected`).text();
+    debug(`State selection changed to: ${selectedStateName}`);
+    $(`#${stateSelect}`).val(selectedStateName || "");
+}

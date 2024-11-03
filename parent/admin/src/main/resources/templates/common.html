@@ -3,7 +3,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <title th:text="${'Admin panel - ' + title}"></title>
+    <title th:text="${'Admin panel ' + title}"></title>
+
+    <link th:href="@{/css/dashboard.css}" rel="stylesheet">
+
 
     <link rel="stylesheet" th:href="@{/css/common.css}">
     <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
@@ -26,6 +29,8 @@
     <script type="text/javascript" th:src="@{/js/common.js}"></script>
 
     <script type="text/javascript" th:src="@{/js/ajax_util.js}"></script>
+
+    <script src="https://www.google.com/recaptcha/api.js"></script>
 </th:block>
 
 <div th:fragment="alerts()" class="d-flex justify-content-center">
@@ -46,6 +51,11 @@
 
 </div>
 
+<th:block th:fragment="swiper()">
+    <link rel="stylesheet" th:href="@{/node_modules/swiper/swiper-bundle.min.css}"/>
+    <script th:src="@{/node_modules/swiper/swiper-bundle.min.js}"></script>
+</th:block>
+
 <script type="text/javascript" th:fragment="configurations()">
     const MODULE_URL = "[[@{/}]]";
 
@@ -62,4 +72,5 @@
         decimalDigits,
         decimalPointType
     }
+
 </script>

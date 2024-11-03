@@ -156,3 +156,7 @@ const hideFullScreenSpinner = () => {
 function debug(message) {
     console.debug(message);
 }
+
+function onSubmit(token) {
+    document.getElementById("mainForm").submit();
+}

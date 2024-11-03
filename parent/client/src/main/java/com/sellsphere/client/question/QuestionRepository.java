@@ -1,5 +1,6 @@
 package com.sellsphere.client.question;
 
+import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.Question;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Integer> {
@@ -21,4 +24,6 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
 
     @Query("SELECT q.votes FROM Question q WHERE q.id = :questionId")
     Integer findVotesByQuestionId(@Param("questionId") Integer questionId);
+
+    List<Question> findAllByCustomer(Customer customer);
 }

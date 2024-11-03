@@ -27,9 +27,9 @@
                         <textarea class="form-control" th:field="*{questionContent}" rows="3"></textarea>
                     </div>
 
-                    <th:block th:replace="~{form_fragments :: text_input('Asked by', customer.fullName, true)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: text_input('Asked time', askTime, true)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: text_input('Votes', votes, true)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: text_input('Asked by', 'customer.fullName', true)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: text_input('Asked time', 'askTime', true)}"></th:block>
+                    <th:block th:replace="~{form_fragments :: text_input('Votes', 'votes', true)}"></th:block>
 
                     <label class="form-label col-sm-label col-sm-4">Answer</label>
                     <div class="col-sm-8">
@@ -45,6 +45,25 @@
     </div>
 </section>
 
-<footer th:replace="~{navigations :: footer()}"></footer>
+<script type="text/javascript">
+    // static elements
+    const validationRules = {
+        answerContent: {
+            required: true,
+            maxLength: 255
+        },
+
+    };
+
+
+    const validationMessages = {
+        title: {
+            required: "Please enter answer for this question. This field cannot be left empty.",
+            maxlength: "Answer content is too long. Please ensure it does not exceed 255 characters.",
+        },
+    };
+
+</script>
+
 </body>
 </html>

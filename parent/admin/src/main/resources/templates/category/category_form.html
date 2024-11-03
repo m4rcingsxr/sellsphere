@@ -2,88 +2,105 @@
 <html lang="en">
 <head th:replace="~{form_fragments :: head(${pageTitle})}"></head>
 <body>
+
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="content">
-    <div class="container mt-4">
-        <h1 class="text-center" th:text="${pageTitle}"></h1>
-        <form id="mainForm" th:object="${category}" th:action="@{'/categories/save'}" method="POST"
-              enctype="multipart/form-data">
+<div class="container-fluid">
+    <div class="row">
 
-            <div class="mx-auto mt-5">
+        <div th:replace="navigations :: sidebar('Categories')"></div>
 
-                <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
-                    <input th:replace="~{form_fragments :: hidden_input('id')}"/>
-                    <th:block th:replace="~{form_fragments :: text_input('Category name', 'name', false)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: text_input('Alias', 'alias', false)}"></th:block>
-                    <th:block
-                            th:replace="~{form_fragments :: select_input('Parent Category', ${categoryList}, 'parent', false, true)}"></th:block>
-                    <th:block
-                            th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${category.enabled}, false)}"></th:block>
-                    <th:block
-                            th:replace="~{form_fragments :: image_input(${category.mainImagePath}, 'image', 150, 150)}"></th:block>
-
-
-                    <label class="col-sm-4 col-form-label icon">Category icon</label>
-                    <div class="col-sm-8 icon">
-                        <input th:replace="~{form_fragments :: hidden_input('categoryIcon.id')}"/>
-                        <input th:replace="~{form_fragments :: hidden_input('categoryIcon.category')}"/>
-
-                        <input th:field="*{categoryIcon.iconPath}" type="text" class="form-control"/>
-                        <span th:replace="~{form_fragments :: field_error('categoryIcon.iconPath')}"></span>
-                    </div>
-
-                    <label class="col-form-label col-sm-4 icon">Select category icon</label>
-                    <div class="col-sm-8 position-relative icon">
-                        <div class="row g-2">
-
-                            <div class="col-sm-6">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="search" placeholder="Search for icons">
-                                    <button type="button" class="btn btn-primary" onclick="searchIcons()">Search
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <select id="iconSize" class="form-control">
-                                    <option value="fa-2xs">2xs</option>
-                                    <option value="xs">xs</option>
-                                    <option value="fa-sm">Small</option>
-                                    <option value="" selected>Regular</option>
-                                    <option value="fa-lg">Large</option>
-                                    <option value="fa-xl">xl</option>
-                                    <option value="fa-2xl">2xl</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="p-4 border border-2 rounded-2 mt-3" id="results"></div>
-
-                        <nav aria-label="Page navigation" class="mt-4">
-                            <ul class="pagination justify-content-center" id="pagination"></ul>
-                        </nav>
-                    </div>
-
-                </div>
-
-                <div th:replace="~{form_fragments :: form_buttons(${category})}"></div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2" th:text="${pageTitle}">Dashboard</h1>
             </div>
-        </form>
+
+            <section class="content mb-5">
+                <div class="container-md mt-7">
+                    <form id="mainForm" th:object="${category}" th:action="@{'/categories/save'}" method="POST"
+                          enctype="multipart/form-data">
+
+                        <div class="mx-auto mt-5">
+
+                            <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                                <input th:replace="~{form_fragments :: hidden_input('id')}"/>
+                                <th:block
+                                        th:replace="~{form_fragments :: text_input('Category name', 'name', false)}"></th:block>
+                                <th:block
+                                        th:replace="~{form_fragments :: text_input('Alias', 'alias', false)}"></th:block>
+                                <th:block
+                                        th:replace="~{form_fragments :: select_input('Parent Category', ${categoryList}, 'parent', false, true)}"></th:block>
+                                <th:block
+                                        th:replace="~{form_fragments :: checkbox_input('ENABLED', 'enabled', ${category.enabled}, false)}"></th:block>
+                                <th:block
+                                        th:replace="~{form_fragments :: image_input(${category.mainImagePath}, 'image', 150, 150)}"></th:block>
+
+
+                                <label class="col-sm-4 col-form-label icon">Category icon</label>
+                                <div class="col-sm-8 icon">
+                                    <div th:if="${category.categoryIcon != null}">
+                                        <input th:replace="~{form_fragments :: hidden_input('categoryIcon.id')}"/>
+                                        <input th:replace="~{form_fragments :: hidden_input('categoryIcon.category')}"/>
+                                    </div>
+
+                                    <input th:field="*{categoryIcon.iconPath}" type="text" class="form-control"/>
+                                    <span th:replace="~{form_fragments :: field_error('categoryIcon.iconPath')}"></span>
+                                </div>
+
+                                <label class="col-form-label col-sm-4 icon">Select category icon</label>
+                                <div class="col-sm-8 position-relative icon">
+                                    <div class="row g-2">
+
+                                        <div class="col-sm-6">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="search"
+                                                       placeholder="Search for icons">
+                                                <button type="button" class="btn btn-primary" onclick="searchIcons()">
+                                                    Search
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <select id="iconSize" class="form-control">
+                                                <option value="fa-2xs">2xs</option>
+                                                <option value="xs">xs</option>
+                                                <option value="fa-sm">Small</option>
+                                                <option value="" selected>Regular</option>
+                                                <option value="fa-lg">Large</option>
+                                                <option value="fa-xl">xl</option>
+                                                <option value="fa-2xl">2xl</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-4 border border-2 rounded-2 mt-3" id="results"></div>
+
+                                    <nav aria-label="Page navigation" class="mt-4">
+                                        <ul class="pagination justify-content-center" id="pagination"></ul>
+                                    </nav>
+                                </div>
+
+                            </div>
+
+                            <div th:replace="~{form_fragments :: form_buttons(${category})}"></div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+        </main>
+
     </div>
-
-</main>
-
-<footer th:replace="~{navigations :: footer()}"></footer>
+</div>
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
-
 <script type="text/javascript" th:src="@{/js/category_icons.js}"></script>
 <script type="text/javascript">
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-    const WIDTH = 300; // Image width
-    const HEIGHT = 300; // Image height
-    const QUALITY = 1; // Image quality (0.0 to 1.0)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const WIDTH = 300;
+    const HEIGHT = 300;
+    const QUALITY = 1;
 
     const MODULE_URL = "[[@{/}]]";
 
@@ -92,7 +109,7 @@
             required: true,
             maxlength: 128,
             remote: {
-                url: `${MODULE_URL}categories/check_name_uniqueness`,
+                url: `${MODULE_URL}categories/check-name-uniqueness`,
                 type: "post",
                 data: {
                     name: function () {
@@ -114,7 +131,7 @@
             required: true,
             maxlength: 64,
             remote: {
-                url: `${MODULE_URL}categories/check_alias_uniqueness`,
+                url: `${MODULE_URL}categories/check-alias-uniqueness`,
                 type: "post",
                 data: {
                     alias: function () {

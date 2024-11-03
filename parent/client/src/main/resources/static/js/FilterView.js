@@ -25,38 +25,50 @@ class FilterView {
     generateProductHtml(product) {
         const formattedDiscountPrice = formatPriceUtil.formatPrice(product.discountPrice);
         const formattedPrice = formatPriceUtil.formatPrice(product.price);
-        const productDetails = Array.isArray(product.details) ? product.details.slice(0, 3) : [];
+        const productDetails = Array.isArray(product.details) ? product.details.slice(0, 5) : [];
+
+        // Properly encode the product alias for URLs
+        const encodedAlias = encodeURIComponent(product.alias);
 
         return `
-            <div class="col-md-4">
-                <div class="product-carousel-card p-2 overflow-visible rounded-2 position-relative">
-                    <a href="${MODULE_URL}p/${product.alias}" class="product-carousel-img-container mt-4 ">
-                        <img src="${product.mainImage}" class="card-img-top" alt="${product.name}">
+            
+
+        <div class="col-md-4">
+            <div class="product-carousel-card p-2 rounded-2 position-relative">
+                <div class="d-flex flex-column">
+                <a href="${MODULE_URL}p/${encodedAlias}" class="product-carousel-img-container mt-4 ">
+                    <img src="${product.mainImagePath}" class="card-img-top" alt="${product.name}">
+                </a>
+                
+                <div class="mt-4 p-1">
+                    <a href="/p/${encodedAlias}" class="link-dark link-underline link-underline-opacity-0 fs-7 product-title">
+                        <span class="product-title">${product.name}</span>
                     </a>
-                    <div class="mt-4 p-1">
-                        <a href="/p/${product.alias}" class="link-dark link-underline link-underline-opacity-0 fs-7 product-title">
-                            <span class="product-title">${product.name}</span>
-                        </a>
-                        <div class="d-flex gap-2 mt-auto">
-                            <strong>${formattedDiscountPrice}</strong>
-                            ${product.discountPercent > 0 ? `<span class="fw-lighter text-decoration-line-through">${formattedPrice}</span>` : ''}
-                        </div>
-                    </div>
-                    ${product.discountPercent > 0 ? `<div class="position-absolute top-0 p-1"><span class="badge bg-danger text-center fs-7">-${product.discountPercent}%</span></div>` : ''}
-                    <div class="position-absolute top-0 end-0">
-                        <a href="#" class="cart-icon link-dark d-block add-to-cart" data-product-id="${product.id}"><i class="bi bi-cart cart-icon-size"></i></a>
-                        <a href="#" class="heart-icon link-dark"><i class="bi bi-heart cart-icon-size"></i></a>
-                    </div>
-                    <div class="product-carousel-card-details">
-                        <div class="row g-2">${productDetails.map(detail => `
-                            <div class="col-sm-8 detail"><span class="text-light-emphasis">${detail.name}:</span></div>
-                            <div class="col-sm-4 detail fw-bolder">${detail.value}</div>
-                        `).join('')}</div>
+                    <div class="d-flex gap-2 mt-auto">
+                        <strong>${formattedDiscountPrice}</strong>
+                        ${product.discountPercent > 0 ? `<span class="fw-lighter text-decoration-line-through">${formattedPrice}</span>` : ''}
                     </div>
                 </div>
+                
+                ${product.discountPercent > 0 ? `<div class="position-absolute top-0 p-1"><span class="badge bg-danger text-center fs-7">-${product.discountPercent}%</span></div>` : ''}
+                
+                <div class="position-absolute top-0 end-0">
+                    <a href="#" class="cart-icon link-dark d-block add-to-cart" data-product-id="${product.id}"><i class="bi bi-cart cart-icon-size"></i></a>
+                    <a href="#" class="heart-icon link-dark"><i class="bi bi-heart cart-icon-size"></i></a>
+                </div>
+                
+                <div class="product-carousel-card-details p-2">
+                    <div class="row g-2">${productDetails.map(detail => `
+                        <div class="col-8 detail"><span class="text-light-emphasis">${detail.name}:</span></div>
+                        <div class="col-4 detail fw-bolder">${detail.value}</div>
+                    `).join('')}</div>
+                </div>
+                </div>
             </div>
-        `;
+        </div>
+    `;
     }
+
 
     /**
      * Toggles the visibility of filter and product sections.
@@ -176,14 +188,18 @@ class FilterView {
      * @param {Array} filters - The selected filters.
      */
     checkFilters(filters) {
+        console.log(filters);
         const filterCheckboxes = document.querySelectorAll('.form-check-input.filter');
 
         filterCheckboxes.forEach(checkbox => {
             const filterName = checkbox.getAttribute('data-name').trim();
             const filterValue = decodeURIComponent(checkbox.value).trim();
 
-            // Construct the filter string in the same format used in the filters array
-            const filterString = `${filterName},${filterValue}`;
+            const filterString = filterValue.includes(',')
+                ? `${filterName},'${filterValue}'`  // Wrap in single quotes if the value contains a comma
+                : `${filterName},${filterValue}`;    // Otherwise, leave it as is
+
+            console.log(filterString);
 
             // Check the checkbox if it matches any of the filters
             checkbox.checked = filters.includes(filterString);
@@ -199,7 +215,7 @@ class FilterView {
         const $lowerPrice = $("#lowerPrice");
         const $upperPrice = $("#upperPrice");
 
-        if (minPrice && maxPrice && !$upperPrice.val() && !$lowerPrice.val()) {
+        if (minPrice && maxPrice) {
 
             $lowerPrice.val(minPrice);
             $upperPrice.val(maxPrice);
@@ -321,19 +337,32 @@ class FilterView {
      * @param {Object} groupedFilters - The grouped filters as an object with names as keys and arrays of values.
      */
     renderActiveFilters(groupedFilters) {
-        if (Object.keys(groupedFilters).length > 0) {
+        console.log("activeFilters", groupedFilters);
 
-            $("#activeFilters").removeClass("d-none");
-
-            const $badges = $("#filterBadges");
-            $badges.empty();
-
-            for (const [name, values] of Object.entries(groupedFilters)) {
-                $badges.append(this._getActiveFilterHtml(name, values));
-            }
+        // Check if groupedFilters is empty
+        if (Object.keys(groupedFilters).length === 0) {
+            console.log("No active filters");
+            $("#activeFilters").addClass("d-none"); // Hide active filters section if no filters are active
+            return;
         }
 
+        $("#activeFilters").removeClass("d-none");
+
+        const $badges = $("#filterBadges");
+        $badges.empty();
+
+        for (const [name, values] of Object.entries(groupedFilters)) {
+            // Remove single quotes around values
+            const filteredValues = values.map(value => value.replace(/^'(.*)'$/, '$1'));
+
+            // Only append if there are non-empty values
+            if (filteredValues.length > 0) {
+                $badges.append(this._getActiveFilterHtml(name, filteredValues));
+            }
+        }
     }
+
+
 
     /**
      * Generates the HTML for a group of active filters.

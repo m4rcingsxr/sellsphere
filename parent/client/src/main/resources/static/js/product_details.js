@@ -14,6 +14,7 @@ function initThumbnailCarousel() {
     var thumbnails = new Splide('#thumbnail-carousel', {
         fixedWidth: 140,
         fixedHeight: 100,
+        gap: 0,  // Set gap to 0 to remove spacing
         rewind: true,
         pagination: false,
         focus: 'center',

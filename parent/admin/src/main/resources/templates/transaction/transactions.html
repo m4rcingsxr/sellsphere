@@ -5,111 +5,182 @@
 
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="mt-4 content">
-    <h1 class="text-center">Manage Transactions</h1>
+<div class="container-fluid">
+    <div class="row">
 
-    <div class="container-md mt-5">
+        <nav th:replace="~{navigations :: sidebar('Transactions')}" aria-label="Transactions Sidebar"></nav>
 
-        <!-- Alerts -->
-        <div th:replace="~{common :: alerts()}"></div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <header class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Transactions</h1>
+                <div th:replace="~{navigations :: export_nav('transactions', false)}"></div>
+            </header>
 
-        <!-- Search Bar -->
-        <form th:replace="~{list_fragments :: search_bar('/transactions/page/0', 'Search for the transaction', 'created', ${keyword}, ${totalItems}, null)}"></form>
+            <section class="content mb-5">
+                <div class="container-md mt-7">
 
-        <table class="table table-hover mt-4 large">
-            <thead class="table-dark">
-            <tr>
-                <th th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'amount', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Amount')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'status', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Status')}"></th>
-                <th>Payment method</th>
-                <th th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'customer.email', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
-                <th>
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="transaction : ${transactionList}">
-                <td th:text="${transaction.id}"></td>
-                <td th:text="${transaction.targetCurrency.symbol + transaction.displayAmount}"></td>
-                <td th:id="${'status' + transaction.id}" th:text="${transaction.status}">
-                </td>
-                <td>
-                    <span th:if="${transaction.paymentMethod != null}"
-                          th:text="${transaction.paymentMethod.type}"></span>
-                </td>
-                <td th:text="${transaction.customer.email}"></td>
-                <td>
-                    <a th:id="${'refund-request' + transaction.id}" th:if="${!transaction.charge.refunded}" href="#" class="refund-request" th:data-id="${transaction.id}" th:data-currency-symbol="${transaction.targetCurrency.symbol}"><i  class="fa-solid fa-rotate-left"></i></a>
-                    <a th:replace="~{list_fragments :: detail_entity(|/transactions/details/${transaction.id}|)}"></a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                    <!-- Alerts -->
+                    <div th:replace="~{common :: alerts()}"></div>
+
+                    <!-- Search Bar -->
+                    <form th:replace="~{list_fragments :: search_bar('/transactions/page/0', 'Search for the transaction', 'created', ${keyword}, ${totalItems}, null)}"
+                          aria-label="Search for transactions">
+                    </form>
+
+                    <div class="con-sm-md-lg-xl-xxl">
+                        <table class="table table-hover mt-4">
+                            <caption>List of transactions</caption>
+                            <thead class="table-dark">
+                            <tr>
+                                <th scope="col"
+                                    th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                                <th scope="col"
+                                    th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'amount', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Amount')}"></th>
+                                <th scope="col">Refunded</th>
+                                <th scope="col"
+                                    th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'status', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Status')}"></th>
+                                <th scope="col">Payment method</th>
+                                <th scope="col"
+                                    th:replace="~{list_fragments :: column_link('/transactions/page', ${currentPage}, 'customer.email', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="transaction : ${transactionList}">
+                                <td th:text="${transaction.id}" scope="row"></td>
+                                <td th:text="${transaction.displayAmountString}"></td>
+                                <td th:id="${'refunded' + transaction.id}"
+                                    th:text="${transaction.DisplayRefundedString}"></td>
+                                <td th:id="${'status' + transaction.id}" th:text="${transaction.displayStatus}"></td>
+                                <td>
+                                    <span th:if="${transaction.paymentMethod != null}"
+                                          th:text="${transaction.paymentMethod.type}"></span>
+                                </td>
+                                <td th:text="${transaction.customer.email}"></td>
+                                <td>
+                                    <a th:id="${'refund-request' + transaction.id}"
+                                       th:if="${transaction.charge != null and !transaction.charge.refunded}" href="#"
+                                       class="refund-request" th:data-id="${transaction.id}"
+                                       th:data-currency-symbol="${transaction.targetCurrency.symbol}"
+                                       aria-label="Request refund"><i
+                                            class="fa-solid fa-xl fa-rotate-left"></i></a>
+                                    <a th:replace="~{list_fragments :: detail_entity(|/transactions/details/${transaction.id}|)}"></a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="con-xs">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="transaction : ${transactionList}"
+                            class="list-group-item p-4 border rounded bg-light shadow-sm mb-3">
+                            <div class="d-flex flex-column gap-3">
+
+                                <!-- Transaction ID and Amount -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <div class="fw-bold">Transaction ID</div>
+                                    <div th:text="${transaction.id}"></div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Amount</div>
+                                    <div th:text="${transaction.displayAmountString}"></div>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Status</div>
+                                    <div th:text="${transaction.displayStatus}"></div>
+                                </div>
+
+                                <!-- Payment Method -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Payment Method</div>
+                                    <div th:text="${transaction.paymentMethod.type}"></div>
+                                </div>
+
+                                <!-- Customer Email -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Customer</div>
+                                    <div th:text="${transaction.customer.email}"></div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex justify-content-between align-items-center pt-2">
+                                    <div class="fw-bold">Actions</div>
+                                    <a th:id="${'refund-request' + transaction.id}"
+                                       th:if="${transaction.charge != null and !transaction.charge.refunded}" href="#"
+                                       class="refund-request text-primary" th:data-id="${transaction.id}"
+                                       th:data-currency-symbol="${transaction.targetCurrency.symbol}"
+                                       aria-label="Request refund"><i class="fa-solid fa-xl fa-rotate-left"></i></a>
+                                    <a th:replace="~{list_fragments :: detail_entity(|/transactions/details/${transaction.id}|)}"></a>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+
+
+                <!-- Pagination -->
+                <nav th:replace="~{list_fragments :: large_pagination('/transactions/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+                     class="mt-4" aria-label="Transactions pagination"></nav>
+            </section>
+        </main>
     </div>
-
-
-    <!-- Pagination -->
-    <nav th:replace="~{list_fragments :: large_pagination('/transactions/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
-         class="mt-4"></nav>
-
-</main>
-
-<footer th:replace="~{navigations :: footer()}"></footer>
+</div>
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 <div th:replace="~{modal_fragments :: close_modal_xl('detailModal')}"></div>
 
-<div class="modal fade" id="refundModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="refundModal" tabindex="-1" aria-labelledby="refundModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="modalLabel">Refund payment</h1>
+                <h2 class="modal-title fs-5" id="refundModalLabel">Refund payment</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
 
-                    <div class="row">
+                <div class="row">
 
-                        <label class="col-form-label col-sm-4">Refund</label>
+                    <label for="amount" class="col-form-label col-sm-4">Refund</label>
 
-                        <div class="col-sm-8">
-                            <div class="input-group mb-3">
-                                <input id="amount" type="number" step="0.01" class="form-control" placeholder="Refund"
-                                       aria-label="Refund" aria-describedby="currency-symbol">
-                                <span class="input-group-text" id="currency-symbol"></span>
-                            </div>
-                        </div>
-
-                        <label class="col-form-label col-sm-4">Reason</label>
-                        <div class="col-sm-8">
-                            <select class="form-control" id="reason">
-                                <option value="FRAUDULENT">Fraudulent</option>
-                                <option value="DUPLICATE">Duplicate</option>
-                                <option value="REQUESTED_BY_CUSTOMER">Requested by customer</option>
-                            </select>
+                    <div class="col-sm-8">
+                        <div class="input-group mb-3">
+                            <input id="amount" type="number" step="0.01" class="form-control" placeholder="Refund"
+                                   aria-label="Refund amount" aria-describedby="currency-symbol">
+                            <span class="input-group-text" id="currency-symbol"></span>
                         </div>
                     </div>
 
-                    <div class="mt-3 text-center fw-bolder d-none" id="error">
-                        <span class="text-danger">⚠ Requested amount exceed available amount to refund</span>
+                    <label for="reason" class="col-form-label col-sm-4">Reason</label>
+                    <div class="col-sm-8">
+                        <select class="form-control" id="reason" aria-label="Refund reason">
+                            <option value="FRAUDULENT">Fraudulent</option>
+                            <option value="DUPLICATE">Duplicate</option>
+                            <option value="REQUESTED_BY_CUSTOMER">Requested by customer</option>
+                        </select>
                     </div>
+                </div>
 
+                <div class="mt-3 text-center fw-bolder d-none" id="error">
+                    <span class="text-danger">⚠ Requested amount exceeds available amount to refund</span>
+                </div>
 
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a class="btn btn-primary" id="refund-btn">Refund</a>
+                <button class="btn btn-primary" id="refund-btn">Refund</button>
             </div>
         </div>
     </div>
 </div>
 
+<script th:replace="~{common :: configurations()}"></script>
 <script type="text/javascript" th:src="@{/js/transactions.js}"></script>
-<script type="text/javascript">
-    const MODULE_URL = "[[@{/}]]";
-</script>
+
 </body>
 </html>
-
-

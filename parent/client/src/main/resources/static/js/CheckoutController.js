@@ -116,7 +116,6 @@ class CheckoutController {
         $("#address-accordion-btn").on("click", this.handleShowAddressTab.bind(this));
         $("#payment-accordion-btn, #continue-to-payment-btn").on("click", this.showPaymentTab.bind(this));
         $("#summary-accordion-btn, #continue-to-summary-btn").on("click", this.showSummaryTab.bind(this));
-        $("#currencies").on("click", "a", this.handleCurrencyChange.bind(this));
         $("#summary").on("click", 'input[type="radio"]', this.handleChangeCourier.bind(this));
         $("#payment-form").on("submit", this.handleSubmit.bind(this));
     }
@@ -141,8 +140,6 @@ class CheckoutController {
         // Disable form submission while loading
         submitBtn.disabled = true;
 
-        this.elements.update({currency: this.model.appliedCalculation.currencyCode});
-
         const {error: submitError} = await this.elements.submit();
         if (submitError) {
             handleError(submitError);
@@ -161,7 +158,7 @@ class CheckoutController {
                 elements: this.elements,
                 clientSecret,
                 confirmParams: {
-                    return_url: `http://localhost:8081${MODULE_URL}checkout/return`,
+                    return_url: `http://192.168.0.234:8081${MODULE_URL}checkout/return`,
                 },
             });
 
@@ -295,7 +292,6 @@ class CheckoutController {
             shippingCost,
         });
 
-        // store applied calculation to update payment intent on placing order
         this.model.appliedCalculation = response;
 
         this.view.renderCheckoutDetails(
@@ -342,8 +338,6 @@ class CheckoutController {
      */
     prepareForTabChange() {
         this.model.clearSummaryData();
-        this.view.selectSettlementCurrency();
-        this.view.hideCurrencies();
         this.view.hideCheckoutDetails();
     }
 
@@ -377,62 +371,18 @@ class CheckoutController {
      * Renders the summary details.
      */
     async renderSummaryDetails() {
-        const targetCountry = await this.model.getCountryForClientIp();
-        const targetCurrency = targetCountry.currencyCode;
-        this.model.targetCurrency = targetCurrency;
-
         const rateResponse = this.model.rateResponse;
         const shippingCost = rateResponse.rates[0].totalCharge;
 
-        const baseCalculation = await this.model.getTaxCalculation({
+        const calculation = await this.model.getTaxCalculation({
             address: rateResponse.address,
             shippingCost,
         });
 
-        const basePrice = baseCalculation.displayAmount;
-        const baseCurrencyCode = baseCalculation.currencyCode;
-
-        this.model.baseCurrency = baseCurrencyCode;
-        this.model.selectedCurrency = baseCurrencyCode;
-
-        const exchangeRateResponse = await this.model.getExchangeRateWithPrice(
-            basePrice,
-            baseCurrencyCode,
-            targetCurrency
-        );
-
-        this.model.exchangeRateResponse = exchangeRateResponse;
-        const exchangeRate = exchangeRateResponse.result["rate"];
-
-        const targetCalculation = await this.model.getTaxCalculation({
-            address: rateResponse.address,
-            shippingCost,
-            currencyCode: targetCurrency,
-            exchangeRate
-        });
-
-        const targetCountryDetails = await this.model.getCountryDetails(targetCountry.code);
-
-        this.view.renderPresentmentTotal(
-            targetCountryDetails,
-            targetCalculation.targetCurrency,
-            targetCalculation.currencySymbol,
-            targetCalculation.displayAmount
-        );
-
-        this.view.renderSettlementTotal(
-            baseCalculation.displayAmount,
-            baseCalculation.currencySymbol
-        );
-
-        this.view.renderSummaryProducts(baseCalculation.cart, baseCalculation.currencySymbol);
-        this.view.setExchangeRate(exchangeRate, baseCalculation.currencyCode, targetCalculation.currencyCode);
+        this.view.renderSummaryProducts(calculation.cart, calculation.currencySymbol);
 
         this.view.enableSummaryTabBtn();
         this.view.disableSummaryBtnSpinner();
-        this.view.disableCurrencyPlaceholders();
-
-        this.view.showCurrencies();
 
         this.view.renderShippingRates(this.model.rateResponse.rates);
         this.view.showSummaryTab();
@@ -447,40 +397,6 @@ class CheckoutController {
         this.view.showSummaryTabBtn();
         this.view.disableSummaryTabBtn();
         this.view.enableSummaryBtnSpinner();
-        this.view.enableCurrencyPlaceholders();
-        this.startCountdown(20 * 60 * 1000);
-        this.startCurrencyUpdateListener();
-    }
-
-    /**
-     * Handles the currency change event.
-     *
-     * @param {Event} event - The event object.
-     */
-    async handleCurrencyChange(event) {
-        event.preventDefault();
-        const clickedElement = event.currentTarget;
-        const selectedCurrency = clickedElement.id === "presentment-currency" ? this.model.targetCurrency : this.model.baseCurrency;
-
-        // Check if the clicked currency is already selected
-        if (this.model.selectedCurrency === selectedCurrency) return;
-
-        // Update currency-checked classes
-        document.querySelectorAll('.currency').forEach(el => el.classList.remove('currency-checked'));
-        clickedElement.classList.add('currency-checked');
-
-        // Ensure the selected rate index is preserved
-        const rateIndex = this.model.selectedRateIndex;
-
-        this.prepareCheckoutDetailsUpdate();
-
-        try {
-            await this.updateCheckoutDetails(rateIndex, true); // Pass the rate index through the update process
-            this.completeCheckoutDetailsUpdate();
-        } catch (error) {
-            console.error(error);
-            showErrorModal(error.response);
-        }
     }
 
     /**
@@ -492,7 +408,7 @@ class CheckoutController {
         this.prepareCheckoutDetailsUpdate();
 
         const rateIndex = Number(event.currentTarget.dataset.rateIndex);
-        this.model.selectedRateIndex = rateIndex; // Ensure the selected rate index is updated in the model
+        this.model.selectedRateIndex = rateIndex;
 
         try {
             await this.updateCheckoutDetails(rateIndex);
@@ -504,37 +420,6 @@ class CheckoutController {
     }
 
     /**
-     * Starts a listener that checks if 1 hour has passed since the last exchange rate update
-     * and invokes loadCurrencyData if necessary.
-     */
-    startCurrencyUpdateListener() {
-        if (this.currencyUpdateInterval) {
-            clearInterval(this.currencyUpdateInterval);
-        }
-
-        this.currencyUpdateInterval = setInterval(async () => {
-            if (this.model.exchangeRateResponse && CheckoutUtil.isExchangeRateExpired(this.model.exchangeRateResponse)) {
-                this.startCountdown(20 * 60 * 1000);
-                this.prepareCheckoutDetailsUpdate();
-
-                try {
-                    await this.updateCheckoutDetails(this.model.selectedRateIndex);
-                    this.completeCheckoutDetailsUpdate();
-                } catch (error) {
-                    console.error(error);
-                    showErrorModal(error.response);
-                }
-            } else {
-                console.error("Address and payment step must be complete before summary step");
-                showErrorModal({
-                    status : 400,
-                    message : "Address and payment step must be complete before summary step"
-                })
-            }
-        }, 60000 * 20); // Check every 20 minutes
-    }
-
-    /**
      * Prepares the UI for an update.
      */
     prepareCheckoutDetailsUpdate() {
@@ -542,8 +427,6 @@ class CheckoutController {
         this.view.showLoadCheckoutDetails();
         this.view.disableSummaryTabBtn();
         this.view.enableSummaryBtnSpinner();
-        this.view.hideCurrencies();
-        this.view.enableCurrencyPlaceholders();
     }
 
     /**
@@ -554,8 +437,6 @@ class CheckoutController {
         this.view.disableSummaryBtnSpinner();
         this.view.hideLoadCheckoutDetails();
         this.view.showCheckoutDetails();
-        this.view.showCurrencies();
-        this.view.disableCurrencyPlaceholders();
     }
 
     /**
@@ -564,29 +445,17 @@ class CheckoutController {
      * @param {number} rateIndex - The index of the selected rate.
      * @param {boolean} isPresentmentCurrencyChange - Whether the currency change is for presentment.
      */
-    async updateCheckoutDetails(rateIndex, isPresentmentCurrencyChange = false) {
+    async updateCheckoutDetails(rateIndex) {
         const rateResponse = this.model.rateResponse;
-        const selectedRate = this.getSelectedRate(rateIndex, rateResponse);
+        const selectedRate = this.getSelectedRate(rateIndex, rateResponse)
 
-        if (isPresentmentCurrencyChange) {
-            this.model.selectedCurrency = this.model.selectedCurrency === this.model.targetCurrency
-                ? this.model.baseCurrency
-                : this.model.targetCurrency;
-        }
-
-        const {targetCurrency, selectedCurrency} = this.model;
         const shippingCost = selectedRate.totalCharge;
-        const exchangeRate = this.getExchangeRate();
 
         try {
             const base = await this.calculateBaseTax(rateResponse, shippingCost);
-            const target = await this.calculateTargetTax(rateResponse, shippingCost, targetCurrency, exchangeRate);
+            this.model.appliedCalculation = base;
 
-            const selectedCalculation = this.getSelectedCalculation(target, base, selectedCurrency);
-
-            this.model.appliedCalculation = selectedCalculation;
-
-            this.renderCheckoutDetails(selectedCalculation, base, target, exchangeRate);
+            this.renderCheckoutDetails(base);
         } catch(error) {
             console.error(error);
             showErrorModal(error.response);
@@ -609,15 +478,6 @@ class CheckoutController {
     }
 
     /**
-     * Retrieves the exchange rate from the model.
-     *
-     * @returns {number} The exchange rate.
-     */
-    getExchangeRate() {
-        return this.model.exchangeRateResponse.result["rate"];
-    }
-
-    /**
      * Calculates the base tax for the given shipping cost and rate response.
      *
      * @param {Object} rateResponse - The rate response object.
@@ -632,36 +492,6 @@ class CheckoutController {
     }
 
     /**
-     * Calculates the target tax for the given shipping cost, target currency, and exchange rate.
-     *
-     * @param {Object} rateResponse - The rate response object.
-     * @param {number} shippingCost - The shipping cost.
-     * @param {string} targetCurrency - The target currency code.
-     * @param {number} exchangeRate - The exchange rate.
-     * @returns {Object} The target tax calculation result.
-     */
-    async calculateTargetTax(rateResponse, shippingCost, targetCurrency, exchangeRate) {
-        return await this.model.getTaxCalculation({
-            address: rateResponse.address,
-            shippingCost,
-            currencyCode: targetCurrency,
-            exchangeRate
-        });
-    }
-
-    /**
-     * Determines the selected calculation based on the target and base calculations.
-     *
-     * @param {Object} target - The target tax calculation result.
-     * @param {Object} base - The base tax calculation result.
-     * @param {string} selectedCurrency - The selected currency code.
-     * @returns {Object} The selected calculation result.
-     */
-    getSelectedCalculation(target, base, selectedCurrency) {
-        return (target.currencyCode === selectedCurrency) ? target : base;
-    }
-
-    /**
      * Renders the checkout details using the selected calculation and updates the exchange rates.
      *
      * @param {Object} selectedCalculation - The selected tax calculation result.
@@ -669,7 +499,7 @@ class CheckoutController {
      * @param {Object} target - The target tax calculation result.
      * @param {number} exchangeRate - The exchange rate.
      */
-    renderCheckoutDetails(selectedCalculation, base, target, exchangeRate) {
+    renderCheckoutDetails(selectedCalculation) {
         this.view.renderCheckoutDetails(
             selectedCalculation.displayAmount,
             selectedCalculation.displaySubtotal,
@@ -681,40 +511,6 @@ class CheckoutController {
             selectedCalculation.cart
         );
 
-        this.view.setExchangeRate(exchangeRate, base.currencyCode, target.currencyCode);
-        this.view.updatePresentmentPrice(target.displayAmount, target.currencySymbol);
-        this.view.updateSettlementPrice(base.displayAmount, base.currencySymbol);
     }
 
-    /**
-     * Starts a countdown timer for the given duration.
-     *
-     * @param {number} duration - The countdown duration in milliseconds.
-     */
-    startCountdown(duration) {
-        if (this.model.countdown) {
-            clearInterval(this.model.countdown);
-        }
-
-        const countdownElement = document.getElementById('countdown');
-        let remainingTime = duration;
-
-        const updateCountdown = () => {
-            if (remainingTime <= 0) {
-                clearInterval(this.model.countdown);
-                countdownElement.textContent = '00:00';
-                return;
-            }
-
-            remainingTime -= 1000;
-
-            const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
-            const seconds = Math.floor((remainingTime / 1000) % 60);
-
-            countdownElement.textContent =
-                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        };
-
-        this.model.countdown = setInterval(updateCountdown, 1000);
-    }
 }

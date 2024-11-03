@@ -5,8 +5,6 @@ import com.sellsphere.client.setting.CountryRepository;
 import com.sellsphere.common.entity.Address;
 import com.sellsphere.common.entity.Country;
 import com.sellsphere.common.entity.Customer;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -22,8 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts =
-        "classpath:/sql/customers" + ".sql")
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+        {"classpath:/sql/currencies.sql", "classpath:/sql/countries.sql", "classpath:/sql/customers.sql"})
 class CustomerRepositoryTest {
 
     @Autowired

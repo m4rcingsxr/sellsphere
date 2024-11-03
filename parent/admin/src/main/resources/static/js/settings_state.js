@@ -11,7 +11,7 @@ function initializeStateSettings() {
     debug("Initializing application...");
     showFullScreenSpinner();
     loadCountries('countriesStateSettings')
-        .then(loadStates)
+        .then(() => loadStates("countriesStateSettings", "states"))
         .catch(error => {
             console.error("Error initializing application:", error);
             showErrorModal(error.message || "An error occurred during initialization.");
@@ -32,7 +32,7 @@ function initStateListeners() {
         debug("Update countries state settings clicked.");
         showFullScreenSpinner();
         loadCountries('countriesStateSettings')
-            .then(loadStates)
+            .then(() => loadStates("countriesStateSettings", "states"))
             .catch(error => {
                 console.error("Error updating countries state settings:", error);
                 showErrorModal(error.message || "An error occurred while updating countries state settings.");
@@ -49,21 +49,12 @@ function initStateListeners() {
 }
 
 /**
- * Handles state selection change by updating the state input field with the selected state name.
- */
-function handleStateSelectionChange() {
-    const selectedStateName = $("#states option:selected").text();
-    debug(`State selection changed to: ${selectedStateName}`);
-    $("#state").val(selectedStateName || "");
-}
-
-/**
  * Loads states based on the selected country.
  */
 function loadStatesOnCountryChange() {
     debug("Country selection changed. Loading states...");
     showFullScreenSpinner();
-    loadStates()
+    loadStates("countriesStateSettings", "states")
         .catch(error => {
             console.error("Error loading states on country change:", error);
             showErrorModal(error.message || "An error occurred while loading states on country change.");
@@ -71,27 +62,7 @@ function loadStatesOnCountryChange() {
         .finally(() => hideFullScreenSpinner());
 }
 
-/**
- * Loads states from the server and populates the state dropdown.
- */
-async function loadStates() {
-    try {
-        debug("Loading states...");
-        const $stateSelect = $("#states");
-        const states = await fetchStates();
 
-        $stateSelect.empty();
-        states.forEach((state) => {
-            $stateSelect.append(generateStateOptionHtml(state));
-        });
-
-        handleStateSelectionChange();
-        debug("States loaded and dropdown populated.");
-    } catch (error) {
-        console.error("Error loading states:", error);
-        throw new Error("Failed to load states.");
-    }
-}
 
 /**
  * Generates HTML option element for a state.
@@ -102,23 +73,6 @@ function generateStateOptionHtml(state) {
     return `<option value="${state.id}">${state.name}</option>`;
 }
 
-/**
- * Fetches states from the server based on the selected country.
- * @returns {Promise<Array>} - A promise that resolves to an array of states.
- */
-async function fetchStates() {
-    try {
-        const countryId = $("#countriesStateSettings").val();
-        const url = `${MODULE_URL}states/by_country/${countryId}`;
-        debug(`Fetching states for country ID: ${countryId}`);
-        const states = await ajaxUtil.get(url);
-        debug(`States fetched: ${JSON.stringify(states)}`);
-        return states;
-    } catch (error) {
-        console.error("Error fetching states:", error);
-        throw new Error("Failed to fetch states.");
-    }
-}
 
 /**
  * Hides the state form and clears the input field for new state name.
@@ -247,7 +201,7 @@ async function deleteState(stateId) {
 async function handlePostSave(state) {
     try {
         debug(`Post-save actions for state: ${JSON.stringify(state)}`);
-        await loadStates();
+        await loadStates('countriesStateSettings', 'states');
         $("#countriesStateSettings").val(state.countryId);
         $("#states").val(state.id);
         handleStateSelectionChange();

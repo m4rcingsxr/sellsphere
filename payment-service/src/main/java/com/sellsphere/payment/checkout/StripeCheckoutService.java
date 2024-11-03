@@ -1,5 +1,6 @@
 package com.sellsphere.payment.checkout;
 
+import com.google.inject.Inject;
 import com.sellsphere.payment.StripeConfig;
 import com.stripe.exception.StripeException;
 import com.stripe.model.CustomerSession;
@@ -13,16 +14,19 @@ import com.stripe.param.PaymentIntentUpdateParams;
 import com.stripe.param.RefundCreateParams;
 import com.stripe.param.tax.CalculationCreateParams;
 import com.stripe.param.tax.TransactionCreateFromCalculationParams;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service for handling Stripe checkout operations.
- * This class provides methods to create payment intents, refunds, transactions,
- * and customer sessions, as well as perform tax calculations.
  */
+@Slf4j
 public class StripeCheckoutService {
 
-    static {
-        StripeConfig.init();
+    private final StripeConfig stripeConfig;
+
+    @Inject
+    public StripeCheckoutService(StripeConfig stripeConfig) {
+        this.stripeConfig = stripeConfig;
     }
 
     /**
@@ -34,8 +38,13 @@ public class StripeCheckoutService {
      */
     public PaymentIntent createPaymentIntent(PaymentIntentCreateParams params)
             throws StripeException {
-
-        return PaymentIntent.create(params);
+        try {
+            log.info("Creating payment intent");
+            return PaymentIntent.create(params);
+        } catch (StripeException e) {
+            log.error("Error creating payment intent", e);
+            throw e;
+        }
     }
 
     /**
@@ -49,15 +58,19 @@ public class StripeCheckoutService {
      */
     public Refund createRefund(String paymentIntent, Long amount, RefundCreateParams.Reason reason)
             throws StripeException {
+        try {
+            RefundCreateParams params = RefundCreateParams.builder()
+                    .setAmount(amount)
+                    .setPaymentIntent(paymentIntent)
+                    .setReason(reason)
+                    .build();
 
-
-        RefundCreateParams params = RefundCreateParams.builder()
-                .setAmount(amount)
-                .setPaymentIntent(paymentIntent)
-                .setReason(reason)
-                .build();
-
-        return Refund.create(params);
+            log.info("Creating refund for payment intent: {}", paymentIntent);
+            return Refund.create(params);
+        } catch (StripeException e) {
+            log.error("Error creating refund", e);
+            throw e;
+        }
     }
 
     /**
@@ -69,23 +82,27 @@ public class StripeCheckoutService {
      */
     public Transaction createTransaction(PaymentIntent paymentIntent)
             throws StripeException {
-        // crete transaction, use payment intent id as reference
-        var transactionParams = TransactionCreateFromCalculationParams.builder()
-                .setCalculation(paymentIntent.getMetadata().get("calculation_id"))
-                .setReference(paymentIntent.getId())
-                .addExpand("line_items")
-                .build();
+        try {
+            var transactionParams = TransactionCreateFromCalculationParams.builder()
+                    .setCalculation(paymentIntent.getMetadata().get("calculation_id"))
+                    .setReference(paymentIntent.getId())
+                    .addExpand("line_items")
+                    .build();
 
-        Transaction transaction = Transaction.createFromCalculation(transactionParams);
+            log.info("Creating tax transaction for payment intent: {}", paymentIntent.getId());
+            Transaction transaction = Transaction.createFromCalculation(transactionParams);
 
-        // store transaction id in payment metadata so that later you can record refunds
-        PaymentIntentUpdateParams paymentParams =
-                PaymentIntentUpdateParams.builder()
-                        .putMetadata("tax_transaction", transaction.getId())
-                        .build();
+            // Store transaction id in payment metadata
+            PaymentIntentUpdateParams paymentParams = PaymentIntentUpdateParams.builder()
+                    .putMetadata("tax_transaction", transaction.getId())
+                    .build();
 
-        paymentIntent.update(paymentParams);
-        return transaction;
+            paymentIntent.update(paymentParams);
+            return transaction;
+        } catch (StripeException e) {
+            log.error("Error creating transaction", e);
+            throw e;
+        }
     }
 
     /**
@@ -97,7 +114,13 @@ public class StripeCheckoutService {
      */
     public Calculation calculate(CalculationCreateParams params)
             throws StripeException {
-        return Calculation.create(params);
+        try {
+            log.info("Performing tax calculation");
+            return Calculation.create(params);
+        } catch (StripeException e) {
+            log.error("Error performing tax calculation", e);
+            throw e;
+        }
     }
 
     /**
@@ -108,28 +131,22 @@ public class StripeCheckoutService {
      * @throws StripeException if there is an error with Stripe operations.
      */
     public CustomerSession createCustomerSession(String stripeId) throws StripeException {
-        CustomerSessionCreateParams csParams = CustomerSessionCreateParams.builder()
-                .setCustomer(stripeId)
-                .setComponents(CustomerSessionCreateParams.Components.builder().build())
-                .putExtraParam("components[payment_element][enabled]", true)
-                .putExtraParam(
-                        "components[payment_element][features][payment_method_redisplay]",
-                        "enabled"
-                )
-                .putExtraParam(
-                        "components[payment_element][features][payment_method_save]",
-                        "enabled"
-                )
-                .putExtraParam(
-                        "components[payment_element][features][payment_method_save_usage]",
-                        "on_session"
-                )
-                .putExtraParam(
-                        "components[payment_element][features][payment_method_remove]",
-                        "enabled"
-                )
-                .build();
+        try {
+            CustomerSessionCreateParams csParams = CustomerSessionCreateParams.builder()
+                    .setCustomer(stripeId)
+                    .setComponents(CustomerSessionCreateParams.Components.builder().build())
+                    .putExtraParam("components[payment_element][enabled]", true)
+                    .putExtraParam("components[payment_element][features][payment_method_redisplay]", "enabled")
+                    .putExtraParam("components[payment_element][features][payment_method_save]", "enabled")
+                    .putExtraParam("components[payment_element][features][payment_method_save_usage]", "on_session")
+                    .putExtraParam("components[payment_element][features][payment_method_remove]", "enabled")
+                    .build();
 
-        return CustomerSession.create(csParams);
+            log.info("Creating customer session for Stripe ID: {}", stripeId);
+            return CustomerSession.create(csParams);
+        } catch (StripeException e) {
+            log.error("Error creating customer session", e);
+            throw e;
+        }
     }
 }

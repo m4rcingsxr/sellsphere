@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{list_fragments :: head('Main Page management')}"></head>
+<header th:replace="navigations :: header()"></header>
+<body>
+<div class="container-fluid">
+    <div class="row">
+
+        <div th:replace="navigations :: sidebar('Main Page')"></div>
+
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Main Page</h1>
+                <div th:replace="navigations :: export_nav('main_page', true)"></div>
+            </div>
+
+            <section class="content mb-5">
+                <!-- Alerts -->
+                <div th:replace="~{common :: alerts()}"></div>
+
+                <!-- Search Bar -->
+                <form th:replace="~{list_fragments :: search_bar('/main_page/page/0', 'Search for carousel', 'email', ${keyword}, ${totalItems}, null)}"></form>
+
+                <div class="con-lg-xl-xxl">
+                    <table class="table table-hover mt-4 ">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Header</th>
+                            <th>Order</th>
+                            <th>Change order</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="carousel, stat : ${carouselList}">
+                            <td th:text="${carousel.id}"></td>
+                            <td th:text="${carousel.type}"></td>
+                            <td th:text="${carousel.header}"></td>
+                            <td th:text="${carousel.carouselOrder}"></td>
+                            <td>
+                                <div th:if="${carouselList[0].carouselOrder == 0}">
+                                    <th:block th:if="${carouselList.size() == 3}">
+                                        <a th:if="${stat.index == 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index == 2}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="${carouselList.size() > 3}">
+                                        <a th:if="${stat.index == 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index != 1 && stat.index != carouselList.size() - 1 && carousel.carouselOrder != 0}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index != 1 && stat.index != carouselList.size() - 1 && carousel.carouselOrder != 0}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                        <a th:if="${stat.index == carouselList.size() - 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                    </th:block>
+                                </div>
+
+                                <div th:if="${carouselList[0].carouselOrder != 0}">
+                                    <th:block th:if="${carouselList.size() == 2}">
+                                        <a th:if="${stat.index == 0}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index == 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="${carouselList.size() > 2}">
+                                        <a th:if="${stat.index == 0}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index != 0 && stat.index != carouselList.size() - 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index != 0 && stat.index != carouselList.size() - 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                        <a th:if="${stat.index == carouselList.size() - 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                    </th:block>
+                                </div>
+
+                                <div th:if="${carousel.carouselOrder == 0}">
+                                    <strong>---</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <th:block
+                                        th:replace="list_fragments :: edit_entity(|/main_page/edit/${carousel.id}|)"></th:block>
+                                <th:block
+                                        th:replace="list_fragments :: delete_entity(|/main_page/delete/${carousel.id}|)"></th:block>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile-Friendly List View -->
+                <div class="con-xs-s-md px-3">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="carousel, stat : ${carouselList}"
+                            class="list-group-item p-4 border rounded bg-light shadow-sm mb-3">
+                            <div class="d-flex flex-column gap-3">
+
+                                <!-- Carousel ID -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <div class="fw-bold">ID</div>
+                                    <div th:text="${carousel.id}"></div>
+                                </div>
+
+                                <!-- Type -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Type</div>
+                                    <div th:text="${carousel.type}"></div>
+                                </div>
+
+                                <!-- Header -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Header</div>
+                                    <div th:text="${carousel.header}"></div>
+                                </div>
+
+                                <!-- Order -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Order</div>
+                                    <div th:text="${carousel.carouselOrder}"></div>
+                                </div>
+
+                                <!-- Change Order Controls -->
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                    <div class="fw-bold">Change Order</div>
+                                    <div>
+                                        <!-- Ordering logic for mobile -->
+                                        <a th:if="${stat.index == 0}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index == carouselList.size() - 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                        <a th:if="${stat.index != 0 && stat.index != carouselList.size() - 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index + 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-down"></i>
+                                        </a>
+                                        <a th:if="${stat.index != 0 && stat.index != carouselList.size() - 1}"
+                                           th:href="@{|/main_page/change_order/${carousel.id}/${carouselList[stat.index - 1].id}|}">
+                                            <i class="fa-xl fa-solid fa-caret-up"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex justify-content-between align-items-center pt-2">
+                                    <div class="fw-bold">Actions</div>
+                                    <div>
+                                        <a th:replace="~{list_fragments :: edit_entity(|/main_page/edit/${carousel.id}|)}"></a>
+                                        <a th:replace="~{list_fragments :: delete_entity(|/main_page/delete/${carousel.id}|)}"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+
+    </div>
+</div>
+
+<div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
+</body>
+</html>

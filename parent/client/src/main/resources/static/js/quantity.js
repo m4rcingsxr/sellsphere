@@ -8,7 +8,7 @@ function initListeners() {
 }
 
 function initQuantityButtonListener() {
-    $(".container").on("click",".quantity .quantity-minus, .quantity .quantity-plus", function() {
+    $(".container-md").on("click",".quantity .quantity-minus, .quantity .quantity-plus", function() {
         const $container = $(this).closest('.quantity');
         const $input = $container.find('.quantity-input');
         const value = Number($input.val());

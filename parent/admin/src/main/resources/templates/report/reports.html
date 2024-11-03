@@ -5,47 +5,103 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
-<nav th:replace="~{navigations :: header()}"></nav>
 
-<section class="content">
-    <div class="container mt-7">
-        <h2 class="subheading text-center">Sales report</h2>
+<header th:replace="navigations :: header()"></header>
 
-        <nav>
-            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <button class="nav-link active" id="sales-date-tab" data-bs-toggle="tab" data-bs-target="#sales-date"
-                        type="button" role="tab" aria-controls="sales-date" aria-selected="true">Date sales report
-                </button>
-                <button class="nav-link" id="sales-category-tab" data-bs-toggle="tab" data-bs-target="#sales-category"
-                        type="button" role="tab" aria-controls="sales-category" aria-selected="false">Category sales
-                    report
-                </button>
-                <button class="nav-link" id="sales-product-tab" data-bs-toggle="tab" data-bs-target="#sales-product"
-                        type="button" role="tab" aria-controls="sales-product" aria-selected="false">Product sales
-                    report
-                </button>
-            </div>
-        </nav>
+<div class="container-fluid">
+    <div class="row">
 
-        <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="sales-date" role="tabpanel" aria-labelledby="sales-date-tab" tabindex="0">
-                <div th:replace="report/date_reports :: tab_content('btn-sales-by-date', 'date_chart_div', 'custom_date_input')"></div>
-            </div>
-            <div class="tab-pane fade" id="sales-category" role="tabpanel" aria-labelledby="sales-category-tab"
-                 tabindex="0">
-                <div th:replace="report/date_reports :: tab_content('btn-sales-by-category', 'category_chart_div','custom_category_input')"></div>
-            </div>
-            <div class="tab-pane fade" id="sales-product" role="tabpanel" aria-labelledby="sales-product-tab" tabindex="0">
-                <div th:replace="report/date_reports :: tab_content('btn-sales-by-product', 'product_chart_div', 'custom_product_input')" ></div>
+        <div th:replace="navigations :: sidebar('Reports')"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Sales report</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="d-flex align-items-center gap-2 me-3 flex-wrap">
+                        <div>
+                            <input id="from" type="date" class="form-control"/>
+                        </div>
+                        <div>
+                            <input id="to" type="date" class="form-control"/>
+                        </div>
+                    </div>
+                    <div id="report-duration" class="dropdown">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
+                                id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-calendar-days link-primary"></i>
+                            <span id="period">This week</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li data-period="7_days"><a class="dropdown-item active" href="#">This week</a></li>
+                            <li data-period="28_days"><a class="dropdown-item" href="#">This Month</a></li>
+                            <li data-period="6_months"><a class="dropdown-item" href="#">This semester</a></li>
+                            <li data-period="1_year"><a class="dropdown-item" href="#">This year</a></li>
+                        </ul>
+                    </div>
+
+                </div>
             </div>
 
-        </div>
+            <section class="content mb-5">
+                <div class="container-md mt-7">
+                    <div class="row mt-5">
+                        <!-- Right sidebar (Summary cards) -->
+                        <div class="col-lg-4 row g-2">
+                            <div class="col-sm-6">
+                                <div th:replace="report/date_reports :: summary_card('total_gross_sales', 'Total gross sales (subtotal + shipping + fee)')"></div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div th:replace="report/date_reports :: summary_card('total_net_sales', 'Total net sales (gross - fee - shipping)')"></div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div th:replace="report/date_reports :: summary_card('avg_gross_sales', 'avg. Gross sales (Total gross sales / order total)')"></div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div th:replace="report/date_reports :: summary_card('avg_net_sales', 'avg. Net sales (Total net sales / order total)')"></div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div th:replace="report/date_reports :: summary_card('orderTotal', 'Total Orders')"></div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div th:replace="report/date_reports :: summary_card('productTotal', 'Total Products')"></div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div th:replace="report/date_reports :: summary_card('shipping', 'Shipping Total')"></div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div th:replace="report/date_reports :: summary_card('fee', 'Fee Total (Stripe + payment methods)')"></div>
+                            </div>
+                        </div>
+
+                        <!-- Left content (Charts) -->
+                        <div class="col-lg-8 order-lg-first">
+                            <div th:replace="report/date_reports :: tab_content('btn-sales-by-date', 'date_chart_div')"></div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="mt-5">
+                                <div th:replace="report/date_reports :: tab_content('btn-sales-by-product', 'product_chart_div')"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div th:replace="report/date_reports :: tab_content('btn-sales-by-category', 'category_chart_div')"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+        </main>
+
     </div>
-</section>
+</div>
 
-<nav th:replace="~{navigations :: footer()}"></nav>
 <script th:replace="~{common :: configurations()}"></script>
-
+<script th:replace="~{modal_fragments :: close_modal('errorModal')}"></script>
 <script type="text/javascript" th:src="@{/js/sales_report.js}"></script>
 </body>
 </html>
+
+

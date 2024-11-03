@@ -1,63 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-sc">
 <head th:replace="~{list_fragments :: head('Manage Orders')}"></head>
+<header th:replace="navigations :: header()"></header>
 <body>
+<div class="container-fluid">
+    <div class="row">
 
-<header th:replace="~{navigations :: header()}"></header>
+        <div th:replace="navigations :: sidebar('Orders')"></div>
 
-<main class="mt-4 content">
-    <h1 class="text-center">Manage Orders</h1>
 
-    <div class="container-md mt-5">
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Orders</h1>
+                <div th:replace="navigations :: export_nav('orders', false)"></div>
+            </div>
 
-        <!-- Alerts -->
-        <div th:replace="~{common :: alerts()}"></div>
+            <section class="content mb-5">
+                <div class="container-md mt-7">
 
-        <!-- Search Bar -->
-        <form th:replace="~{list_fragments :: search_bar('/orders/page/0', 'Search for the order', 'firstName', ${keyword}, ${totalItems}, null)}"></form>
+                    <!-- Alerts -->
+                    <div th:replace="~{common :: alerts()}"></div>
 
-        <table class="table table-hover mt-4 large">
-            <thead class="table-dark">
-            <tr>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'transaction.customer.firstName', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'transaction.total', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Total')}"></th>
-                <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'orderTime', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Order Time')}"></th>
-                <th>Destination Address</th>
-                <th></th>
-            </tr>
-            </thead>
+                    <!-- Search Bar -->
+                    <form th:replace="~{list_fragments :: search_bar('/orders/page/0', 'Search for the Order', 'orderTime', ${keyword}, ${totalItems}, null)}"></form>
 
-            <tbody>
-            <tr th:each="order : ${orderList}">
-                <td th:text="${order.id}"></td>
-                <td th:text="${order.transaction.customer.fullName}"></td>
-                <td th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></td>
-                <td th:text="${order.orderTime}"></td>
-                <td th:text="${order.transaction.shippingAddress.fullAddress}"></td>
-                <td>
-                    <div class="d-flex flex-column gap-2 align-items-center p-2">
-                        <a th:replace="~{list_fragments :: detail_entity(|/orders/details/${order.id}|)}"></a>
-                        <a th:insert="~{list_fragments :: edit_entity(|/orders/edit/${order.id}|)}"></a>
+                    <!-- User Table -->
+                    <div sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_SALESPERSON')">
+                        <div class="con-sm-md-lg-xl-xxl">
+                            <table class="table table-hover mt-4">
+                                <thead class="table-dark">
+                                <tr>
+                                    <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                                    <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'transaction.customer.firstName', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Customer')}"></th>
+                                    <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'transaction.total', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Total')}"></th>
+                                    <th th:replace="~{list_fragments :: column_link('/orders/page', ${currentPage}, 'orderTime', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Order Time')}"></th>
+                                    <th>Destination Address</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr th:each="order : ${orderList}">
+                                    <td th:text="${order.id}"></td>
+                                    <td th:text="${order.transaction.customer.fullName}"></td>
+                                    <td th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></td>
+                                    <td th:text="${order.orderTime}"></td>
+                                    <td th:text="${order.transaction.shippingAddress.fullAddress}"></td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-2 align-items-center p-2">
+                                            <a th:replace="~{list_fragments :: detail_entity(|/orders/details/${order.id}|)}"></a>
+                                            <a th:insert="~{list_fragments :: edit_entity(|/orders/edit/${order.id}|)}"></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="con-xs">
+                            <ul class="list-group list-group-flush">
+                                <li th:each="order : ${orderList}" class="list-group-item p-4 border rounded bg-light shadow-sm mb-3">
+                                    <div class="d-flex flex-column gap-3">
+
+                                        <!-- Order ID and Customer -->
+                                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                            <div class="fw-bold">Order ID</div>
+                                            <div th:text="${order.id}"></div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                            <div class="fw-bold">Customer</div>
+                                            <div th:text="${order.transaction.customer.fullName}"></div>
+                                        </div>
+
+                                        <!-- Total Amount -->
+                                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                            <div class="fw-bold">Total</div>
+                                            <div th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></div>
+                                        </div>
+
+                                        <!-- Order Time -->
+                                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                            <div class="fw-bold">Order Time</div>
+                                            <div class="text-end" th:text="${order.orderTime}"></div>
+                                        </div>
+
+                                        <!-- Destination Address -->
+                                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                                            <div class="fw-bold">Address</div>
+                                            <div class="text-end" th:text="${order.transaction.shippingAddress.fullAddress}"></div>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="d-flex justify-content-between align-items-center pt-2">
+                                            <div class="fw-bold">Actions</div>
+                                            <a th:replace="~{list_fragments :: detail_entity(|/orders/details/${order.id}|)}"></a>
+                                            <a th:replace="~{list_fragments :: edit_entity(|/orders/edit/${order.id}|)}"></a>
+                                        </div>
+
+
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+
+                    <div sec:authorize="hasRole('ROLE_SHIPPER')">
+                        <div th:each="order : ${orderList}" class="card mt-4">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 th:text="${'Order ID #' + order.id}"></h6>
+                                    <a th:replace="~{list_fragments :: detail_entity(|/orders/details/${order.id}|)}"></a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title d-flex gap-3 align-items-center"><i
+                                        class="fa-solid fa-user"></i><span
+                                        th:text="${order.transaction.customer.fullName}"></span></h5>
+                                <div class="card-text">
+                                    <div class="d-flex flex-column gap-3">
+                                        <div class="d-flex gap-3">
+                                            <i class="fa-solid fa-house"></i>
+                                            <span th:text="${order.transaction.shippingAddress.fullAddress}"></span>
+                                        </div>
+                                        <div class="d-flex gap-3">
+                                            <i class="fa-solid fa-phone"></i>
+                                            <span th:text="${order.transaction.shippingAddress.phoneNumber}"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-3">
+                                            <a th:classappend="${order.isPackaged() ? 'link-success link-disabled' : 'link-secondary'}"
+                                               th:href="@{'/orders/' + ${order.id} + '/status/PACKAGED'}">
+                                                <i class="fa-solid fa-xl fa-box"></i>
+                                            </a>
+                                            <a th:classappend="${order.isPicked() ? 'link-success link-disabled' : 'link-secondary'}"
+                                               th:href="@{'/orders/' + ${order.id} + '/status/PICKED'}">
+                                                <i class="fa-solid fa-xl fa-people-carry-box"></i>
+                                            </a>
+                                            <a th:classappend="${order.isShipping() ? 'link-success link-disabled' : 'link-secondary'}"
+                                               th:href="@{'/orders/' + ${order.id} + '/status/SHIPPING'}">
+                                                <i class="fa-solid fa-xl fa-truck-fast"></i>
+                                            </a>
+                                            <a th:classappend="${order.isDelivered() ? 'link-success link-disabled' : 'link-secondary'}"
+                                               th:href="@{'/orders/' + ${order.id} + '/status/DELIVERED'}">
+                                                <i class="fa-solid fa-xl fa-box-open"></i>
+                                            </a>
+                                            <a th:classappend="${order.isReturned() ? 'link-success link-disabled' : 'link-secondary'}"
+                                               th:href="@{'/orders/' + ${order.id} + '/status/RETURNED'}">
+                                                <i class="fa-solid fa-xl fa-rotate-left"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:replace="~{list_fragments :: large_pagination('/orders/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+                         class="mt-4"></nav>
+
+                </div>
+
+            </section>
+        </main>
+
     </div>
+</div>
 
-
-    <!-- Pagination -->
-    <nav th:replace="~{list_fragments :: large_pagination('/orders/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
-         class="mt-4"></nav>
-
-</main>
-
-<footer th:replace="~{navigations :: footer()}"></footer>
 <div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
 <div th:replace="~{modal_fragments :: close_modal_xl('detailModal')}"></div>
-
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 </body>
-</html>
-
-

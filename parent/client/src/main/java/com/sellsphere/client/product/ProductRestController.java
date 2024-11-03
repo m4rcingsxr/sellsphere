@@ -34,7 +34,6 @@ public class ProductRestController {
     @PostMapping("/products")
     public ResponseEntity<List<BasicProductDTO>> getProductsByIds(
             @RequestBody List<Integer> productIds) {
-        return ResponseEntity.ok(productService.getProductsByIds(productIds).stream().map(
-                BasicProductDTO::new).toList());
+        return ResponseEntity.ok(productService.getProductsByIds(productIds).stream().map(BasicProductDTO::new).toList());
     }
 }

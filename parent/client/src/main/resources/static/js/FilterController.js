@@ -27,7 +27,10 @@ class FilterController {
     loadFiltersFromUrl() {
         const filters = this.model.extractFiltersFromUrl(window.location.href);
         this.model.fetchAndHandleFilterCounts(filters)
-            .then(() => this.model.handleFilterChange(filters, 0))
+            .then(() => {
+                this.model.handleFilterChange(filters, 0)
+                this.view.renderActiveFilters(this.model.groupFilters(filters));
+            })
             .catch(error => showErrorModal(error.response))
             .finally(() => hideFullScreenSpinner());
     }
@@ -56,6 +59,15 @@ class FilterController {
         $('input[type="range"]').on("change", event => {
             this.handleFilterChange(event.target);
         });
+
+        $("#lowerPrice").on("change", event => {
+            this.handleFilterChange(event.target);
+        });
+
+        $("#upperPrice").on("change", event => {
+            this.handleFilterChange(event.target);
+        });
+
     }
 
     initSortByListener() {
@@ -95,6 +107,7 @@ class FilterController {
             const checkboxValue = $target.data("filter-value");
             const checkbox = document.querySelector(`#filters input[value="${encodeURIComponent(checkboxValue)}"]`);
 
+
             this.handleFilterChange(checkbox);
         })
     }
@@ -103,21 +116,50 @@ class FilterController {
      * Handles filter changes by updating the view and re-fetching the products based on the new filters.
      * @param {HTMLElement} target - The target element that triggered the filter change.
      */
-    handleFilterChange(target ) {
+    handleFilterChange(target) {
         showFullScreenSpinner();
+
+        // Synchronize the filter state between #filters and #allFilters
         this.model.synchronizeSingleFilterState(target);
 
-        const minPrice = Number($("#lowerPrice").val());
-        const maxPrice = Number($("#upperPrice").val());
-        const filters = this.model.gatherProductSelectedFilters();
+        // Gather the current filter values
+        const filters = this.model.gatherProductSelectedFilters(); // Fetch current selected filters
         const groupedFilters = this.model.groupFilters(filters);
 
+        // Update the UI to display the currently active filters
         this.view.renderActiveFilters(groupedFilters);
 
-        this.model.handleFilterChange(filters, 0, minPrice, maxPrice)
-            .catch(error => showErrorModal(error.response))
-            .finally(() => hideFullScreenSpinner());
+        // ** Update the URL with the selected filters (excluding price filters) **
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Clear all existing 'filter' parameters first
+        urlParams.delete("filter");
+
+        // Add the selected filters back to the URL, ensuring proper encoding
+        filters.forEach(filter => {
+            urlParams.append("filter", encodeURIComponent(filter));
+        });
+
+        // Update the browser's URL without reloading the page (excluding price filters)
+        const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+        window.history.replaceState(null, null, newUrl);
+
+        const lower = $("#lowerPrice").val();
+        const upper = $("#upperPrice").val();
+
+        // Fetch products based on the active filters
+        if (filters.length === 0) {
+            this.model.handleFilterChange([], 0, lower, upper)
+                .catch(error => showErrorModal(error.response))
+                .finally(() => hideFullScreenSpinner());
+        } else {
+            this.model.handleFilterChange(filters, 0,  lower, upper)
+                .catch(error => showErrorModal(error.response))
+                .finally(() => hideFullScreenSpinner());
+        }
     }
+
+
 
     /**
      * Handles page changes by updating the view and re-fetching the products based on the new page number.

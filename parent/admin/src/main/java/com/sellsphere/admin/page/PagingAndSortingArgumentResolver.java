@@ -1,6 +1,7 @@
 package com.sellsphere.admin.page;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -65,7 +66,7 @@ public class PagingAndSortingArgumentResolver implements
         assert annotation != null;
         model.addAttribute("moduleURL", annotation.moduleURL());
 
-        return new PagingAndSortingHelper(model, annotation.listName(), sortField, sortDir, keyword);
+        return new PagingAndSortingHelper(model, annotation.listName(), sortField, Sort.Direction.fromString(sortDir), keyword);
     }
 
 }

@@ -5,6 +5,7 @@
              version="3.0">
     <persistence-unit name="user-store" transaction-type="JTA">
         <class>com.sellsphere.provider.customer.external.Customer</class>
+        <class>com.sellsphere.provider.customer.external.Setting</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
             <property name="hibernate.connection.datasource" value="user-store"/>

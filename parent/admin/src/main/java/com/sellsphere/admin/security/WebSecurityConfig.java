@@ -4,6 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sellsphere.easyship.AppModule;
 import com.sellsphere.easyship.EasyshipService;
+import com.sellsphere.payment.StripeModule;
 import com.sellsphere.payment.checkout.StripeCheckoutService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,6 +50,13 @@ public class WebSecurityConfig {
                 .requestMatchers("/brands/**").hasAnyRole(ADMIN, EDITOR)
                 .requestMatchers("/products/**").hasAnyRole(ADMIN, SALESPERSON)
                 .requestMatchers("/products/page/**", "/products/details/**").hasRole(SHIPPER)
+                .requestMatchers("/settings/**").hasRole(ADMIN)
+                .requestMatchers("/orders/**").hasAnyRole(ADMIN,SALESPERSON, SHIPPER)
+                .requestMatchers("/questions/**").hasAnyRole(ADMIN, EDITOR)
+                .requestMatchers("/reviews/**").hasAnyRole(ADMIN, EDITOR)
+                .requestMatchers("/articles/**").hasAnyRole(ADMIN, ASSISTANT)
+                .requestMatchers("/main_page/**").hasAnyRole(ADMIN, ASSISTANT)
+                .requestMatchers("/reports/**").hasAnyRole(ADMIN, SALESPERSON)
                 .anyRequest().authenticated());
     }
 
@@ -113,7 +121,8 @@ public class WebSecurityConfig {
 
     @Bean
     public StripeCheckoutService stripeCheckoutService() {
-        return new StripeCheckoutService();
+        Injector injector = Guice.createInjector(new StripeModule());
+        return injector.getInstance(StripeCheckoutService.class);
     }
 
     @Bean

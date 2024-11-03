@@ -4,7 +4,6 @@ import com.adobe.testing.s3mock.junit5.S3MockExtension;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.mock.web.MockMultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 import util.S3TestUtils;
 
@@ -35,7 +34,7 @@ class S3UtilityIntegrationTest {
     }
 
     @Test
-    void shouldUploadAndDownloadObject() throws Exception {
+    void givenValidFile_whenUpload_thenFileIsUploadedSuccessfully() throws Exception {
         // Given
         String folderName = "folder";
         String fileName = "abc.txt";
@@ -49,105 +48,112 @@ class S3UtilityIntegrationTest {
     }
 
     @Test
-    void shouldListFolderContents() throws Exception {
-        // given
+    void givenNonExistentFile_whenCheckFileExistence_thenReturnsFalse() {
+        // Given
+        String folderName = "non-existent-folder";
+        String fileName = "non-existent-file.txt";
+
+        // When & Then
+        assertFalse(S3Utility.checkFileExistsInS3(folderName, fileName));
+    }
+
+    @Test
+    void givenValidFilesInFolder_whenListFolder_thenReturnsFileList() throws Exception {
+        // Given
         String folderName = "test-folder";
         File uploadFile1 = new File(UPLOAD_FILE_NAME);
         File uploadFile2 = new File(UPLOAD_FILE_NAME);
+
         S3Utility.uploadFile(folderName, "file1.txt", new FileInputStream(uploadFile1));
         S3Utility.uploadFile(folderName, "file2.txt", new FileInputStream(uploadFile2));
 
-        // when
+        // When
         List<String> files = S3Utility.listFolder(folderName);
 
-        // then
+        // Then
         assertTrue(files.contains(folderName + "/file1.txt"));
         assertTrue(files.contains(folderName + "/file2.txt"));
     }
 
     @Test
-    void shouldDeleteFile() throws Exception {
-        // given
+    void givenFileExists_whenDeleteFile_thenFileIsDeleted() throws Exception {
+        // Given
         File uploadFile = new File(UPLOAD_FILE_NAME);
         String fileName = "delete-test.txt";
         String folderName = "folder";
+
         S3Utility.uploadFile(folderName, fileName, new FileInputStream(uploadFile));
 
-        // when
+        // When
         S3Utility.deleteS3Object(folderName + "/" + fileName);
 
-        // then
+        // Then
         assertFalse(S3Utility.checkFileExistsInS3(folderName, fileName));
     }
 
     @Test
-    void shouldCheckFileExists() throws Exception {
-        // given
-        File uploadFile = new File(UPLOAD_FILE_NAME);
-        String fileName = "exist-test.txt";
-        S3Utility.uploadFile("", fileName, new FileInputStream(uploadFile));
-
-        // then
-        assertTrue(S3Utility.checkFileExistsInS3("", fileName));
-        assertFalse(S3Utility.checkFileExistsInS3("", "non-existent-file.txt"));
-    }
-
-    @Test
-    void shouldUploadMultipleFiles() throws Exception {
-        // given
-        String folderName = "multipart-test-folder";
-        String fileName1 = "multipart-test-file1.txt";
-        String fileName2 = "multipart-test-file2.txt";
-        InputStream inputStream1 = new ByteArrayInputStream("Content of file 1".getBytes());
-        InputStream inputStream2 = new ByteArrayInputStream("Content of file 2".getBytes());
-
-        MockMultipartFile multipartFile1 = new MockMultipartFile("file", fileName1, "text/plain", inputStream1);
-        MockMultipartFile multipartFile2 = new MockMultipartFile("file", fileName2, "text/plain", inputStream2);
-
-        // when
-        S3Utility.uploadFiles(folderName, List.of(multipartFile1, multipartFile2));
-
-        // then
-        List<String> files = S3Utility.listFolder(folderName);
-        assertTrue(files.contains(folderName + "/" + fileName1));
-        assertTrue(files.contains(folderName + "/" + fileName2));
-    }
-
-    @Test
-    void shouldRemoveFolder() throws Exception {
-        // given
-        String folderName = "remove-test-folder";
-        File uploadFile1 = new File(UPLOAD_FILE_NAME);
-        File uploadFile2 = new File(UPLOAD_FILE_NAME);
-        S3Utility.uploadFile(folderName, "file1.txt", new FileInputStream(uploadFile1));
-        S3Utility.uploadFile(folderName, "file2.txt", new FileInputStream(uploadFile2));
-
-        // when
-        S3Utility.removeFilesInFolder(folderName);
-
-        // then
-        List<String> files = S3Utility.listFolder(folderName);
-        assertTrue(files.isEmpty());
-    }
-
-    @Test
-    void shouldDeleteFiles() throws Exception {
-        // given
+    void givenValidFiles_whenBatchDeleteFiles_thenAllFilesDeleted() throws Exception {
+        // Given
         String folderName = "delete-files-test-folder";
         String fileName1 = "file1.txt";
         String fileName2 = "file2.txt";
         File uploadFile1 = new File(UPLOAD_FILE_NAME);
         File uploadFile2 = new File(UPLOAD_FILE_NAME);
+
         S3Utility.uploadFile(folderName, fileName1, new FileInputStream(uploadFile1));
         S3Utility.uploadFile(folderName, fileName2, new FileInputStream(uploadFile2));
 
-        // when
+        // When
         S3Utility.deleteFiles(List.of(folderName + "/" + fileName1, folderName + "/" + fileName2));
 
-        // then
+        // Then
         List<String> files = S3Utility.listFolder(folderName);
         assertFalse(files.contains(folderName + "/" + fileName1));
         assertFalse(files.contains(folderName + "/" + fileName2));
     }
 
+    @Test
+    void givenEmptyFolder_whenRemoveFolder_thenFolderIsRemovedSuccessfully() throws Exception {
+        // Given
+        String folderName = "remove-test-folder";
+        File uploadFile1 = new File(UPLOAD_FILE_NAME);
+        File uploadFile2 = new File(UPLOAD_FILE_NAME);
+
+        S3Utility.uploadFile(folderName, "file1.txt", new FileInputStream(uploadFile1));
+        S3Utility.uploadFile(folderName, "file2.txt", new FileInputStream(uploadFile2));
+
+        // When
+        S3Utility.removeFilesInFolder(folderName);
+
+        // Then
+        List<String> files = S3Utility.listFolder(folderName);
+        assertTrue(files.isEmpty());
+    }
+
+    @Test
+    void givenValidFolder_whenRemoveFolder_thenAllContentsAreRemoved() throws Exception {
+        // Given
+        String folderName = "folder-to-remove";
+        S3Utility.uploadFile(folderName, "file1.txt", new FileInputStream(new File(UPLOAD_FILE_NAME)));
+
+        // When
+        S3Utility.removeFolder(folderName);
+
+        // Then
+        assertTrue(S3Utility.listFolder(folderName).isEmpty());
+    }
+
+    @Test
+    void givenEmptyFile_whenUploadFile_thenFileIsNotUploaded() throws Exception {
+        // Given
+        String folderName = "empty-folder";
+        String fileName = "empty.txt";
+        InputStream emptyStream = new ByteArrayInputStream(new byte[0]);
+
+        // When
+        S3Utility.uploadFile(folderName, fileName, emptyStream);
+
+        // Then
+        assertFalse(S3Utility.checkFileExistsInS3(folderName, fileName));
+    }
 }

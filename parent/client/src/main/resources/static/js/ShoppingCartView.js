@@ -38,46 +38,49 @@ class ShoppingCartView {
      * @returns {string} - The HTML for the product row.
      */
     _generateProductRowHtml(product, localProduct) {
-        const productDetailsHtml = product.details.slice(0, 3).map(detail => `
-            <p class="text-muted mb-0">${detail.name}: ${detail.value}</p>
-        `).join('');
 
         const totalPrice = localProduct.quantity * product.discountPrice;
 
         return `
             <tr id="product-container${product.id}">
-                <td>
-                    <div class="d-flex gap-3 align-items-center">
-                        <img src="${product.mainImagePath}" class="img-fluid product-image lazy">
-                        <div class="text-truncate" style="max-width: 150px;">
-                            <a href="#" class="link-dark text-decoration-none text-truncate">${product.name}</a>
-                            ${productDetailsHtml}
+                <td class="">
+                    <div class="d-flex gap-3">
+                        <div class="d-flex flex-column justify-content-center align-items-center gap-3">
+                            <img src="${product.mainImagePath}" class="img-fluid product-image lazy">
+                        
+                             <div class="input-group mb-3 quantity" style="width: 120px;">
+                                <button class="btn border-dark-subtle border-end-0 quantity-minus" type="button" data-product-id="${product.id}">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <input type="text" class="form-control text-center border-dark-subtle border-start-0 border-end-0 border-1 quantity-input" value="${localProduct.quantity}">
+                                <button class="btn border-dark-subtle border-1 border-start-0 quantity-plus" type="button" data-product-id="${product.id}">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-none d-md-block" style="max-width: 150px;">
+                            <a href="${MODULE_URL}p/${encodeURIComponent(product.alias)}" class="link-dark  link-underline-opacity-50-hover text-decoration-none fs-7 ">${product.name}</a>
                         </div>
                     </div>
+                     
                 </td>
-                <td class="align-middle">
+                <td class="align-middle ">
+                
+                
+                
                     <span>${formatPriceUtil.formatPrice(product.discountPrice)}</span>
                     ${product.discountPercent > 0 ? `<span class="fw-lighter fs-7 text-decoration-line-through d-block">${formatPriceUtil.formatPrice(product.price)}</span>` : ''}
                 </td>
-                <td class="align-middle">
-                    <div class="input-group mb-3 quantity" style="max-width: 120px;">
-                        <button class="btn border-dark-subtle border-end-0 quantity-minus" type="button" data-product-id="${product.id}">
-                            <i class="bi bi-dash"></i>
-                        </button>
-                        <input type="text" class="form-control text-center border-dark-subtle border-start-0 border-end-0 border-1 quantity-input" value="${localProduct.quantity}">
-                        <button class="btn border-dark-subtle border-1 border-start-0 quantity-plus" type="button" data-product-id="${product.id}">
-                            <i class="bi bi-plus"></i>
-                        </button>
-                    </div>
-                </td>
-                <td class="align-middle">
+             
+                <td class="align-middle ">
                     <span id="product-total${product.id}">
                         ${formatPriceUtil.formatPrice(totalPrice)}
                     </span>
                 </td>
-                <td class="align-middle">
+                <td class="align-middle ">
                     <a href="#" class="link-dark delete-cart-item" data-product-id="${product.id}"><i class="bi bi-x-lg"></i></a>
                 </td>
+                
             </tr>
         `;
     }

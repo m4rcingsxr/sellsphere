@@ -1,13 +1,13 @@
-INSERT INTO countries (name, code) VALUES ('Afghanistan', 'AF');
-INSERT INTO countries (name, code) VALUES ('Aland Islands', 'AX');
-INSERT INTO countries (name, code) VALUES ('Albania', 'AL');
-INSERT INTO countries (name, code) VALUES ('Algeria', 'DZ');
-INSERT INTO countries (name, code) VALUES ('American Samoa', 'AS');
-INSERT INTO countries (name, code) VALUES ('Andorra', 'AD');
-INSERT INTO countries (name, code) VALUES ('Angola', 'AO');
-INSERT INTO countries (name, code) VALUES ('Anguilla', 'AI');
-INSERT INTO countries (name, code) VALUES ('Antarctica', 'AQ');
-INSERT INTO countries (name, code) VALUES ('Antigua And Barbuda', 'AG');
+INSERT INTO countries (name, code, currency_id) VALUES ('Afghanistan', 'AF', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('Aland Islands', 'AX', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('Albania', 'AL', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('Algeria', 'DZ', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('American Samoa', 'AS', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('Andorra', 'AD', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('Angola', 'AO', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('Anguilla', 'AI', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('Antarctica', 'AQ', 1);
+INSERT INTO countries (name, code, currency_id) VALUES ('Antigua And Barbuda', 'AG', 1);
 
 INSERT INTO states (name, country_id) VALUES ('Badakhshan', 1);
 INSERT INTO states (name, country_id) VALUES ('Kabul', 1);

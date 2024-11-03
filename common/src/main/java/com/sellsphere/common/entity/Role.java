@@ -30,6 +30,11 @@ public class Role extends IdentifiedEntity {
     @Column(name = "description", length = 150, nullable = false)
     private String description;
 
+    public Role(int id, String name) {
+        super(id);
+        this.name = name;
+    }
+
     @Transient
     public String getSimpleName() {
         return this.name.replace("ROLE_", "");

@@ -43,3 +43,40 @@
   text-overflow: ellipsis !important;
   text-wrap: nowrap;
 }
+
+.fixed-top-alert {
+  position: fixed !important;
+  top: 100px;
+  z-index: 1050;
+}
+
+.sidebar-nav {
+  background: white;
+  height: 100vh;
+  width: 350px;
+  position: fixed;
+  top: 0;
+  left: -350px;
+  transition: left 0.5s ease;
+  z-index: 1955 !important;
+}
+
+.detail {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-wrap: nowrap;
+}
+
+/* Sidebar visible state */
+.sidebar-nav.show {
+  left: 0;
+}
+
+.product-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  display: block;
+}

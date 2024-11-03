@@ -18,7 +18,6 @@ public class CalculationResponseDTO {
 
     private BigDecimal displayAmount;
     private BigDecimal displayTax;
-    private BigDecimal exchangeRate; // applied exchange rate
 
     private BigDecimal displaySubtotal;
     private BigDecimal displayTotalTax;

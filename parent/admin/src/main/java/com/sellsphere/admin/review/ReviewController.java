@@ -5,9 +5,11 @@ import com.sellsphere.admin.page.PagingAndSortingParam;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Review;
 import com.sellsphere.common.entity.ReviewNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,7 +47,12 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews/save")
-    public String updateReview(@ModelAttribute Review review) {
+    public String updateReview(@ModelAttribute @Valid Review review, BindingResult bindingResult, Model model) {
+        if(bindingResult.hasErrors()) {
+            model.addAttribute("review", review);
+            return "review/review_form";
+        }
+
         Review savedReview = reviewService.save(review);
 
         return DEFAULT_REDIRECT_URL + savedReview.getId();

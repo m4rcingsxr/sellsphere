@@ -1,13 +1,131 @@
 <html lang="en">
-<head th:replace="~{common :: head('Main page')}"></head>
+<head>
+    <th:block th:replace="~{common :: common_head('Main page')}"></th:block>
+    <th:block th:replace="~{common :: swiper()}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/products.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+</head>
 <body>
 <header th:replace="~{navigations :: header()}"></header>
-<main class="content">
 
-</main>
+<div class="container mt-3">
+    <div class="row">
+        <div class="offset-lg-3 col-lg-9 position-relative">
+
+            <div class="swiper mySwiper rounded-3 shadow-sm" id="mainCarousel">
+                <div class="swiper-wrapper">
+                    <div th:each="carouselImage : ${carouselImages}" class="swiper-slide swiper-slide-main">
+                        <a th:href="@{|/articles/${carouselImage.article.alias}|}">
+                            <img th:src="${carouselImage.imagePath}" alt="mainImageCarousel" class="main-img object-fit-cover"/>
+                        </a>
+                    </div>
+                </div>
+                <div class="swiper-scrollbar"></div>
+            </div>
+
+            <!--Subcategory list-->
+            <div th:replace="common :: categoryList()"></div>
+        </div>
+    </div>
+</div>
+
+<div class="container px-4 py-md-5 mt-md-3 mt-1" id="icon-grid">
+    <div class="row g-4 py-5">
+        <div class="col-6 col-lg-3 d-flex align-items-start gap-4">
+            <div class="icon-circle">
+                <i class="bi bi-truck"></i>
+            </div>
+            <div class="icon-text" >
+                <h5 class="fw-bold mb-0 text-body-emphasis icon-header">Free Shipping & Returns</h5>
+                <p class="mt-2">For all orders over $199.00</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 d-flex align-items-start gap-4">
+            <div class="icon-circle">
+                <i class="bi bi-credit-card"></i>
+            </div>
+            <div class="icon-text">
+                <h5 class="fw-bold mb-0 text-body-emphasis icon-header">Secure Payment</h5>
+                <p class="mt-2">We ensure secure payment</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 d-flex align-items-start gap-4">
+            <div class="icon-circle">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="icon-text">
+                <h5 class="fw-bold mb-0 text-body-emphasis icon-header">Money-Back Guarantee</h5>
+                <p class="mt-2">Returning money 30 days</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 d-flex align-items-start gap-4">
+            <div class="icon-circle">
+                <i class="bi bi-chat-dots"></i>
+            </div>
+            <div class="icon-text">
+                <h5 class="fw-bold mb-0 text-body-emphasis icon-header">24/7 Customer Support</h5>
+                <p class="mt-2">Friendly customer support</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-7">
+    <div th:each="carouselEntry : ${carouselMap}" class="mt-5">
+        <div th:class="${carouselEntry.key.type.name() == 'ARTICLE' ? 'swiper mySwiper article-carousels' : 'swiper mySwiper product-carousels'}">
+            <h6 th:if="${carouselEntry.key.type.name() == 'ARTICLE'}"
+                class="subheading" th:text="${carouselEntry.key.header}"></h6>
+
+            <a th:if="${carouselEntry.key.type.name() == 'PROMOTION'}"
+               th:href="@{/p/search(filter='Promotion,' + ${carouselEntry.key.promotion.name})}"
+               class="subheading link-dark link-underline-opacity-0 link-underline-opacity-50-hover"
+               th:text="${carouselEntry.key.header}"></a>
+            <hr/>
+
+            <div class="swiper-wrapper mt-4">
+                <!-- Rendering for Article Carousels -->
+                <div th:if="${carouselEntry.key.type.name() == 'ARTICLE'}"
+                     th:each="article : ${carouselEntry.value}"
+                     class="swiper-slide link-underline link-underline-opacity-0" style="max-height: 100px;">
+                    <!-- Carousel article card -->
+                    <div class="card border-0 border bg-light-subtle" style="height: 300px !important;">
+                        <a th:href="@{|/articles/${article.alias}|}">
+                            <img class="card-img-top" th:src="${article.mainImagePath}" style=" max-height: 150px; object-fit: cover;">
+                        </a>
+                        <div class="card-body mt-3">
+                            <p class="card-text">
+                                <a th:href="@{|/articles/${article.alias}|}"
+                                   class="link-dark link-underline link-underline-opacity-0 link-underline-opacity-50-hover text-light-emphasis">
+                                    <span th:text="${article.title}"></span>
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rendering for Product Carousels -->
+                <div th:if="${carouselEntry.key.type.name() == 'PROMOTION'}"
+                     th:each="product : ${carouselEntry.value}"
+                     class="swiper-slide z-3">
+                    <div th:replace="~{product/product_fragments :: product_card()}"></div>
+                </div>
+            </div>
+
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
 <footer th:replace="~{navigations :: footer()}"></footer>
 
+
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+
+<script th:src="@{/js/carousels.js}"></script>
+
 <script th:replace="~{common :: configurations()}"></script>
 <script th:replace="~{common :: cart_initialization()}"></script>
 </body>

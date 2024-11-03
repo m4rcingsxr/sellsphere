@@ -1,123 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <th:block th:replace="~{common :: common_head('Customer Reviews')}"></th:block>
+    <th:block th:replace="~{form_fragments :: common_head('Customer Reviews')}"></th:block>
     <th:block th:replace="~{common :: rateYo()}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/customer.css}"/>
 </head>
 <body>
 <nav th:replace="~{navigations :: header()}"></nav>
 
-<main class="content">
-    <div class="container p-0 mt-2">
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
+        </div>
+    </div>
+</div>
 
-        <div class="row mt-5">
-            <div class="col-sm-3">
-                <div th:replace="~{customer/customer_navigation :: nav()}"></div>
-            </div>
+<div class="container p-0 mt-2 position-relative">
+    <div th:replace="~{common :: alerts()}"></div>
 
-            <div class="col-sm-9 mt-4">
-                <div>
-                    <h2>Unreviewed Products</h2>
 
-                    <ul class="list-group list-group-flush" id="reviews">
-                        <li th:each="entry : ${productMap}" class="list-group-item w-100">
-                            <div class="row gap-4">
-                                <div style="height: 75px; width: 90px;" class="p-1 col-sm-2">
-                                    <img th:src="${entry.key.mainImagePath}"
-                                         style="width: 100%; height: 100%; object-fit: contain;"/>
-                                </div>
-                                <div class="col-sm-6 d-flex align-items-center">
-                                    <a th:href="@{'/p/' + ${entry.key.alias}}"
-                                       class="d-block product-title link-dark link-underline link-underline-opacity-50-hover link-underline-opacity-0"><span
-                                            th:text="${entry.key.name}"></span></a>
-                                </div>
-                                <div class="col-sm-4 d-flex align-items-center justify-content-end">
-                                    <div th:if="${entry.value != null}"
-                                         class="d-flex justify-content-end gap-4 align-items-center">
+    <div class="row mt-2 p-0 m-0">
+        <div class="col-lg-3 col-3 d-none d-lg-block">
+            <div th:replace="~{customer/customer_navigation :: nav()}"></div>
+        </div>
 
-                                        <div th:replace="~{review/review_fragments :: review_stars(${entry.value.rate})}"></div>
-                                        <a th:replace="~{common :: chevron_right(${entry.value.id})}"></a>
-                                    </div>
+        <div class="col-lg-9 col-12 mt-4">
 
-                                    <div th:if="${entry.value == null}" class="d-flex">
-                                        <a href="#"
-                                           class="btn btn-sm px-3 btn-outline-primary ms-auto rounded-1 post-review"
-                                           th:data-discount-price="${entry.key.discountPrice}"
-                                           th:data-src="${entry.key.mainImagePath}" th:data-name="${entry.key.name}"
-                                           th:data-alias="${entry.key.alias}"
-                                           th:data-product-id="${entry.key.id}"
-                                        >Post a review</a>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+            <div th:if="${productMap.isEmpty()}" class="d-flex justify-content-center">
+                <div class="d-flex flex-column gap-3 align-items-center">
+                    <h2>You do not buy any product yet!</h2>
+                    <a class="btn btn-outline-primary" th:href="@{/}">Start shopping</a>
                 </div>
+            </div>
+            <div th:if="${!productMap.isEmpty()}">
+                <h2>Unreviewed Products</h2>
+
+                <ul class="list-group list-group-flush mb-4" id="reviews">
+                    <li th:each="entry : ${productMap}" class="list-group-item w-100">
+                        <div class="row gap-2">
+                            <div  class="p-1 col-4 col-md-2">
+                                <img th:src="${entry.key.mainImagePath}"
+                                     style="width: 100%; height: 100%; object-fit: contain;"/>
+                            </div>
+                            <div class="col-md-4 offset-md-0 col-7 d-flex align-items-center">
+                                <a th:href="@{'/p/' + ${entry.key.alias}}"
+                                   class="fs-7 d-block product-title link-dark link-underline link-underline-opacity-50-hover link-underline-opacity-0 text-truncate"><span
+                                        th:text="${entry.key.name}"></span></a>
+                            </div>
+                            <div class="col-md-5 col-8 offset-md-0 offset-4 ">
+                                <div th:if="${entry.value != null}"
+                                     class="d-flex justify-content-end gap-4 align-items-center">
+
+                                    <div th:replace="~{review/review_fragments :: review_stars(${entry.value.rate})}"></div>
+                                    <a th:replace="~{common :: chevron_right(${entry.value.id})}"></a>
+                                </div>
+
+                                <div th:if="${entry.value == null}" class="d-flex">
+                                    <a href="#"
+                                       class="btn btn-sm px-3 btn-outline-primary ms-auto rounded-1 post-review"
+                                       th:data-discount-price="${entry.key.discountPrice}"
+                                       th:data-src="${entry.key.mainImagePath}" th:data-name="${entry.key.name}"
+                                       th:data-alias="${entry.key.alias}"
+                                       th:data-product-id="${entry.key.id}"
+                                    >Post a review</a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle"
-         style="display: none;" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 shadow">
-                <div class="modal-header p-5 pb-4 border-bottom-0">
-                    <h3 class="mb-0 fs-5 fw-bold">Post a review</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle"
+     style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header p-5 pb-4 border-bottom-0">
+                <h3 class="mb-0 fs-5 fw-bold">Post a review</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="row px-4">
+                <div style="max-height: 80px; max-width: 100px;" class="p-1 col-sm-4">
+                    <img style="width: 100%; height: 100%; object-fit: contain;" id="productImage"/>
                 </div>
-
-                <div class="row px-4">
-                    <div style="max-height: 80px; max-width: 100px;" class="p-1 col-sm-4">
-                        <img style="width: 100%; height: 100%; object-fit: contain;" id="productImage"/>
-                    </div>
-                    <div class="col-sm-8">
-                        <span class="d-block product-title" id="productName"></span>
-                        <span class="d-block fw-bolder fs-5 mt-2" id="productPrice"></span>
-                    </div>
+                <div class="col-sm-8">
+                    <span class="d-block product-title" id="productName"></span>
+                    <span class="d-block fw-bolder fs-5 mt-2" id="productPrice"></span>
                 </div>
+            </div>
 
-                <hr/>
+            <hr/>
 
-                <div class="modal-body p-5 pt-0 mt-3">
-                    <form id="reviewForm" method="POST" th:action="@{/reviews/create}" th:object="${review}">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" th:field="*{headline}" placeholder="Great product!">
-                            <label for="headline">Headline</label>
-                        </div>
+            <div class="modal-body p-5 pt-0 mt-3">
+                <form id="mainForm" method="POST" th:action="@{/reviews/create}" th:object="${review}">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" th:field="*{headline}" placeholder="Great product!">
+                        <span class="invalid-feedback"></span>
+                        <label for="headline">Headline</label>
+                    </div>
 
-                        <div class="p-2">
-                            <label class="fs-6 fw-bolder">Rating</label>
-                            <input type="hidden" th:field="*{rate}"/>
-                            <input type="hidden" th:field="*{product}"/>
-                            <input type="hidden" name="customer" id="customer" th:value="${customer.id}"/>
-                            <div class="mt-2 p-0" id="rateYo"></div>
-                        </div>
+                    <div class="p-2">
+                        <label class="fs-6 fw-bolder">Rating</label>
+                        <input type="hidden" th:field="*{rate}"/>
+                        <span class="invalid-feedback"></span>
+                        <input type="hidden" th:field="*{product}"/>
+                        <input type="hidden" name="customer" id="customer" th:value="${customer.id}"/>
+                        <div class="mt-2 p-0" id="rateYo"></div>
+                    </div>
 
-                        <div class="form-floating mt-4">
+                    <div class="form-floating mt-4">
                         <textarea class="form-control" placeholder="Leave a comment here" th:field="*{comment}"
                                   style="height: 200px;"></textarea>
-                            <label for="comment">Comments</label>
-                        </div>
+                        <span class="invalid-feedback"></span>
+                        <label for="comment">Comments</label>
+                    </div>
 
-                        <div class="d-flex mt-5 gap-2">
-                            <button type="button" class="btn btn-secondary w-100" id="cancelModalBtn">Cancel</button>
-                            <button type="submit" class="btn btn-primary w-100">Post review</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="g-recaptcha mt-3"
+                         data-sitekey="6LdxhXEqAAAAAEHwZGkaURuibbEy6qFTNkhCNv9C"
+                         data-callback="onRecaptchaSuccess"></div>
+                    <div id="recaptcha-error" class="invalid-feedback">
+                        Please verify
+                    </div>
 
+                    <div class="d-flex mt-5 gap-2">
+                        <button type="button" class="btn btn-secondary w-100" id="cancelModalBtn">Cancel</button>
+                        <button id="submit-button" type="submit" class="btn btn-primary w-100">Post review</button>
+                    </div>
+                </form>
             </div>
+
         </div>
     </div>
-</main>
+</div>
 
 <div id="overlay" class="overlay"></div>
-<div id="sidebar" class="sidebar vote-container"></div>
+<div id="sidebar" class="sidebar"></div>
+
+<div class="sidebar-nav" id="sidebarNav">
+    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
+</div>
+
+<div class="d-lg-none sticky-bottom bg-dark py-2">
+    <div class="container text-center">
+        <button id="toggleSidebar" class="btn btn-dark w-100">
+            <i class="bi bi-layout-sidebar-inset"
+               style="font-size: 1.5rem;"></i>
+        </button>
+    </div>
+</div>
 
 <nav th:replace="~{navigations :: footer()}"></nav>
 
 <script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
 <script type="text/javascript" th:src="@{/js/reviews.js}"></script>
+<script type="text/javascript" th:src="@{/js/votes.js}"></script>
+<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
+<script type="text/javascript">
+    <!-- require submit btn   -->
+    $(function () {
+
+        var validator = new FormValidator('mainForm', [
+            {
+                name: 'headline',
+                display: 'Headline',
+                rules: 'required|max_length[128]'
+            },
+            {
+                name: 'comment',
+                display: 'Comment',
+                rules: 'required|max_length[255]'
+            },
+            {
+                name: 'rate',
+                display: 'Rate',
+                rules: 'required'
+            }
+        ], handleValidations);
+
+    })
+
+
+</script>
 </body>
 </html>

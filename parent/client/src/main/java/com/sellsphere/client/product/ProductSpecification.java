@@ -20,6 +20,7 @@ public class ProductSpecification {
         if (filters != null && filters.length > 0) {
             spec = spec.and(ProductSpecifications.hasFilters(filters));
         }
+
         if (minPrice != null && maxPrice != null) {
             spec = spec.and(ProductSpecifications.hasDiscountPriceInRange(minPrice, maxPrice));
         }
@@ -34,22 +35,10 @@ public class ProductSpecification {
             spec = spec.and(ProductSpecifications.hasCategory(categoryId));
         }
 
-        if (keyword != null) {
+        if (keyword != null && !keyword.isEmpty()) {
             spec = spec.and(ProductSpecifications.hasKeyword(keyword));
         }
         return spec;
-    }
-
-    public static Specification<Product> minDiscountPrice(Integer categoryId, String keyword,
-                                                          Specification<Product> baseSpec) {
-        return baseSpec.and(
-                ProductSpecifications.hasMinOrMaxDiscountPrice(categoryId, keyword, true));
-    }
-
-    public static Specification<Product> maxDiscountPrice(Integer categoryId, String keyword,
-                                                          Specification<Product> baseSpec) {
-        return baseSpec.and(
-                ProductSpecifications.hasMinOrMaxDiscountPrice(categoryId, keyword, false));
     }
 
 

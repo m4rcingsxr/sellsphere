@@ -17,6 +17,7 @@ public class ReportUnit {
     private int ordersCount;
     private int productsCount;
 
+
     public void addGrossSales(BigDecimal amount) {
         if(this.grossSales == null) this.grossSales = new BigDecimal(0);
         this.grossSales = this.grossSales.add(amount);
@@ -31,7 +32,7 @@ public class ReportUnit {
         this.ordersCount++;
     }
 
-    public void increaseProductsCount() {
-        this.productsCount++;
+    public void increaseProductsCountBy(int by) {
+        this.productsCount += by;
     }
 }

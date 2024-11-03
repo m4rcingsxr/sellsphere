@@ -4,12 +4,13 @@ import com.sellsphere.common.entity.constraints.RootCategoryIconRequired;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -17,6 +18,7 @@ import java.util.Set;
 @RootCategoryIconRequired
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Setter
 @Getter
 @Entity
@@ -34,7 +36,7 @@ public class Category extends IdentifiedEntity {
     private String alias;
 
     @Size(max = 128, message = "Image name must be between 1 and 128 characters")
-    @Column(name = "image", length = 128, nullable = false)
+    @Column(name = "image", length = 128)
     private String image;
 
     @Column(name = "enabled", nullable = false, columnDefinition = "TINYINT")
@@ -46,22 +48,34 @@ public class Category extends IdentifiedEntity {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Category parent;
 
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @OrderBy("name asc")
     private Set<Category> children = new HashSet<>();
 
-    @ManyToMany(mappedBy = "categories")
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
     private Set<Brand> brands = new HashSet<>();
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    private Set<Product> products = new HashSet<>();
 
     @OneToOne(mappedBy = "category", cascade = CascadeType.ALL)
     private CategoryIcon categoryIcon;
 
     @Transient
     public String getMainImagePath() {
-        return Constants.S3_BASE_URI + (id == null || image == null ? "/default.png" : "/category"
-                + "-photos/" + this.id + "/" + image);
+        String basePath = Constants.S3_BASE_URI;
+        if (id == null || image == null) {
+            return basePath + "/default.png";
+        }
+        try {
+            String encodedMainImage = URLEncoder.encode(image, "UTF-8");
+            return basePath + "/category-photos/" + this.id + "/" + encodedMainImage;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Error encoding image URL", e);
+        }
     }
 
     public Category(Category other) {
@@ -78,6 +92,18 @@ public class Category extends IdentifiedEntity {
 
     public Category(Integer id) {
         this.id = id;
+    }
+
+    public Category(Integer id, String name) {
+        super(id);
+        this.name = name;
+    }
+
+    @PreRemove
+    private void removeCategoryFromBrands() {
+        for (Brand brand : brands) {
+            brand.getCategories().remove(this);
+        }
     }
 
     public void addCategoryIcon(CategoryIcon categoryIcon) {

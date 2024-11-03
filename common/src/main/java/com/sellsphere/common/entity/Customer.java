@@ -97,6 +97,7 @@ public class Customer extends IdentifiedEntity {
     private List<PaymentIntent> transactions;
 
     public void addAddress(Address address) {
+        if (addresses == null) addresses = new ArrayList<>();
         address.setCustomer(this);
         this.addresses.add(address);
     }
@@ -107,7 +108,7 @@ public class Customer extends IdentifiedEntity {
     }
 
     public void addCard(Card card) {
-        if(this.cards == null) {
+        if (this.cards == null) {
             this.cards = new ArrayList<>();
         }
 

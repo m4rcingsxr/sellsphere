@@ -106,7 +106,6 @@ class CheckoutView {
     }
 
     renderCheckoutDetails(total, subtotal, tax, totalTax, shippingCost, shippingCostTax, currencySymbol, cart) {
-        this.renderCheckoutDetailProducts(cart, currencySymbol);
 
         const convertPrice = (price) => `${price} ${currencySymbol}`
 
@@ -152,23 +151,26 @@ class CheckoutView {
     }
 
     renderShippingRates(rates) {
+
         const html = rates.map((rate, index) => {
             return `
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault${index}" ${index === 0 ? "checked" : ""} data-rate-index="${index}">
-                  <label class="form-check-label" for="flexRadioDefault${index}">
-                    <div class="d-flex justify-content-between gap-5">
-                        <div style="max-height: 50px; max-width: 50px;">
-                            <img src="${rate.courierLogoUrl}" alt="courier logo" class="img-fluid"/>
+                    <input type="radio" class="btn-check" name="vbtn-radio" id="vbtn-radio${index}" autocomplete="off" ${index === 0 ? "checked" : ""} data-rate-index="${index}">
+                    <label class="btn btn-outline-secondary" for="vbtn-radio${index}">
+                       
+                          <div class="d-flex gap-2 ">
+                               <div class="w-25">
+                                <img src="${rate.courierLogoUrl}" style="max-height: 50px; max-width: 50px;" alt="courier logo" class="img-fluid"/>
+                            </div>
+                            
+                            <div class="d-flex flex-column gap-1 w-75">
+                                <span class="fs-7 fw-bolder">Delivery days ${rate.minDeliveryTime} - ${rate.maxDeliveryTime}</span>
+                                <span>${rate.courierName}</span>
+                                <span class="fs-7">(${rate.currency}) ${rate.totalCharge} - <span class="fw-lighter">Delivery</span></span>
+                            </div>
                         </div>
-                        <div class="d-flex flex-column">
-                            <span class="text-success fs-7 fw-bolder">Delivery days ${rate.minDeliveryTime} - ${rate.maxDeliveryTime}</span>
-                            <span>${rate.courierName}</span>
-                            <span class="fs-7">(${rate.currency}) ${rate.totalCharge} - <span class="fw-lighter">Delivery</span></span>
-                        </div>
-                    </div>
-                  </label>
-                </div>
+                    </label>
+ 
+                 
             `;
         }).join("");
 
@@ -182,9 +184,8 @@ class CheckoutView {
                 <div class="d-flex gap-3">
                     <img src="${item.product.mainImagePath}" alt="${item.product.name}" class="img-fluid" style="max-width: 100px; max-height: 100px; object-fit: contain"/>
                     <div>
-                        <h6>${item.product.name}</h6>
-                        <p>${item.quantity} x ${item.product.discountPrice} ${currencySymbol}</p>
-                        <span>${item.subtotal} ${currencySymbol}</span>
+                        <h6><a class="link link-dark link-underline link-underline-opacity-50-hover link-underline-opacity-0" href="${MODULE_URL}p/${encodeURIComponent(item.product.alias)}">${item.product.name}</a></h6>
+                        <p class="fw-bolder">${item.quantity} x ${item.product.discountPrice} ${currencySymbol}</p>
                     </div>
                 </div>
             `
@@ -193,77 +194,5 @@ class CheckoutView {
         this.summaryProducts.empty().append(html);
     }
 
-    enableCurrencyPlaceholders() {
-        $("#currencies-load").removeClass("visually-hidden");
-    }
 
-    disableCurrencyPlaceholders() {
-        $("#currencies-load").addClass("visually-hidden");
-    }
-
-    showCurrencies() {
-        $(".currencies").removeClass("visually-hidden");
-    }
-
-    hideCurrencies() {
-        $(".currencies").addClass("visually-hidden");
-    }
-
-    /**
-     * Renders the presentment total in the target currency.
-     * @param {Object} countryData - The country data object.
-     */
-    renderPresentmentTotal(countryData,currencyCode, currencySymbol, convertedPrice) {
-
-        const img = this.renderCountryFlag(countryData);
-        $("#presentment-currency")
-            .empty()
-            .removeClass("d-none")
-            .append(`${img}<span class="fw-bolder" id="presentment-total">(${currencySymbol}) ${convertedPrice}</span>`)
-            .data("currency-code", currencyCode)
-            .attr("data-currency-code", currencyCode);
-    }
-
-
-    /**
-     * Renders the country flag.
-     * @param {Object} countryData - The country data object.
-     * @returns {string} - The HTML string for the country flag.
-     */
-    renderCountryFlag(countryData) {
-        let img = "";
-        if (countryData[0]) {
-            const src = countryData[0].flags.png;
-            const alt = countryData[0].flags.alt;
-            img = `<img src="${src}" alt="${alt}" class="img-fluid border border-1" style="max-width: 40px; max-height: 25px"/>`;
-        }
-        return img;
-    }
-
-    renderSettlementTotal(settlementTotal, currencySymbol) {
-        $("#settlement-total").empty().append(`${settlementTotal} ${currencySymbol}`);
-    }
-
-
-    selectSettlementCurrency() {
-        $("#presentment-currency").removeClass("currency-checked");
-        $("#settlement-currency").addClass("currency-checked");
-    }
-
-    selectPresentmentCurrency() {
-        $("#presentment-currency").addClass("currency-checked");
-        $("#settlement-currency").removeClass("currency-checked");
-    }
-
-    updatePresentmentPrice(price, symbol) {
-        $("#presentment-total").empty().text(`${price} ${symbol}`);
-    }
-
-    updateSettlementPrice(price, symbol) {
-        $("#settlement-total").empty().text(`${price} ${symbol}`);
-    }
-
-    setExchangeRate(exchangeRate, baseCode, targetCode) {
-        $("#exchange-rate").empty().text(`1 ${baseCode} = ${exchangeRate} ${targetCode} (includes 2% conversion fee)`);
-    }
 }

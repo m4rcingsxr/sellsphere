@@ -22,29 +22,33 @@ async function initialize() {
     switch (paymentIntent.status) {
         case "succeeded":
             cartController.clear();
-            showMessage("Payment succeeded!");
+            showSuccessView();
             break;
         case "processing":
             cartController.clear();
-            showMessage("Your payment is processing.");
+            showProcessingView();
             break;
         case "requires_payment_method":
-            showMessage("Your payment was not successful, please try again.");
+            showRequirePaymentView();
             break;
         default:
-            showMessage("Something went wrong.");
+            showFailureView();
             break;
     }
 }
 
-function showMessage(messageText) {
-    const messageContainer = document.querySelector("#payment-message");
+function showSuccessView() {
+    $("#success-view").removeClass("d-none");
+}
 
-    messageContainer.classList.remove("hidden");
-    messageContainer.textContent = messageText;
+function showProcessingView() {
+    $("#processing-view").removeClass("d-none");
+}
 
-    setTimeout(function () {
-        messageContainer.classList.add("hidden");
-        messageContainer.textContent = "";
-    }, 4000);
+function showRequirePaymentView() {
+    $("#require-payment-view").removeClass("d-none");
+}
+
+function showFailureView() {
+    $("#failure-view").removeClass("d-none");
 }

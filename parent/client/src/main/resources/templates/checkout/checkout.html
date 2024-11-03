@@ -18,10 +18,10 @@
 <body>
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="content mt-4 mb-6">
+<main class=" mt-4 mb-6">
     <div class="container">
-        <div class="row">
-            <div class="col-sm-8">
+        <div class="row gap-4 gap-lg-0">
+            <div class="col-lg-8 ">
                 <div class="accordion" id="checkout-accordion">
                     <div class="accordion-item">
                         <h2 class="accordion-header">
@@ -73,13 +73,17 @@
                         <div id="checkout-summary-accordion" class="accordion-collapse collapse"
                              data-bs-parent="#checkout-accordion">
                             <div class="accordion-body">
-                                <div id="summary" class="d-flex">
-                                    <div id="summary-products" class="w-50 d-flex flex-column gap-3">
+                                <div class="row gap-3 gap-md-0" id="summary">
+                                    <div id="summary-products" class="col-md-6 col-12">
 
                                     </div>
-                                    <div id="shipping-rates" class="w-50 d-flex flex-column gap-3">
+                                    <div class="col-md-6 col-12">
+                                        <div id="shipping-rates" class="btn-group-vertical border-primary-subtle w-100" role="group"
+                                             aria-label="Vertical radio toggle button group">
 
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -88,7 +92,7 @@
 
             </div>
 
-            <div class="col-sm-4 align-items-start">
+            <div class="col-lg-4 align-items-start">
 
 
                 <div class="d-flex flex-column gap-2 border border-1 shadow-sm rounded-2 p-4">
@@ -208,47 +212,6 @@
                         </div>
                     </div>
 
-
-                    <div
-                            id="currencies"
-                            class="d-flex gap-3 flex-wrap currencies visually-hidden"
-                    >
-                        <a id="presentment-currency" class="currency" href="#">
-
-                        </a>
-                        <a
-                                id="settlement-currency"
-                                class="currency currency-checked"
-                                href="#"
-                        >
-                            <img
-                                    src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg"
-                                    class="img-fluid border border-1"
-                                    style="max-width: 40px; max-height: 25px"
-                            />
-                            <span id="settlement-total" class="fw-bolder"></span>
-                        </a>
-                    </div>
-
-                    <div class="currencies visually-hidden">
-                          <span class="text-light-emphasis fs-7 d-block" id="exchange-rate">
-                              1 EUR = 4.30 PLN (includes 2% conversion fee)
-                          </span>
-                        <span class="fw-lighter fs-7">
-                                    Exchange rate will be refreshed in:<span id="countdown"></span>
-                                </span>
-                    </div>
-
-                    <div id="currencies-load" class="d-flex gap-3 flex-wrap visually-hidden mt-3">
-                        <div class="placeholder-wave" style="width: 45%">
-                            <span class="placeholder col-12 bg-secondary-subtle"></span>
-                        </div>
-                        <div class="placeholder-wave" style="width: 45%">
-                            <span class="placeholder col-12 bg-secondary-subtle"></span>
-                        </div>
-                    </div>
-
-
                     <button class="btn btn-primary mt-2" type="button" id="continue-to-payment-btn" disabled>
                         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                         <span class="visually-hidden continue-btn" role="status">Continue to payment</span>
@@ -270,6 +233,8 @@
         </div>
     </div>
 </main>
+
+<div id="overlay" class="overlay"></div>
 
 <footer th:replace="~{navigations :: footer()}"></footer>
 

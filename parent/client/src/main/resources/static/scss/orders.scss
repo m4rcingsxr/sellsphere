@@ -1,0 +1,54 @@
+.status-circle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  text-align: center;
+  line-height: 50px;
+  color: white;
+  font-weight: bold;
+}
+
+.status-new {
+  background-color: lightblue;
+}
+
+.status-cancelled {
+  background-color: lightcoral;
+}
+
+.status-processing {
+  background-color: lightyellow;
+}
+
+.status-packaged {
+  background-color: lightgreen;
+}
+
+.status-picked {
+  background-color: lightgoldenrodyellow;
+}
+
+.status-shipping {
+  background-color: lightskyblue;
+}
+
+.status-delivered {
+  background-color: lightseagreen;
+}
+
+.status-return-requested {
+  background-color: lightpink;
+}
+
+.status-returned {
+  background-color: lightgrey;
+}
+
+.status-paid {
+  background-color: lightsteelblue;
+}
+
+.status-refunded {
+  background-color: lightcoral;
+}

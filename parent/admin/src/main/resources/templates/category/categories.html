@@ -1,128 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
-<head th:replace="~{list_fragments :: head('Category management')}"></head>
+<head th:replace="~{list_fragments :: head('Manage Users')}"></head>
+
 <body>
 
-<header th:replace="~{navigations :: header()}"></header>
+<header th:replace="navigations :: header()"></header>
 
-<main class="mt-4 content">
-    <h1 class="text-center">Manage Categories</h1>
+<div class="container-fluid">
+    <div class="row">
 
-    <div class="container-md mt-5">
+        <div th:replace="~{navigations :: sidebar('Categories')}"></div>
 
-        <!-- Alerts -->
-        <div th:replace="~{common :: alerts()}"></div>
 
-        <!-- Export       -->
-        <ul th:replace="~{navigations :: export_nav('categories', true)}"></ul>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Categories</h1>
+                <div th:replace="~{navigations :: export_nav('categories', true)}"></div>
+            </div>
 
-        <!-- Search Bar -->
-        <form th:replace="~{list_fragments :: search_bar('/categories/page/0', 'Search for the category', 'name', ${keyword}, ${totalItems}, null)}"></form>
+            <section class="content mb-5">
+                <div class="container-md mt-7">
 
-        <table class="table table-hover mt-4 large">
-            <thead class="table-dark">
-            <tr>
-                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
-                <th></th>
-                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'name', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Category Name')}"></th>
-                <th>Alias</th>
-                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'enabled', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Enabled')}"></th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="category : ${categoryList}"
-                th:classappend="${category.parent == null} ? 'table-active' : ''">
-                <td th:text="${category.id}"></td>
-                <td>
-                    <div th:replace="~{list_fragments :: entity_image(${category.mainImagePath}, 150, 150)}"></div>
-                </td>
-                <td th:text="${category.name}"></td>
-                <td th:text="${category.alias}"></td>
-                <td>
+                    <!-- Alerts -->
+                    <div th:replace="~{common :: alerts()}"></div>
 
-                    <a th:replace="~{list_fragments :: status(${category.enabled}, |/categories/${category.id}/enabled/${!category.enabled}|)}"></a>
-                </td>
-                <td>
-                    <div class="d-flex flex-column gap-4 p-3">
-                        <a th:replace="~{list_fragments :: delete_entity(|/categories/delete/${category.id}|)}"></a>
-                        <a th:replace="~{category/category_fragments :: delete_branch(${category.id})}"></a>
-                        <a th:replace="~{list_fragments :: edit_entity(|/categories/edit/${category.id}|)}"></a>
+                    <!-- Search Bar -->
+                    <form th:replace="~{list_fragments :: search_bar('/categories/page/0', 'Search for the category', 'name', ${keyword}, ${totalItems}, null)}"></form>
+
+                    <!-- Category Table -->
+                    <div class="con-lg-xl-xxl">
+                        <table class="table table-hover mt-4">
+                            <thead class="table-dark">
+                            <tr>
+                                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                                <th></th>
+                                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'name', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Category Name')}"></th>
+                                <th>Alias</th>
+                                <th th:replace="~{list_fragments :: column_link('/categories/page', ${currentPage}, 'enabled', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Enabled')}"></th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="category : ${categoryList}"
+                                th:classappend="${category.parent == null} ? 'table-active' : ''">
+                                <td th:text="${category.id}"></td>
+                                <td>
+                                    <div th:replace="~{list_fragments :: entity_image(${category.mainImagePath}, 150, 150)}"></div>
+                                </td>
+                                <td th:text="${category.name}"></td>
+                                <td th:text="${category.alias}"></td>
+                                <td>
+
+                                    <a th:replace="~{list_fragments :: status(${category.enabled}, |/categories/${category.id}/enabled/${!category.enabled}|)}"></a>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-4 p-3">
+                                        <a th:replace="~{list_fragments :: delete_entity(|/categories/delete/${category.id}|)}"></a>
+                                        <a th:replace="~{category/category_fragments :: delete_branch(${category.id})}"></a>
+                                        <a th:replace="~{list_fragments :: edit_entity(|/categories/edit/${category.id}|)}"></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
 
-        <div class="small">
-            <ul class="list-group list-group-flush">
-                <li th:each="category : ${categoryList}" class="list-group-item p-4"
-                    th:classappend="${category.parent == null ? 'bg-body-tertiary' : ''}">
-                    <div class="d-flex align-items-start gap-4">
-                        <div class="d-flex flex-column gap-2 align-items-center">
-                            <div th:replace="~{list_fragments :: entity_image(${category.mainImagePath}, 150, 150)}"></div>
-                        </div>
+                    <div class="con-s-md">
+                        <ul class="list-group list-group-flush">
+                            <li th:each="category : ${categoryList}" class="list-group-item p-4"
+                                th:classappend="${category.parent == null ? 'bg-body-tertiary' : ''}">
+                                <div class="d-flex align-items-start gap-4">
+                                    <div class="d-flex flex-column gap-2 align-items-center">
+                                        <div th:replace="~{list_fragments :: entity_image(${category.mainImagePath}, 150, 150)}"></div>
+                                    </div>
 
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="fw-light">Category ID</div>
-                                <div th:text="${category.id}"></div>
-                            </div>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <div class="fw-light">Category ID</div>
+                                            <div th:text="${category.id}"></div>
+                                        </div>
 
-                            <div class="col-6">
-                                <div class="fw-light">Category name</div>
-                                <div th:text="${category.name}"></div>
-                            </div>
-                            <div class="col-6">
-                                <div class="fw-light">Category alias</div>
-                                <div th:text="${category.alias}"></div>
-                            </div>
-                        </div>
+                                        <div class="col-6">
+                                            <div class="fw-light">Category name</div>
+                                            <div th:text="${category.name}"></div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="fw-light">Category alias</div>
+                                            <div th:text="${category.alias}"></div>
+                                        </div>
+                                    </div>
 
-                        <div class="ms-auto d-flex flex-column align-items-center gap-4">
-                            <a th:replace="~{list_fragments :: status(${category.enabled}, |/categories/${category.id}/enabled/${!category.enabled}|)}"></a>
-                            <a th:replace="~{list_fragments :: delete_entity(|/categories/delete/${category.id}|)}"></a>
-                            <a th:replace="~{category/category_fragments :: delete_branch(${category.id})}"></a>
-                            <a th:replace="~{list_fragments :: edit_entity(|/categories/edit/${category.id}|)}"></a>
-                        </div>
+                                    <div class="ms-auto d-flex flex-column align-items-center gap-4">
+                                        <a th:replace="~{list_fragments :: status(${category.enabled}, |/categories/${category.id}/enabled/${!category.enabled}|)}"></a>
+                                        <a th:replace="~{list_fragments :: delete_entity(|/categories/delete/${category.id}|)}"></a>
+                                        <a th:replace="~{category/category_fragments :: delete_branch(${category.id})}"></a>
+                                        <a th:replace="~{list_fragments :: edit_entity(|/categories/edit/${category.id}|)}"></a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
-                </li>
-            </ul>
-        </div>
 
-        <div class="x-small">
-            <ul class="list-group list-group-flush">
-                <li th:each="category : ${categoryList}" class="list-group-item p-4"
-                    th:classappend="${category.parent == null ? 'bg-body-tertiary' : ''}">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="d-flex flex-column gap-2 align-items-center">
-                            <div th:replace="~{list_fragments :: entity_image(${category.mainImagePath}, 100, 100)}"></div>
-                            <div class="d-flex gap-2 align-items-center">
-                                <a th:replace="~{list_fragments :: status(${category.enabled}, |/categories/${category.id}/enabled/${!category.enabled}|)}"></a>
-                                <a th:replace="~{list_fragments :: delete_entity(|/categories/delete/${category.id}|)}"></a>
-                                <a th:replace="~{category/category_fragments :: delete_branch(${category.id})}"></a>
-                                <a th:replace="~{list_fragments :: edit_entity(|/categories/edit/${category.id}|)}"></a>
-                            </div>
-                        </div>
+                    <div class="con-xs">
+                        <ul class="list-group list-group-flush">
+                            <li th:each="category : ${categoryList}" class="list-group-item p-4"
+                                th:classappend="${category.parent == null ? 'bg-body-tertiary' : ''}">
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="d-flex flex-column gap-2 align-items-center">
+                                        <div th:replace="~{list_fragments :: entity_image(${category.mainImagePath}, 100, 100)}"></div>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <a th:replace="~{list_fragments :: status(${category.enabled}, |/categories/${category.id}/enabled/${!category.enabled}|)}"></a>
+                                            <a th:replace="~{list_fragments :: delete_entity(|/categories/delete/${category.id}|)}"></a>
+                                            <a th:replace="~{category/category_fragments :: delete_branch(${category.id})}"></a>
+                                            <a th:replace="~{list_fragments :: edit_entity(|/categories/edit/${category.id}|)}"></a>
+                                        </div>
+                                    </div>
 
-                        <div class="d-flex flex-column gap-1">
-                            <div class="fw-light">Category name</div>
-                            <div th:text="${category.name}"></div>
-                            <div class="fw-light">Category alias</div>
-                            <div th:text="${category.alias}"></div>
-                        </div>
+                                    <div class="d-flex flex-column gap-1">
+                                        <div class="fw-light">Category name</div>
+                                        <div th:text="${category.name}"></div>
+                                        <div class="fw-light">Category alias</div>
+                                        <div th:text="${category.alias}"></div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
-                </li>
-            </ul>
-        </div>
+
+                </div>
+
+                <nav th:replace="~{list_fragments :: large_pagination('/categories/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+                     class="mt-4"></nav>
+            </section>
+
+        </main>
 
     </div>
-
-    <nav th:replace="~{list_fragments :: large_pagination('/categories/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
-         class="mt-4"></nav>
-</main>
-
-<footer th:replace="~{navigations :: footer()}"></footer>
+</div>
 
 <div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
 <div th:replace="~{modal_fragments :: confirm_close_modal('statusModal', 'Confirm')}"></div>

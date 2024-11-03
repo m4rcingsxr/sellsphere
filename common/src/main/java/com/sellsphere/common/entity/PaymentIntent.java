@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,12 +31,8 @@ public class PaymentIntent extends IdentifiedEntity {
     @Column(name = "tax_amount", nullable = false)
     private Long taxAmount;
 
-    @Column(name = "exchange_rate", precision = 18, scale = 8)
-    private BigDecimal exchangeRate;
-
-    @ManyToOne
-    @JoinColumn(name = "base_currency_id", nullable = false)
-    private Currency baseCurrency;
+    @Column(name = "receipt_url")
+    private String receiptUrl;
 
     @ManyToOne
     @JoinColumn(name = "address_id", nullable = false)
@@ -53,7 +48,7 @@ public class PaymentIntent extends IdentifiedEntity {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH})
     @JoinColumn(name = "order_id")
     private Order order;
 
@@ -77,7 +72,7 @@ public class PaymentIntent extends IdentifiedEntity {
     @JoinColumn(name = "payment_method_id")
     private PaymentMethod paymentMethod;
 
-    @OneToOne(mappedBy = "paymentIntent")
+    @OneToOne(mappedBy = "paymentIntent", cascade = CascadeType.ALL)
     private Charge charge;
 
     @ManyToOne
@@ -85,30 +80,68 @@ public class PaymentIntent extends IdentifiedEntity {
     private Courier courier;
 
     @Transient
+    public String getDisplayStatus() {
+        if(hasRefunds()) {
+            if(charge.getRefunded()) {
+                return "refunded";
+            } else {
+                return "Partial Refund";
+            }
+        } else {
+            return status;
+        }
+    }
+
+    @Transient
     public BigDecimal getDisplayShippingAmount() {
-        return convertToDisplayAmount(shippingAmount, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+        return MoneyUtil.convertToDisplayPrice(shippingAmount, targetCurrency.getUnitAmount());
+    }
+
+    @Transient
+    public String getDisplayShippingString() {
+        return MoneyUtil.formatAmount(getDisplayShippingAmount(), targetCurrency.getCode());
     }
 
     @Transient
     public BigDecimal getDisplayAmount() {
-        return convertToDisplayAmount(amount, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+        return MoneyUtil.convertToDisplayPrice(amount, targetCurrency.getUnitAmount());
+    }
+
+    @Transient
+    public String getDisplayAmountString() {
+        return MoneyUtil.formatAmount(getDisplayAmount(), targetCurrency.getCode());
     }
 
     @Transient
     public BigDecimal getDisplayFee() {
         long finalFee = calculateTotalFee();
-        return convertToDisplayAmount(finalFee, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+        return MoneyUtil.convertToDisplayPrice(finalFee, targetCurrency.getUnitAmount());
+    }
+
+    @Transient
+    public String getDisplayFeeString() {
+        return MoneyUtil.formatAmount(getDisplayFee(), targetCurrency.getCode());
     }
 
     @Transient
     public BigDecimal getDisplayNet() {
         long finalNet = calculateTotalNet();
-        return convertToDisplayAmount(finalNet, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+        return MoneyUtil.convertToDisplayPrice(finalNet, targetCurrency.getUnitAmount());
+    }
+
+    @Transient
+    public String getDisplayNetString() {
+       return MoneyUtil.formatAmount(getDisplayAmount(), targetCurrency.getCode());
     }
 
     @Transient
     public BigDecimal getDisplayTax() {
-        return convertToDisplayAmount(taxAmount, targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+        return MoneyUtil.convertToDisplayPrice(taxAmount, targetCurrency.getUnitAmount());
+    }
+
+    @Transient
+    public String getDisplayTaxString() {
+        return MoneyUtil.formatAmount(getDisplayTax(), targetCurrency.getCode());
     }
 
     @Transient
@@ -117,29 +150,12 @@ public class PaymentIntent extends IdentifiedEntity {
     }
 
     @Transient
-    public String getDisplayRefunded() {
+    public String getDisplayRefundedString() {
         if (!hasRefunds()) {
-            return null;
+            return "0";
         }
-
         BigDecimal totalRefund = getTotalRefunded();
-        long settlementCurrencyTotalAmount = calculateSettlementCurrencyTotalAmount();
-
-        String settlementCurrency = charge.getBalanceTransaction().getCurrency().getCode();
-        String presentmentCurrency = targetCurrency.getCode();
-
-        if (settlementCurrency.equals(presentmentCurrency)) {
-            return formatAmount(totalRefund, settlementCurrency);
-        } else {
-            BigDecimal convertedAmount = convertToSettlementCurrency(settlementCurrencyTotalAmount, charge.getBalanceTransaction().getCurrency().getUnitAmount());
-            return formatAmount(totalRefund, presentmentCurrency) + " -> " + formatAmount(convertedAmount, settlementCurrency);
-        }
-    }
-
-
-    private BigDecimal convertToDisplayAmount(long amount, long unitAmount, RoundingMode roundingMode) {
-        return BigDecimal.valueOf(amount)
-                .divide(BigDecimal.valueOf(unitAmount), 2, roundingMode);
+        return MoneyUtil.formatAmount(totalRefund, targetCurrency.getCode());
     }
 
     private long calculateTotalFee() {
@@ -172,24 +188,9 @@ public class PaymentIntent extends IdentifiedEntity {
         return finalNet;
     }
 
-    private long calculateSettlementCurrencyTotalAmount() {
-        return charge.getRefunds().stream()
-                .mapToLong(refund -> refund.getBalanceTransaction().getAmount())
-                .sum();
-    }
-
-    private BigDecimal convertToSettlementCurrency(long amount, BigDecimal unitAmount) {
-        return BigDecimal.valueOf(amount)
-                .divide(unitAmount, 2, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(-1));
-    }
-
-    private String formatAmount(BigDecimal amount, String currency) {
-        return amount.toPlainString() + " " + currency.toUpperCase();
-    }
-
-    private BigDecimal getTotalRefunded() {
-        return convertToDisplayAmount(charge.getAmountRefunded(), targetCurrency.getUnitAmount().longValue(), RoundingMode.CEILING);
+    public BigDecimal getTotalRefunded() {
+        return MoneyUtil.convertToDisplayPrice(charge.getAmountRefunded(),
+                                               targetCurrency.getUnitAmount());
     }
 
 }

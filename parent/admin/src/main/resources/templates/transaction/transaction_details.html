@@ -3,33 +3,38 @@
         <header>
             <div class="d-flex justify-content-between">
                 <h3 th:text="${transaction.displayAmount + ' ' + transaction.targetCurrency.code.toUpperCase()}"></h3>
-                <a href="#" class="link-dark refund-request"><i class="fa-solid fa-xl fa-rotate-left"></i></a>
+                <a th:if="${!transaction.charge.refunded}" href="#" class="link-dark refund-request"><i class="fa-solid fa-xl fa-rotate-left"></i></a>
             </div>
         </header>
 
         <!-- summary -->
         <section class="mt-3">
-            <div class="d-flex gap-5">
-                <div>
+            <div class="row g-3">
+                <!-- Created -->
+                <div class="col-12 col-md-3">
                     <span class="d-block text-light-emphasis">Created</span>
-                    <span th:text="${transaction.created}"></span>
+                    <span th:text="${#dates.format(transaction.created, 'dd-MM-yyyy HH:mm:ss')}"></span>
                 </div>
-                <div>
+
+                <!-- Customer -->
+                <div class="col-12 col-md-3">
                     <span class="d-block text-light-emphasis">Customer</span>
                     <a th:href="@{'/customers/edit/' + ${transaction.customer.id}}"
                        th:text="${transaction.customer.fullName}"></a>
                 </div>
-                <div th:if="${transaction.paymentMethod != null}">
+
+                <!-- Payment Method (only if available) -->
+                <div class="col-12 col-md-3" th:if="${transaction.paymentMethod != null}">
                     <span class="d-block text-light-emphasis">Payment method</span>
                     <span th:text="${transaction.paymentMethod.type}"></span>
                 </div>
-                <div th:if="${transaction.order != null}">
+
+                <!-- Order (only if available) -->
+                <div class="col-12 col-md-3" th:if="${transaction.order != null}">
                     <span class="d-block text-light-emphasis">Order</span>
                     <a th:href="@{'/orders/edit/' + ${transaction.order.id}}"
                        th:text="${'#' + transaction.order.id}"
-                       class="link-primary"
-                    >
-                    </a>
+                       class="link-primary"></a>
                 </div>
             </div>
         </section>
@@ -39,30 +44,31 @@
                 th:if="${transaction.charge != null and transaction.charge.refunds != null and transaction.charge.refunds.size() > 0}"
                 class="mt-5">
             <h4>Refunds</h4>
-
             <hr/>
 
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Created</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="refund : ${transaction.charge.refunds}">
-                    <td th:text="${refund.created}"></td>
-                    <th th:text="${refund.displayAmount + ' ' + refund.currency.code.toUpperCase()}"></th>
-                    <td th:text="${refund.status}"></td>
-                    <td>
-                        <a href="#"
-                           class="link-dark link-underline-opacity-50-hover link-underline-opacity-0">Cancel</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Created</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="refund : ${transaction.charge.refunds}">
+                        <td th:text="${refund.created}"></td>
+                        <th th:text="${refund.displayAmountString}"></th>
+                        <td th:text="${refund.status}"></td>
+                        <td>
+                            <a href="#"
+                               class="link-dark link-underline-opacity-50-hover link-underline-opacity-0">Cancel</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <!-- Payment details -->
@@ -94,13 +100,13 @@
                     </thead>
                     <tbody>
                     <tr th:if="${tr.id != transaction.id}" th:each="tr : ${transaction.customer.transactions}">
-                        <td th:text="${tr.displayAmount}"></td>
+                        <td th:text="${tr.displayAmountString}"></td>
                         <th>
                             <span th:if="${tr.paymentMethod != null}"
-                                  th:text="${tr.paymentMethod.type + ' ' + tr.targetCurrency.code.toUpperCase()}"></span>
+                                  th:text="${tr.paymentMethod.type}"></span>
                         </th>
                         <td th:text="${tr.customer.fullName}"></td>
-                        <td th:text="${tr.created}"></td>
+                        <td th:text="${#dates.format(transaction.created, 'dd-MM-yyyy HH:mm:ss')}"></td>
                         <td th:text="${tr.status}"></td>
                     </tr>
                     </tbody>

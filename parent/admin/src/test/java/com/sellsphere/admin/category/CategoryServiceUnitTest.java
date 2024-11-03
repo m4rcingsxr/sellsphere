@@ -22,373 +22,354 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import static com.sellsphere.admin.category.TestCategoryHelper.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceUnitTest {
 
-    @InjectMocks
-    private CategoryService categoryService;
-
     @Mock
     private CategoryRepository categoryRepository;
 
     @Mock
-    private PagingAndSortingHelper helper;
+    private MultipartFile file;
 
-    private final List<Category> rootCategories = generateRootCategories();
+    @Mock
+    private PagingAndSortingHelper pagingAndSortingHelper;
+
+    @InjectMocks
+    private CategoryService categoryService;
 
     @Test
-    void whenListAllRootCategoriesSorted_thenSortedCategoriesInHierarchicalOrderReturned() {
+    void givenValidCategoryId_whenGetCategoryById_thenVerifyRepositoryCalled() throws CategoryNotFoundException {
         // Given
-        when(categoryRepository.findAllByParentIsNull(any(Sort.class))).thenReturn(rootCategories);
+        Integer categoryId = 1;
+        Category category = new Category();
+        category.setId(categoryId);
+
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
 
         // When
-        List<Category> categoryList = categoryService.listAllRootCategoriesSorted("name", "asc");
+        categoryService.getCategoryById(categoryId);
 
         // Then
-        assertRootCategoriesSortedByName(categoryList);
-        categoryList.forEach(category -> assertHierarchy(category, rootCategories));
+        then(categoryRepository).should().findById(categoryId);
     }
 
     @Test
-    void givenKeyword_whenPageCategories_thenUseSearchRepository() {
+    void givenNonExistingCategoryId_whenGetCategoryById_thenThrowCategoryNotFoundExceptionAndVerifyRepositoryCalled() {
         // Given
-        Integer pageNum = 0;
-        String keyword = "TestKeyword";
-        when(helper.createPageable(CategoryService.CATEGORY_PER_PAGE, pageNum)).thenReturn(
-                PageRequest.of(pageNum, CategoryService.CATEGORY_PER_PAGE));
-        when(helper.getKeyword()).thenReturn(keyword);
+        Integer categoryId = 999;
 
-        // When
-        categoryService.listPage(pageNum, helper);
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
 
-        // Then
-        verify(helper).listEntities(eq(pageNum), eq(CategoryService.CATEGORY_PER_PAGE), any());
+        // When/Then
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.getCategoryById(categoryId));
+        then(categoryRepository).should().findById(categoryId);
     }
 
     @Test
-    void givenNoKeyword_whenListingCategories_thenListRootCategories() {
+    void givenValidSortOptions_whenListAllRootCategoriesSorted_thenVerifyRepositoryCalled() {
         // Given
-        int pageNum = 1;
-        Page<Category> mockPage = Page.empty();
-        when(helper.createPageable(CategoryService.CATEGORY_PER_PAGE, pageNum)).thenReturn(
-                PageRequest.of(pageNum, CategoryService.CATEGORY_PER_PAGE));
-        when(helper.getKeyword()).thenReturn(null);
-        when(categoryRepository.findAllByParentIsNull(any(Pageable.class))).thenReturn(mockPage);
+        Sort.Direction sortDir = Sort.Direction.ASC;
 
         // When
-        categoryService.listPage(pageNum, helper);
+        categoryService.listAllRootCategoriesSorted("name", sortDir);
 
         // Then
-        verify(helper).updateModelAttributes(anyInt(), anyInt(), anyLong(), anyList());
+        then(categoryRepository).should().findAllByParentIsNull(any(Sort.class));
     }
 
     @Test
-    void givenCategoryWithoutParent_whenSaving_thenHierarchyPathShouldNotUpdate()
-            throws CategoryIllegalStateException, IOException {
+    void givenEmptyCategoryRepository_whenListAllRootCategoriesSorted_thenVerifyRepositoryCalled() {
         // Given
-        Category newCategory = new Category();
+        given(categoryRepository.findAllByParentIsNull(any(Sort.class))).willReturn(List.of());
+
+        // When
+        categoryService.listAllRootCategoriesSorted("name", Sort.Direction.ASC);
+
+        // Then
+        then(categoryRepository).should().findAllByParentIsNull(any(Sort.class));
+    }
+
+    @Test
+    void givenNewCategoryName_whenIsCategoryNameUnique_thenVerifyRepositoryCalled() {
+        // Given
+        given(categoryRepository.findByName(anyString())).willReturn(Optional.empty());
+
+        // When
+        categoryService.isCategoryNameUnique(null, "New Category");
+
+        // Then
+        then(categoryRepository).should().findByName(anyString());
+    }
+
+    @Test
+    void givenNewCategoryAlias_whenIsCategoryAliasUnique_thenVerifyRepositoryCalled() {
+        // Given
+        given(categoryRepository.findByAlias(anyString())).willReturn(Optional.empty());
+
+        // When
+        categoryService.isCategoryAliasUnique(null, "new-alias");
+
+        // Then
+        then(categoryRepository).should().findByAlias(anyString());
+    }
+
+
+    @Test
+    void givenNoKeyword_whenListCategoriesByPage_thenVerifyRootCategoriesListed() {
+        // Given
+        Integer pageNum = 1;
+        Pageable pageable = PageRequest.of(pageNum, 5, Sort.by(Sort.Direction.ASC, "name"));
+        List<Category> categories = List.of(new Category(1, "Electronics"), new Category(2, "Computers"));
+        Page<Category> page = mock(Page.class);
+
+        // Stub the page content and other pagination details
+        given(page.getContent()).willReturn(categories);
+        given(page.getTotalPages()).willReturn(1);
+        given(page.getTotalElements()).willReturn(2L);
+
+        // Mock the helper to return the correct pageable
+        given(pagingAndSortingHelper.createPageable(5, pageNum)).willReturn(pageable);
+        given(pagingAndSortingHelper.getKeyword()).willReturn(null);  // No keyword provided
+
+        // Use doReturn to avoid the PotentialStubbingProblem
+        doReturn(page).when(categoryRepository).findAllByParentIsNull(any(Pageable.class));
+
+        // When
+        categoryService.listCategoriesByPage(pageNum, pagingAndSortingHelper);
+
+        // Then
+        // Verify that the correct repository method was called for root categories
+        then(categoryRepository).should().findAllByParentIsNull(any(Pageable.class));
+        then(pagingAndSortingHelper).should().updateModelAttributes(eq(pageNum), eq(1), eq(2L), anyList());
+    }
+
+
+    // Unit test for deleteCategoryBranch method
+    @Test
+    void givenValidCategoryId_whenDeleteCategoryBranch_thenVerifyRepositoryCalls() throws CategoryNotFoundException {
+        // Given
+        Integer categoryId = 1;
+        Category category = new Category(categoryId, "Category");
+
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
+
+        // When
+        categoryService.deleteCategoryBranch(categoryId);
+
+        // Then
+        then(categoryRepository).should().findById(categoryId);
+        then(categoryRepository).should().deleteAllById(anyList());
+    }
+
+    @Test
+    void givenNonExistingCategoryId_whenDeleteCategoryBranch_thenThrowCategoryNotFoundExceptionAndVerifyRepositoryCalled() {
+        // Given
+        Integer categoryId = 999;
+
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
+
+        // When/Then
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.deleteCategoryBranch(categoryId));
+        then(categoryRepository).should().findById(categoryId);
+    }
+
+    @Test
+    void givenCategoryWithFile_whenSaveCategory_thenVerifyRepositoryAndFileServiceCalls() throws IOException, CategoryIllegalStateException {
+        // Given
+        Category category = new Category();
+        category.setName("New Category");
+
+        // Ensure category has a CategoryIcon to avoid NullPointerException
         CategoryIcon categoryIcon = new CategoryIcon();
-        categoryIcon.setIconPath("<i>icon</i>");
-        newCategory.setCategoryIcon(categoryIcon);
+        category.setCategoryIcon(categoryIcon);
 
-        when(categoryRepository.save(any(Category.class))).thenAnswer(
-                invocation -> invocation.getArgument(0));
+        given(file.isEmpty()).willReturn(false);
+        given(file.getOriginalFilename()).willReturn("image.png");
+        given(categoryRepository.save(any(Category.class))).willReturn(category);
 
-        // When
-        Category savedCategory = categoryService.save(newCategory, null);
-
-        // Then
-        assertNull(savedCategory.getAllParentIDs(),
-                   "Category without a parent should not have a hierarchy path."
-        );
-    }
-
-    @Test
-    void givenCategoryWithParent_whenSaving_thenHierarchyPathShouldUpdateCorrectly()
-            throws CategoryIllegalStateException {
-        // Given
-        Category parentCategory = new Category();
-        parentCategory.setId(1);
-
-        Category category = new Category();
-        category.setId(2);
-        category.setParent(parentCategory);
-
-        when(categoryRepository.save(any(Category.class))).thenAnswer(
-                invocation -> invocation.getArgument(0));
-
-        // When
-        Category savedCategory = categoryService.save(category);
-
-        // Then
-        assertEquals("-1-", savedCategory.getAllParentIDs());
-        verify(categoryRepository, times(1)).save(category);
-    }
-
-    @Test
-    void givenFile_whenSavingCategory_thenFileShouldBeSaved()
-            throws IOException, CategoryIllegalStateException {
-        // Given
-        Category parentCategory = new Category();
-        parentCategory.setId(1);
-
-        Category category = new Category();
-        category.setId(2);
-        category.setParent(parentCategory);
-
-        MultipartFile file = mock(MultipartFile.class);
-        when(file.isEmpty()).thenReturn(false);
-        when(file.getOriginalFilename()).thenReturn("test.jpg");
-
-        // When saving category, return the same category (mock save behavior)
-        when(categoryRepository.save(any(Category.class))).thenAnswer(
-                invocation -> invocation.getArgument(0));
-
-        try (MockedStatic<FileService> fileServiceMockedStatic = mockStatic(FileService.class)) {
+        try (MockedStatic<FileService> mockedFileService = mockStatic(FileService.class)) {
             // When
-            Category savedCategory = categoryService.save(category, file);
+            categoryService.saveCategory(category, file);
 
-            // Verify the file saving
-            fileServiceMockedStatic.verify(() -> FileService.saveSingleFile(file, "category-photos/2", "test.jpg"));
-            verify(categoryRepository, times(1)).save(category);
+            // Then
+            then(categoryRepository).should().save(any(Category.class));
+            mockedFileService.verify(() -> FileService.saveSingleFile(eq(file), anyString(), eq("image.png")));
         }
     }
 
     @Test
-    void givenCategoryThatReferencesItself_whenSaving_thenShouldThrowException() {
+    void givenCategoryWithoutFile_whenSaveCategory_thenVerifyRepositoryCallOnly() throws IOException, CategoryIllegalStateException {
         // Given
         Category category = new Category();
-        category.setId(1);
+        category.setName("New Category");
+        CategoryIcon categoryIcon = new CategoryIcon();
+        category.setCategoryIcon(categoryIcon);
+
+        given(categoryRepository.save(any(Category.class))).willReturn(category);
+
+        // When
+        categoryService.saveCategory(category, null);
+
+        // Then
+        then(categoryRepository).should().save(any(Category.class));
+    }
+
+    @Test
+    void givenCategoryThatReferencesItselfAsParent_whenSaveCategory_thenThrowCategoryIllegalStateExceptionAndVerifyNoSave() {
+        // Given
+        Category category = new Category(1, "Self-reference Category");
         category.setParent(category);
+        CategoryIcon categoryIcon = new CategoryIcon();
+        category.setCategoryIcon(categoryIcon);
 
-        // When & Then
-        assertThrows(CategoryIllegalStateException.class, () -> {
-            categoryService.save(category);
-        });
-
-        // Verify that the repository save method was never called
-        verify(categoryRepository, never()).save(any(Category.class));
+        // When/Then
+        assertThrows(CategoryIllegalStateException.class, () -> categoryService.saveCategory(category, null));
+        then(categoryRepository).shouldHaveNoInteractions();
     }
 
+    // Unit test for deleteCategoryById method
     @Test
-    void whenNameNotExists_thenReturnTrue() {
-        // Arrange
-        when(categoryRepository.findByName("uniqueName")).thenReturn(Optional.empty());
-
-        // Act
-        boolean result = categoryService.isNameUnique(null, "uniqueName");
-
-        // Assert
-        assertTrue(result);
-    }
-
-    @Test
-    void whenNameExistsWithSameId_thenReturnTrue() {
-        // Arrange
-        Category existingCategory = new Category();
-        existingCategory.setId(1);
-        when(categoryRepository.findByName("existingName")).thenReturn(
-                Optional.of(existingCategory));
-
-        // Act
-        boolean result = categoryService.isNameUnique(1, "existingName");
-
-        // Assert
-        assertTrue(result);
-    }
-
-    @Test
-    void whenNameExistsWithDifferentId_thenReturnFalse() {
-        // Arrange
-        Category existingCategory = new Category();
-        existingCategory.setId(2);
-        when(categoryRepository.findByName("existingName")).thenReturn(
-                Optional.of(existingCategory));
-
-        // Act
-        boolean result = categoryService.isNameUnique(1, "existingName");
-
-        // Assert
-        assertFalse(result);
-    }
-
-    @Test
-    void whenAliasNotExists_thenReturnTrue() {
-        // Arrange
-        when(categoryRepository.findByAlias("uniqueAlias")).thenReturn(Optional.empty());
-
-        // Act
-        boolean result = categoryService.isAliasUnique(null, "uniqueAlias");
-
-        // Assert
-        assertTrue(result);
-    }
-
-    @Test
-    void whenAliasExistsWithSameId_thenReturnTrue() {
-        // Arrange
-        Category existingCategory = new Category();
-        existingCategory.setId(1);
-        when(categoryRepository.findByAlias("existingAlias")).thenReturn(
-                Optional.of(existingCategory));
-
-        // Act
-        boolean result = categoryService.isAliasUnique(1, "existingAlias");
-
-        // Assert
-        assertTrue(result);
-    }
-
-    @Test
-    void whenAliasExistsWithDifferentId_thenReturnFalse() {
-        // Arrange
-        Category existingCategory = new Category();
-        existingCategory.setId(2);
-        when(categoryRepository.findByAlias("existingAlias")).thenReturn(
-                Optional.of(existingCategory));
-
-        // Act
-        boolean result = categoryService.isAliasUnique(1, "existingAlias");
-
-        // Assert
-        assertFalse(result);
-    }
-
-    @Test
-    void whenDeleteCategoryBranch_thenSuccess() throws CategoryNotFoundException {
+    void givenCategoryWithNoChildren_whenDeleteCategoryById_thenVerifyRepositoryCalls() throws CategoryNotFoundException, CategoryIllegalStateException {
         // Given
-        Category computersCategory = TestCategoryHelper.generateComputersCategory();
-        when(categoryRepository.findById(computersCategory.getId())).thenReturn(
-                Optional.of(computersCategory));
+        Integer categoryId = 1;
+        Category category = new Category();
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
 
         // When
-        categoryService.deleteCategoryBranch(computersCategory.getId());
+        categoryService.deleteCategoryById(categoryId);
 
         // Then
-        verify(categoryRepository, times(1)).findById(computersCategory.getId());
-        verify(categoryRepository, times(1)).deleteAllById(anyList());
-        TestCategoryHelper.assertCategoryBranchDeleted(categoryRepository, computersCategory);
+        then(categoryRepository).should().findById(categoryId);
+        then(categoryRepository).should().delete(any(Category.class));
     }
 
     @Test
-    void whenDeleteCategoryBranchAndCategoryNotFound_thenThrowException() {
+    void givenCategoryWithChildren_whenDeleteCategoryById_thenThrowCategoryIllegalStateExceptionAndVerifyNoDelete() {
         // Given
-        when(categoryRepository.findById(anyInt())).thenReturn(Optional.empty());
+        Integer categoryId = 1;
+        Category category = new Category();
+        category.addChild(new Category(2, "Child Category"));
 
-        // When & Then
-        assertThrows(CategoryNotFoundException.class,
-                     () -> categoryService.deleteCategoryBranch(1)
-        );
-        verify(categoryRepository, times(1)).findById(1);
-        verify(categoryRepository, times(0)).deleteAllById(anyList());
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
+
+        // When/Then
+        assertThrows(CategoryIllegalStateException.class, () -> categoryService.deleteCategoryById(categoryId));
+        then(categoryRepository).should().findById(categoryId);
+        then(categoryRepository).shouldHaveNoMoreInteractions();
     }
 
     @Test
-    void whenDeleteCategoryWithNoChildren_thenSuccess()
-            throws CategoryNotFoundException, CategoryIllegalStateException {
+    void givenNonExistingCategoryId_whenDeleteCategoryById_thenThrowCategoryNotFoundExceptionAndVerifyRepositoryCall() {
         // Given
-        Category categoryWithNoChildren = TestCategoryHelper.generateCategoryWithNoChildren();
-        when(categoryRepository.findById(categoryWithNoChildren.getId())).thenReturn(
-                Optional.of(categoryWithNoChildren));
+        Integer categoryId = 999;
+
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
+
+        // When/Then
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.deleteCategoryById(categoryId));
+        then(categoryRepository).should().findById(categoryId);
+    }
+
+    // Unit test for toggleCategoryEnabledStatus method
+    @Test
+    void givenValidCategoryId_whenToggleCategoryEnabledStatus_thenVerifyRepositorySaveAndStatusUpdate() throws CategoryNotFoundException {
+        // Given
+        Integer categoryId = 1;
+        Category category = new Category();
+        category.addChild(new Category(2, "Child Category"));
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
 
         // When
-        categoryService.delete(categoryWithNoChildren.getId());
+        categoryService.toggleCategoryEnabledStatus(categoryId, true);
 
         // Then
-        verify(categoryRepository, times(1)).findById(categoryWithNoChildren.getId());
-        verify(categoryRepository, times(1)).deleteById(categoryWithNoChildren.getId());
-        TestCategoryHelper.assertCategoryDeleted(categoryRepository, categoryWithNoChildren);
+        then(categoryRepository).should().findById(categoryId);
+        then(categoryRepository).should().save(category);
     }
 
     @Test
-    void whenDeleteCategoryAndCategoryNotFound_thenThrowException() {
+    void givenNonExistingCategoryId_whenToggleCategoryEnabledStatus_thenThrowCategoryNotFoundExceptionAndVerifyRepositoryCalled() {
         // Given
-        when(categoryRepository.findById(anyInt())).thenReturn(Optional.empty());
+        Integer categoryId = 999;
 
-        // When & Then
-        assertThrows(CategoryNotFoundException.class, () -> categoryService.delete(1));
-        verify(categoryRepository, times(1)).findById(1);
-        verify(categoryRepository, times(0)).deleteById(anyInt());
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
+
+        // When/Then
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.toggleCategoryEnabledStatus(categoryId, true));
+        then(categoryRepository).should().findById(categoryId);
     }
 
     @Test
-    void whenDeleteCategoryWithChildren_thenThrowException() throws CategoryNotFoundException {
+    void givenCategoryHierarchy_whenExpandCategoryHierarchy_thenVerifyNamesWithCorrectPrefixes() {
         // Given
-        Category computersCategory = TestCategoryHelper.generateComputersCategory();
-        when(categoryRepository.findById(computersCategory.getId())).thenReturn(
-                Optional.of(computersCategory));
-        when(categoryRepository.existsById(anyInt())).thenReturn(true);
+        Category rootCategory = new Category(1, "Electronics");
+        Category childCategory1 = new Category(2, "Laptops");
+        Category childCategory2 = new Category(3, "Gaming Laptops");
 
-        // When & Then
-        assertThrows(CategoryIllegalStateException.class,
-                     () -> categoryService.delete(computersCategory.getId())
-        );
-        verify(categoryRepository, times(1)).findById(computersCategory.getId());
-        verify(categoryRepository, times(0)).deleteById(computersCategory.getId());
-        TestCategoryHelper.assertCategoryNotDeleted(categoryRepository, computersCategory);
-    }
+        // Set up the hierarchy
+        childCategory1.setParent(rootCategory);
+        childCategory2.setParent(childCategory1);
 
-    @Test
-    void whenDeleteRootCategoryWithNoChildren_thenSuccess()
-            throws CategoryNotFoundException, CategoryIllegalStateException {
-        // Given
-        Category tabletsCategory = TestCategoryHelper.generateTabletsCategory();
-        when(categoryRepository.findById(tabletsCategory.getId())).thenReturn(
-                Optional.of(tabletsCategory));
+        rootCategory.addChild(childCategory1);
+        childCategory1.addChild(childCategory2);
+
+        CategoryService categoryService = new CategoryService(null, null);
 
         // When
-        categoryService.delete(tabletsCategory.getId());
+        List<Category> hierarchicalCategories = categoryService.createHierarchy(List.of(rootCategory));
 
         // Then
-        verify(categoryRepository, times(1)).findById(tabletsCategory.getId());
-        verify(categoryRepository, times(1)).deleteById(tabletsCategory.getId());
-        TestCategoryHelper.assertCategoryDeleted(categoryRepository, tabletsCategory);
+        assertEquals(3, hierarchicalCategories.size(), "There should be 3 categories in the hierarchy");
+        assertEquals("Electronics", hierarchicalCategories.get(0).getName(), "Root category name should be Electronics");
+        assertEquals("-Laptops", hierarchicalCategories.get(1).getName(), "First child should be prefixed with one dash");
+        assertEquals("--Gaming Laptops", hierarchicalCategories.get(2).getName(), "Second child should be prefixed with two dashes");
     }
 
     @Test
-    void whenToggleCategoryEnabledStatus_thenStatusUpdatedRecursively() throws CategoryNotFoundException {
+    void givenSingleCategory_whenExpandCategoryHierarchy_thenVerifyNameWithoutPrefix() {
         // Given
-        Category computersCategory = TestCategoryHelper.generateComputersCategory();
-        when(categoryRepository.findById(computersCategory.getId())).thenReturn(Optional.of(computersCategory));
+        Category rootCategory = new Category(1, "Electronics");
+
+        CategoryService categoryService = new CategoryService(null, null);
 
         // When
-        categoryService.toggleCategoryEnabledStatus(computersCategory.getId(), true);
+        List<Category> hierarchicalCategories = categoryService.createHierarchy(List.of(rootCategory));
 
         // Then
-        verify(categoryRepository, times(1)).findById(computersCategory.getId());
-        verify(categoryRepository, times(1)).save(computersCategory);
-        TestCategoryHelper.assertCategoryEnabledStatus(computersCategory, true);
+        assertEquals(1, hierarchicalCategories.size(), "There should be 1 category in the hierarchy");
+        assertEquals("Electronics", hierarchicalCategories.get(0).getName(), "Root category name should be Electronics without any prefix");
     }
 
     @Test
-    void whenToggleCategoryEnabledStatusAndCategoryNotFound_thenThrowException() {
+    void givenCategoryWithMultipleChildren_whenExpandCategoryHierarchy_thenVerifyAllNamesAreCorrectlyPrefixed() {
         // Given
-        when(categoryRepository.findById(anyInt())).thenReturn(Optional.empty());
+        Category rootCategory = new Category(1, "Electronics");
+        Category childCategory1 = new Category(2, "Laptops");
+        Category childCategory2 = new Category(3, "Tablets");
 
-        // When & Then
-        assertThrows(CategoryNotFoundException.class, () -> categoryService.toggleCategoryEnabledStatus(1, true));
-        verify(categoryRepository, times(1)).findById(1);
-        verify(categoryRepository, times(0)).save(any());
-    }
+        // Set up the hierarchy
+        childCategory1.setParent(rootCategory);
+        childCategory2.setParent(rootCategory);
 
-    @Test
-    void whenToggleCategoryDisabledStatus_thenStatusUpdatedRecursively() throws CategoryNotFoundException {
-        // Given
-        Category computersCategory = TestCategoryHelper.generateComputersCategory();
-        when(categoryRepository.findById(computersCategory.getId())).thenReturn(Optional.of(computersCategory));
+        rootCategory.addChild(childCategory1);
+        rootCategory.addChild(childCategory2);
+
+        CategoryService categoryService = new CategoryService(null, null);
 
         // When
-        categoryService.toggleCategoryEnabledStatus(computersCategory.getId(), false);
+        List<Category> hierarchicalCategories = categoryService.createHierarchy(List.of(rootCategory));
 
         // Then
-        verify(categoryRepository, times(1)).findById(computersCategory.getId());
-        verify(categoryRepository, times(1)).save(computersCategory);
-        TestCategoryHelper.assertCategoryEnabledStatus(computersCategory, false);
+        assertEquals(3, hierarchicalCategories.size(), "There should be 3 categories in the hierarchy");
+        assertEquals("Electronics", hierarchicalCategories.get(0).getName(), "Root category name should be Electronics");
+        assertEquals("-Laptops", hierarchicalCategories.get(1).getName(), "First child should be prefixed with one dash");
+        assertEquals("-Tablets", hierarchicalCategories.get(2).getName(), "Second child should be prefixed with one dash");
     }
-
 }

@@ -97,8 +97,8 @@ public class ReviewService {
 
         if(sortField != null) {
             switch (sortField) {
-                case "mostPopular" -> sort = Sort.by("votes").ascending();
-                case "leastPopular" -> sort = Sort.by("votes").descending();
+                case "leastPopular" -> sort = Sort.by("votes").ascending();
+                case "mostPopular" -> sort = Sort.by("votes").descending();
                 default -> sort = Sort.by("reviewTime");
             }
         } else {

@@ -1,14 +1,14 @@
 <div th:fragment="images()">
     <div id="imageContainer" class="row g-5 p-4">
 
-        <div class="col-sm-4">
+        <div class="col-sm-4 drop-area">
             <input type="hidden" th:field="*{mainImage}"/>
             <input name="newImage" type="file" class="form-control mb-2"/>
             <span th:replace="form_fragments :: field_error('mainImage')"></span>
-            <div th:replace="~{ ::img_card('Main image', ${product.mainImagePath}, 'previewImage', true)}"></div>
+            <div th:replace="~{ ::img_card('Main image', ${product.mainImagePath}, 'previewImage', false)}"></div>
         </div>
 
-        <div th:each="image, imageStat : *{images}" class="col-sm-4 position-relative d-flex">
+        <div th:each="image, imageStat : *{images}" class="col-sm-4 position-relative d-flex drop-area">
             <input type="hidden" th:field="*{images[__${imageStat.index}__].id}"/>
             <input type="hidden" th:field="*{images[__${imageStat.index}__].name}"/>
             <input type="hidden" th:field="*{images[__${imageStat.index}__].product}"/>

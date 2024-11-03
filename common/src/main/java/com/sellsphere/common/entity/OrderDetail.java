@@ -41,9 +41,11 @@ public class OrderDetail extends IdentifiedEntity {
                        BigDecimal productCost,
                        BigDecimal productPrice,
                        BigDecimal subtotal,
-                       DetailContext detailContext
+                       DetailContext detailContext,
+                       Order order
     ) {
         this.product = new Product();
+        this.order = order;
 
         switch(detailContext) {
             case PRODUCT -> this.product.setName(name);

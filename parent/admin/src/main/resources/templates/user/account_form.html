@@ -4,44 +4,56 @@
 <body>
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="content">
-    <div class="container mt-4">
-        <h1 class="text-center">Edit Account</h1>
+<div class="container-fluid">
+    <div class="row">
 
-        <div th:replace="~{common :: alerts()}"></div>
+        <div th:replace="navigations :: sidebar('Account')"></div>
 
-        <form id="mainForm" th:action="@{/account/update}" method="POST" th:object="${user}"
-              enctype="multipart/form-data">
-
-            <div class="mx-auto mt-5">
-                <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
-                    <input th:replace="~{form_fragments :: hidden_input('id')}"/>
-                    <input th:replace="~{form_fragments :: hidden_input('enabled')}"/>
-
-                    <th:block th:replace="~{form_fragments :: text_input('Email address', 'email', false)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: text_input('First name', 'firstName', false)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: text_input('Last name', 'lastName', false)}"></th:block>
-
-                    <th:block th:replace="~{form_fragments :: password_input(${user.id})}"></th:block>
-                    <th:block th:replace="~{form_fragments :: confirm_password_input(${user.id})}"></th:block>
-
-                    <label class="col-sm-4 col-form-label">Roles</label>
-                    <div class="col-sm-8">
-                        <th:block th:each="role : ${roleList}">
-                            <div th:replace="~{form_fragments :: checkbox_list_input(${role.simpleName}, 'roles', ${role.id}, ${user.roles.contains(role)}, true)}"></div>
-                        </th:block>
-                    </div>
-
-                    <th:block th:replace="~{form_fragments :: image_input(${user.mainImagePath}, 'mainImage', 150, 150)}"></th:block>
-                </div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Edit Account</h1>
             </div>
 
-            <div th:replace="~{form_fragments :: form_buttons(${user})}"></div>
-        </form>
-    </div>
-</main>
+            <section class="content mb-5">
 
-<footer th:replace="~{navigations :: footer()}"></footer>
+                <div th:replace="~{common :: alerts()}"></div>
+
+                <div class="container-md mt-7">
+                    <form id="mainForm" th:action="@{/account/update}" method="POST" th:object="${user}"
+                          enctype="multipart/form-data">
+
+                        <div class="mx-auto mt-5">
+                            <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                                <input th:replace="~{form_fragments :: hidden_input('id')}"/>
+                                <input th:replace="~{form_fragments :: hidden_input('enabled')}"/>
+
+                                <th:block th:replace="~{form_fragments :: text_input('Email address', 'email', false)}"></th:block>
+                                <th:block th:replace="~{form_fragments :: text_input('First name', 'firstName', false)}"></th:block>
+                                <th:block th:replace="~{form_fragments :: text_input('Last name', 'lastName', false)}"></th:block>
+
+                                <th:block th:replace="~{form_fragments :: password_input(${user.id})}"></th:block>
+                                <th:block th:replace="~{form_fragments :: confirm_password_input(${user.id})}"></th:block>
+
+                                <label class="col-sm-4 col-form-label">Roles</label>
+                                <div class="col-sm-8">
+                                    <th:block th:each="role : ${roleList}">
+                                        <div th:replace="~{form_fragments :: checkbox_list_input(${role.simpleName}, 'roles', ${role.id}, ${user.roles.contains(role)}, true)}"></div>
+                                    </th:block>
+                                </div>
+
+                                <th:block th:replace="~{form_fragments :: image_input(${user.mainImagePath}, 'mainImage', 150, 150)}"></th:block>
+                            </div>
+                        </div>
+
+                        <div th:replace="~{form_fragments :: form_buttons(${user})}"></div>
+                    </form>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+</div>
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 <script type="text/javascript">
@@ -131,6 +143,5 @@
 
     const dynamicRules = [];
 </script>
-
 </body>
 </html>

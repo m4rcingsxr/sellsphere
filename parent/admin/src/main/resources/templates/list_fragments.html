@@ -75,7 +75,7 @@
 <!-- ENTITY IMAGE -->
 <div th:fragment="entity_image(src, width, height)" class="entity-image-container"
      th:style="${'width:' + width + 'px; height:' + height + 'px'}">
-    <img th:data-src="${src}" alt="Entity image" class="entity-image lazy">
+    <img th:data-src="@{${src}}" alt="Entity image" class="entity-image lazy">
     <div class="spinner"></div>
 </div>
 

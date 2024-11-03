@@ -1,64 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head th:replace="~{list_fragments :: head('Manage Brands')}"></head>
+<header th:replace="navigations :: header()"></header>
 <body>
+<div class="container-fluid">
+    <div class="row">
 
-<header th:replace="~{navigations :: header()}"></header>
+        <div th:replace="navigations :: sidebar('Brands')"></div>
 
-<main class="mt-4 content">
-    <h1 class="text-center">Manage Brands</h1>
 
-    <div class="container-md mt-5">
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Brands</h1>
+                <div th:replace="navigations :: export_nav('brands', true)"></div>
+            </div>
 
-        <!-- Alerts -->
-        <div th:replace="~{common :: alerts()}"></div>
+            <section class="content mb-5">
+                <div class="container-md mt-7">
 
-        <!-- Export       -->
-        <ul th:replace="~{navigations :: export_nav('brands', true)}"></ul>
+                    <!-- Alerts -->
+                    <div th:replace="~{common :: alerts()}"></div>
 
-        <!-- Search Bar -->
-        <form th:replace="~{list_fragments :: search_bar('/brands/page/0', 'Search for the brand', 'name', ${keyword}, ${totalItems}, null)}"></form>
+                    <!-- Search Bar -->
+                    <form th:replace="~{list_fragments :: search_bar('/brands/page/0', 'Search for the brand', 'name', ${keyword}, ${totalItems}, null)}"></form>
 
-        <table class="table table-hover mt-4">
-            <thead class="table-dark">
-            <tr>
-                <th th:replace="~{list_fragments :: column_link('/brands/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
-                <th>Logo</th>
-                <th th:replace="~{list_fragments :: column_link('/brands/page', ${currentPage}, 'name', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Category Name')}"></th>
-                <th>Categories</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="brand : ${brandList}">
-                <td th:text="${brand.id}"></td>
-                <td>
-                    <div th:replace="~{list_fragments :: entity_image(${brand.logoImagePath}, 150, 150)}"></div>
-                </td>
-                <td th:text="${brand.name}"></td>
-                <td>
-                    <div class="d-flex flex-wrap gap-2">
-                        <span th:each="category : ${brand.categories}" th:text="${category.name}"
-                              class="badge bg-dark"></span>
+                    <!-- User Table -->
+                    <div class="con-sm-md-lg-xl-xxl">
+                        <table class="table table-hover mt-4">
+                            <thead class="table-dark">
+                            <tr>
+                                <th th:replace="~{list_fragments :: column_link('/brands/page', ${currentPage}, 'id', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'ID')}"></th>
+                                <th>Logo</th>
+                                <th th:replace="~{list_fragments :: column_link('/brands/page', ${currentPage}, 'name', ${sortField}, ${reversedSortDir},${sortDir}, ${keyword}, 'Category Name')}"></th>
+                                <th>Categories</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="brand : ${brandList}">
+                                <td th:text="${brand.id}"></td>
+                                <td>
+                                    <div th:replace="~{list_fragments :: entity_image(${brand.logoImagePath}, 150, 150)}"></div>
+                                </td>
+                                <td th:text="${brand.name}"></td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-2">
+                                    <span th:each="category : ${brand.categories}" th:text="${category.name}"
+                                          class="badge bg-dark"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-5 p-3 align-items-end">
+                                        <a th:replace="~{list_fragments :: delete_entity(|/brands/delete/${brand.id}|)}"></a>
+                                        <a th:replace="~{list_fragments :: edit_entity(|/brands/edit/${brand.id}|)}"></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
-                </td>
-                <td>
-                    <div class="d-flex flex-column gap-5 p-3 align-items-end">
-                        <a th:replace="~{list_fragments :: delete_entity(|/brands/delete/${brand.id}|)}"></a>
-                        <a th:replace="~{list_fragments :: edit_entity(|/brands/edit/${brand.id}|)}"></a>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                </div>
+
+                <div class="con-xs-s">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="brand : ${brandList}" class="list-group-item p-4">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="d-flex flex-column gap-2 align-items-center">
+                                    <div th:replace="~{list_fragments :: entity_image(${brand.logoImagePath}, 100, 100)}"></div>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <a th:replace="~{list_fragments :: delete_entity(|/brands/delete/${brand.id}|)}"></a>
+                                        <a th:replace="~{list_fragments :: edit_entity(|/brands/edit/${brand.id}|)}"></a>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="fw-light">Brand name</div>
+                                    <div th:text="${brand.name}"></div>
+
+                                    <div class="fw-light">Brand categories</div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span th:each="category : ${brand.categories}" th:text="${category.name}"
+                                              class="badge bg-dark"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <nav th:replace="~{list_fragments :: large_pagination('/brands/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
+                     class="mt-4"></nav>
+            </section>
+        </main>
 
     </div>
-
-    <nav th:replace="~{list_fragments :: large_pagination('/brands/page', ${currentPage}, ${totalPages}, ${sortField}, ${sortDir}, ${keyword}, null)}"
-         class="mt-4"></nav>
-</main>
-
-<footer th:replace="~{navigations :: footer()}"></footer>
+</div>
 
 <div th:replace="~{modal_fragments :: confirm_close_modal('deleteModal', 'Delete')}"></div>
 </body>

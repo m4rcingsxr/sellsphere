@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.math.BigDecimal;
-
 
 @Getter
 @Setter
@@ -17,10 +15,6 @@ public class PaymentRequestDTO {
 
     @NotNull(message = "Address cannot be null")
     private AddressDTO address;
-
-    @NotNull(message = "Currency code cannot be null")
-    @Size(min = 3, max = 3, message = "Currency code must be 3 characters")
-    private String currencyCode;
 
     @NotNull(message = "Courier name cannot be null")
     @Size(min = 1, max = 100, message = "Courier name must be between 1 and 100 characters")
@@ -35,9 +29,6 @@ public class PaymentRequestDTO {
     @NotNull(message = "Min delivery time cannot be null")
     @Min(value = 0, message = "Min delivery time must be a positive number")
     private Integer minDeliveryTime;
-
-    // nullable - same currency as base
-    private BigDecimal exchangeRate;
 
     @NotNull(message = "Amount total cannot be null")
     @Min(value = 0, message = "Amount total must be a positive number")

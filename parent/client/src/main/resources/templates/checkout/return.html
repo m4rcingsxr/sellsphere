@@ -9,10 +9,50 @@
 <body>
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="content mb-5">
+<main class=" mb-5">
     <div class="container mt-4">
-        <section id="payment-message">
+        <section id="success-view" class="d-none">
+            <div class="d-flex flex-column align-items-center bg-body-tertiary rounded-2 p-4 gap-4">
+                <i class="bi bi-cart-check" style="font-size: 100px;"></i>
 
+                <div class="text-center">
+                    <h1>Thanks for your order!</h1>
+                    <p class="text-light-emphasis">
+                        You can review your order information on your email or by clicking below.
+                    </p>
+                </div>
+
+                <a class="btn btn-primary" th:href="@{/orders}">Order status</a>
+            </div>
+        </section>
+        <section id="processing-view" class="d-none">
+            <div class="d-flex flex-column align-items-center bg-body-tertiary rounded-2 p-4 gap-4">
+                <i class="bi bi-cart-check" style="font-size: 100px;"></i>
+
+                <div class="text-center">
+                    <h1>Thanks for your order!</h1>
+                    <p class="text-light-emphasis">
+                        The payment is being processed. Check order status on your email or by clicking below.
+                    </p>
+                </div>
+
+                <a class="btn btn-primary" href="#">Order status</a>
+            </div>
+        </section>
+        <section id="require-payment-view" class="d-none"></section>
+        <section id="failure-view" class="d-none">
+            <div class="d-flex flex-column align-items-center bg-body-tertiary rounded-2 p-4 gap-4">
+                <i class="bi bi-cart-x" style="font-size: 100px;"></i>
+
+                <div class="text-center">
+                    <h1>Payment Failed</h1>
+                    <p class="text-light-emphasis">
+                        Unfortunately, your payment could not be processed. Please check your payment details and try again, or contact customer support for further assistance.
+                    </p>
+                </div>
+
+                <a class="btn btn-secondary" href="#">Contact Support</a>
+            </div>
         </section>
     </div>
 </main>

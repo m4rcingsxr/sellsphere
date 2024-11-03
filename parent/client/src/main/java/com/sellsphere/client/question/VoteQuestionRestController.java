@@ -20,7 +20,7 @@ public class VoteQuestionRestController {
     private final QuestionVoteService questionVoteService;
 
     @PostMapping("/vote_question/{id}/{voteType}")
-    public VoteResultDTO voteReview(@PathVariable("id") Integer reviewId,
+    public VoteResultDTO voteQuestion(@PathVariable("id") Integer reviewId,
                                     @PathVariable("voteType") String voteType,
                                     Principal principal) throws CustomerNotFoundException {
         Customer customer = getAuthenticatedCustomer(principal);

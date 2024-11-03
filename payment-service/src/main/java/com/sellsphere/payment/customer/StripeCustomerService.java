@@ -7,15 +7,20 @@ import com.stripe.model.CustomerCollection;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerListParams;
 import com.stripe.param.CustomerUpdateParams;
+import jakarta.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service for handling Stripe customer operations.
- * This class provides methods to create and update Stripe customers.
  */
+@Slf4j
 public class StripeCustomerService {
 
-    static {
-        StripeConfig.init();
+    private final StripeConfig stripeConfig;
+
+    @Inject
+    public StripeCustomerService(StripeConfig stripeConfig) {
+        this.stripeConfig = stripeConfig;
     }
 
     /**
@@ -26,33 +31,37 @@ public class StripeCustomerService {
      * @throws StripeException if there is an error with Stripe operations.
      */
     public Customer createCustomer(Customer customer) throws StripeException {
+        try {
+            // Find customer by email
+            CustomerCollection customerCollection = Customer.list(
+                    CustomerListParams.builder()
+                            .setEmail(customer.getEmail())
+                            .build()
+            );
 
-        // find customer by email
-        CustomerCollection customerCollection = Customer.list(
-                CustomerListParams.builder()
+            // If none exist then create new one
+            if (customerCollection.getData().isEmpty()) {
+                var params = CustomerCreateParams.builder()
                         .setEmail(customer.getEmail())
-                        .build()
-        );
+                        .setName(customer.getName())
+                        .build();
 
-        // if none exist then create new one
-        if(customerCollection.getData().isEmpty()) {
-            var params = CustomerCreateParams.builder()
-                    .setEmail(customer.getEmail())
-                    .setName(customer.getName())
-                    .build();
+                log.info("Creating new customer with email: {}", customer.getEmail());
+                return Customer.create(params);
+            } else {
+                // Update existing customer
+                Customer retrievedCustomer = customerCollection.getData().get(0);
+                var params = CustomerUpdateParams.builder()
+                        .setEmail(customer.getEmail())
+                        .setName(customer.getName())
+                        .build();
 
-            return Customer.create(params);
-        } else {
-
-            // update existing customer
-            Customer retrievedCustomer = customerCollection.getData().get(0);
-            var params = CustomerUpdateParams.builder()
-                    .setEmail(customer.getEmail())
-                    .setName(customer.getName())
-                    .build();
-
-            return retrievedCustomer.update(params);
+                log.info("Updating existing customer with ID: {}", retrievedCustomer.getId());
+                return retrievedCustomer.update(params);
+            }
+        } catch (StripeException e) {
+            log.error("Error creating/updating Stripe customer", e);
+            throw e;
         }
     }
-
 }

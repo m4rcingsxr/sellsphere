@@ -1,7 +1,5 @@
 package com.sellsphere.client.review;
 
-// todo: for question and review write for customer table that will list their questions and reviews
-
 import com.sellsphere.client.category.CategoryService;
 import com.sellsphere.client.customer.CustomerService;
 import com.sellsphere.client.order.OrderService;
@@ -65,9 +63,10 @@ public class ReviewController {
     }
 
     @GetMapping("/reviews/detail/{id}")
-    public String detailReview(@PathVariable Integer id,  Model model)
-            throws ReviewNotFoundException {
+    public String detailReview(@PathVariable Integer id,  Model model, Principal principal)
+            throws ReviewNotFoundException, CustomerNotFoundException {
         Review review = reviewService.getReview(id);
+        reviewVoteService.markReviewsVotedForProductByCustomer(List.of(review), review.getProduct(), getAuthenticatedCustomer(principal));
         model.addAttribute("review", review);
 
         return "review/review_detail_sidebar";
@@ -83,6 +82,7 @@ public class ReviewController {
         Customer customer = getAuthenticatedCustomer(principal);
 
         Page<Review> reviewPage = reviewService.pageReviews(product, pageNum, sortField);
+
         Map<Integer, Float> ratingPercentages = reviewService.calculateRatingPercentages(product);
         List<Category> listCategoryParents = categoryService.getCategoryParents(product.getCategory());
 

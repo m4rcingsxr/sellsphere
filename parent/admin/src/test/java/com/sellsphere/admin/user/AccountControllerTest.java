@@ -1,22 +1,26 @@
 package com.sellsphere.admin.user;
 
+import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -38,61 +42,68 @@ class AccountControllerTest {
     void setup() {
         mockUser = new User();
         mockUser.setEmail("test@example.com");
+        mockUser.setFirstName("John");
+        mockUser.setLastName("Doe");
+        mockUser.setRoles(Set.of(new Role(1, "Admin")));
     }
 
     @Test
     @WithMockUser(username = "test@example.com")
     void givenValidUser_whenShowAccountForm_thenReturnAccountFormView() throws Exception {
-        // given
-        when(userService.get(anyString())).thenReturn(mockUser);
-        when(userService.listAllRoles()).thenReturn(List.of());
+        // Given
+        given(userService.get(anyString())).willReturn(mockUser);
+        given(userService.listAllRoles()).willReturn(List.of());
 
-        // when
+        // When
         mockMvc.perform(get("/account").param("email", "test@example.com"))
-                // then
+                // Then
                 .andExpect(status().isOk())
                 .andExpect(view().name("user/account_form"))
                 .andExpect(model().attributeExists("user"))
                 .andExpect(model().attributeExists("roleList"));
 
-        verify(userService, times(1)).get("test@example.com");
-        verify(userService, times(1)).listAllRoles();
+        then(userService).should(times(1)).get("test@example.com");
+        then(userService).should(times(1)).listAllRoles();
     }
 
     @Test
     @WithMockUser(username = "test@example.com")
     void givenValidUser_whenUpdateUser_thenRedirectToAccountForm() throws Exception {
-        // given
-        MultipartFile mockFile = Mockito.mock(MultipartFile.class);
-        when(userService.save(any(User.class), any(MultipartFile.class))).thenReturn(mockUser);
+        // Given
+        MockMultipartFile mockFile = new MockMultipartFile("newImage", "test.png",
+                                                           "image/png", "some-image-content".getBytes());
 
-        // when
+        mockUser.setFirstName("John");
+        mockUser.setLastName("Doe");
+        mockUser.setPassword("PlainText123");
+        mockUser.setMainImage("test.png");
+        mockUser.setRoles(Set.of(new Role(1, "Admin")));
+
+        given(userService.save(any(User.class), any(MultipartFile.class))).willReturn(mockUser);
+
+        // When
         mockMvc.perform(multipart("/account/update")
-                                .file("newImage", mockFile.getBytes())
+                                .file(mockFile)
                                 .param("email", "test@example.com")
                                 .flashAttr("user", mockUser)
                                 .with(csrf()))
-                // then
+                // Then
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/account?email=test@example.com"))
                 .andExpect(flash().attributeExists("successMessage"));
 
-        verify(userService, times(1)).save(any(User.class), any(MultipartFile.class));
+        // Verify
+        then(userService).should(times(1)).save(any(User.class), any(MultipartFile.class));
     }
 
     @Test
     @WithMockUser(username = "wronguser@example.com")
     void givenWrongEmail_whenShowAccountForm_thenReturn403() throws Exception {
-        // given
-        when(userService.get(anyString())).thenReturn(mockUser);
-        when(userService.listAllRoles()).thenReturn(List.of());
-
-        // when
+        // When
         mockMvc.perform(get("/account").param("email", "test@example.com"))
-                // then
+                // Then
                 .andExpect(status().isForbidden());
 
-        verify(userService, times(0)).get(anyString());
-        verify(userService, times(0)).listAllRoles();
+        then(userService).shouldHaveNoInteractions();
     }
 }

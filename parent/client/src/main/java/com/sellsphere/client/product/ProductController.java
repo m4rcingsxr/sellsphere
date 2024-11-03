@@ -59,7 +59,7 @@ public class ProductController {
 
     @GetMapping("/p/search")
     public String viewProductsByKeyword(
-            @RequestParam(value = "keyword") String keyword,
+            @RequestParam(value = "keyword", required = false) String keyword,
             Model model
     ) {
         model.addAttribute("keyword", keyword);

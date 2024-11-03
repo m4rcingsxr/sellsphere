@@ -27,4 +27,6 @@ public interface ProductRepository extends SearchRepository<Product, Integer> {
     List<Product> findAllByBrandId(Integer brandId);
 
     List<Product> findAllByCategoryId(Integer id);
+
+    List<Product> findAllByNameIn(List<String> names);
 }

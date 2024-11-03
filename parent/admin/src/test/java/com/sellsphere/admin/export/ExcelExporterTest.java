@@ -1,56 +1,111 @@
 package com.sellsphere.admin.export;
 
-import com.sellsphere.admin.category.TestCategoryHelper;
-import com.sellsphere.common.entity.Category;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sellsphere.common.entity.Brand;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ExcelExporterTest {
 
-    private ExcelExporter<Category> excelExporter;
-    private HttpServletResponse response;
+    private ExcelExporter<Brand> excelExporter;
+    private String[] headers;
+    private Function<Brand, String[]> brandExtractor;
 
     @BeforeEach
-    public void setUp() {
-        String[] headers = {"ID", "Name", "Alias", "Enabled"};
-        excelExporter = new ExcelExporter<>(headers, this::extractCategoryData);
-        response = mock(HttpServletResponse.class);
+    void setUp() {
+        // Define the headers for the Excel sheet
+        headers = new String[]{"ID", "Name", "Logo"};
+
+        // Define the extractor function that maps a Brand entity to a String[] (for each row)
+        brandExtractor = brand -> new String[]{
+                brand.getId().toString(),
+                brand.getName(),
+                brand.getLogo()
+        };
+
+        // Initialize the ExcelExporter with headers and the extractor function
+        excelExporter = new ExcelExporter<>(headers, brandExtractor);
     }
 
     @Test
-    void testExport() throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        when(response.getOutputStream()).thenReturn(new MockServletOutputStream(outputStream));
+    void givenBrandList_whenExportToExcel_thenCorrectExcelIsWritten() throws IOException {
+        // Given
+        Supplier<List<Brand>> brandSupplier = () -> List.of(
+                createBrand(1, "Brand1", "logo1.png"),
+                createBrand(2, "Brand2", "logo2.png")
+        );
+        MockHttpServletResponse response = new MockHttpServletResponse();
 
-        List<Category> categories = TestCategoryHelper.generateRootCategories();
-        excelExporter.export(TestCategoryHelper::generateRootCategories, response);
+        // When
+        excelExporter.export(brandSupplier, response);
 
-        // Verify the content of the generated Excel file
-        Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(outputStream.toByteArray()));
+        // Then
+        assertEquals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", response.getContentType());
+        assertEquals("attachment; filename=\"export.xlsx\"", response.getHeader("Content-Disposition"));
 
-        // Verify content using helper method
-        ExportTestHelper.assertExcelContent(workbook, categories);
+        // Parse the Excel content and verify
+        try (Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(response.getContentAsByteArray()))) {
+            assertEquals(1, workbook.getNumberOfSheets());
+            var sheet = workbook.getSheetAt(0);
 
-        workbook.close();
+            // Verify header row
+            assertEquals("ID", sheet.getRow(0).getCell(0).getStringCellValue());
+            assertEquals("Name", sheet.getRow(0).getCell(1).getStringCellValue());
+            assertEquals("Logo", sheet.getRow(0).getCell(2).getStringCellValue());
+
+            // Verify data rows
+            assertEquals("1", sheet.getRow(1).getCell(0).getStringCellValue());
+            assertEquals("Brand1", sheet.getRow(1).getCell(1).getStringCellValue());
+            assertEquals("logo1.png", sheet.getRow(1).getCell(2).getStringCellValue());
+
+            assertEquals("2", sheet.getRow(2).getCell(0).getStringCellValue());
+            assertEquals("Brand2", sheet.getRow(2).getCell(1).getStringCellValue());
+            assertEquals("logo2.png", sheet.getRow(2).getCell(2).getStringCellValue());
+        }
     }
 
-    private String[] extractCategoryData(Category category) {
-        return new String[] {
-                category.getId().toString(),
-                category.getName(),
-                category.getAlias(),
-                String.valueOf(category.isEnabled())
-        };
+    @Test
+    void givenEmptyBrandList_whenExportToExcel_thenOnlyHeadersAreWritten() throws IOException {
+        // Given
+        Supplier<List<Brand>> brandSupplier = List::of;
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        // When
+        excelExporter.export(brandSupplier, response);
+
+        // Then
+        assertEquals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", response.getContentType());
+        assertEquals("attachment; filename=\"export.xlsx\"", response.getHeader("Content-Disposition"));
+
+        // Parse the Excel content and verify
+        try (Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(response.getContentAsByteArray()))) {
+            assertEquals(1, workbook.getNumberOfSheets());
+            var sheet = workbook.getSheetAt(0);
+
+            // Verify header row
+            assertEquals("ID", sheet.getRow(0).getCell(0).getStringCellValue());
+            assertEquals("Name", sheet.getRow(0).getCell(1).getStringCellValue());
+            assertEquals("Logo", sheet.getRow(0).getCell(2).getStringCellValue());
+
+            // Ensure no other rows exist
+            assertEquals(1, sheet.getPhysicalNumberOfRows());
+        }
+    }
+
+    private Brand createBrand(int id, String name, String logo) {
+        Brand brand = new Brand(id);
+        brand.setName(name);
+        brand.setLogo(logo);
+        return brand;
     }
 }

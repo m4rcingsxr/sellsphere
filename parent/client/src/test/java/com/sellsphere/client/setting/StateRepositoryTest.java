@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
-@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts = "classpath:sql/countries.sql")
+@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS, scripts = {"classpath:sql/currencies.sql", "classpath:sql/countries.sql", "classpath:sql/states.sql"})
 class StateRepositoryTest {
 
     @Autowired
@@ -31,7 +31,7 @@ class StateRepositoryTest {
 
         List<State> states = stateRepository.findAllByCountry(country.get());
 
-        assertEquals(2, states.size());
+        assertEquals(11, states.size());
     }
 
 

@@ -27,9 +27,21 @@ const ajaxUtil = {
                 'Content-Type': 'application/json'
             }
         });
+        console.log(response);
 
         if (!response.ok) {
-            const errorResponse = await response.json();
+            let errorResponse;
+            try {
+                errorResponse = await response.json();  // Attempt to parse error as JSON
+            } catch (e) {
+                // If parsing fails, treat the error response as plain text or a generic error
+                errorResponse = {
+                    message: 'An unexpected error occurred.',
+                    status: response.status,
+                    statusText: response.statusText
+                };
+            }
+
             const error = new Error(`GET request failed: ${response.statusText}`);
             error.response = errorResponse;
             throw error;

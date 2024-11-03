@@ -156,14 +156,7 @@ function Navigation(_ref) {
     nextEl = makeElementsArray(nextEl);
     prevEl = makeElementsArray(prevEl);
     const targetEl = e.target;
-    let targetIsButton = prevEl.includes(targetEl) || nextEl.includes(targetEl);
-    if (swiper.isElement && !targetIsButton) {
-      const path = e.path || e.composedPath && e.composedPath();
-      if (path) {
-        targetIsButton = path.find(pathEl => nextEl.includes(pathEl) || prevEl.includes(pathEl));
-      }
-    }
-    if (swiper.params.navigation.hideOnClick && !targetIsButton) {
+    if (swiper.params.navigation.hideOnClick && !prevEl.includes(targetEl) && !nextEl.includes(targetEl)) {
       if (swiper.pagination && swiper.params.pagination && swiper.params.pagination.clickable && (swiper.pagination.el === targetEl || swiper.pagination.el.contains(targetEl))) return;
       let isHidden;
       if (nextEl.length) {

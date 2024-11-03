@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyList;
@@ -39,11 +40,13 @@ class ProductRestControllerTest {
         Product product1 = new Product();
         product1.setId(1);
         product1.setName("Product1");
+        product1.setPrice(BigDecimal.TEN);
         product1.setCategory(category);
         product1.setBrand(brand);
 
         Product product2 = new Product();
         product2.setId(2);
+        product2.setPrice(BigDecimal.TEN);
         product2.setName("Product2");
         product2.setCategory(category);
         product2.setBrand(brand);
@@ -52,7 +55,7 @@ class ProductRestControllerTest {
         when(productService.getProductsByIds(anyList())).thenReturn(products);
 
         // When & Then
-        mockMvc.perform(post("/products/products")
+        mockMvc.perform(post("/products")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("[1, 2]"))
                 .andExpect(status().isOk())

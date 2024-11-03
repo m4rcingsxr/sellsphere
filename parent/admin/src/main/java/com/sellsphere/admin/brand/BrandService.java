@@ -1,8 +1,8 @@
 package com.sellsphere.admin.brand;
 
 import com.sellsphere.admin.FileService;
-import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
+import com.sellsphere.admin.page.PagingHelper;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.Category;
@@ -15,7 +15,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Service class for managing Brand-related operations.
+ * Service class for handling operations related to brands, including CRUD operations,
+ * pagination, sorting, file management, and validation for uniqueness.
  */
 @RequiredArgsConstructor
 @Service
@@ -27,48 +28,49 @@ public class BrandService {
     private final BrandRepository brandRepository;
 
     /**
-     * Lists brands by page.
+     * Paginates the list of brands based on the page number and sorting helper.
      *
-     * @param pageNum the page number
-     * @param helper the PagingAndSortingHelper
+     * @param pageNum the page number to display
+     * @param helper  the pagination and sorting helper
      */
-    public void listPage(Integer pageNum, PagingAndSortingHelper helper) {
+    public void listBrandsByPage(Integer pageNum, PagingAndSortingHelper helper) {
         helper.listEntities(pageNum, BRANDS_PER_PAGE, brandRepository);
     }
 
     /**
-     * Lists all brands sorted by the specified field and direction.
+     * Retrieves all brands, sorted by the specified field and direction.
      *
-     * @param sortField the sort field
-     * @param sortDirection the sort direction
-     * @return the list of brands
+     * @param sortField     the field to sort by
+     * @param sortDirection the sorting direction (ASC or DESC)
+     * @return a list of sorted brands
      */
-    public List<Brand> listAll(String sortField, String sortDirection) {
+    public List<Brand> listAllBrands(String sortField, Sort.Direction sortDirection) {
         Sort sort = PagingHelper.getSort(sortField, sortDirection);
         return brandRepository.findAll(sort);
     }
 
     /**
-     * Gets a brand by its ID.
+     * Fetches a brand by its ID.
      *
-     * @param id the brand ID
-     * @return the brand
+     * @param id the brand's ID
+     * @return the found brand
      * @throws BrandNotFoundException if the brand is not found
      */
-    public Brand get(Integer id) throws BrandNotFoundException {
-        return brandRepository.findById(id).orElseThrow(BrandNotFoundException::new);
+    public Brand getBrandById(Integer id) throws BrandNotFoundException {
+        return brandRepository.findById(id).orElseThrow(() -> new BrandNotFoundException("Brand not found with ID: " + id));
     }
 
     /**
-     * Saves a brand and its logo file.
+     * Saves the brand and handles the logo file if present.
      *
-     * @param brand the brand
-     * @param file the logo file
+     * @param brand the brand entity to save
+     * @param file  the logo file to save (optional)
      * @return the saved brand
-     * @throws IOException if an I/O error occurs
+     * @throws IOException if an I/O error occurs during file saving
      */
-    public Brand save(Brand brand, MultipartFile file) throws IOException {
-        removeLeadingDashFromCategories(brand);
+    public Brand saveBrand(Brand brand, MultipartFile file) throws IOException {
+        // Ensure no leading dashes remain in the category names
+        cleanUpCategoryNames(brand);
 
         if (file != null && !file.isEmpty()) {
             String fileName = file.getOriginalFilename();
@@ -76,42 +78,42 @@ public class BrandService {
 
             Brand savedBrand = brandRepository.save(brand);
 
+            // Save the logo file to the designated directory in S3
             String folderName = BRAND_PHOTOS_DIR + savedBrand.getId();
             FileService.saveSingleFile(file, folderName, fileName);
             return savedBrand;
-
         } else {
             return brandRepository.save(brand);
         }
     }
 
     /**
-     * Removes leading dashes (hierarchy) from category names associated with the brand.
+     * Cleans up category names by removing leading dashes for better consistency.
      *
-     * @param brand the brand
+     * @param brand the brand containing the categories to clean
      */
-    private void removeLeadingDashFromCategories(Brand brand) {
-        brand.getCategories().forEach(this::removeCategoryDashes);
+    private void cleanUpCategoryNames(Brand brand) {
+        brand.getCategories().forEach(this::removeLeadingDashesFromCategory);
     }
 
     /**
-     * Removes leading dashes from a category name.
+     * Recursively removes leading dashes from category names.
      *
-     * @param category the category
+     * @param category the category entity to clean up
      */
-    private void removeCategoryDashes(Category category) {
+    private void removeLeadingDashesFromCategory(Category category) {
         category.setName(category.getName().replace("-", ""));
-        category.getChildren().forEach(this::removeCategoryDashes);
+        category.getChildren().forEach(this::removeLeadingDashesFromCategory);
     }
 
     /**
-     * Checks if a brand name is unique.
+     * Validates if the brand name is unique, allowing for optional exclusion of a brand ID (used during updates).
      *
-     * @param id the brand ID (optional)
-     * @param name the brand name
+     * @param id   the ID of the brand to exclude (for updates), can be null
+     * @param name the name to check for uniqueness
      * @return true if the name is unique, false otherwise
      */
-    public boolean isNameUnique(Integer id, String name) {
+    public boolean isBrandNameUnique(Integer id, String name) {
         return brandRepository.findByName(name)
                 .map(existingBrand -> existingBrand.getId().equals(id))
                 .orElse(true);
@@ -120,11 +122,11 @@ public class BrandService {
     /**
      * Deletes a brand by its ID.
      *
-     * @param id the brand ID
+     * @param id the brand's ID
      * @throws BrandNotFoundException if the brand is not found
      */
-    public void delete(Integer id) throws BrandNotFoundException {
-        Brand brand = get(id);
+    public void deleteBrandById(Integer id) throws BrandNotFoundException {
+        Brand brand = getBrandById(id);
         brandRepository.delete(brand);
     }
 

@@ -2,14 +2,15 @@ package com.sellsphere.common.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Objects;
  */
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Getter
 @Setter
 @Entity
@@ -184,6 +186,7 @@ public class Product extends IdentifiedEntity {
     @NotNull(message = "Category is required")
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Category category;
 
     /**
@@ -258,7 +261,6 @@ public class Product extends IdentifiedEntity {
     @Column(name = "question_count")
     private Integer questionCount;
 
-    // synchronized with product details
     @ManyToMany(mappedBy = "products")
     private List<Promotion> promotions;
 
@@ -274,21 +276,30 @@ public class Product extends IdentifiedEntity {
      */
     @Transient
     public String getMainImagePath() {
-        return Constants.S3_BASE_URI + (id == null || mainImage == null ? "/default.png" :
-                "/product-photos/" + this.id + "/" + mainImage);
+        String basePath = Constants.S3_BASE_URI;
+        if (id == null || mainImage == null) {
+            return basePath + "/default.png";
+        }
+        try {
+            String encodedMainImage = URLEncoder.encode(mainImage, "UTF-8");
+            return basePath + "/product-photos/" + this.id + "/" + encodedMainImage;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Error encoding image URL", e);
+        }
     }
 
     @Transient
     public BigDecimal getDiscountPrice() {
         if (discountPercent != null && discountPercent.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal discountMultiplier = BigDecimal.valueOf(100).subtract(
-                    discountPercent).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            return price.multiply(discountMultiplier);
+            BigDecimal discountMultiplier = BigDecimal.valueOf(100)
+                    .subtract(discountPercent)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            return price.multiply(discountMultiplier).setScale(2, RoundingMode.HALF_UP); // Apply rounding here
         }
 
-        return this.price;
+        // If no discount, return the price rounded to 2 decimal places
+        return this.price.setScale(2, RoundingMode.HALF_UP);
     }
-
 
     /**
      * Adds a detail to the product.

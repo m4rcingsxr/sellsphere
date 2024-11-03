@@ -1,52 +1,236 @@
-.small,
-.x-small {
+/* Hide all containers by default */
+.con-xs,
+.con-s,
+.con-md,
+.con-lg,
+.con-xl,
+.con-xxl,
+.con-xs-s,
+.con-xs-s-md,
+.con-s-md,
+.con-lg-xl-xxl,
+.con-xl-xxl,
+.con-md-lg-xl-xxl,
+.con-sm-md-lg-xl-xxl {
   display: none;
 }
 
-@media (min-width: 993px) {
-  .hideable-md {
+/* X-Small (xs): <576px */
+@media (max-width: 575.98px) {
+  .con-xs {
+    display: block;
+  }
+  .con-s,
+  .con-md,
+  .con-lg,
+  .con-xl,
+  .con-xxl,
+  .con-xs-s-md,
+  .con-s-md,
+  .con-lg-xl-xxl,
+  .con-xl-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Small (sm): 576px to 767.98px */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .con-s {
+    display: block;
+  }
+  .con-xs,
+  .con-md,
+  .con-lg,
+  .con-xl,
+  .con-xxl,
+  .con-lg-xl-xxl,
+  .con-xl-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Medium (md): 768px to 991.98px */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .con-md {
+    display: block;
+  }
+  .con-xs,
+  .con-s,
+  .con-lg,
+  .con-xl,
+  .con-xxl,
+  .con-lg-xl-xxl,
+  .con-xl-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Large (lg): 992px to 1199.98px */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .con-lg {
+    display: block;
+  }
+  .con-xs,
+  .con-s,
+  .con-md,
+  .con-xl,
+  .con-xxl,
+  .con-lg-xl-xxl,
+  .con-xl-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Extra Large (xl): 1200px to 1399.98px */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .con-xl {
+    display: block;
+  }
+  .con-xs,
+  .con-s,
+  .con-md,
+  .con-lg,
+  .con-xxl,
+  .con-lg-xl-xxl,
+  .con-xl-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Extra Extra Large (xxl): ≥1400px */
+@media (min-width: 1400px) {
+  .con-xxl {
+    display: block;
+  }
+  .con-xs,
+  .con-s,
+  .con-md,
+  .con-lg,
+  .con-xl,
+  .con-lg-xl-xxl,
+  .con-xl-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Combined Classes */
+
+/* XS and S */
+@media (max-width: 767.98px) {
+  .con-xs-s {
+    display: block;
+  }
+  .con-md,
+  .con-lg,
+  .con-xl,
+  .con-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* XS, S, and MD: <992px */
+@media (max-width: 991.98px) {
+  .con-xs-s-md {
+    display: block;
+  }
+  .con-lg,
+  .con-xl,
+  .con-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Small (s) and Medium (md): 576px to 991.98px */
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .con-s-md {
+    display: block;
+  }
+  .con-xs,
+  .con-lg,
+  .con-xl,
+  .con-xxl,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Large (lg), Extra Large (xl), and Extra Extra Large (xxl): ≥992px */
+@media (min-width: 992px) {
+  .con-lg-xl-xxl {
+    display: block;
+  }
+  .con-xs,
+  .con-s,
+  .con-md,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* Extra Large (xl) and Extra Extra Large (xxl): ≥1200px */
+@media (min-width: 1200px) {
+  .con-xl-xxl {
+    display: block;
+  }
+  .con-xs,
+  .con-s,
+  .con-md,
+  .con-lg,
+  .con-md-lg-xl-xxl,
+  .con-sm-md-lg-xl-xxl {
+    display: none;
+  }
+}
+
+/* New Combined Class: SM, MD, LG, XL, and XXL */
+@media (min-width: 576px) {
+  .con-sm-md-lg-xl-xxl {
+    display: block;
+  }
+  .con-xs {
+    display: none;
+  }
+}
+
+/* Hideable XL */
+@media (min-width: 1200px) {
+  .hideable-xl {
     display: table-cell;
   }
 }
-
-@media (max-width: 992px) {
-  .hideable-md {
+@media (max-width: 1200px) {
+  .hideable-xl {
     display: none;
   }
 }
 
-@media (min-width: 769px) {
-  .small {
-    display: none;
-  }
-  .large {
-    display: table;
+/* Hideable LG */
+@media (min-width: 993px) {
+  .hideable-lg {
+    display: table-cell;
   }
 }
-
-@media (max-width: 768px) {
-  .small {
-    display: block;
-  }
-  .large {
+@media (max-width: 993px) {
+  .hideable-lg {
     display: none;
   }
 }
 
-@media (min-width: 576px) and (max-width: 768px) {
-  .small {
-    display: block;
-  }
-  .x-small {
-    display: none;
-  }
-}
-
-@media (max-width: 575px) {
-  .x-small {
-    display: block;
-  }
-  .small {
-    display: none;
-  }
-}

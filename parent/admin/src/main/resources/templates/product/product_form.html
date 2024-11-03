@@ -2,53 +2,64 @@
 <html lang="en">
 <head th:replace="~{form_fragments :: head_with_editor(${pageTitle})}"></head>
 <body>
+
 <header th:replace="~{navigations :: header()}"></header>
 
-<main class="content">
-    <div class="container-md mt-4">
-        <h2 class="text-center mt-4" th:text="${pageTitle}"></h2>
+<div class="container-fluid">
+    <div class="row">
 
-        <form id="mainForm" class="mt-4" enctype="multipart/form-data" method="POST" th:object="${product}" th:action="@{/products/save}">
-            <input type="hidden" class="form-control" th:field="*{id}">
-            <input type="hidden" class="form-control" th:field="*{createdTime}">
+        <div th:replace="navigations :: sidebar('Products')"></div>
 
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Overview</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="description-tab" data-bs-toggle="tab" data-bs-target="#description-tab-pane" type="button" role="tab" aria-controls="description-tab-pane" aria-selected="false">Description</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image-tab-pane" type="button" role="tab" aria-controls="image-tab-pane" aria-selected="false">Images</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail-tab-pane" type="button" role="tab" aria-controls="detail-tab-pane" aria-selected="false" >Details</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" data-bs-target="#shipping-tab-pane" type="button" role="tab" aria-controls="shipping-tab-pane" aria-selected="false" >Shipping</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tax-tab" data-bs-toggle="tab" data-bs-target="#tax-tab-pane" type="button" role="tab" aria-controls="tax-tab-pane" aria-selected="false">Tax</button>
-                </li>
-            </ul>
-
-            <div class="tab-content" id="myTabContent">
-                <div th:insert="~{product/product_overview.html :: overview()}" class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0"></div>
-                <div th:insert="~{product/product_description :: description()}" class="tab-pane fade" id="description-tab-pane" role="tabpanel" aria-labelledby="description-tab" tabindex="0"></div>
-                <div th:insert="~{product/product_images :: images()}" class="tab-pane fade" id="image-tab-pane" role="tabpanel" aria-labelledby="image-tab" tabindex="0"></div>
-                <div th:insert="~{product/product_details :: details()}" class="tab-pane fade" id="detail-tab-pane" role="tabpanel" aria-labelledby="detail-tab" tabindex="0"></div>
-                <div th:insert="~{product/product_shipping :: shipping()}" class="tab-pane fade" id="shipping-tab-pane" role="tabpanel" aria-labelledby="shipping-tab" tabindex="0"></div>
-                <div th:insert="~{product/product_tax :: tax()}" class="tab-pane fade" id="tax-tab-pane" role="tabpanel" aria-labelledby="tax-tab" tabindex="0"></div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2" th:text="${pageTitle}"></h1>
             </div>
 
-            <div th:replace="~{form_fragments :: form_buttons(${product})}"></div>
-        </form>
+            <section class="content mb-5">
+                <div class="container-md mt-7">
+                    <form id="mainForm" class="mt-4" enctype="multipart/form-data" method="POST" th:object="${product}" th:action="@{/products/save}">
+                        <input type="hidden" class="form-control" th:field="*{id}">
+                        <input type="hidden" class="form-control" th:field="*{createdTime}">
+
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Overview</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="description-tab" data-bs-toggle="tab" data-bs-target="#description-tab-pane" type="button" role="tab" aria-controls="description-tab-pane" aria-selected="false">Description</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image-tab-pane" type="button" role="tab" aria-controls="image-tab-pane" aria-selected="false">Images</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail-tab-pane" type="button" role="tab" aria-controls="detail-tab-pane" aria-selected="false" >Details</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" data-bs-target="#shipping-tab-pane" type="button" role="tab" aria-controls="shipping-tab-pane" aria-selected="false" >Shipping</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tax-tab" data-bs-toggle="tab" data-bs-target="#tax-tab-pane" type="button" role="tab" aria-controls="tax-tab-pane" aria-selected="false">Tax</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="myTabContent">
+                            <div th:insert="~{product/product_overview.html :: overview()}" class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0"></div>
+                            <div th:insert="~{product/product_description :: description()}" class="tab-pane fade" id="description-tab-pane" role="tabpanel" aria-labelledby="description-tab" tabindex="0"></div>
+                            <div th:insert="~{product/product_images :: images()}" class="tab-pane fade" id="image-tab-pane" role="tabpanel" aria-labelledby="image-tab" tabindex="0"></div>
+                            <div th:insert="~{product/product_details :: details()}" class="tab-pane fade" id="detail-tab-pane" role="tabpanel" aria-labelledby="detail-tab" tabindex="0"></div>
+                            <div th:insert="~{product/product_shipping :: shipping()}" class="tab-pane fade" id="shipping-tab-pane" role="tabpanel" aria-labelledby="shipping-tab" tabindex="0"></div>
+                            <div th:insert="~{product/product_tax :: tax()}" class="tab-pane fade" id="tax-tab-pane" role="tabpanel" aria-labelledby="tax-tab" tabindex="0"></div>
+                        </div>
+
+                        <div th:replace="~{form_fragments :: form_buttons(${product})}"></div>
+                    </form>
+                </div>
+            </section>
+
+        </main>
 
     </div>
-</main>
-
-<footer th:replace="~{navigations :: footer()}"></footer>
+</div>
 
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
@@ -58,14 +69,15 @@
 <script type="text/javascript" th:src="@{/js/product_images.js}"></script>
 <script type="text/javascript" th:src="@{/js/product_details.js}"></script>
 <script type="text/javascript" th:src="@{/js/product_tax.js}"></script>
+<script type="text/javascript" th:src="@{/js/dragAndDropFileUpload.js}"></script>
 
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-    const WIDTH = 1024; // Image width
-    const HEIGHT = 768; // Image height
-    const QUALITY = 1.0; // Image quality (0.0 to 1.0)
+    const WIDTH = 1024;
+    const HEIGHT = 768;
+    const QUALITY = 1.0;
 
     const validationRules = {
         name: {
@@ -226,6 +238,5 @@
     ];
 
 </script>
-
 </body>
 </html>

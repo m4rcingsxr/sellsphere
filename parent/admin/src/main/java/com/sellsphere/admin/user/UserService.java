@@ -1,9 +1,8 @@
 package com.sellsphere.admin.user;
 
 import com.sellsphere.admin.FileService;
-import com.sellsphere.admin.PagingHelper;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
-import com.sellsphere.common.entity.Constants;
+import com.sellsphere.admin.page.PagingHelper;
 import com.sellsphere.common.entity.Role;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
@@ -17,7 +16,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Service class for managing User-related operations.
+ * Service class for managing user-related operations, including CRUD,
+ * file management, and user role handling.
  */
 @RequiredArgsConstructor
 @Service
@@ -32,45 +32,46 @@ public class UserService {
 
 
     /**
-     * Gets a user by its ID.
+     * Retrieves a user by ID.
      *
-     * @param id the user ID
-     * @return the user
-     * @throws UserNotFoundException if the user is not found
+     * @param id the user ID.
+     * @return the found user.
+     * @throws UserNotFoundException if no user is found with the given ID.
      */
     public User get(Integer id) throws UserNotFoundException {
-        return userRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
+        return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
     }
 
     /**
      * Retrieves a user by their email address.
      *
-     * @param email the email address of the user
-     * @return the found user
-     * @throws UserNotFoundException if no user is found with the given email
+     * @param email the email of the user.
+     * @return the found user.
+     * @throws UserNotFoundException if no user is found with the given email.
      */
     public User get(String email) throws UserNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
+
     /**
      * Lists all roles.
      *
-     * @return the list of roles
+     * @return a list of all roles sorted by name.
      */
     public List<Role> listAllRoles() {
-        return roleRepository.findAll(PagingHelper.getSort("name", Constants.SORT_ASCENDING));
+        return roleRepository.findAll(PagingHelper.getSort("name", Sort.Direction.ASC));
     }
+
 
     /**
      * Lists all users sorted by the specified field and direction.
      *
-     * @param sortField the sort field
-     * @param sortDirection the sort direction
-     * @return the list of users
+     * @param sortField the field to sort by.
+     * @param sortDirection the direction to sort (ASC/DESC).
+     * @return a list of sorted users.
      */
-    public List<User> listAll(String sortField, String sortDirection) {
+    public List<User> listAll(String sortField, Sort.Direction sortDirection) {
         Sort sort = PagingHelper.getSort(sortField, sortDirection);
         return userRepository.findAll(sort);
     }
@@ -78,64 +79,63 @@ public class UserService {
     /**
      * Lists users by page.
      *
-     * @param pageNum the page number
-     * @param helper the PagingAndSortingHelper
+     * @param pageNum the page number.
+     * @param helper the helper for managing pagination and sorting.
      */
     public void listPage(Integer pageNum, PagingAndSortingHelper helper) {
         helper.listEntities(pageNum, USERS_PER_PAGE, userRepository);
     }
 
+
     /**
-     * Saves a user and its image file.
+     * Saves a user and their profile image, if provided.
      *
-     * @param user the user
-     * @param file the image file
-     * @return the saved user
-     * @throws IOException if an I/O error occurs
-     * @throws UserNotFoundException if the user is not found
+     * @param user the user entity to be saved.
+     * @param file the profile image to be uploaded.
+     * @return the saved user entity.
+     * @throws IOException if an error occurs during file upload.
+     * @throws UserNotFoundException if the user is not found.
      */
     public User save(User user, MultipartFile file) throws IOException, UserNotFoundException {
         if (file != null && !file.isEmpty()) {
             String fileName = file.getOriginalFilename();
-
             user.setMainImage(fileName);
+
             User savedUser = save(user);
 
             String folderName = S3_FOLDER_NAME + savedUser.getId();
-
             FileService.saveSingleFile(file, folderName, fileName);
 
             return savedUser;
-        } else {
-            return save(user);
         }
+        return save(user);
     }
 
     /**
-     * Saves a user.
+     * Saves a user to the database.
+     * If the user is being updated, their password is preserved unless changed.
      *
-     * @param user the user
-     * @return the saved user
-     * @throws UserNotFoundException if the user is not found
+     * @param user the user entity to be saved.
+     * @return the saved user entity.
+     * @throws UserNotFoundException if the user is not found during update.
      */
     public User save(User user) throws UserNotFoundException {
         if (user.getId() != null && user.getPassword() == null) {
             User existingUser = userRepository
                     .findById(user.getId())
                     .orElseThrow(UserNotFoundException::new);
-
             user.setPassword(existingUser.getPassword());
         } else {
             encodePassword(user);
         }
-
         return userRepository.save(user);
     }
 
+
     /**
-     * Encodes the user's password.
+     * Encodes the user's password before saving.
      *
-     * @param user the user
+     * @param user the user whose password needs to be encoded.
      */
     private void encodePassword(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -144,9 +144,9 @@ public class UserService {
     /**
      * Checks if a user email is unique.
      *
-     * @param userId the user ID (optional)
-     * @param email the user email
-     * @return true if the email is unique, false otherwise
+     * @param userId the ID of the user (optional).
+     * @param email the email to check.
+     * @return true if the email is unique, false otherwise.
      */
     public boolean isEmailUnique(Integer userId, String email) {
         return userRepository.findByEmail(email)
@@ -154,11 +154,12 @@ public class UserService {
                 .orElse(true);
     }
 
+
     /**
-     * Deletes a user by its ID.
+     * Deletes a user by their ID.
      *
-     * @param id the user ID
-     * @throws UserNotFoundException if the user is not found
+     * @param id the ID of the user to be deleted.
+     * @throws UserNotFoundException if the user is not found.
      */
     public void delete(Integer id) throws UserNotFoundException {
         User user = get(id);
@@ -168,13 +169,12 @@ public class UserService {
     /**
      * Updates the enabled status of a user.
      *
-     * @param id the user ID
-     * @param enabled the new enabled status
-     * @throws UserNotFoundException if the user is not found
+     * @param id the user ID.
+     * @param enabled the new enabled status.
+     * @throws UserNotFoundException if the user is not found.
      */
     public void updateUserEnabledStatus(Integer id, boolean enabled) throws UserNotFoundException {
-        User user = userRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
         user.setEnabled(enabled);
         userRepository.save(user);
     }

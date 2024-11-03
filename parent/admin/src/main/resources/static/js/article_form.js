@@ -7,7 +7,8 @@ $(function () {
  */
 async function init() {
     try {
-        const articleType = $("#articleType").val();
+        initEditor("article\\.content");
+        const articleType = $("#article\\.articleType").val();
         showArticleForm(articleType);
 
         await handleChangePromotionArticleType($("#save-promotion-article-type").val());
@@ -24,7 +25,7 @@ async function init() {
  * Initializes all event listeners for the form elements.
  */
 function initListeners() {
-    $("#articleType").on("change", function () {
+    $("#article\\.articleType").on("change", function () {
         showArticleForm(this.value);
     });
 
@@ -102,6 +103,7 @@ function showArticleForm(articleType) {
             showArticleFooterForm();
             break;
         default:
+            hideAllArticleForms();
             break;
     }
 }
@@ -110,21 +112,23 @@ function showArticleForm(articleType) {
  * Hides all article forms.
  */
 function hideAllArticleForms() {
-    $("#navigation, #save-promotion-type, #footer, #existing-promotions, #new-product, #selected-products-container").addClass("d-none");
+    $("#navigation, #save-promotion-type, #footer, #existing-promotions, #new-product, #selected-products-container, #itemNumber").addClass("d-none");
 }
 
 /**
  * Displays the navigation article form.
  */
 function showArticleNavigationForm() {
-    $("#navigation").removeClass("d-none");
+    $("#navigation, #itemNumber").removeClass("d-none");
+    $('input[name="itemNumber"]').val("");
 }
 
 /**
  * Displays the promotion article form.
  */
 async function showArticlePromotionForm() {
-    $("#save-promotion-type, #selected-products-container").removeClass("d-none");
+    $("#save-promotion-type, #selected-products-container, #existing-promotions").removeClass("d-none");
+    $("#itemNumber").addClass("d-none");
     try {
         await handleChangePromotionArticleType($("#save-promotion-article-type").val());
     } catch (error) {
@@ -136,8 +140,11 @@ async function showArticlePromotionForm() {
  * Displays the footer article form.
  */
 function showArticleFooterForm() {
-    $("#footer").removeClass("d-none");
+    $("#footer, #itemNumber").removeClass("d-none");
+    $('input[name="itemNumber"]').val("");
 }
+
+
 
 /**
  * Handles the selection of a navigation item.
@@ -361,7 +368,6 @@ function removeUnselectedOptions() {
 async function handleChangePromotionArticleType(type) {
     $("#selected-products").empty();
     if (type === 'EXISTING') {
-        $("#existing-promotions").removeClass("d-none");
         const name = $("#existing-promotions-input").val();
         if (!name) return;
 

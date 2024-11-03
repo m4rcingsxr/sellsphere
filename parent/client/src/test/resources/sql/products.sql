@@ -1,81 +1,64 @@
--- Root Category (lvl 0)
-INSERT INTO categories (id, NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
-VALUES (1, 'Laptops', 'laptops', 'laptops.png', 1, NULL, NULL);
+INSERT INTO product_taxes (id, name, type, description)
+VALUES ('1','Standard Tax', 'DIGITAL', 'Standard VAT tax applicable in most countries'),
+       ('2','Reduced Tax', 'DIGITAL', 'Reduced VAT tax applicable for specific categories'),
+       ('3','Exempt Tax', 'DIGITAL', 'Tax exemption for special products or categories');
 
--- Categories under 'Laptops' (lvl 1)
-INSERT INTO categories (id, NAME, ALIAS, IMAGE, ENABLED, PARENT_ID, ALL_PARENT_IDS)
-VALUES (2, 'Laptops and Tablets', 'laptops and tablets', 'laptop_and_tablets.png', 1, 1, '-1-'),
-       (3, 'Laptop Accessories', 'laptop accessories', 'laptop_accessories.png', 1, 1, '-1-'),
-       (4, 'Laptop Components', 'laptop components', 'laptop_components.png', 1, 1, '-1-'),
-       (5, 'Tablet Accessories', 'tablet accessories', 'tablet_accessories.png', 1, 1, '-1-');
 
-INSERT INTO brands (id, name, logo)
-VALUES (1, 'Apple', 'logo.jpg'),
-       (2, 'Samsung', 'logo.jpg');
+-- Inserting Products
+INSERT INTO products (name, alias, short_description, full_description, created_time, enabled, in_stock, cost, price, discount_percent, length, width, height, weight, main_image, category_id, brand_id, tax_id, contains_baterry_pi966, contains_baterry_pi967, contains_liquids, hs_code, review_count, average_rating, question_count)
+VALUES ('Canon EOS 90D', 'canon_eos_90d', 'High-quality DSLR camera', 'Canon EOS 90D offers high-speed performance and professional-grade images.', NOW(), 1, 1, 999.99, 1200.00, 10.00, 15.00, 20.00, 10.00, 1.50, 'canon_eos_90d_main.jpg', 2, 1, '1', 0, 0, 0, '12345678', 5, 4.8, 10),
+       ('Fujifilm X-T30', 'fujifilm_xt30', 'Compact and lightweight camera', 'Fujifilm X-T30 offers the perfect balance of power and portability.', NOW(), 1, 1, 799.99, 950.00, 15.00, 10.00, 15.00, 8.00, 1.20, 'fujifilm_xt30_main.jpg', 2, 2, '2', 0, 0, 0, '12345678', 3, 4.5, 8),
+       ('Sony A7R IV', 'sony_a7r_iv', 'Full-frame mirrorless camera', 'Sony A7R IV offers excellent image resolution with 61 megapixels.', NOW(), 1, 1, 2999.99, 3500.00, 5.00, 12.00, 18.00, 9.00, 2.00, 'sony_a7r_iv_main.jpg', 2, 3, '1', 0, 0, 0, '12345678', 7, 4.7, 15),
+       ('HP Pavilion Gaming Desktop', 'hp_gaming_desktop', 'Powerful gaming desktop', 'HP Pavilion gaming desktop offers superior performance for high-end gaming.', NOW(), 1, 1, 1099.99, 1300.00, 8.00, 40.00, 20.00, 35.00, 10.00, 'hp_gaming_desktop_main.jpg', 3, 4, '2', 0, 0, 0, '12345678', 6, 4.6, 12),
+       ('SanDisk Ultra SSD', 'sandisk_ultra_ssd', 'Fast and reliable SSD', 'SanDisk Ultra SSD offers fast read and write speeds for quick data access.', NOW(), 1, 1, 199.99, 250.00, 20.00, 10.00, 6.00, 0.50, 0.20, 'sandisk_ultra_ssd_main.jpg', 9, 5, '3', 0, 0, 0, '12345678', 4, 4.4, 6);
 
-INSERT INTO products (id, name, alias, short_description, full_description, created_time, enabled, in_stock, cost,
-                      price, discount_percent, length, width, height, weight, main_image, category_id, brand_id)
-VALUES (1, 'Product One', 'product-one', 'Short description of Product One', 'Detailed description of Product One',
-        '2024-07-03 10:00:00', true, true, 10.00, 15.00, 10.00, 10.00, 5.00, 1.50, 0.50, 'product_one.png', 5, 1),
-       (2, 'Product Two', 'product-two', 'Short description of Product Two', 'Detailed description of Product Two',
-        '2024-07-03 10:00:00', true, true, 20.00, 30.00, 5.00, 15.00, 7.50, 2.00, 0.75, 'product_two.png', 2, 1),
-       (3, 'Product Three', 'product-three', 'Short description of Product Three',
-        'Detailed description of Product Three', '2024-07-03 10:00:00', true, true, 30.00, 45.00, 15.00, 20.00, 10.00,
-        2.50, 1.00, 'product_three.png', 2, 1),
-       (4, 'Product Four', 'product-four', 'Short description of Product Four', 'Detailed description of Product Four',
-        '2024-07-03 10:00:00', true, true, 40.00, 60.00, 20.00, 25.00, 12.50, 3.00, 1.25, 'product_four.png', 3, 2),
-       (5, 'Product Five', 'product-five', 'Short description of Product Five', 'Detailed description of Product Five',
-        '2024-07-03 10:00:00', true, true, 50.00, 75.00, 25.00, 30.00, 15.00, 3.50, 1.50, 'product_five.png', 4, 2),
-       (6, 'Product Six', 'product-six', 'Short description of Product Six', 'Detailed description of Product Six',
-        '2024-07-03 10:00:00', true, true, 60.00, 90.00, 30.00, 35.00, 17.50, 4.00, 1.75, 'product_six.png', 5, 2),
-       (7, 'Product Seven', 'product-seven', 'Short description of Product Seven',
-        'Detailed description of Product Seven', '2024-07-03 10:00:00', true, true, 70.00, 105.00, 35.00, 40.00, 20.00,
-        4.50, 2.00, 'product_seven.png', 2, 1),
-       (8, 'Product Eight', 'product-eight', 'Short description of Product Eight',
-        'Detailed description of Product Eight', '2024-07-03 10:00:00', true, true, 80.00, 120.00, 40.00, 45.00, 22.50,
-        5.00, 2.25, 'product_eight.png', 1, 2),
-       (9, 'Product Nine', 'product-nine', 'Short description of Product Nine', 'Detailed description of Product Nine',
-        '2024-07-03 10:00:00', true, true, 90.00, 135.00, 45.00, 50.00, 25.00, 5.50, 2.50, 'product_nine.png', 3, 2),
-       (10, 'Product Ten', 'product-ten', 'Short description of Product Ten', 'Detailed description of Product Ten',
-        '2024-07-03 10:00:00', true, true, 100.00, 150.00, 50.00, 55.00, 27.50, 6.00, 2.75, 'product_ten.png', 4, 2);
 
-INSERT INTO product_details (id, name, detail_value, product_id)
-VALUES (1, 'Color', 'Red', 1),
-       (2, 'Size', 'Medium', 1),
-       (3, 'Weight', '1.5kg', 1),
+-- Inserting Product Images
+INSERT INTO product_images (name, product_id) VALUES
+                                                  ('canon_eos_90d_img1.jpg', 1),
+                                                  ('canon_eos_90d_img2.jpg', 1),
+                                                  ('fujifilm_xt30_img1.jpg', 2),
+                                                  ('fujifilm_xt30_img2.jpg', 2),
+                                                  ('sony_a7r_iv_img1.jpg', 3),
+                                                  ('sony_a7r_iv_img2.jpg', 3),
+                                                  ('hp_gaming_desktop_img1.jpg', 4),
+                                                  ('hp_gaming_desktop_img2.jpg', 4),
+                                                  ('sandisk_ultra_ssd_img1.jpg', 5),
+                                                  ('sandisk_ultra_ssd_img2.jpg', 5);
 
-       (4, 'Color', 'Red', 2),
-       (5, 'Material', 'Plastic', 2),
-       (6, 'Size', 'Medium', 2),
+-- Inserting Product Details
+INSERT INTO product_details (name, detail_value, product_id) VALUES
+                                                                 -- Product One Details
+                                                                 ('Color', 'Red', 1),
+                                                                 ('Size', 'Medium', 1),
+                                                                 ('Weight', '1.5kg', 1),
+                                                                 ('Material', 'Plastic', 1),
+                                                                 ('Warranty', '1 year', 1),
 
-       (7, 'Color', 'Green', 3),
-       (8, 'Size', 'Large', 3),
-       (9, 'Weight', '2kg', 3),
+                                                                 -- Product Two Details
+                                                                 ('Color', 'Red', 2),
+                                                                 ('Size', 'Medium', 2),
+                                                                 ('Weight', '1.5kg', 2),
+                                                                 ('Material', 'Plastic', 2),
+                                                                 ('Warranty', '1 year', 2),
 
-       (10, 'Color', 'Red', 4),
-       (11, 'Material', 'Metal', 4),
-       (12, 'Weight', '1.5kg', 4),
+                                                                 -- Product Three Details
+                                                                 ('Color', 'Green', 3),
+                                                                 ('Size', 'Large', 3),
+                                                                 ('Weight', '2kg', 3),
+                                                                 ('Material', 'Metal', 3),
+                                                                 ('Warranty', '3 years', 3),
 
-       (13, 'Color', 'Black', 5),
-       (14, 'Size', 'Small', 5),
-       (15, 'Weight', '0.5kg', 5),
+                                                                 -- Product Four Details
+                                                                 ('Color', 'Black', 4),
+                                                                 ('Size', 'Small', 4),
+                                                                 ('Weight', '1kg', 4),
+                                                                 ('Material', 'Plastic', 4),
+                                                                 ('Warranty', '6 months', 4),
 
-       (16, 'Color', 'White', 6),
-       (17, 'Material', 'Plastic', 6),
-       (18, 'Warranty', '3 years', 6),
-
-       (19, 'Color', 'Yellow', 7),
-       (20, 'Size', 'Extra Large', 7),
-       (21, 'Weight', '3kg', 7),
-
-       (22, 'Color', 'Blue', 8),
-       (23, 'Material', 'Plastic', 8),
-       (24, 'Warranty', '5 years', 8),
-
-       (25, 'Color', 'Green', 9),
-       (26, 'Size', 'Medium', 9),
-       (27, 'Weight', '2kg', 9),
-
-       (28, 'Color', 'Black', 10),
-       (29, 'Material', 'Glass', 10),
-       (30, 'Warranty', '6 months', 10);
+                                                                 -- Product Five Details
+                                                                 ('Color', 'Blue', 5),
+                                                                 ('Size', 'Small', 5),
+                                                                 ('Weight', '1kg', 5),
+                                                                 ('Material', 'Metal', 5),
+                                                                 ('Warranty', '5 years', 5);

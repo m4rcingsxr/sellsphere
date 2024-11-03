@@ -17,7 +17,7 @@ public class PromotionRestController {
     @GetMapping("/promotions/{name}")
     public ResponseEntity<PromotionDTO> getPromotion(@PathVariable("name") String name)
             throws PromotionNotFoundException {
-        return ResponseEntity.ok(new PromotionDTO(promotionService.get(name)));
+        return ResponseEntity.ok(new PromotionDTO(promotionService.getByName(name)));
     }
 
 }

@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Objects;
 
 @NoArgsConstructor
@@ -29,9 +31,19 @@ public class ProductImage extends IdentifiedEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
+
     @Transient
     public String getExtraImagePath() {
-        return Constants.S3_BASE_URI + "/product-photos/" + product.getId() + "/extras/" + name;
+        String basePath = Constants.S3_BASE_URI;
+        if (id == null || name == null) {
+            return basePath + "/default.png";
+        }
+        try {
+            String encodedExtraImage = URLEncoder.encode(name, "UTF-8");
+            return basePath + "/product-photos/" + product.getId() + "/extras/" + encodedExtraImage;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Error encoding image URL", e);
+        }
     }
 
     @Override

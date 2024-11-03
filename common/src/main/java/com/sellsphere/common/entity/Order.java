@@ -23,17 +23,16 @@ public class Order extends IdentifiedEntity {
     @Column(name = "order_time", nullable = false)
     private LocalDateTime orderTime;
 
-    @OneToOne
-    @JoinColumn(name = "payment_intent_id", nullable = false)
+    @OneToOne(mappedBy = "order", cascade = {CascadeType.MERGE})
     private PaymentIntent transaction;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval =
-            true)
+            true, fetch = FetchType.EAGER)
     @OrderBy("updatedTime ASC, status ASC")
-    private List<OrderTrack> orderTracks;
+    private List<OrderTrack> orderTracks = new ArrayList<>();
 
     public void addOrderDetail(CartItem cartItem) {
         if (orderDetails == null) {
@@ -61,20 +60,73 @@ public class Order extends IdentifiedEntity {
     }
 
     @Transient
+    public boolean isNew() {
+        return containsStatus(OrderStatus.NEW);
+    }
+
+    @Transient
+    public boolean isCancelled() {
+        return containsStatus(OrderStatus.CANCELLED);
+    }
+
+    @Transient
+    public boolean isProcessing() {
+        return containsStatus(OrderStatus.PROCESSING);
+    }
+
+    @Transient
+    public boolean isPackaged() {
+        return containsStatus(OrderStatus.PACKAGED);
+    }
+
+    @Transient
+    public boolean isPicked() {
+        return containsStatus(OrderStatus.PICKED);
+    }
+
+    @Transient
+    public boolean isShipping() {
+        return containsStatus(OrderStatus.SHIPPING);
+    }
+
+    @Transient
     public boolean isDelivered() {
-        return getOrderStatus() == OrderStatus.DELIVERED;
+        return containsStatus(OrderStatus.DELIVERED);
     }
 
     @Transient
     public boolean isReturnRequested() {
-        return getOrderStatus() == OrderStatus.RETURN_REQUESTED;
+        return containsStatus(OrderStatus.RETURN_REQUESTED);
+    }
+
+    @Transient
+    public boolean isReturned() {
+        return containsStatus(OrderStatus.RETURNED);
+    }
+
+    @Transient
+    public boolean isPaid() {
+        return containsStatus(OrderStatus.PAID);
+    }
+
+    @Transient
+    public boolean isRefunded() {
+        return containsStatus(OrderStatus.REFUNDED);
+    }
+
+    // Helper method to check if a particular status exists in orderTracks
+    private boolean containsStatus(OrderStatus status) {
+        return orderTracks != null && orderTracks.stream().anyMatch(track -> track.getStatus() == status);
     }
 
     @Transient
     public OrderStatus getOrderStatus() {
-        if(orderDetails != null && !orderTracks.isEmpty()) {
-            List<OrderTrack> orderTracks = this.orderTracks.stream().sorted(Comparator.comparingInt(track -> track.getStatus().ordinal())).toList();
-            return orderTracks.get(orderTracks.size() - 1).getStatus();
+        if (orderTracks != null && !orderTracks.isEmpty()) {
+            return orderTracks.stream()
+                    .max(Comparator.comparing(OrderTrack::getUpdatedTime)
+                                 .thenComparing(track -> track.getStatus().ordinal()))
+                    .orElseThrow()
+                    .getStatus();
         }
         return null;
     }
@@ -99,11 +151,8 @@ public class Order extends IdentifiedEntity {
     }
 
     public void addOrderTrack(OrderTrack orderTrack) {
-        if (orderTracks == null) {
-            orderTracks = new ArrayList<>();
-        }
-
         orderTrack.setOrder(this);
+        if(orderTracks == null) orderTracks = new ArrayList<>();
         orderTracks.add(orderTrack);
     }
 

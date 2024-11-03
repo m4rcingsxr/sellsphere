@@ -2,7 +2,6 @@ package com.sellsphere.admin.review;
 
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.product.ProductRepository;
-import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.Review;
 import com.sellsphere.common.entity.ReviewNotFoundException;
@@ -14,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
@@ -23,6 +24,7 @@ public class ReviewService {
     private final ReviewRepository repository;
     private final ReviewVoteRepository reviewVoteRepository;
     private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
 
     public Review get(Integer id) throws ReviewNotFoundException {
         return repository.findById(id).orElseThrow(ReviewNotFoundException::new);
@@ -48,8 +50,7 @@ public class ReviewService {
     }
 
     private Pageable createPageRequestSortedByCustomer(PagingAndSortingHelper helper, int pageNum) {
-        Sort sort = Sort.by("customer.firstName", "customer.lastName");
-        sort = helper.getSortDir().equals(Constants.SORT_ASCENDING) ? sort.ascending() : sort.descending();
+        Sort sort = Sort.by(helper.getSortDir(), "customer.firstName", "customer.lastName");
         return PageRequest.of(pageNum, REVIEWS_PER_PAGE, sort);
     }
 
@@ -84,5 +85,9 @@ public class ReviewService {
         product.setReviewCount(++oldCount);
 
         productRepository.save(product);
+    }
+
+    public List<Review> listAll(String field, Sort.Direction direction) {
+        return reviewRepository.findAll(Sort.by(direction, field));
     }
 }

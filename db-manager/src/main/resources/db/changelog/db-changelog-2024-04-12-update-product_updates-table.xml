@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+
+    <changeSet id="1718805369604-1" author="Marcin Seweryn">
+        <dropAllForeignKeyConstraints baseTableName="product_updates"/>
+    </changeSet>
+
+    <changeSet id="1718805261283-1" author="Marcin Seweryn">
+        <dropPrimaryKey tableName="product_updates" constraintName="pk_product_updates"/>
+    </changeSet>
+
+    <changeSet id="1718805295479-1" author="Marcin Seweryn">
+        <addColumn tableName="product_updates">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_product_updates"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="1718805382521-1" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseTableName="product_updates" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedColumnNames="id" constraintName="FK_PRODUCT_UPDATES_ON_PRODUCT"/>
+    </changeSet>
+
+
+</databaseChangeLog>

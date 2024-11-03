@@ -1,173 +1,260 @@
+<!DOCTYPE html>
 <html lang="en">
-<head th:replace="~{common :: head('Address book')}"></head>
+<head>
+    <head th:replace="~{form_fragments :: common_head('Address book')}"></head>
+</head>
 <body>
-<header th:replace="~{navigations :: header()}"></header>
-<main class="content mt-5">
-    <div class="container">
-        <form th:object="${customer}" method="POST" th:action="@{/address_book/update}">
-            <input type="hidden" th:field="*{id}"/>
-            <input type="hidden" th:field="*{firstName}"/>
-            <input type="hidden" th:field="*{lastName}"/>
-            <input type="hidden" th:field="*{enabled}"/>
-            <input type="hidden" th:field="*{createdTime}"/>
-            <input type="hidden" th:field="*{email}"/>
+<nav th:replace="~{navigations :: header()}"></nav>
 
-            <div class="row">
-                <div class="col-sm-3">
-                    <div th:replace="~{customer/customer_navigation :: nav()}"></div>
-                </div>
-                <div class="col-sm-9 p-3">
-                    <div th:replace="~{common :: alerts()}"></div>
+<div th:replace="~{common :: alerts()}"></div>
 
-                    <div class="d-flex justify-content-between">
-                        <h2>Addresses</h2>
-                        <div>
-                            <i class="bi bi-plus-lg me-1" style="font-size: 0.9rem"></i>
-                            <a href="#"
-                               class="link-dark link-underline-opacity-50-hover link-underline-opacity-0"
-                               id="newAddress">Create new
-                                address</a>
-                        </div>
-                    </div>
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
+        </div>
+    </div>
+</div>
 
-                    <ul class="list-group list-group-flush">
-                        <li th:each="address,stat : *{addresses}" class="list-group-item">
-                            <input type="hidden" th:field="*{addresses[__${stat.index}__].id}"/>
-                            <input type="hidden" th:field="*{addresses[__${stat.index}__].customer}"/>
+<div class="container p-0 mt-2">
 
+    <div class="row m-0 p-0">
+        <div class="col-lg-3 col-3 d-none d-lg-block">
+            <div th:replace="~{customer/customer_navigation :: nav()}"></div>
+        </div>
 
-                            <div class="d-flex justify-content-between">
-                                <div th:if="${address.primary}">
-                                    <span class="fs-5">Shipping address</span><span class="badge text-bg-primary ms-3">Primary</span>
-                                </div>
-                                <div th:if="${!address.primary}">
-                                    <span class="fs-5" th:text="${'Extra shipping address #' + (stat.index)}"></span>
-                                </div>
-                                <div>
-                                    <a class="link-dark link-underline-opacity-50-hover link-underline-opacity-0 collapse-btn"
-                                       data-bs-toggle="collapse"
-                                       th:href="${'#collapseForm' + stat.index}" role="button" aria-expanded="false"
-                                       th:aria-controls="${'collapseForm' + stat.index}"
-                                       th:data-collapse-id="${stat.index}"
-                                       th:id="${'collapseBtn' + stat.index}"
-                                    >
-                                        Edit
-                                    </a>
+        <div class="col-lg-9 col-12 p-3">
 
-                                    <a class="link-danger link-underline-opacity-50-hover link-underline-opacity-0 d-none delete-btn"
-                                       th:href="@{|/address_book/delete/${address.id}|}"
-                                       th:id="${'deleteBtn' + stat.index}"
-                                    >
-                                        Delete
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div th:replace="~{address/address_fragments :: addressPreview(${address}, ${stat.index}, ${address.fullName}, ${address.phoneNumber}, ${address.fullAddress})}"></div>
-
-                            <div class="collapse my-3" th:id="${'collapseForm' + stat.index}">
-                                <div class="row g-3">
-                                    <div class="col-sm-6">
-                                        <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].firstName', 'First name')}"></div>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].lastName', 'Last name')}"></div>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].phoneNumber', 'Phone number')}"></div>
-                                    </div>
-
-
-                                </div>
-
-                                <div class="row g-3 mt-3">
-
-                                    <div class="col-sm-6">
-                                        <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].addressLine1', 'Address Line 1')}"></div>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].addressLine2', 'Address Line 2')}"></div>
-                                    </div>
-
-                                    <div class="col-sm-12">
-                                        <div class="form-floating">
-                                            <select class="form-select country"
-                                                    th:field="*{addresses[__${stat.index}__].country}"
-                                                    th:data-id="${address.id}"
-                                                    aria-label="Floating label select example">
-                                                <option th:each="country : ${countryList}" th:value="${country.id}"
-                                                        th:text="${country.name}"></option>
-                                            </select>
-                                            <label>Select country</label>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-sm-4">
-                                        <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].city', 'City')}"></div>
-
-                                    </div>
-
-
-                                    <div class="col-sm-4">
-                                        <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].postalCode', 'Postal code')}"></div>
-                                    </div>
-
-                                    <div class="col-sm-4">
-                                        <div class="form-floating">
-                                            <input th:list="${'states' + address.id}" class="form-control"
-                                                   placeholder="State"
-                                                   th:field="*{addresses[__${stat.index}__].state}">
-                                            <datalist th:id="${'states' + address.id}">
-
-                                            </datalist>
-                                            <label>State</label>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <div th:replace="~{form_fragments :: field_check('addresses[__${stat.index}__].primary', 'Primary')}"></div>
-                                    </div>
-
-                                </div>
-
-                                <div class="row mt-3">
-                                    <div class="col-sm-6 d-flex gap-3">
-                                        <a href="#" class="btn btn-sm collapse-btn btn-outline-secondary p-2 w-25"
-                                           data-bs-toggle="collapse"
-                                           th:data-bs-target="${'#collapsePreview' + stat.index}"
-                                           aria-expanded="false"
-                                           th:aria-controls="${'collapsePreview' + stat.index}"
-                                           th:data-collapse-id="${stat.index}"
-                                        >
-                                            Cancel
-                                        </a>
-                                        <button type="submit" class="btn btn-sm btn-outline-primary p-2 w-25">
-                                            Save
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+            <div class="d-flex justify-content-between">
+                <h2>Addresses</h2>
+                <div>
+                    <i class="bi bi-plus-lg me-1" style="font-size: 0.9rem"></i>
+                    <a href="#"
+                       class="link-dark link-underline-opacity-50-hover link-underline-opacity-0"
+                       id="newAddress">Create new
+                        address</a>
                 </div>
             </div>
-        </form>
+
+            <form th:object="${customer}" method="POST" th:action="@{/address_book/update}">
+                <input type="hidden" th:field="*{id}"/>
+                <input type="hidden" th:field="*{firstName}"/>
+                <input type="hidden" th:field="*{lastName}"/>
+                <input type="hidden" th:field="*{enabled}"/>
+                <input type="hidden" th:field="*{createdTime}"/>
+                <input type="hidden" th:field="*{email}"/>
+
+                <ul class="list-group list-group-flush">
+                    <li th:each="address,stat : *{addresses}" class="list-group-item">
+                        <input type="hidden" th:field="*{addresses[__${stat.index}__].id}"/>
+                        <input type="hidden" th:field="*{addresses[__${stat.index}__].customer}"/>
+
+
+                        <div class="d-flex justify-content-between">
+                            <div th:if="${address.primary}">
+                                <span class="fs-5">Shipping address</span><span class="badge text-bg-primary ms-3">Primary</span>
+                            </div>
+                            <div th:if="${!address.primary}">
+                                <span class="fs-5" th:text="${'Extra shipping address #' + (stat.index)}"></span>
+                            </div>
+                            <div>
+                                <a class="link-dark link-underline-opacity-50-hover link-underline-opacity-0 collapse-btn"
+                                   data-bs-toggle="collapse"
+                                   th:href="${'#collapseForm' + stat.index}" role="button" aria-expanded="false"
+                                   th:aria-controls="${'collapseForm' + stat.index}"
+                                   th:data-collapse-id="${stat.index}"
+                                   th:id="${'collapseBtn' + stat.index}"
+                                >
+                                    Edit
+                                </a>
+
+                                <a class="link-danger link-underline-opacity-50-hover link-underline-opacity-0 d-none delete-btn"
+                                   th:href="@{|/address_book/delete/${address.id}|}"
+                                   th:id="${'deleteBtn' + stat.index}"
+                                >
+                                    Delete
+                                </a>
+                            </div>
+                        </div>
+
+                        <div th:replace="~{address/address_fragments :: addressPreview(${address}, ${stat.index}, ${address.fullName}, ${address.phoneNumber}, ${address.fullAddress})}"></div>
+
+                        <div class="collapse my-3" th:id="${'collapseForm' + stat.index}">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].firstName', 'First name')}"></div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].lastName', 'Last name')}"></div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].phoneNumber', 'Phone number')}"></div>
+                                </div>
+
+
+                            </div>
+
+                            <div class="row g-3 mt-3">
+
+                                <div class="col-sm-6">
+                                    <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].addressLine1', 'Address Line 1')}"></div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].addressLine2', 'Address Line 2')}"></div>
+                                </div>
+
+                                <div class="col-sm-12">
+                                    <div class="form-floating">
+                                        <select class="form-select country"
+                                                th:field="*{addresses[__${stat.index}__].country}"
+                                                th:data-id="${address.id}"
+                                                aria-label="Floating label select example">
+                                            <option th:each="country : ${countryList}" th:value="${country.id}"
+                                                    th:text="${country.name}"></option>
+                                        </select>
+                                        <label>Select country</label>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-sm-4">
+                                    <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].city', 'City')}"></div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div th:replace="~{form_fragments :: field_form_floating_text('addresses[__${stat.index}__].postalCode', 'Postal code')}"></div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-floating">
+                                        <input th:list="${'states' + address.id}" class="form-control"
+                                               placeholder="State"
+                                               th:field="*{addresses[__${stat.index}__].state}">
+                                        <datalist th:id="${'states' + address.id}">
+
+                                        </datalist>
+                                        <label>State</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div th:replace="~{form_fragments :: field_check('addresses[__${stat.index}__].primary', 'Primary')}"></div>
+                                </div>
+
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-sm-6 d-flex gap-3">
+                                    <a href="#" class="btn btn-sm collapse-btn btn-outline-secondary p-2 w-25"
+                                       data-bs-toggle="collapse"
+                                       th:data-bs-target="${'#collapsePreview' + stat.index}"
+                                       aria-expanded="false"
+                                       th:aria-controls="${'collapsePreview' + stat.index}"
+                                       th:data-collapse-id="${stat.index}"
+                                    >
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary p-2 w-25">
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </form>
+        </div>
     </div>
-</main>
+</div>
+
+<div class="d-lg-none sticky-bottom bg-dark py-2">
+    <div class="container text-center">
+        <button id="toggleSidebar" class="btn btn-dark w-100"><i class="bi bi-layout-sidebar-inset"
+                                                                 style="font-size: 1.5rem;"></i>
+        </button>
+    </div>
+</div>
+
+<div class="sidebar-nav" id="sidebarNav">
+    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
 <footer th:replace="~{navigations :: footer()}"></footer>
 
 <div th:replace="~{address/address_fragments :: newAddressModal()}"></div>
 <div th:replace="~{address/address_fragments :: deleteAddressModal()}"></div>
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
-<script type="text/javascript" th:src="@{/js/addresses.js}"></script>
-
 
 <script th:replace="~{common :: configurations()}"></script>
 <script th:replace="~{common :: cart_initialization()}"></script>
+<script type="text/javascript" th:src="@{/js/addresses.js}"></script>
+<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
+
+<script type="text/javascript">
+    $(function () {
+
+        var validator = new FormValidator('mainForm', [
+            {
+                name: 'firstName',
+                display: 'First Name',
+                rules: 'required|max_length[45]',
+            },
+            {
+                name: 'lastName',
+                display: 'Last Name',
+                rules: 'required|max_length[45]'
+            },
+            {
+                name: 'phoneNumber',
+                display: 'Phone Number',
+                rules: 'required|max_length[15]'
+            },
+            {
+                name: 'addressLine1',
+                display: 'Address Line 1',
+                rules: 'required|max_length[64]'
+            },
+            {
+                name: 'addressLine2',
+                display: 'Address Line 2',
+                rules: 'max_length[64]'
+            },
+            {
+                name: 'country',
+                display: 'Country',
+                rules: 'required'
+            },
+            {
+                name: 'city',
+                display: 'City',
+                rules: 'required|max_length[45]'
+            },
+            {
+                name: 'postalCode',
+                display: 'Postal code',
+                rules: 'required|max_length[10]'
+            },
+            {
+                name: 'state',
+                display: 'State',
+                rules: 'required|max_length[45]'
+            },
+            {
+                name: "g-recaptcha-response",
+                display: "Recaptcha response",
+                rules: "required"
+            }
+        ], handleValidations);
+
+    })
+</script>
 </body>
 </html>
+

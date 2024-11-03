@@ -1,10 +1,11 @@
 <th:block th:fragment="thumbs(endpointBeginning, votedEntity)">
 
-    <a th:href="@{|/${endpointBeginning}/${votedEntity.id}/up|}" class="link-primary vote-up"><i
+    <a id="voteUp" th:href="@{|/${endpointBeginning}/${votedEntity.id}/up|}" class="vote link-primary vote-up"><i
             class="fa-thumbs-up fa-xl"
             th:classappend="${votedEntity.upVotedByCurrentCustomer ? 'fa-solid' : 'fa-regular'}"></i></a>
-    <strong th:text="${votedEntity.votes != null ? votedEntity.votes + ' votes' : '0 votes'}" class="vote-count"></strong>
-    <a th:href="@{|/${endpointBeginning}/${votedEntity.id}/down|}" class="link-primary vote-down"><i
+    <strong th:text="${votedEntity.votes != null ? votedEntity.votes + ' votes' : '0 votes'}" id="voteCount" class="vote-count"></strong>
+    <a id="voteDown" th:href="@{|/${endpointBeginning}/${votedEntity.id}/down|}" class="vote link-primary vote-down"><i
             class="fa-thumbs-down fa-xl"
             th:classappend="${votedEntity.downVotedByCurrentCustomer ? 'fa-solid' : 'fa-regular'}"></i></a>
 </th:block>
+

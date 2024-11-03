@@ -9,52 +9,58 @@
         </label>
         <div class="col-sm-8">
             <div class="d-flex flex-column gap-3">
-                <!--     for now only return & sender todo: add separate addresses for different purposes           -->
                 <div class="form-floating">
-                    <input type="text" class="form-control" placeholder="Company name">
-                    <label>Company name</label>
+                    <input type="text" class="form-control" placeholder="Contact first name" id="ORIGIN_ADDRESS_FIRST_NAME" name="ORIGIN_ADDRESS_FIRST_NAME" th:value="${ORIGIN_ADDRESS_FIRST_NAME}">
+                    <label>Contact First Name</label>
                 </div>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" placeholder="Contact full name">
-                    <label>Contact full name</label>
+                    <input type="text" class="form-control" placeholder="Contact last name" id="ORIGIN_ADDRESS_LAST_NAME" name="ORIGIN_ADDRESS_LAST_NAME" th:value="${ORIGIN_ADDRESS_LAST_NAME}">
+                    <label>Contact Last Name</label>
                 </div>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" placeholder="Contact phone">
+                    <input type="text" class="form-control" placeholder="Contact phone" id="ORIGIN_ADDRESS_PHONE" name="ORIGIN_ADDRESS_PHONE" th:value="${ORIGIN_ADDRESS_PHONE}">
                     <label>Contact phone</label>
                 </div>
 
                 <div class="form-floating">
-                    <input type="email" class="form-control" placeholder="Contact email">
+                    <input type="email" class="form-control" placeholder="Contact email" id="ORIGIN_ADDRESS_EMAIL" name="ORIGIN_ADDRESS_EMAIL" th:value="${ORIGIN_ADDRESS_EMAIL}">
                     <label>Contact email</label>
                 </div>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" placeholder="City">
+                    <input type="text" class="form-control" placeholder="City" id="ORIGIN_ADDRESS_CITY" name="ORIGIN_ADDRESS_CITY" th:value="${ORIGIN_ADDRESS_CITY}">
                     <label>City</label>
                 </div>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" placeholder="Address Line 1">
+                    <input type="text" class="form-control" placeholder="Address Line 1" id="ORIGIN_ADDRESS_LINE1" name="ORIGIN_ADDRESS_LINE1" th:value="${ORIGIN_ADDRESS_LINE1}">
                     <label>Address Line 1</label>
                 </div>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" placeholder="Address Line 2">
+                    <input type="text" class="form-control" placeholder="Address Line 2" id="ORIGIN_ADDRESS_LINE2" name="ORIGIN_ADDRESS_LINE2" th:value="${ORIGIN_ADDRESS_LINE2}">
                     <label>Address Line 2</label>
                 </div>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" placeholder="Postal code">
+                    <input type="text" class="form-control" placeholder="Postal code" id="ORIGIN_ADDRESS_POSTAL_CODE" name="ORIGIN_ADDRESS_POSTAL_CODE" th:value="${ORIGIN_ADDRESS_POSTAL_CODE}">
                     <label>Postal code</label>
                 </div>
 
-                <select>country</select>
+                <div class="form-floating">
+                    <input type="hidden" th:value="${ORIGIN_ADDRESS_COUNTRY}" id="ORIGIN_ADDRESS_COUNTRY" name="ORIGIN_ADDRESS_COUNTRY"/>
+                    <select class="form-select" id="countriesShippingSettings">
+                    </select>
+                    <label for="countriesShippingSettings">Country</label>
+                </div>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" placeholder="State">
-                    <label>State</label>
+                    <input type="hidden" th:value="${ORIGIN_ADDRESS_STATE}" id="ORIGIN_ADDRESS_STATE" name="ORIGIN_ADDRESS_STATE"/>
+                    <select class="form-select" id="statesShippingSettings">
+                    </select>
+                    <label for="statesShippingSettings">State</label>
                 </div>
 
             </div>
@@ -73,5 +79,10 @@
             </select>
         </div>
 
+
+        <div class="d-flex justify-content-center gap-3 mt-5">
+            <input type="submit" value="Update" class="btn btn-primary rounded-4"/>
+            <input type="button" value="Cancel" class="btn btn-secondary rounded-4 cancel" onclick="goToListPage()"/>
+        </div>
     </div>
 </div>

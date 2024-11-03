@@ -39,29 +39,15 @@ public class PriceService {
      *
      * @param amount       The amount to be converted.
      * @param baseCurrencyCode         The baseCurrencyCode currency code.
-     * @param targetCurrencyCode       The targetCurrencyCode currency code.
-     * @param exchangeRate The exchange rate from baseCurrencyCode to targetCurrencyCode currency.
      * @return The converted amount in the smallest unit of the targetCurrencyCode currency.
      * @throws CurrencyNotFoundException if the currency is not found.
      */
-    public long convertAmount(BigDecimal amount, String baseCurrencyCode, String targetCurrencyCode, BigDecimal exchangeRate)
+    public long convertAmount(BigDecimal amount, String baseCurrencyCode)
             throws CurrencyNotFoundException {
-        if (!baseCurrencyCode.equals(targetCurrencyCode)) {
-            if (exchangeRate == null) {
-                throw new IllegalStateException(
-                        "Exchange rate must be provided if calculation currency is different than baseCurrencyCode currency");
-            }
-
-            Currency targetCurrency = getCurrency(targetCurrencyCode);
-
-            BigDecimal convertedAmount = convertAmount(amount, targetCurrency.getUnitAmount(), exchangeRate);
-            return handleRoundingAmountByCurrency(convertedAmount, targetCurrency.getUnitAmount());
-        } else {
             Currency baseCurrency = getCurrency(baseCurrencyCode);
 
             BigDecimal convertedAmount = convertAmount(amount, baseCurrency.getUnitAmount());
             return handleRoundingAmountByCurrency(convertedAmount, baseCurrency.getUnitAmount());
-        }
     }
 
     /**
@@ -73,18 +59,6 @@ public class PriceService {
      */
     public BigDecimal convertAmount(BigDecimal amount, BigDecimal unitAmount) {
         return amount.multiply(unitAmount);
-    }
-
-    /**
-     * Converts an amount by multiplying it with the unit amount of the currency and the exchange rate.
-     *
-     * @param itemSubtotal The amount to be converted.
-     * @param unitAmount   The unit amount of the currency.
-     * @param exchangeRate The exchange rate.
-     * @return The converted amount.
-     */
-    private BigDecimal convertAmount(BigDecimal itemSubtotal, BigDecimal unitAmount, BigDecimal exchangeRate) {
-        return itemSubtotal.multiply(exchangeRate).multiply(unitAmount);
     }
 
     /**
@@ -147,28 +121,6 @@ public class PriceService {
             return displayPrice.setScale(2, RoundingMode.HALF_UP);
         } else {
             return displayPrice.setScale(0, RoundingMode.HALF_UP);
-        }
-    }
-
-    /**
-     * Converts a price from base currency to target currency using the given exchange rate.
-     *
-     * @param price        The price to be converted.
-     * @param unitAmount   The unit amount of the target currency.
-     * @param exchangeRate The exchange rate.
-     * @param base         The base currency code.
-     * @param target       The target currency code.
-     * @return The converted price.
-     */
-    public BigDecimal convertPrice(BigDecimal price, long unitAmount, BigDecimal exchangeRate, String base, String target) {
-        if (exchangeRate == null || target.equalsIgnoreCase(base)) exchangeRate = BigDecimal.ONE;
-
-        if (unitAmount == 1000L) {
-            return price.multiply(exchangeRate).setScale(3, RoundingMode.HALF_UP);
-        } else if (unitAmount == 100L) {
-            return price.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
-        } else {
-            return price.multiply(exchangeRate).setScale(0, RoundingMode.HALF_UP);
         }
     }
 

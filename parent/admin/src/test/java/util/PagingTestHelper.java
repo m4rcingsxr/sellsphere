@@ -96,14 +96,14 @@ public class PagingTestHelper {
      * @return the PageRequest object
      */
     public static PageRequest createPageRequest(int page, int size, String sortField,
-                                                String sortDirection) {
+                                                Sort.Direction sortDirection) {
         Sort sort = createSort(sortField, sortDirection);
         return PageRequest.of(page, size, sort);
     }
 
 
-    public static Sort createSort(String sortField, String sortDirection) {
-        return Sort.by(Sort.Direction.fromString(sortDirection), sortField);
+    public static Sort createSort(String sortField, Sort.Direction sortDirection) {
+        return Sort.by(sortDirection, sortField);
     }
 
     private static String capitalize(String str) {

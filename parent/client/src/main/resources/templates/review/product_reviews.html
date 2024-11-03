@@ -8,7 +8,16 @@
 
 <header th:replace="~{navigations :: header()}"></header>
 
-<section>
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
+        </div>
+    </div>
+</div>
+
+<section class="p-4 my-4">
     <div class="container">
         <nav th:replace="~{navigations :: breadcrumbCategory(${listCategoryParents})}"></nav>
 
@@ -52,14 +61,12 @@
 
 
 <footer th:replace="~{navigations :: footer()}"></footer>
-
 <div th:replace="~{modal_fragments :: close_modal('info_modal')}"></div>
-<div th:replace="~{review/review_fragments :: review_toast()}"></div>
 
+<script type="text/javascript" th:src="@{/js/votes_reviews.js}"></script>
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
     const LOGGED_IN = "[[${#authorization.expression('isAuthenticated()')}]]" === "true";
-    const REVIEW_PERMISSION = "[[${reviewPermission}]]" === "true";
     const AVG_RATING = '[[${product.averageRating}]]';
     const PRODUCT_ALIAS = '[(${product.alias})]';
 
@@ -91,6 +98,7 @@
                 $("#rate").val(rating);
             }
         }
+
         $("#rateYo3").rateYo(options);
 
 
@@ -102,7 +110,5 @@
         window.location.href = url;
     }
 </script>
-<script type="text/javascript" th:src="@{/js/votes_reviews.js}"></script>
-<script type="text/javascript" th:src="@{/js/review_toast.js}"></script>
 </body>
 </html>
