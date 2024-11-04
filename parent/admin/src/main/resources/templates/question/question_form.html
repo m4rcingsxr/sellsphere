@@ -5,45 +5,58 @@
 
 <header th:replace="~{navigations :: header()}"></header>
 
-<section class="content">
-
-    <div class="container mt-7">
-
-        <h1 class="text-center">EDIT QUESTION [[${question.id}]]</h1>
-
-        <form id="mainForm" th:action="@{/questions/save}" method="POST" th:object="${question}">
-            <div class="mx-auto mt-5">
-                <div th:replace="~{common :: alerts()}"></div>
-
-                <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
-                    <input type="hidden" th:field="*{id}"/>
-                    <input type="hidden" th:field="*{product}"/>
-                    <input type="hidden" th:field="*{customer}"/>
-
-                    <th:block th:replace="~{form_fragments :: text_input('Product', 'product.name', true)}"></th:block>
-
-                    <label class="form-label col-sm-label col-sm-4">Question</label>
-                    <div class="col-sm-8">
-                        <textarea class="form-control" th:field="*{questionContent}" rows="3"></textarea>
-                    </div>
-
-                    <th:block th:replace="~{form_fragments :: text_input('Asked by', 'customer.fullName', true)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: text_input('Asked time', 'askTime', true)}"></th:block>
-                    <th:block th:replace="~{form_fragments :: text_input('Votes', 'votes', true)}"></th:block>
-
-                    <label class="form-label col-sm-label col-sm-4">Answer</label>
-                    <div class="col-sm-8">
-                        <textarea class="form-control" th:field="*{answerContent}" rows="3"></textarea>
-                    </div>
-
-                    <th:block th:replace="~{form_fragments :: checkbox_input('Approved', 'approvalStatus', ${question.approvalStatus}, false)}"></th:block>
-                </div>
-
-                <div th:replace="~{form_fragments :: form_buttons(${question})}"></div>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="navigations :: sidebar('Questions')"></div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2" th:text="${'EDIT QUESTION ' + question.id}"></h1>
             </div>
-        </form>
+
+            <section class="content mb-5">
+                <div class="container-md mt-7">
+                    <form id="mainForm" th:action="@{/questions/save}" method="POST" th:object="${question}">
+                        <div class="mx-auto mt-5">
+                            <div th:replace="~{common :: alerts()}"></div>
+
+                            <div class="border border-1 rounded-3 px-4 pb-4 shadow-sm row g-3">
+                                <input type="hidden" th:field="*{id}"/>
+                                <input type="hidden" th:field="*{product}"/>
+                                <input type="hidden" th:field="*{customer}"/>
+
+                                <th:block
+                                        th:replace="~{form_fragments :: text_input('Product', 'product.name', true)}"></th:block>
+
+                                <label class="form-label col-sm-label col-sm-4">Question</label>
+                                <div class="col-sm-8">
+                                    <textarea class="form-control" th:field="*{questionContent}" rows="3"></textarea>
+                                </div>
+
+                                <th:block
+                                        th:replace="~{form_fragments :: text_input('Asked by', 'customer.fullName', true)}"></th:block>
+                                <th:block
+                                        th:replace="~{form_fragments :: text_input('Asked time', 'askTime', true)}"></th:block>
+                                <th:block
+                                        th:replace="~{form_fragments :: text_input('Votes', 'votes', true)}"></th:block>
+
+                                <label class="form-label col-sm-label col-sm-4">Answer</label>
+                                <div class="col-sm-8">
+                                    <textarea class="form-control" th:field="*{answerContent}" rows="3"></textarea>
+                                </div>
+
+                                <th:block
+                                        th:replace="~{form_fragments :: checkbox_input('Approved', 'approvalStatus', ${question.approvalStatus}, false)}"></th:block>
+                            </div>
+
+                            <div th:replace="~{form_fragments :: form_buttons(${question})}"></div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
     </div>
-</section>
+</div>
+
 
 <script type="text/javascript">
     // static elements

@@ -86,7 +86,7 @@
             required: true,
             email: true,
             remote: {
-                url: `${MODULE_URL}users/check_uniqueness`,
+                url: `${MODULE_URL}users/email/unique-check`,
                 type: "post",
                 data: {
                     email: function () {

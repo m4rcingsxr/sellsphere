@@ -171,7 +171,7 @@ class SettingServiceIntegrationTest {
     }
 
     @Test
-    void givenValidCountryDetails_whenSaveCountry_thenCountryIsSaved() {
+    void givenValidCountryDetails_whenSaveCountry_thenCountryIsSaved() throws CountryNotFoundException {
         // Given
         Country newCountry = new Country();
         newCountry.setName("TestCountry");

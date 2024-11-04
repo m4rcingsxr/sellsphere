@@ -69,7 +69,7 @@ public class RestCountryController {
      * @return a {@link ResponseEntity} containing the saved {@link CountryDTO}.
      */
     @PostMapping("/countries/save")
-    public ResponseEntity<CountryDTO> save(@RequestBody Country country) {
+    public ResponseEntity<CountryDTO> save(@RequestBody Country country) throws CountryNotFoundException {
         Country savedCountry = settingService.saveCountry(country);
         return ResponseEntity.ok(new CountryDTO(savedCountry));
     }

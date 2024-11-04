@@ -120,7 +120,6 @@ function hideAllArticleForms() {
  */
 function showArticleNavigationForm() {
     $("#navigation, #itemNumber").removeClass("d-none");
-    $('input[name="itemNumber"]').val("");
 }
 
 /**
@@ -141,7 +140,6 @@ async function showArticlePromotionForm() {
  */
 function showArticleFooterForm() {
     $("#footer, #itemNumber").removeClass("d-none");
-    $('input[name="itemNumber"]').val("");
 }
 
 

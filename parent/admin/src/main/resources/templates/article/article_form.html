@@ -63,7 +63,7 @@
                             <div class="col-sm-6">
                                 <input type="text" id="navigation-order" class="form-control"
                                        th:value="${navItem != null ? navItem.itemNumber : (footerItem != null ? footerItem.itemNumber : '')}"
-                                       name="itemNumber" readonly/>
+                                       name="itemNumber"/>
                                 <span th:replace="~{form_fragments:: field_error('itemNumber')}"></span>
                             </div>
                         </div>

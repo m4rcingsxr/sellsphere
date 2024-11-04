@@ -218,7 +218,7 @@ public class SettingService {
      * @param country the country entity to save
      * @return the saved {@link Country} entity
      */
-    public Country saveCountry(Country country) {
+    public Country saveCountry(Country country) throws CountryNotFoundException {
         String errorMessage = "";
         if (country.getName().isEmpty() || country.getName().length() > 64) {
             errorMessage = "Country name cannot be empty and must not exceed 64 characters.";
@@ -231,6 +231,9 @@ public class SettingService {
         if (!errorMessage.isEmpty()) {
             throw new IllegalArgumentException(errorMessage);
         }
+
+        Country existingCountry = findCountryById(country.getId());
+        country.setCurrency(existingCountry.getCurrency());
 
         return countryRepository.save(country);
     }
