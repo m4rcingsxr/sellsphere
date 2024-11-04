@@ -61,4 +61,5 @@
     <include file="db/changelog/db-changelog-2024-11-01-update-settings-table.xml"/>
     <include file="db/changelog/db-changelog-2024-11-01-update-payment_intents-table.xml"/>
     <include file="db/changelog/db-changelog-2024-11-02-update-order-table.xml"/>
+    <include file="db/changelog/db-changelog-2024-11-03-add-wishlist-table.xml"/>
 </databaseChangeLog>

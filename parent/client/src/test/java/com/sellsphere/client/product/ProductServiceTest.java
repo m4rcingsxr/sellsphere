@@ -52,7 +52,7 @@ class ProductServiceTest {
         productPageRequest.setMaxPrice(BigDecimal.valueOf(1000));
 
         // Call the method to test
-        ProductPageResponse response = productService.listProducts(productPageRequest);
+        ProductPageResponse response = productService.listProducts(productPageRequest, null);
 
         // Assert the response
         assertNotNull(response);

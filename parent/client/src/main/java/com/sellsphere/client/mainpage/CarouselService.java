@@ -141,7 +141,7 @@ public class CarouselService {
         return carouselArticleMap;
     }
 
-    public Map<Carousel, List<Object>> getAllCarousels() {
+    public Map<Carousel, List<Object>> getAllCarousels(Customer customer) {
         // Step 1: Retrieve all carousels (both PRODUCTS and ARTICLES) in the correct order
         List<Carousel> carousels = carouselRepository.findAllByTypeInOrderByCarouselOrder(List.of(CarouselType.ARTICLE, CarouselType.PROMOTION));
 
@@ -165,6 +165,7 @@ public class CarouselService {
                 if (carousel.getType() == CarouselType.PROMOTION) {
                     // Fetch products by IDs for PRODUCT carousels
                     List<Product> products = productRepository.findAllById(carouselItemsIDs);
+                    products.forEach(product -> product.isOnTheWishlist(customer));
 
                     // Map product IDs to the corresponding product
                     Map<Integer, Product> productMap = products.stream()

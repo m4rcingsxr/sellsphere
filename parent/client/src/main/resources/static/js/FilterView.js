@@ -54,7 +54,7 @@ class FilterView {
                 
                 <div class="position-absolute top-0 end-0">
                     <a href="#" class="cart-icon link-dark d-block add-to-cart" data-product-id="${product.id}"><i class="bi bi-cart cart-icon-size"></i></a>
-                    <a href="#" class="heart-icon link-dark"><i class="bi bi-heart cart-icon-size"></i></a>
+                    <a href="#" class="heart-icon link-dark wishlist" data-product-id="${product.id}"><i class="bi ${product.onTheWishlist ? 'bi-heart-fill text-danger' : 'bi-heart'} cart-icon-size"></i></a>
                 </div>
                 
                 <div class="product-carousel-card-details p-2">
@@ -76,6 +76,7 @@ class FilterView {
     toggleFilters() {
         $("#products, #allFilters, .viewProducts, #showAllFilters, #filters, #allFilterNames, #pagination").toggleClass("d-none");
     }
+
 
     /**
      * Renders all filter names based on the provided count map.

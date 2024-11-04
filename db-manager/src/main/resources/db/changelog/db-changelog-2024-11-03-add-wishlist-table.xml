@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1730662412585-10" author="Marcin Seweryn">
+        <createTable tableName="wishlist">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist"/>
+            </column>
+            <column name="customer_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1730662412585-11" author="Marcin Seweryn">
+        <createTable tableName="wishlist_product">
+            <column name="product_id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist_product"/>
+            </column>
+            <column name="wishlist_id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist_product"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1730664044940-12" author="Marcin Seweryn">
+        <addUniqueConstraint columnNames="customer_id" constraintName="uc_wishlist_customer" tableName="wishlist"/>
+    </changeSet>
+    <changeSet id="1730662412585-12" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="wishlist_product"
+                                 constraintName="fk_wispro_on_product" referencedColumnNames="id"
+                                 referencedTableName="products"/>
+    </changeSet>
+    <changeSet id="1730662412585-13" author="Marcin Seweryn">
+        <addForeignKeyConstraint baseColumnNames="wishlist_id" baseTableName="wishlist_product"
+                                 constraintName="fk_wispro_on_wishlist" referencedColumnNames="id"
+                                 referencedTableName="wishlist"/>
+    </changeSet>
+    <changeSet id="1730664044940-10" author="Marcin Seweryn">
+        <createTable tableName="wishlist">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist"/>
+            </column>
+
+        </createTable>
+    </changeSet>
+    <changeSet id="1730664044940-11" author="Marcin Seweryn">
+        <createTable tableName="wishlist_product">
+            <column name="product_id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist_product"/>
+            </column>
+            <column name="wishlist_id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist_product"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

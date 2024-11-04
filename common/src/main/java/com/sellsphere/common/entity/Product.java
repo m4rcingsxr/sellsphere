@@ -12,9 +12,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Represents a product entity in the system. This class is mapped to the "products" table
@@ -264,6 +262,12 @@ public class Product extends IdentifiedEntity {
     @ManyToMany(mappedBy = "products")
     private List<Promotion> promotions;
 
+    @ManyToMany(mappedBy = "products", fetch = FetchType.EAGER)
+    private Set<Wishlist> wishlists = new HashSet<>();
+
+    @Transient
+    private boolean wishlistAssigned;
+
     public Product(Integer id) {
         this.id = id;
     }
@@ -355,6 +359,17 @@ public class Product extends IdentifiedEntity {
         return this.questionCount;
     }
 
+    public boolean isOnTheWishlist(Customer customer) {
+        if(customer != null) {
+            this.wishlistAssigned =
+                    this.wishlists.stream().anyMatch(wishlist -> wishlist.getCustomer().getId().equals(
+                            customer.getId()) && wishlist.getProducts().stream().anyMatch(
+                            product -> product.getId().equals(this.id)));
+        }
+
+        return wishlistAssigned;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
@@ -373,6 +388,9 @@ public class Product extends IdentifiedEntity {
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy ?
-                ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+                ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() :
+                getClass().hashCode();
     }
+
+
 }

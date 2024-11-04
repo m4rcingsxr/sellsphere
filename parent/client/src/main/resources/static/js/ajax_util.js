@@ -121,6 +121,34 @@ const ajaxUtil = {
         return responseBody ? JSON.parse(responseBody) : null;
     },
 
+    async postText(url, data) {
+        const csrfToken = this.getCSRFToken();
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken;
+        }
+
+        const options = {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(data)
+        };
+
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            const error = new Error(`POST request failed: ${response.statusText}`);
+            error.response = errorResponse;
+            throw error;
+        }
+
+        return response.text();
+    },
+
 
     /**
      * Performs a POST request to the specified URL with the provided data.

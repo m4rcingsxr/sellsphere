@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{common :: head('Wishlist')}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/customer.css}"/>
+    <link rel="stylesheet" th:href="@{/css/products.css}"/>
+</head>
+<body>
+<nav th:replace="~{navigations :: header()}"></nav>
+
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
+        </div>
+    </div>
+</div>
+
+<div class="container p-0 mt-2 position-relative mb-7">
+    <div th:replace="~{common :: alerts()}"></div>
+
+    <div class="row mt-2 p-0 m-0">
+        <div class="col-lg-3 col-3 d-none d-lg-block">
+            <div th:replace="~{customer/customer_navigation :: nav()}"></div>
+        </div>
+
+        <div th:if="${wishlist != null and wishlist.products.size() > 0}" class="col-lg-9 col-12 my-4">
+            <h2 >Wishlist</h2>
+
+            <div class="row mt-3">
+                <div th:each="product : ${wishlist.products}" class="col-sm-4 position-relative">
+                    <div th:replace="~{product/product_fragments :: product_card()}"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-9 col-12 my-4" id="empty-wishlist" th:classappend="${wishlist != null and wishlist.products.size() > 0 ? 'd-none' : ''}">
+
+            <div class="d-flex flex-column justify-content-center align-items-center h-50 mt-4">
+                <h4>Your wishlist is currently empty</h4>
+                <p class="text-light-emphasis fs-7">Take a look around and discover something you'll love! Add items to your wishlist to keep track of your favorites.</p>
+                <a class="btn btn-outline-primary mt-3" th:href="@{/}">Find Your Favorites</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="d-lg-none sticky-bottom bg-dark py-2">
+    <div class="container text-center">
+        <button id="toggleSidebar" class="btn btn-dark w-100">
+            <i class="bi bi-layout-sidebar-inset"
+               style="font-size: 1.5rem;"></i>
+        </button>
+    </div>
+</div>
+
+<div class="sidebar-nav" id="sidebarNav">
+    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+
+<footer th:replace="~{navigations :: footer()}"></footer>
+<script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
+<script type="text/javascript" th:src="@{/js/wishlist.js}"></script>
+<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
+
+
+</body>
+</html>
+
+

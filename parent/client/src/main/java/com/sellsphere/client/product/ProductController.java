@@ -77,6 +77,8 @@ public class ProductController {
         List<Category> categoryParentList = categoryService.getCategoryParents(
                 product.getCategory());
 
+        product.isOnTheWishlist(customer);
+
         List<Review> reviewList = reviewService.getFirst5ApprovedReviews(product);
         Map<Integer, Float> ratingPercentages = reviewService.calculateRatingPercentages(product);
         boolean customerReviewPermission = reviewService.hasCustomerReviewPermission(customer, product);

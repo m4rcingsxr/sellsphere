@@ -1,5 +1,6 @@
 package com.sellsphere.common.entity.payload;
 
+import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetailDto;
 import jakarta.persistence.Transient;
@@ -53,8 +54,15 @@ public class BasicProductDTO implements Serializable {
 
     String mainImagePath;
 
+    boolean isOnTheWishlist;
+
 
     List<ProductDetailDto> details;
+
+    public BasicProductDTO(Product other, Customer customer) {
+        this(other);
+        if (customer != null) this.isOnTheWishlist = other.isOnTheWishlist(customer);
+    }
 
     public BasicProductDTO(Product other) {
         this.id = other.getId();
@@ -79,11 +87,16 @@ public class BasicProductDTO implements Serializable {
         }
         return price.setScale(PRICE_SCALE, ROUNDING_MODE);
     }
+
     @Transient
     public String getShortName() {
         if (this.name.length() > 60) {
             return this.name.substring(0, 60).concat("...");
         }
         return this.name;
+    }
+
+    public void setWishlistAssigned(Customer customer) {
+
     }
 }

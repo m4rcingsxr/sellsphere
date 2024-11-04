@@ -1,5 +1,6 @@
 package com.sellsphere.client.product;
 
+import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetail;
 import com.sellsphere.common.entity.ProductNotFoundException;
@@ -42,7 +43,7 @@ public class ProductService {
      *                           information.
      * @return a response object containing the list of products and pagination details.
      */
-    public ProductPageResponse listProducts(ProductPageRequest productPageRequest) {
+    public ProductPageResponse listProducts(ProductPageRequest productPageRequest, Customer customer) {
 
         // Create the specification for filtering products based on request parameters.
         Specification<Product> spec = ProductSpecification.filterProducts(
@@ -74,7 +75,7 @@ public class ProductService {
 
         // Build and return the response
         return ProductPageResponse.builder()
-                .content(productPage.map(BasicProductDTO::new).toList())
+                .content(productPage.map(product -> new BasicProductDTO(product, customer)).toList())
                 .page(productPageRequest.getPageNum())
                 .totalElements(productPage.getTotalElements())
                 .totalPages(productPage.getTotalPages())

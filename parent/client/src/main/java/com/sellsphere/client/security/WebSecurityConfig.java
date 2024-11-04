@@ -42,6 +42,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/checkout/**").authenticated()
                         .requestMatchers("/addresses/**").authenticated()
                         .requestMatchers("/addresses/**").authenticated()
+                        .requestMatchers("/wishlist/**").authenticated()
                         .requestMatchers("/reviews").authenticated()
                         .anyRequest().permitAll()
                 )

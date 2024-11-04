@@ -35,7 +35,9 @@
 
                 <div th:replace="~{common :: product_price(${product.discountPrice}, ${product.discountPercent}, ${product.price})}"></div>
 
-                <a href="#"><i class="bi bi-bookmark-heart-fill fs-2 text-primary"></i></a>
+                <a href="#" class="btn btn-outline-danger wishlist px-2 py-1" th:data-product-id="${product.id}">
+                    <i class="${'bi cart-icon-size'}" th:classappend="${product.wishlistAssigned ? 'bi-heart-fill text-danger' : 'bi-heart'}" style="font-size: 1.3rem"></i>
+                </a>
 
                 <i th:if="${product.inStock}" class="ms-auto bi bi-check2-circle fs-6 text-success">
                     Available to order
@@ -155,12 +157,12 @@
     </div>
 
     <div class="position-absolute top-0 end-0">
-        <a href="#" class="cart-icon link-dark d-block add-to-cart">
+        <a href="#" class="cart-icon link-dark d-block add-to-cart" th:data-product-id="${product.id}">
             <i class="bi bi-cart cart-icon-size"></i>
         </a>
 
-        <a href="#" class="heart-icon link-dark">
-            <i class="bi bi-heart cart-icon-size"></i>
+        <a href="#" class="heart-icon link-dark wishlist" th:data-product-id="${product.id}">
+            <i class="${'bi cart-icon-size'}" th:classappend="${product.wishlistAssigned ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i>
         </a>
     </div>
 

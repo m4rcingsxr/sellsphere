@@ -2,6 +2,7 @@ package com.sellsphere.client.product;
 
 import com.sellsphere.client.category.CategoryRepository;
 import com.sellsphere.common.entity.Category;
+import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.payload.BasicProductDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,7 @@ class ProductFilterRestControllerTest {
                 .content(List.of(product1, product2))
                 .build();
 
-        when(productService.listProducts(any(ProductPageRequest.class))).thenReturn(pageResponse);
+        when(productService.listProducts(any(ProductPageRequest.class), any(Customer.class))).thenReturn(pageResponse);
 
         mockMvc.perform(get("/filter/products")
                                 .param("category_alias", "category")

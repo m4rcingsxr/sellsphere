@@ -82,7 +82,7 @@ class ShoppingCartController {
      * Initializes the add to cart with quantity event listener.
      */
     initializeAddToCartWithQuantityListener() {
-        $(".container").on('click', '.add-to-cart-quantity', event => {
+        $("body").on('click', '.add-to-cart-quantity', event => {
             event.preventDefault();
             const $target = $(event.currentTarget);
             const productId = Number($target.data("product-id"));
@@ -101,7 +101,7 @@ class ShoppingCartController {
      * Initializes the add to cart event listener. All elements that trigger this event must hava dataset attr - data-product-id
      */
     initializeAddToCartListener() {
-        $("#products").on('click', '.add-to-cart', event => {
+        $("body").on('click', '.add-to-cart', event => {
             event.preventDefault();
             const productId = Number($(event.currentTarget).data("product-id"));
             this.model.addItem(productId)
