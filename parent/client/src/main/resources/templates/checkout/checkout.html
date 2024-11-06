@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <th:block th:replace="~{common :: common_head('checkout')}"></th:block>
+    <th:block th:replace="~{form_fragments :: common_head('checkout')}"></th:block>
     <script src="https://js.stripe.com/v3/"></script>
     <script type="text/javascript" th:src="@{/node_modules/decimal.js/decimal.js}"></script>
     <script type="text/javascript" th:src="@{/js/debounce_util.js}"></script>
@@ -78,7 +78,8 @@
 
                                     </div>
                                     <div class="col-md-6 col-12">
-                                        <div id="shipping-rates" class="btn-group-vertical border-primary-subtle w-100" role="group"
+                                        <div id="shipping-rates" class="btn-group-vertical border-primary-subtle w-100"
+                                             role="group"
                                              aria-label="Vertical radio toggle button group">
 
                                         </div>
@@ -223,10 +224,20 @@
                         <span class="continue-btn" role="status">Continue to summary</span>
                     </button>
 
-                    <button class="btn btn-primary visually-hidden mt-2" type="button" id="place-order-btn" disabled>
+
+                    <button class="btn btn-primary visually-hidden mt-2" type="submit" id="place-order-btn"
+                            disabled>
                         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                         <span class="visually-hidden continue-btn" role="status">Place order</span>
                     </button>
+
+                    <div id="recaptcha-order" class="visually-hidden">
+                        <div class="mt-4" id="recaptcha-container"></div>
+                        <div id="recaptcha-error" class="invalid-feedback">
+                            Please verify
+                        </div>
+                    </div>
+
                 </div>
             </div>
 

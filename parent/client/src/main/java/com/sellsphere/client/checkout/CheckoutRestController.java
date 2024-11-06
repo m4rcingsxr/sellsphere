@@ -1,6 +1,8 @@
 package com.sellsphere.client.checkout;
 
+import com.sellsphere.client.RecaptchaVerificationService;
 import com.sellsphere.client.customer.CustomerService;
+import com.sellsphere.client.customer.RecaptchaVerificationFailed;
 import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.CalculationRequestDTO;
 import com.sellsphere.common.entity.payload.CalculationResponseDTO;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
@@ -98,7 +101,18 @@ public class CheckoutRestController {
     public ResponseEntity<Map<String, String>> createPaymentIntent(
             @Valid @RequestBody PaymentRequestDTO request, Principal principal)
             throws StripeException, CustomerNotFoundException, CurrencyNotFoundException,
-            AddressNotFoundException, CountryNotFoundException {
+            AddressNotFoundException, CountryNotFoundException, IOException {
+        RecaptchaVerificationService verificationService = new RecaptchaVerificationService();
+        RecaptchaVerificationService.VerificationResult result = verificationService.verifyToken(request.getRecaptchaResponse());
+
+        Map<String, String> response = new HashMap<>();
+
+        try {
+            verificationService.validate(result);
+        } catch (RecaptchaVerificationFailed e) {
+            response.put("status", "false");
+            return ResponseEntity.ok(response);
+        }
 
         // Retrieve the authenticated customer based on the principal
         Customer customer = getAuthenticatedCustomer(principal);
@@ -108,8 +122,8 @@ public class CheckoutRestController {
 
 
         // Return the client secret in a map to the frontend for further Stripe processing
-        Map<String, String> response = new HashMap<>();
         response.put("clientSecret", clientSecret);
+        response.put("status", "true");
 
         return ResponseEntity.ok(response);
     }

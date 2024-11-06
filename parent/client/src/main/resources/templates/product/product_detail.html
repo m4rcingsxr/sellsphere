@@ -114,7 +114,19 @@
             }
         }
 
-        $("#rateYo3").rateYo(options);
+        $("#rateYo3").rateYo({
+            rating: 1,
+            ratedFill: "#0d6efd",
+            maxValue: 5,
+            numStars: 5,
+            precision: 2,
+            fullStar: true,
+            spacing: "3px",
+            starWidth: "40px",
+            onChange: function (rating, rateYoInstance) {
+                $("#rate").val(rating);
+            }
+        });
 
         new FormValidator('questionForm', [
             {
@@ -141,9 +153,9 @@
                 rules: 'required|max_length[255]'
             },
             {
-                name: 'rate',
-                display: 'Rate',
-                rules: 'required'
+                name: "g-recaptcha-response",
+                display: "Recaptcha response",
+                rules: "required"
             }
         ], handleValidations);
 

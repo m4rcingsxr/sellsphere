@@ -108,6 +108,7 @@ class CheckoutModel {
             courierLogoUrl: selectedRate.courierLogoUrl,
             maxDeliveryTime: selectedRate.maxDeliveryTime,
             minDeliveryTime: selectedRate.minDeliveryTime,
+            recaptchaResponse : grecaptcha.getResponse()
         });
     }
 

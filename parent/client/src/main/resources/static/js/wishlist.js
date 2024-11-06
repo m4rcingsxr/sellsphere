@@ -5,7 +5,7 @@ $(function () {
 async function handleWishlistClick(event) {
     event.preventDefault();
     if(!LOGGED_IN) {
-        window.location.href= `${config.baseUrl}/realms/SellSphere/protocol/openid-connect/auth?response_type=code&client_id=login-app&scope=openid&state=DYhvxgGZQXoQz3RT9GZPf6ZdDuUEWx4nHSVbnqTfakY%3D&redirect_uri=${config.baseUrl}/login/oauth2/code/keycloak`;
+        window.location.href= `${config.baseUrl}/login`; // keycloakBaseUrl - prod
     }
     const $wishlistBtn = $(event.currentTarget);
     const $icon = $wishlistBtn.children();

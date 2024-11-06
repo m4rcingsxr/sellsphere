@@ -59,10 +59,12 @@ class CheckoutView {
 
     hidePaymentTabBtn() {
         this.continueToSummaryBtn.addClass('visually-hidden');
+        $("#recaptcha-order").addClass("visually-hidden");
     }
 
     showSummaryTabBtn() {
         this.placeOrderBtn.removeClass("visually-hidden");
+        $("#recaptcha-order").removeClass("visually-hidden");
     }
 
     hideSummaryTabBtn() {
@@ -179,20 +181,34 @@ class CheckoutView {
     }
 
     renderSummaryProducts(cart, currencySymbol) {
-        const html = cart.map(item =>
-            `
-                <div class="d-flex gap-3">
-                    <img src="${item.product.mainImagePath}" alt="${item.product.name}" class="img-fluid" style="max-width: 100px; max-height: 100px; object-fit: contain"/>
-                    <div>
-                        <h6><a class="link link-dark link-underline link-underline-opacity-50-hover link-underline-opacity-0" href="${MODULE_URL}p/${encodeURIComponent(item.product.alias)}">${item.product.name}</a></h6>
-                        <p class="fw-bolder">${item.quantity} x ${item.product.discountPrice} ${currencySymbol}</p>
-                    </div>
+        const html = cart.map(item => {
+            // Determine if the discountPercent is greater than 0
+            const hasDiscount = item.product.discountPercent > 0;
+
+            // Format prices with 2 decimal places
+            const formattedPrice = parseFloat(item.product.price).toFixed(2);
+            const formattedDiscountPrice = parseFloat(item.product.discountPrice).toFixed(2);
+
+            // Create HTML structure
+            return `
+            <div class="d-flex gap-3">
+                <img src="${item.product.mainImagePath}" alt="${item.product.name}" class="img-fluid" style="max-width: 100px; max-height: 100px; object-fit: contain"/>
+                <div>
+                    <h6><a class="link link-dark link-underline link-underline-opacity-50-hover link-underline-opacity-0" href="${MODULE_URL}p/${encodeURIComponent(item.product.alias)}">${item.product.name}</a></h6>
+                    <p class="fw-bolder">
+                        ${item.quantity} x 
+                        ${hasDiscount ? `<span class="fw-lighter text-decoration-line-through fs-6">${currencySymbol}${formattedPrice}</span> ` : ''}
+                        <strong>${currencySymbol}${formattedDiscountPrice}</strong>
+                    </p>
                 </div>
-            `
-        ).join("");
+            </div>
+        `;
+        }).join("");
 
         this.summaryProducts.empty().append(html);
     }
+
+
 
 
 }

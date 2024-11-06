@@ -8,6 +8,7 @@ $(function () {
         spacing: "3px",
         starWidth: "30px",
         precision: 2,
+        rating: 1,
         onChange: function (rating) {
             $("#rate").val(rating);
         }

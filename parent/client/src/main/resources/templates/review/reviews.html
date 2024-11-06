@@ -107,11 +107,12 @@
 
                     <div class="p-2">
                         <label class="fs-6 fw-bolder">Rating</label>
-                        <input type="hidden" th:field="*{rate}"/>
-                        <span class="invalid-feedback"></span>
                         <input type="hidden" th:field="*{product}"/>
                         <input type="hidden" name="customer" id="customer" th:value="${customer.id}"/>
                         <div class="mt-2 p-0" id="rateYo"></div>
+                        <input type="hidden" th:field="*{rate}" value="1"/>
+                        <span class="invalid-feedback"></span>
+
                     </div>
 
                     <div class="form-floating mt-4">
@@ -176,10 +177,11 @@
                 rules: 'required|max_length[255]'
             },
             {
-                name: 'rate',
-                display: 'Rate',
-                rules: 'required'
+                name: "g-recaptcha-response",
+                display: "Recaptcha response",
+                rules: "required"
             }
+
         ], handleValidations);
 
     })

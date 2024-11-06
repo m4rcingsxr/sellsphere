@@ -39,9 +39,9 @@
     <script type="text/javascript" th:src="@{/js/FormatPriceUtil.js}"></script>
 
     <!-- Shopping cart       -->
-    <script  type="text/javascript" th:src="@{/js/ShoppingCartModel.js}"></script>
-    <script  type="text/javascript" th:src="@{/js/ShoppingCartView.js}"></script>
-    <script  type="text/javascript" th:src="@{/js/ShoppingCartController.js}"></script>
+    <script type="text/javascript" th:src="@{/js/ShoppingCartModel.js}"></script>
+    <script type="text/javascript" th:src="@{/js/ShoppingCartView.js}"></script>
+    <script type="text/javascript" th:src="@{/js/ShoppingCartController.js}"></script>
 
 
     <script type="text/javascript" th:src="@{/js/category_list.js}"></script>
@@ -97,13 +97,24 @@
     </div>
 </section>
 
-<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 fs-3 align-items-center">
+<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 align-items-center">
+
+    <div class="d-none d-md-block d-flex gap-3">
+        <strong class="fs-4" th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(discountPrice, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></strong>
 
      <span th:if="${discountPercent > 0}"
            class="fw-lighter text-decoration-line-through fs-6"
            th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></span>
 
-    <strong th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(discountPrice, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></strong>
+    </div>
+
+    <div class="d-md-none">
+     <span th:if="${discountPercent > 0}"
+           class="fw-lighter text-decoration-line-through fs-8"
+           th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></span>
+
+        <strong class="fs-7" th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(discountPrice, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></strong>
+    </div>
 
 
 </div>
@@ -123,7 +134,8 @@
 </th:block>
 
 <div th:fragment="categoryList()" id="categoryList"
-     class="d-none border border-2 shadow-sm p-4 rounded-2 position-absolute top-0 bg-white w-100" style="z-index: 1995">
+     class="d-none border border-2 shadow-sm p-4 rounded-2 position-absolute top-0 bg-white w-100"
+     style="z-index: 1995">
     <div th:each="category : ${categoryList}" th:id="${category.name}"
          class="d-none d-flex flex-wrap flex-column" style="height: 470px; gap: 20px;">
         <div th:each="categoryChild : ${category.children}" style=" min-width: 200px;">
@@ -136,8 +148,6 @@
         </div>
     </div>
 </div>
-
-
 
 
 <script type="text/javascript" th:fragment="configurations()">
@@ -163,7 +173,7 @@
 <script type="text/javascript" th:fragment="cart_initialization()">
     const cartController = new ShoppingCartController(new ShoppingCartModel(), new ShoppingCartView());
 
-    $(function() {
+    $(function () {
         cartController.updateNavigationQuantity();
         cartController.initializeAddToCartWithQuantityListener();
         cartController.initializeAddToCartListener()

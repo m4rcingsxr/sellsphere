@@ -121,6 +121,7 @@ class CheckoutController {
     }
 
     async handleSubmit() {
+        showFullScreenSpinner();
 
         const handleError = (error) => {
             const messageContainer = document.querySelector("#error-message");
@@ -134,6 +135,7 @@ class CheckoutController {
 
         // Prevent multiple form submissions
         if (submitBtn.disabled) {
+            hideFullScreenSpinner();
             return;
         }
 
@@ -143,32 +145,46 @@ class CheckoutController {
         const {error: submitError} = await this.elements.submit();
         if (submitError) {
             handleError(submitError);
+            hideFullScreenSpinner();
             return;
         }
 
         try {
 
-            // update payment intent - pass calculation id and create tax transaction
-            // put transaction id in metadata of payment intent
-            const response = await this.model.savePaymentIntent();
-            const clientSecret = response.clientSecret;
+            if (grecaptcha.getResponse().length === 0) {
+                const recaptchaError = document.getElementById('recaptcha-error');
+                recaptchaError.style.display = 'block';
+                submitBtn.disabled = false;
+            } else {
 
-            // Confirm the PaymentIntent using the details collected by the Payment Element
-            const {error} = await this.stripe.confirmPayment({
-                elements: this.elements,
-                clientSecret,
-                confirmParams: {
-                    return_url: `${config.baseUrl}${MODULE_URL}checkout/return`,
-                },
-            });
+                // update payment intent - pass calculation id and create tax transaction
+                // put transaction id in metadata of payment intent
+                const response = await this.model.savePaymentIntent();
 
-            if (error) {
-                handleError(error);
+                if (Boolean(response.status)) {
+                    const clientSecret = response.clientSecret;
+
+                    // Confirm the PaymentIntent using the details collected by the Payment Element
+                    const {error} = await this.stripe.confirmPayment({
+                        elements: this.elements,
+                        clientSecret,
+                        confirmParams: {
+                            return_url: `${config.baseUrl}${MODULE_URL}checkout/return`,
+                        },
+                    });
+
+                    if (error) {
+                        handleError(error);
+                    }
+                }
             }
+            hideFullScreenSpinner();
 
         } catch (error) {
             console.error("Error during transaction saving", error);
             showErrorModal(error.response);
+        } finally {
+            hideFullScreenSpinner();
         }
     }
 
@@ -361,8 +377,8 @@ class CheckoutController {
         } else {
             console.error("Handle previous steps..");
             showErrorModal({
-                status : 400,
-                message : "Please fill previous steps before continuing"
+                status: 400,
+                message: "Please fill previous steps before continuing"
             })
         }
     }
@@ -456,7 +472,7 @@ class CheckoutController {
             this.model.appliedCalculation = base;
 
             this.renderCheckoutDetails(base);
-        } catch(error) {
+        } catch (error) {
             console.error(error);
             showErrorModal(error.response);
         }

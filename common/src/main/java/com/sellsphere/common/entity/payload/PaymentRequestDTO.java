@@ -46,4 +46,8 @@ public class PaymentRequestDTO {
     @Min(value = 0, message = "Shipping tax must be a positive number")
     private long shippingTax;
 
+    @NotNull(message = "recaptcha is required")
+    private String recaptchaResponse;
+
+
 }
