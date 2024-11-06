@@ -41,10 +41,6 @@ public class CustomerService {
         existingCustomer.setLastName(newCustomer.getLastName());
         existingCustomer.setEmail(newCustomer.getEmail());
 
-        if(newCustomer.getPassword() != null) {
-            existingCustomer.setPassword(passwordEncoder.encode(newCustomer.getPassword()));
-        }
-
         return customerRepository.save(existingCustomer);
     }
 

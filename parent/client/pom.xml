@@ -37,6 +37,12 @@
             <version>3.49.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-admin-client</artifactId>
+            <version>25.0.1</version>
+        </dependency>
+
     </dependencies>
 
 </project>

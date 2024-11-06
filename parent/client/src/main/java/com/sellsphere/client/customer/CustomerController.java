@@ -1,11 +1,11 @@
 package com.sellsphere.client.customer;
 
-import com.sellsphere.client.KeycloakService;
 import com.sellsphere.client.RecaptchaVerificationService;
 import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.Customer;
 import com.sellsphere.common.entity.CustomerNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,8 +22,13 @@ import java.security.Principal;
 public class CustomerController {
 
 
+    @Value("${base.url}")
+    private String baseUrl;
+
+    @Value("${keycloak.url}")
+    private String keycloakUrl;
+
     private final CustomerService customerService;
-    private final KeycloakService keycloakService;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -49,6 +54,8 @@ public class CustomerController {
         String email = principal.getName();
         Customer fetchedCustomer = customerService.getByEmail(email);
         model.addAttribute("customer", fetchedCustomer);
+        model.addAttribute("baseUrl", baseUrl);
+        model.addAttribute("keycloakUrl", keycloakUrl);
 
         return "customer/customer";
     }

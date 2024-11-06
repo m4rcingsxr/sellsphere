@@ -29,10 +29,21 @@
                   class=" d-flex flex-column" name="mainForm" id="mainForm">
 
                 <div class="row gap-3 ">
+
                     <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
                         <h2>Personal info</h2>
+                    </div>
 
+                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
+                        <h5 class="mt-4 mb-3 display-7">Security</h5>
 
+                        <a class="link link-dark link-underline-opacity-0 link-underline-opacity-50-hover"
+                           th:href="${keycloakUrl +  '/realms/SellSphere/protocol/openid-connect/auth?client_id=login-app&redirect_uri=' + baseUrl + '/&response_type=code&scope=openid&kc_action=UPDATE_PASSWORD'}"><i
+                                class="bi bi-door-closed fs-3"></i> <span
+                                class="ps-4"> Click here to change password</span></a>
+                    </div>
+
+                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
                         <h5 class="mt-4 mb-3 display-7">Basic</h5>
                         <input type="hidden" th:field="*{id}"/>
                         <div th:replace="~{form_fragments :: field_form_floating_text('firstName', 'First name')}"></div>
@@ -51,33 +62,18 @@
 
                 </div>
 
-                <div class="row gap-3">
-                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
-                        <h5 class="mt-5 mb-3 display-7">Security</h5>
-
-                        <div th:replace="~{form_fragments :: field_form_floating_password('password')}"></div>
-                    </div>
-
-                    <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
-                        <div class="form-floating">
-                            <input type="password" class="form-control" name="confirmedPassword"
-                                   id="confirmedPassword"
-                                   placeholder="********">
-                            <span class="invalid-feedback"></span>
-                            <label for="confirmedPassword">Confirm password</label>
-                        </div>
-
-                        <div class="mt-2" id="recaptcha-container"></div>
-                        <div id="recaptcha-error" class="invalid-feedback">
-                            Please verify
-                        </div>
-                    </div>
+                <div class="mt-4" id="recaptcha-container"></div>
+                <div id="recaptcha-error" class="invalid-feedback">
+                    Please verify
                 </div>
+
+                <input value="Submit" type="submit" id="submit-button"
+                       class="mt-4 btn btn-sm p-2 btn-outline-primary col-12  offset-md-2 col-md-8 offset-lg-0"/>
+
 
                 <div class="row mt-3 gap-3">
 
-                    <input value="Submit" type="submit" id="submit-button"
-                           class="btn btn-sm p-2 btn-outline-primary col-12  offset-md-2 col-md-8 offset-lg-0"/>
+
                 </div>
             </form>
 
