@@ -1,7 +1,9 @@
 package com.sellsphere.client.review;
 
+import com.sellsphere.client.RecaptchaVerificationService;
 import com.sellsphere.client.category.CategoryService;
 import com.sellsphere.client.customer.CustomerService;
+import com.sellsphere.client.customer.RecaptchaVerificationFailed;
 import com.sellsphere.client.order.OrderService;
 import com.sellsphere.client.product.ProductService;
 import com.sellsphere.common.entity.*;
@@ -12,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +49,14 @@ public class ReviewController {
     @PostMapping("/reviews/create")
     public String createReview(@ModelAttribute("review") Review review,
                                Principal principal,
-                               RedirectAttributes ra) throws ProductNotFoundException, CustomerNotFoundException {
+                               RedirectAttributes ra,
+                               @RequestParam("g-recaptcha-response") String token)
+            throws ProductNotFoundException, CustomerNotFoundException, RecaptchaVerificationFailed, IOException {
+        RecaptchaVerificationService recaptchaService = new RecaptchaVerificationService();
+        RecaptchaVerificationService.VerificationResult result = recaptchaService.verifyToken(token);
+        recaptchaService.validate(result);
+
+
         Product product = productService.findById(review.getProduct().getId());
         Customer customer = getAuthenticatedCustomer(principal);
 

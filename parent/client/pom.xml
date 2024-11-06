@@ -31,6 +31,12 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-recaptchaenterprise</artifactId>
+            <version>3.49.0</version>
+        </dependency>
+
     </dependencies>
 
 </project>

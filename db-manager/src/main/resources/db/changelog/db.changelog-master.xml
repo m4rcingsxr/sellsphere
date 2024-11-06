@@ -58,6 +58,8 @@
     <include file="db/changelog/db-changelog-2024-09-11-update-category-id-nullable-drop-constraint-products.xml"/>
     <include file="db/changelog/db-changelog-2024-09-13-drop-columns-payment_intents.xml"/>
     <include file="db/changelog/db-changelog-2024-10-18-create-tables-carousel_images-items-carousels.xml"/>
+    <include file="db/changelog/db-changelog-2024-10-23-update-footer_sections.xml"/>
+    <include file="db/changelog/db-changelog-2024-10-24-update-articles-promotions.xml"/>
     <include file="db/changelog/db-changelog-2024-11-01-update-settings-table.xml"/>
     <include file="db/changelog/db-changelog-2024-11-01-update-payment_intents-table.xml"/>
     <include file="db/changelog/db-changelog-2024-11-02-update-order-table.xml"/>

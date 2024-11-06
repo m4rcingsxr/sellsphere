@@ -119,6 +119,11 @@ public class WebhookRestController {
 
 
     private boolean isAllowedIp(String ip) {
+        // Normalize IPv6 loopback address to IPv4
+        if ("::1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)) {
+            ip = "127.0.0.1";
+        }
+
         return webhookConfig.getAllowedIps().contains(ip);
     }
 

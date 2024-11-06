@@ -1,3 +1,7 @@
+$(function () {
+    renderReCaptcha();
+})
+
 function handleValidations(errors) {
     const recaptchaError = document.getElementById('recaptcha-error');
     const submitBtn = document.getElementById('submit-button');
@@ -33,4 +37,41 @@ function handleValidations(errors) {
         document.querySelector('.is-invalid').scrollIntoView({behavior: 'smooth', block: 'center'});
         $(submitBtn).prop("disabled", false);
     }
+}
+
+function renderReCaptcha() {
+    showFullScreenSpinner();
+    if ($("#recaptcha-container").length > 0) {
+        grecaptcha.ready(function () {
+            // Render reCAPTCHA widget
+            grecaptcha.render('recaptcha-container', {
+                'sitekey': `${config.recaptchaSiteKey}`
+            });
+
+
+        });
+    }
+
+    if ($("#recaptcha-review").length > 0) {
+        grecaptcha.ready(function () {
+            // Render reCAPTCHA widget
+            grecaptcha.render('recaptcha-review', {
+                'sitekey': `${config.recaptchaSiteKey}`
+            });
+
+
+        });
+    }
+
+    if ($("#recaptcha-question").length > 0) {
+        grecaptcha.ready(function () {
+            // Render reCAPTCHA widget
+            grecaptcha.render('recaptcha-question', {
+                'sitekey': `${config.recaptchaSiteKey}`
+            });
+
+
+        });
+    }
+    hideFullScreenSpinner();
 }

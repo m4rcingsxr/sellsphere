@@ -158,7 +158,7 @@ class CheckoutController {
                 elements: this.elements,
                 clientSecret,
                 confirmParams: {
-                    return_url: `http://192.168.0.234:8081${MODULE_URL}checkout/return`,
+                    return_url: `${config.baseUrl}${MODULE_URL}checkout/return`,
                 },
             });
 

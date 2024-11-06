@@ -1,6 +1,8 @@
 package com.sellsphere.client.address;
 
+import com.sellsphere.client.RecaptchaVerificationService;
 import com.sellsphere.client.customer.CustomerService;
+import com.sellsphere.client.customer.RecaptchaVerificationFailed;
 import com.sellsphere.client.setting.CountryRepository;
 import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -89,7 +92,12 @@ public class AddressController {
 
     @PostMapping("/save")
     public String saveAddress(@ModelAttribute("address") Address address,
-                              RedirectAttributes ra) {
+                              RedirectAttributes ra, @RequestParam("g-recaptcha-response") String token)
+            throws RecaptchaVerificationFailed, IOException {
+        RecaptchaVerificationService recaptchaService = new RecaptchaVerificationService();
+        RecaptchaVerificationService.VerificationResult result = recaptchaService.verifyToken(token);
+        recaptchaService.validate(result);
+
         String successMessage = "Successfully " + (address.getId() != null ?
                 "updated" : "saved") + " new address.";
 

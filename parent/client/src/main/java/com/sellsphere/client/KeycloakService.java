@@ -1,5 +1,6 @@
 package com.sellsphere.client;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -14,8 +15,11 @@ import java.util.Map;
 @Service
 public class KeycloakService {
 
+    @Value("${base.url}")
+    private String baseUrl;
+
     public String getAdminAccessToken() {
-        String authUrl = "http://192.168.0.234:8180/realms/master/protocol/openid-connect/token";
+        String authUrl = baseUrl + "/realms/master/protocol/openid-connect/token";
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/x-www-form-urlencoded");
@@ -33,8 +37,8 @@ public class KeycloakService {
         return response.getBody().get("access_token").toString();
     }
 
-    public HttpStatusCode changeUserPassword(String userId,    String accessToken, String newPassword) {
-        String keycloakUrl = "http://192.168.0.234:8180/admin/realms/SellSphere/users/" + userId + "/reset-password";
+    public HttpStatusCode changeUserPassword(String userId, String accessToken, String newPassword) {
+        String keycloakUrl = baseUrl + "/admin/realms/SellSphere/users/" + userId + "/reset-password";
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
@@ -48,13 +52,15 @@ public class KeycloakService {
         HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<Void> response = restTemplate.exchange(URI.create(keycloakUrl), HttpMethod.PUT, request, Void.class);
+        ResponseEntity<Void> response = restTemplate.exchange(URI.create(keycloakUrl), HttpMethod.PUT, request,
+                                                              Void.class
+        );
         return response.getStatusCode();
     }
 
     public String getUserIdByUsername(String username) {
         String accessToken = getAdminAccessToken();
-        String keycloakUrl = "http://192.168.0.234:8180/admin/realms/SellSphere/users?username=" + username;
+        String keycloakUrl = baseUrl + "/admin/realms/SellSphere/users?username=" + username;
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);

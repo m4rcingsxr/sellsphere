@@ -7,10 +7,10 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
 
-    <changeSet id="1726240077306-7" author="m4rcingsxr">
+    <changeSet id="1726240077306-7" author="Marcin Seweryn">
         <dropForeignKeyConstraint baseTableName="payment_intents" constraintName="FK_PAYMENT_INTENTS_ON_BASE_CURRENCY"/>
     </changeSet>
-    <changeSet id="1726240077306-8" author="m4rcingsxr">
+    <changeSet id="1726240077306-8" author="Marcin Seweryn">
         <dropColumn columnName="base_currency_id" tableName="payment_intents"/>
 
         <dropColumn columnName="exchange_rate" tableName="payment_intents"/>

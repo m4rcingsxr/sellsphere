@@ -38,22 +38,6 @@
                                  constraintName="fk_wispro_on_wishlist" referencedColumnNames="id"
                                  referencedTableName="wishlist"/>
     </changeSet>
-    <changeSet id="1730664044940-10" author="Marcin Seweryn">
-        <createTable tableName="wishlist">
-            <column autoIncrement="true" name="id" type="INT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist"/>
-            </column>
 
-        </createTable>
-    </changeSet>
-    <changeSet id="1730664044940-11" author="Marcin Seweryn">
-        <createTable tableName="wishlist_product">
-            <column name="product_id" type="INT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist_product"/>
-            </column>
-            <column name="wishlist_id" type="INT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_wishlist_product"/>
-            </column>
-        </createTable>
-    </changeSet>
+
 </databaseChangeLog>

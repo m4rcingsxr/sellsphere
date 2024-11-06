@@ -27,7 +27,8 @@
 
 <th:block th:fragment="common_head(title)">
     <th:block th:replace="~{common :: common_head(${title})}"></th:block>
-
     <script type="text/javascript" th:src="@{/node_modules/jquery-validation/dist/jquery.validate.js}"></script>
-    <script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
+    <script type="text/javascript" src="https://www.google.com/recaptcha/api.js" ></script>
+    <script type="text/javascript" th:src="@{/js/form_validation.js}" ></script>
+
 </th:block>

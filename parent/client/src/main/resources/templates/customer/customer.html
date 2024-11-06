@@ -67,9 +67,7 @@
                             <label for="confirmedPassword">Confirm password</label>
                         </div>
 
-                        <div class="g-recaptcha mt-3"
-                             data-sitekey="6LdxhXEqAAAAAEHwZGkaURuibbEy6qFTNkhCNv9C"
-                             data-callback="onRecaptchaSuccess"></div>
+                        <div class="mt-2" id="recaptcha-container"></div>
                         <div id="recaptcha-error" class="invalid-feedback">
                             Please verify
                         </div>
@@ -90,26 +88,22 @@
 
 <div class="d-lg-none sticky-bottom bg-dark py-2">
     <div class="container text-center">
-        <button id="toggleSidebar" class="btn btn-dark w-100"><i class="bi bi-layout-sidebar-inset"
-                                                                 style="font-size: 1.5rem;"></i>
+        <button id="toggleSidebar" class="btn btn-dark w-100">
+            <i class="bi bi-layout-sidebar-inset"
+               style="font-size: 1.5rem;"></i>
         </button>
     </div>
 </div>
-
 <div class="sidebar-nav" id="sidebarNav">
     <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
 </div>
-
 <div id="overlay" class="overlay"></div>
-
 <footer th:replace="~{navigations :: footer()}"></footer>
-
-
 <script th:replace="~{common :: configurations()}"></script>
 <script th:replace="~{common :: cart_initialization()}"></script>
-<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
-
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+
+<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
 
 <script>
 
@@ -150,7 +144,6 @@
         ], handleValidations);
 
     })
-
 
 </script>
 

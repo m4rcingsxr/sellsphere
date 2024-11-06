@@ -1,7 +1,9 @@
 package com.sellsphere.client.question;
 
+import com.sellsphere.client.RecaptchaVerificationService;
 import com.sellsphere.client.category.CategoryService;
 import com.sellsphere.client.customer.CustomerService;
+import com.sellsphere.client.customer.RecaptchaVerificationFailed;
 import com.sellsphere.client.product.ProductService;
 import com.sellsphere.common.entity.*;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -51,7 +54,12 @@ public class QuestionController {
     }
 
     @PostMapping("/questions/create")
-    public String createQuestion(Question question, RedirectAttributes ra) {
+    public String createQuestion(Question question, RedirectAttributes ra, @RequestParam("g-recaptcha-response") String token)
+            throws IOException, RecaptchaVerificationFailed {
+        RecaptchaVerificationService recaptchaService = new RecaptchaVerificationService();
+        RecaptchaVerificationService.VerificationResult result = recaptchaService.verifyToken(token);
+        recaptchaService.validate(result);
+
         questionService.save(question);
 
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Question has been asked, waiting for approve.");
