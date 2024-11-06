@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.ExecutorService;
@@ -51,7 +52,7 @@ public class WebSecurityConfig {
                 )
                 .oauth2Login(oauth2Login -> oauth2Login
                         .loginPage("/login")
-                        .defaultSuccessUrl("/customer?continue", true))
+                        .successHandler(new SavedRequestAwareAuthenticationSuccessHandler()))
                 .oauth2Client(Customizer.withDefaults())
                 .logout(logout -> logout
                         .permitAll()

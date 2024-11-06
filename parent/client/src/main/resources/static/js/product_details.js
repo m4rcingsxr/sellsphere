@@ -20,11 +20,7 @@ function initThumbnailCarousel() {
         focus: 'center',
         arrows: false,
         isNavigation: true,
-        breakpoints: {
-            600: {
-                fixedHeight: 44,
-            },
-        },
+
     });
 
     main.sync(thumbnails);

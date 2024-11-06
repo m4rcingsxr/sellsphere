@@ -97,13 +97,15 @@
     </div>
 </section>
 
-<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 fs-5 align-items-center">
+<div th:fragment="product_price(discountPrice, discountPercent, price)" class="d-flex gap-2 fs-3 align-items-center">
+
+     <span th:if="${discountPercent > 0}"
+           class="fw-lighter text-decoration-line-through fs-6"
+           th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></span>
 
     <strong th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(discountPrice, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></strong>
 
-    <span th:if="${discountPercent > 0}"
-          class="fw-lighter text-decoration-line-through fs-6"
-          th:text="${(CURRENCY_SYMBOL_POSITION == 'BEFORE_PRICE' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(price, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'AFTER_PRICE' ? CURRENCY_SYMBOL : '')}"></span>
+
 </div>
 
 <a th:fragment="chevron_right(entityId)" href="#" class="link-dark entity-detail" th:data-id="${entityId}">
@@ -121,19 +123,21 @@
 </th:block>
 
 <div th:fragment="categoryList()" id="categoryList"
-     class="d-none border border-2 shadow-sm p-4 rounded-2  position-absolute top-0 bg-white w-100" style="z-index: 1995">
+     class="d-none border border-2 shadow-sm p-4 rounded-2 position-absolute top-0 bg-white w-100" style="z-index: 1995">
     <div th:each="category : ${categoryList}" th:id="${category.name}"
-         class="d-none row row-cols-1 row-cols-sm-2 row-cols-md-4">
-        <div class="col" th:each="categoryChild : ${category.children}">
+         class="d-none d-flex flex-wrap flex-column" style="height: 470px; gap: 20px;">
+        <div th:each="categoryChild : ${category.children}" style=" min-width: 200px;">
             <a class="link-dark link-underline link-underline-opacity-0 d-block link-underline-opacity-50-hover"
                th:href="@{|/c/${categoryChild.alias}|}"><strong
                     th:text="${categoryChild.name}"></strong></a>
             <a th:each="categorySubChild : ${categoryChild.children}"
-               class="link-dark link-underline link-underline-opacity-0 d-block mt-2 link-underline-opacity-50-hover"
+               class="ps-3 link-dark link-underline link-underline-opacity-0 d-block mt-2 link-underline-opacity-50-hover"
                th:href="@{|/c/${categorySubChild.alias}|}" th:text="${categorySubChild.name}"></a>
         </div>
     </div>
 </div>
+
+
 
 
 <script type="text/javascript" th:fragment="configurations()">

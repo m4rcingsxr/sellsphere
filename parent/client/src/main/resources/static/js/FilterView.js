@@ -216,12 +216,12 @@ class FilterView {
         const $lowerPrice = $("#lowerPrice");
         const $upperPrice = $("#upperPrice");
 
-        if (minPrice && maxPrice) {
+        if (minPrice && maxPrice && !$lowerPrice.val() && !$upperPrice.val()) {
 
             $lowerPrice.val(minPrice);
             $upperPrice.val(maxPrice);
 
-            $("#lower").attr("min", minPrice).attr("max", maxPrice).val(minPrice);
+            $("#lower").attr("min", minPrice).attr("max", maxPrice).val(minPrice );
             $("#upper").attr("min", minPrice).attr("max", maxPrice).val(maxPrice);
         }
     }

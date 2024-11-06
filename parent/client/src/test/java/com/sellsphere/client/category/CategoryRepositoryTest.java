@@ -35,9 +35,9 @@ class CategoryRepositoryTest {
     }
 
     @Test
-    void whenFindAllByParentIsNull_thenRootCategoriesShouldBeFound() {
+    void whenFindAllByParentIsNull_AndEnabledIsTrue_thenRootCategoriesShouldBeFound() {
         // When
-        List<Category> categories = categoryRepository.findAllByParentIsNull();
+        List<Category> categories = categoryRepository.findAllByParentIsNullAndEnabledIsTrue();
 
         // Then
         assertThat(categories).hasSize(2);

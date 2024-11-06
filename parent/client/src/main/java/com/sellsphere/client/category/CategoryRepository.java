@@ -12,7 +12,7 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     Optional<Category> findByAliasAndEnabledIsTrue(String alias);
 
-    List<Category> findAllByParentIsNull();
+    List<Category> findAllByParentIsNullAndEnabledIsTrue();
 
     Category findByName(String name);
 }

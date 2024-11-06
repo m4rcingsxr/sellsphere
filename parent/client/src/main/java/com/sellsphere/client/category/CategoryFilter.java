@@ -7,7 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * CategoryFilter responsible for loading categories.
@@ -36,8 +40,19 @@ public class CategoryFilter extends GenericFilter {
     }
 
     private void loadRootCategories(HttpServletRequest servletRequest) {
-        List<Category> categoryList = categoryService.listRootCategories();
+        List<Category> categoryList = categoryService.listRootCategories().stream()
+                .sorted(Comparator.comparingInt((Category category) -> category.getChildren().size()).reversed())
+                .peek(this::sortSubCategoriesByChildrenSize)
+                .toList();
+
         servletRequest.setAttribute("categoryList", categoryList);
+    }
+
+    private void sortSubCategoriesByChildrenSize(Category category) {
+        Set<Category> sortedChildren = category.getChildren().stream()
+                .sorted(Comparator.comparingInt((Category subCategory) -> subCategory.getChildren().size()).reversed())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        category.setChildren(sortedChildren);
     }
 
     private boolean isRequestForResource(HttpServletRequest request) {

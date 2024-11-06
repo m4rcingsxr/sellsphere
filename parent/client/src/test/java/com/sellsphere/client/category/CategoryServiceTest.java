@@ -49,7 +49,7 @@ class CategoryServiceTest {
     void givenRootCategories_whenListRootCategories_thenReturnRootCategories() {
         // Given
         List<Category> rootCategories = List.of(electronics);
-        given(categoryRepository.findAllByParentIsNull()).willReturn(rootCategories);
+        given(categoryRepository.findAllByParentIsNullAndEnabledIsTrue()).willReturn(rootCategories);
 
         // When
         List<Category> categories = categoryService.listRootCategories();

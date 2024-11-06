@@ -15,7 +15,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     public List<Category> listRootCategories() {
-        return categoryRepository.findAllByParentIsNull();
+        return categoryRepository.findAllByParentIsNullAndEnabledIsTrue();
     }
 
     public Category getCategoryByAlias(String alias) throws CategoryNotFoundException {
