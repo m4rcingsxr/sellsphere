@@ -45,7 +45,8 @@ function renderReCaptcha() {
         grecaptcha.ready(function () {
             // Render reCAPTCHA widget
             grecaptcha.render('recaptcha-container', {
-                'sitekey': `${config.recaptchaSiteKey}`
+                'sitekey': `${config.recaptchaSiteKey}`,
+                size: 'compact'
             });
 
 
@@ -56,7 +57,8 @@ function renderReCaptcha() {
         grecaptcha.ready(function () {
             // Render reCAPTCHA widget
             grecaptcha.render('recaptcha-review', {
-                'sitekey': `${config.recaptchaSiteKey}`
+                'sitekey': `${config.recaptchaSiteKey}`,
+                size: 'compact'
             });
 
 
@@ -67,11 +69,14 @@ function renderReCaptcha() {
         grecaptcha.ready(function () {
             // Render reCAPTCHA widget
             grecaptcha.render('recaptcha-question', {
-                'sitekey': `${config.recaptchaSiteKey}`
+                'sitekey': `${config.recaptchaSiteKey}`,
+                size: 'compact'
             });
 
 
         });
     }
+
+
     hideFullScreenSpinner();
 }

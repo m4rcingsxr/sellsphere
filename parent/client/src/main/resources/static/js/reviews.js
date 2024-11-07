@@ -1,6 +1,6 @@
 $(function () {
     $("#rateYo").rateYo({
-        ratedFill: "#0d6efd",
+        ratedFill: "#fec107",
         readonly: true,
         fullStar: true,
         numStars: 5,

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <th:block th:replace="~{common :: common_head('Product Questions')}"></th:block>
+    <th:block th:replace="~{form_fragments :: common_head('Product Questions')}"></th:block>
     <th:block th:replace="~{common :: rateYo()}"></th:block>
 </head>
 <body>
@@ -12,12 +12,12 @@
     <div class="container">
         <nav th:replace="~{navigations :: breadcrumbCategory(${listCategoryParents})}"></nav>
 
-        <div class="row">
+        <div class="row gap-sm-0 gap-4">
             <div class="col-sm-4">
                 <div th:replace="~{product/product_fragments :: product_card()}"></div>
             </div>
 
-            <div class="col-sm-8">
+            <div class="col-sm-8 mt-md-0">
                 <div th:replace="~{question/question_fragments :: question_card(true)}"></div>
 
                 <nav th:replace="~{navigations :: small_pagination(|/questions/p/${product.alias}/page/|)}"></nav>
@@ -30,8 +30,10 @@
 
 <nav th:replace="~{navigations :: footer()}"></nav>
 <div th:replace="~{modal_fragments :: close_modal('info_modal')}"></div>
+<div id="overlay" class="overlay"></div>
 <script th:replace="~{common :: configurations()}"></script>
 <script type="text/javascript" th:src="@{/js/votes_reviews.js}"></script>
+<script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
 
 <script type="text/javascript">
     const PRODUCT_ALIAS = '[(${product.alias})]';

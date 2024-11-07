@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <th:block th:replace="~{common :: common_head('Product Reviews')}"></th:block>
+    <th:block th:replace="~{form_fragments :: common_head('Product Reviews')}"></th:block>
     <th:block th:replace="~{common :: rateYo()}"></th:block>
 </head>
 <body>
@@ -30,14 +30,14 @@
                     <div class="card-header">
                         <h4 class="card-title">Reviews ([[${product.reviewCount}]])</h4>
                     </div>
-                    <div class="card-body row p-4">
-                        <div class="col-sm-4">
+                    <div class="card-body row p-4 gap-4 gap-md-0">
+                        <div class="col-md-4">
                             <div th:replace="~{review/review_fragments :: rating_summary(${product.averageRating}, 'rateYo2', ${product.reviewCount})}"></div>
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-md-4">
                             <div th:replace="~{review/review_fragments :: rating_percentages(${ratingPercentages})}"></div>
                         </div>
-                        <div class="col-sm-4 d-flex align-items-center">
+                        <div class="col-md-4 d-flex align-items-center">
                             <select id="sort_review" class="form-select" onchange="pageSortedReviews()">
                                 <option value="default" th:selected="${sortField == 'default'}">Most recent</option>
                                 <option value="mostPopular" th:selected="${sortField == 'mostPopular'}">Sort by: Most
@@ -62,8 +62,10 @@
 
 <footer th:replace="~{navigations :: footer()}"></footer>
 <div th:replace="~{modal_fragments :: close_modal('info_modal')}"></div>
-
+<div id="overlay" class="overlay"></div>
 <script type="text/javascript" th:src="@{/js/votes_reviews.js}"></script>
+<script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
+
 <script type="text/javascript">
     const MODULE_URL = "[[@{/}]]";
     const LOGGED_IN = "[[${#authorization.expression('isAuthenticated()')}]]" === "true";

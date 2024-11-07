@@ -7,6 +7,7 @@ import com.sellsphere.common.entity.Order;
 import com.sellsphere.common.entity.OrderNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +35,7 @@ public class OrderController {
     @GetMapping("/orders")
     public String listFirstPage(Model model, Principal principal)
             throws CustomerNotFoundException {
-        return listByPage(model, principal, 0, "orderTime", "asc", null);
+        return listByPage(model, principal, 0, "orderTime", "desc", null);
     }
 
     /**
@@ -61,7 +62,7 @@ public class OrderController {
         String email = principal.getName();
         Customer customer = customerService.getByEmail(email);
 
-        Page<Order> page = orderService.listByPage(customer, pageNumber, sortField, sortDir, keyword);
+        Page<Order> page = orderService.listByPage(customer, pageNumber, sortField, Sort.Direction.DESC, keyword);
 
         model.addAttribute("currentPage", pageNumber);
         model.addAttribute("totalPages", page.getTotalPages());

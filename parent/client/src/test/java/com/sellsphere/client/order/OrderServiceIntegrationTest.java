@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDate;
@@ -95,10 +96,9 @@ class OrderServiceIntegrationTest {
         customer.setId(1);
         int pageNumber = 0;
         String sortField = "orderTime";
-        String sortDir = "asc";
 
         // When
-        Page<Order> ordersPage = orderService.listByPage(customer, pageNumber, sortField, sortDir, null);
+        Page<Order> ordersPage = orderService.listByPage(customer, pageNumber, sortField, Sort.Direction.ASC, null);
 
         // Then
         assertNotNull(ordersPage, "Orders page should not be null");

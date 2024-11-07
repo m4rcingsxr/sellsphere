@@ -67,13 +67,8 @@ public class OrderService {
      * @param keyword    the keyword to filter by
      * @return a page of orders
      */
-    public Page<Order> listByPage(Customer customer, Integer pageNumber, String sortField, String sortDir, String keyword) {
-        Sort sort = Sort.by(sortField);
-        sort = sortDir.equals("desc") ? sort.descending() : sort.ascending();
-
-        PageRequest pageRequest = PageRequest.of(pageNumber, ORDER_PER_PAGE,
-                                                 sort
-        );
+    public Page<Order> listByPage(Customer customer, Integer pageNumber, String sortField,Sort.Direction sortDir, String keyword) {
+        PageRequest pageRequest = PageRequest.of(pageNumber, ORDER_PER_PAGE, Sort.by(sortDir, sortField));
 
         if (keyword != null) {
             return orderRepository.findAllByCustomerAndKeyword(customer.getId(),

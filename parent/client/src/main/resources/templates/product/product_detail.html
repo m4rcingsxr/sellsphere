@@ -70,6 +70,7 @@
 
 <footer th:replace="~{navigations :: footer()}"></footer>
 
+<div id="overlay" class="overlay"></div>
 <div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 <div th:replace="~{modal_fragments :: close_modal('info_modal')}"></div>
 
@@ -108,10 +109,7 @@
             precision: 2,
             fullStar: true,
             spacing: "3px",
-            starWidth: "40px",
-            onChange: function (rating, rateYoInstance) {
-                $("#rate").val(rating);
-            }
+            starWidth: "40px"
         }
 
         $("#rateYo3").rateYo({

@@ -2,7 +2,7 @@
     <li th:each="review : ${reviewList}" class="list-group-item"
         th:classappend="${customer != null && customer.id == review.customer.id ? 'text-bg-light' : ''}">
 
-        <div class="d-flex justify-content-between">
+        <div class="d-md-flex justify-content-md-between">
             <div class="d-flex gap-3 align-items-center">
                 <div>
                     <i th:each="star : ${#numbers.sequence(1, 5)}"
@@ -10,12 +10,12 @@
                 </div>
                 <div>
                                 <span class="badge d-flex align-items-center p-1 pe-2 text-success-emphasis bg-success-subtle border border-success-subtle rounded-pill gap-2">
-                                    <i class="fa-solid fa-check"></i> Opinion confirmed by purchase
+                                    <i class="fa-solid fa-check"></i>Confirmed by purchase
                                 </span>
                 </div>
             </div>
 
-            <div class="d-flex align-items-center gap-2 me-4 vote-container">
+            <div class="d-flex align-items-center gap-2 me-4 vote-container mt-4 mt-md-0">
                 <th:block th:replace="vote/vote_fragments :: thumbs('vote_review', ${review})"></th:block>
             </div>
 
@@ -25,7 +25,7 @@
 
         <h4 class="fw-bold fs-3" th:text="${review.headline}"></h4>
         <p class="fs-4 mt-2 lh-base" th:text="${review.comment}"></p>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 justify-content-end">
             <div class="fw-bold"
                  th:text="${review.customer.firstName + (customer != null && customer.id == review.customer.id ? ' ' + customer.lastName + ' (YOU)' : '')}"></div>
             <div th:text="${review.reviewTime}"></div>
@@ -49,8 +49,8 @@
                             <input type="hidden" name="product" th:value="${product.id}"/>
                             <input type="hidden" name="customer" th:value="${customer.id}"/>
 
-                            <div class="d-flex justify-content-between pe-4">
-                                <div class="form-floating w-75">
+                            <div class="d-flex flex-column flex-md-row gap-4 justify-content-between pe-4 ">
+                                <div class="form-floating ">
                                     <input type="text" class="form-control" placeholder="Headline"
                                            th:field="*{headline}"/>
                                     <span class="invalid-feedback"></span>
@@ -59,13 +59,13 @@
 
                                 <div>
                                     <div id="rateYo3" class="mt-2 col-sm-4"></div>
-                                    <input type="hidden" name="rate" id="rate"/>
+                                    <input type="hidden" name="rate" id="rate" value="1"/>
                                     <span class="invalid-feedback"></span>
                                 </div>
                             </div>
 
 
-                            <label class="form-label mt-2">Comment</label>
+                            <label class="form-label mt-md-2 mt-4">Comment</label>
                             <textarea class="form-control" th:field="*{comment}"></textarea>
                             <span class="invalid-feedback"></span>
 
@@ -75,7 +75,9 @@
                             </div>
                         </div>
 
-                        <button id="submit-button" type="submit" class="btn btn-primary mt-3">Post review</button>
+                        <div class="d-flex justify-content-center">
+                            <button id="submit-button" type="submit" class="btn btn-primary mt-3 ">Post review</button>
+                        </div>
                     </form>
                 </div>
             </div>

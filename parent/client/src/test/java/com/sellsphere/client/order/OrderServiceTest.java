@@ -75,7 +75,7 @@ class OrderServiceTest {
         given(orderRepository.findAllByTransactionCustomer(customer, pageRequest)).willReturn(paginatedOrders);
 
         // When
-        Page<Order> result = orderService.listByPage(customer, 0, "orderTime", "asc", null);
+        Page<Order> result = orderService.listByPage(customer, 0, "orderTime", Sort.Direction.ASC, null);
 
         // Then
         assertEquals(paginatedOrders, result, "The paginated orders should be returned");
@@ -91,7 +91,7 @@ class OrderServiceTest {
         given(orderRepository.findAllByCustomerAndKeyword(customer.getId(), keyword, pageRequest)).willReturn(filteredOrders);
 
         // When
-        Page<Order> result = orderService.listByPage(customer, 0, "orderTime", "asc", keyword);
+        Page<Order> result = orderService.listByPage(customer, 0, "orderTime", Sort.Direction.ASC, keyword);
 
         // Then
         assertEquals(filteredOrders, result, "The filtered paginated orders should be returned");

@@ -344,7 +344,7 @@ public class Product extends IdentifiedEntity {
     public Float getAverageRating() {
         if (this.averageRating == null) return 0.0F;
 
-        return this.averageRating;
+        return Math.round(this.averageRating * 100) / 100.0F;
     }
 
     public Integer getReviewCount() {
