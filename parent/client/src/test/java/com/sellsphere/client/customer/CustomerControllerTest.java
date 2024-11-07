@@ -36,7 +36,7 @@ class CustomerControllerTest {
         updatedCustomer.setFirstName("updatedFirstName");
         updatedCustomer.setLastName("updatedLastName");
 
-        when(customerService.update(any(Customer.class))).thenReturn(updatedCustomer);
+        when(customerService.updateDetails(any(Customer.class))).thenReturn(updatedCustomer);
         when(customerService.getByEmail(existingCustomer.getEmail())).thenReturn(existingCustomer);
 
         mockMvc.perform(post(BASE_URL + "/update")
@@ -52,7 +52,7 @@ class CustomerControllerTest {
                 .andExpect(view().name("redirect:" + "/customer"))
                 .andExpect(flash().attributeExists(Constants.SUCCESS_MESSAGE));
 
-        verify(customerService, times(1)).update(any(Customer.class));
+        verify(customerService, times(1)).updateDetails(any(Customer.class));
     }
 
 }

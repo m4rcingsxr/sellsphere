@@ -153,6 +153,7 @@
 <script type="text/javascript" th:fragment="configurations()">
     const MODULE_URL = "[[@{/}]]";
     const LOGGED_IN = "[[${#authorization.expression('isAuthenticated()')}]]" === "true";
+    const S3_BASE_URI = '[[${S3_BASE_URI}]]';
 
     const currencySymbolPosition = '[[${CURRENCY_SYMBOL_POSITION}]]';
     const currencySymbol = '[[${CURRENCY_SYMBOL}]]';

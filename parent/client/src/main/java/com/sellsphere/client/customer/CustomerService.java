@@ -33,7 +33,7 @@ public class CustomerService {
      * @return The updated customer entity
      * @throws CustomerNotFoundException If the customer is not found
      */
-    public Customer update(Customer newCustomer)
+    public Customer updateDetails(Customer newCustomer)
             throws CustomerNotFoundException {
 
         Customer existingCustomer = getByEmail(newCustomer.getEmail());
@@ -42,6 +42,10 @@ public class CustomerService {
         existingCustomer.setEmail(newCustomer.getEmail());
 
         return customerRepository.save(existingCustomer);
+    }
+
+    public Customer update(Customer customer) {
+        return customerRepository.save(customer);
     }
 
     public Customer getById(Integer id) throws CustomerNotFoundException {

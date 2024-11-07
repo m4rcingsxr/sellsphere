@@ -9,6 +9,8 @@ import com.sellsphere.provider.UserModelTransactionManager;
 import com.sellsphere.provider.customer.CustomerAdapter;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
+import com.stripe.model.PaymentSource;
+import com.stripe.param.CustomerPaymentSourceDeleteParams;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.events.Event;

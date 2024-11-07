@@ -15,7 +15,9 @@ import com.stripe.model.StripeObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.glassfish.jersey.internal.inject.Custom;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -133,6 +135,7 @@ public class WebhookService {
                 handlePaymentMethodAttached((com.stripe.model.PaymentMethod) stripeObject);
                 break;
             case "payment_method.detached":
+                handlePaymentMethodDetached((com.stripe.model.PaymentMethod) stripeObject);
                 break;
             case "payment_method.updated":
                 break;
@@ -151,6 +154,13 @@ public class WebhookService {
 
             default:
                 log.info("Unhandled event type: {}", event.getType());
+        }
+    }
+
+    protected void handlePaymentMethodDetached(com.stripe.model.PaymentMethod stripePaymentMethod) {
+        if(stripePaymentMethod.getType().equals("card")) {
+            Card card = cardRepository.findByStripeId(stripePaymentMethod.getId()).orElseThrow();
+            cardRepository.delete(card);
         }
     }
 
@@ -184,7 +194,8 @@ public class WebhookService {
      * @throws TransactionNotFoundException if the transaction is not found.
      */
 
-    private void handlePaymentIntentSucceeded(com.stripe.model.PaymentIntent stripePaymentIntent) throws TransactionNotFoundException, StripeException {
+    private void handlePaymentIntentSucceeded(com.stripe.model.PaymentIntent stripePaymentIntent)
+            throws TransactionNotFoundException, StripeException {
         CompletableFuture.runAsync(() -> {
             try {
                 var serviceTransaction = transactionService.getByStripeId(stripePaymentIntent.getId());
@@ -202,7 +213,8 @@ public class WebhookService {
 
                 serviceTransaction.setPaymentMethod(servicePaymentMethod);
                 serviceTransaction.setStatus(stripePaymentIntent.getStatus());
-                serviceTransaction.setReceiptUrl(com.stripe.model.Charge.retrieve(stripePaymentIntent.getLatestCharge()).getReceiptUrl());
+                serviceTransaction.setReceiptUrl(
+                        com.stripe.model.Charge.retrieve(stripePaymentIntent.getLatestCharge()).getReceiptUrl());
                 transactionService.save(serviceTransaction);
 
                 serviceTransaction.getOrder().addOrderTrack(
@@ -350,20 +362,20 @@ public class WebhookService {
                 .findByStripeId(paymentMethod.getCustomer())
                 .orElseThrow(CustomerNotFoundException::new);
 
-        if (paymentMethod.getType().equals("card")) {
-            var card = paymentMethod.getCard();
-            cardRepository.save(
-                    Card.builder()
-                            .brand(card.getBrand())
-                            .country(card.getCountry())
-                            .customer(customer)
-                            .last4(card.getLast4())
-                            .created(Instant.now().toEpochMilli())
-                            .expYear(card.getExpYear())
-                            .expMonth(card.getExpMonth())
-                            .funding(card.getFunding())
-                            .build());
-        }
+
+        var card = paymentMethod.getCard();
+        cardRepository.save(
+                Card.builder()
+                        .stripeId(paymentMethod.getId())
+                        .brand(card.getBrand())
+                        .country(card.getCountry())
+                        .customer(customer)
+                        .last4(card.getLast4())
+                        .created(Instant.now().toEpochMilli())
+                        .expYear(card.getExpYear())
+                        .expMonth(card.getExpMonth())
+                        .funding(card.getFunding())
+                        .build());
 
         log.info("Handled payment method attached for: {}", paymentMethod.getId());
     }

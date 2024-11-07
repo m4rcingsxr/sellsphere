@@ -55,7 +55,7 @@ class CustomerServiceTest {
         when(customerRepository.findByEmail(newCustomer.getEmail())).thenReturn(Optional.of(customer));
         when(customerRepository.save(newCustomer)).thenReturn(newCustomer);
 
-        customerService.update(newCustomer);
+        customerService.updateDetails(newCustomer);
 
         assertNotNull(newCustomer.getPassword());
 
@@ -69,7 +69,7 @@ class CustomerServiceTest {
 
         when(customerRepository.findByEmail(newCustomer.getEmail())).thenReturn(Optional.empty());
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.update(newCustomer));
+        assertThrows(CustomerNotFoundException.class, () -> customerService.updateDetails(newCustomer));
 
         verify(customerRepository, times(1)).findByEmail(newCustomer.getEmail());
         verifyNoMoreInteractions(customerRepository);

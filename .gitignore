@@ -10,7 +10,7 @@ target/
 .idea/libraries/
 .idea/sonarlint
 /.idea/
-
+/.workflows/
 
 *.iws
 *.iml

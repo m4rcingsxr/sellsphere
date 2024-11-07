@@ -34,6 +34,7 @@ public class WebhookRestController {
 
     // Webhook endpoints might occasionally receive the same event more than once
     private final ConcurrentHashMap<String, Boolean> processedEvents = new ConcurrentHashMap<>();
+    private final CardRepository cardRepository;
 
     /**
      * Handles incoming Stripe webhooks.
@@ -47,7 +48,9 @@ public class WebhookRestController {
     public ResponseEntity<String> handleCheckoutWebhook(@RequestBody String payload,
                                                         HttpServletRequest request)
             throws IOException {
+
         String requestIp = request.getRemoteAddr();
+
 
         if (!isAllowedIp(requestIp)) {
             log.error("Unauthorized IP address: {}", requestIp);

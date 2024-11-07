@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="~{form_fragments :: common_head('Payment methods')}"></th:block>
+    <script src="https://js.stripe.com/v3/" defer></script>
+    <link rel="stylesheet" th:href="@{/css/customer.css}"/>
+</head>
+<body>
+<nav th:replace="~{navigations :: header()}"></nav>
+
+<div class="container mt-2">
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9 position-relative">
+            <!--Subcategory list-->
+            <div th:replace="~{common :: categoryList()}"></div>
+        </div>
+    </div>
+</div>
+
+<div class="container p-0 mt-2 position-relative">
+    <div th:replace="~{common :: alerts()}"></div>
+
+    <div class="row mt-2 p-0 m-0">
+        <div class="col-lg-3 col-3 d-none d-lg-block">
+            <div th:replace="~{customer/customer_navigation :: nav()}"></div>
+        </div>
+
+        <div class="col-lg-9 col-12 my-4">
+            <h2 class="subheading">Cards</h2>
+            <hr/>
+            <div class="row mt-4 row-gap-4 " id="card-container">
+                <div class="col-md-4 col-6" th:each="card : ${cardList}">
+                    <div class="border border-1 border-dark-subtle rounded rounded-3">
+                        <div class="d-flex justify-content-between p-2">
+                            <img class="img-fluid rounded-3 rounded" th:src="${card.logoPath}"
+                                 style="height: 40px; width: 50px;"/>
+                            <a href="#" th:data-card-id="${card.stripeId}"
+                               class="delete-card link-dark link-underline-dark link-underline-opacity-0 link-underline-opacity-50-hover fs-7 px-3 pt-1">Remove</a>
+                        </div>
+                        <div class="d-flex align-items-center flex-column">
+                            <span class=" fw-bolder">**** **** **** <span th:text="${card.last4}"></span></span>
+                            <div class="text-start">
+                                <span th:if="${!card.expired}" class="fs-7 text-light-emphasis"
+                                      th:text="${'Expiration ' + card.expiredDate}"></span>
+                                <span th:if="${card.expired}" class="text-danger fs-6"
+                                      th:text="${'Expired ' + card.expiredDate}"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end p-2">
+                            <a href="#" class="btn btn-sm btn-outline-secondary p-0 px-4 py-1">Edit</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6 ">
+                    <div class="d-flex justify-content-center">
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                                data-bs-target="#exampleModal">
+                            Add new card
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Add new card </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body ">
+                <div class="form-control p-4 fs-5" id="card-element"></div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="save-card" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="d-lg-none sticky-bottom bg-dark py-2">
+    <div class="container text-center">
+        <button id="toggleSidebar" class="btn btn-dark w-100">
+            <i class="bi bi-layout-sidebar-inset"
+               style="font-size: 1.5rem;"></i>
+        </button>
+    </div>
+</div>
+
+<div class="sidebar-nav" id="sidebarNav">
+    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+<footer th:replace="~{navigations :: footer()}"></footer>
+
+<script th:replace="~{common :: configurations()}"></script>
+<script th:replace="~{common :: cart_initialization()}"></script>
+
+<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
+<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
+
+<script>
+
+    <!-- require submit btn   -->
+
+
+    $(function () {
+        window.stripe = Stripe("pk_test_51PbnPoAx8ZpOoq6Y2e0LqnQAZamnRJ6rBeShPoZVd7up9My5tepRm9Vhowv6qGue29a8aDz4r0YT5BkN3XnqQPrR00yMU9sery");
+        window.elements = stripe.elements();
+        window.card = elements.create('card');
+        window.card.mount('#card-element');
+
+        const validator = new FormValidator('mainForm', [
+            {
+                name: 'email',
+                display: 'Email',
+                rules: 'required|valid_email|max_length[45]'
+            },
+            {
+                name: 'password',
+                display: 'Password',
+                rules: 'min_length[8]|max_length[64]'
+            },
+            {
+                name: 'confirmedPassword',
+                display: 'Password confirmation',
+                rules: 'matches[password]'
+            },
+            {
+                name: 'firstName',
+                display: 'First name',
+                rules: 'required|alpha|max_length[45]'
+            },
+            {
+                name: 'lastName',
+                display: 'Last name',
+                rules: 'required|alpha|max_length[45]'
+            },
+            {
+                name: "g-recaptcha-response",
+                display: "Recaptcha response",
+                rules: "required"
+            }
+        ], handleValidations);
+
+        $("#save-card").on("click", event => {
+            createPaymentMethod();
+        });
+
+        $("#card-container").on("click", ".delete-card", function (event) {
+            event.preventDefault();
+            const cardId = $(this).data("card-id");
+            detachPaymentMethod(cardId, $(this).parent().parent().parent())
+        })
+
+    })
+
+
+    async function detachPaymentMethod(cardId, $container) {
+        try {
+            showFullScreenSpinner();
+            const url = `${config.baseUrl}/payment-methods/detach`;
+            await ajaxUtil.post(url, {paymentMethodId: cardId});
+
+            $container.remove();
+        } catch (error) {
+            console.error(error);
+            showErrorModal(error);
+        } finally {
+            hideFullScreenSpinner();
+        }
+
+    }
+
+    async function createPaymentMethod() {
+        try {
+            showFullScreenSpinner()
+            const paymentMethodResponse = await window.stripe.createPaymentMethod({
+                type: 'card',
+                card: window.card,
+            })
+
+            if (paymentMethodResponse.error) {
+                console.error(paymentMethodResponse.error);
+            } else {
+                const url = `${config.baseUrl}/payment-methods/attach`;
+                const response = await ajaxUtil.post(url, {paymentMethod: paymentMethodResponse.paymentMethod.id});
+
+                if (response.status === "success") {
+                    const container = $("#card-container");
+                    const card = paymentMethodResponse.paymentMethod.card;
+
+                    const currentDate = new Date();
+                    const cardExpirationDate = new Date(card.exp_year, card.exp_month - 1); // Months are zero-indexed in JavaScript
+                    const isExpired = currentDate > cardExpirationDate;
+                    const formattedExpirationDate = `${String(card.exp_month).padStart(2, '0')}/${card.exp_year}`;
+
+                    const html = `
+                        <div class="col-md-4 col-6">
+                            <div class="border border-1 border-dark-subtle rounded rounded-3">
+                                <div class="d-flex justify-content-between p-2">
+                                    <img class="img-fluid rounded-3 rounded" src="${S3_BASE_URI}/card-photos/${card.display_brand}.jpg"
+                                         style="height: 40px; width: 50px;"/>
+                                    <a href="#" data-card-id="${paymentMethodResponse.paymentMethod.id}"
+                                       class="delete-card  link-dark link-underline-dark link-underline-opacity-0 link-underline-opacity-50-hover fs-7 px-3 pt-1">Remove</a>
+                                </div>
+                                <div class="d-flex align-items-center flex-column">
+                                    <span class="fw-bolder">**** **** **** ${card.last4}</span>
+                                    <div class="text-start">
+                                        ${!isExpired
+                        ? `<span class="fs-7 text-light-emphasis">Expiration ${formattedExpirationDate}</span>`
+                        : `<span class="text-danger fs-6">Expired ${formattedExpirationDate}</span>`}
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end p-2">
+                                    <a href="#" class="btn btn-sm btn-outline-secondary p-0 px-4 py-1">Edit</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    const children = container.children();
+                    if (children.length > 0) {
+                        $(html).insertBefore(children.last());
+                    } else {
+                        container.append(html);
+                    }
+
+                    $("#exampleModal").removeClass("show");
+                    $(".modal-backdrop").removeClass("show");
+                    window.card.clear();
+
+                }
+            }
+
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            hideFullScreenSpinner();
+        }
+
+    }
+
+</script>
+
+
+</body>
+</html>
+
+

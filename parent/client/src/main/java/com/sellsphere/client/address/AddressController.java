@@ -17,7 +17,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Controller class handling address-related operations such as
@@ -73,22 +72,37 @@ public class AddressController {
             throws CustomerNotFoundException {
         String successMessage = "Successfully updated addresses";
 
+        // Retrieve the existing customer from the database
         Customer existingCustomer = customerService.getById(customer.getId());
-        Optional<Address> primaryAddress = existingCustomer.getAddresses().stream().filter(Address::isPrimary).findAny();
-        primaryAddress.ifPresent(address -> {
-            Optional<Address> oldPrimary = customer.getAddresses().stream().filter(
-                    oldPrimaryAddress -> oldPrimaryAddress.getId().equals(address.getId())).findFirst();
-            oldPrimary.ifPresent(old -> old.setPrimary(false));
-        });
 
+        // Identify and store the old primary address
+        Address oldPrimary = existingCustomer.getAddresses().stream()
+                .filter(Address::isPrimary)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No primary address found for existing customer"));
+
+        // Count the primary addresses in the incoming customer object
+        long primaryCount = customer.getAddresses().stream()
+                .filter(Address::isPrimary)
+                .count();
+
+        if (primaryCount > 1) {
+            // More than one primary address - unselect the old one
+            customer.getAddresses().stream()
+                    .filter(address -> address.getId().equals(oldPrimary.getId()))
+                    .findFirst()
+                    .ifPresent(address -> address.setPrimary(false));
+        }
+
+        // Persist changes using customerService
         customerService.update(customer);
-
-
 
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
 
         return ADDRESS_BOOK_DEFAULT_REDIRECT_URL;
     }
+
+
 
     @PostMapping("/save")
     public String saveAddress(@ModelAttribute("address") Address address,

@@ -75,7 +75,7 @@ public class CustomerController {
         RecaptchaVerificationService.VerificationResult result = recaptchaService.verifyToken(token);
         recaptchaService.validate(result);
 
-        customerService.update(customer);
+        customerService.updateDetails(customer);
         ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Profile successfully updated.");
 
         return "redirect:/customer";

@@ -90,7 +90,7 @@ public class Customer extends IdentifiedEntity {
     @Column(name = "stripe_id")
     private String stripeId;
 
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer",  fetch = FetchType.EAGER)
     private List<Card> cards;
 
     @OneToMany(mappedBy = "customer")
@@ -113,6 +113,12 @@ public class Customer extends IdentifiedEntity {
         }
 
         cards.add(card);
+    }
+
+    public void removeCard(Card card) {
+        if(this.cards != null) {
+            this.cards.remove(card);
+        }
     }
 
     /**

@@ -35,7 +35,9 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/payment_methods/**").authenticated()
                         .requestMatchers("/customer/**").authenticated()
                         .requestMatchers("/orders/**").authenticated()
                         .requestMatchers("/wishlist/**").authenticated()
