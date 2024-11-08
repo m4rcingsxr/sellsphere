@@ -5,10 +5,8 @@ $(document).ready(function () {
 
     $('.category-item').hover(
         function () {
-            // Clear any existing hover timeout
             clearTimeout(hoverTimeout);
 
-            // Set a delay before showing the category list
             hoverTimeout = setTimeout(() => {
                 clearTimeout(hideTimeout);
 
@@ -18,24 +16,22 @@ $(document).ready(function () {
                     $(`#${previousCategory}`).addClass('d-none');
                 }
 
-                const categoryId = $(this).text().trim().replace(/\s+/g, '-'); // Replace spaces with dashes if IDs have spaces
+                const categoryId = this.dataset.id;
                 previousCategory = categoryId;
 
                 $(`#${categoryId}`).removeClass('d-none');
-            }, 300); // Adjust the delay as needed
+            }, 300);
         },
         function () {
-            // Clear any existing hover timeout
             clearTimeout(hoverTimeout);
 
-            // Set a delay before hiding the category list
             hideTimeout = setTimeout(function () {
                 $('#categoryList').addClass('d-none');
 
                 if (previousCategory) {
                     $(`#${previousCategory}`).addClass('d-none');
                 }
-            }, 300); // Adjust the delay as needed
+            }, 300);
         }
     );
 
@@ -46,11 +42,10 @@ $(document).ready(function () {
         function () {
             hideTimeout = setTimeout(function () {
                 $('#categoryList').addClass('d-none');
-            }, 300); // Delay before hiding, adjust as needed
+            }, 300);
         }
     );
 
-    // Ensure the #categoryList doesn't hide if the mouse moves between #categoryList and .category-item quickly
     $('#categoryList, .category-item').mouseenter(function () {
         clearTimeout(hideTimeout);
     });

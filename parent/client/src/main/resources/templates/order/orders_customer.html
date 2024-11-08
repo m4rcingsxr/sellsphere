@@ -20,10 +20,15 @@
 
         <div class="col-lg-9 col-12 mt-4">
             <div th:if="${orderList.isEmpty()}" class="d-flex justify-content-center">
-                <div class="d-flex flex-column gap-3 align-items-center">
-                    <h2>You do not have any orders yet!</h2>
-                    <a class="btn btn-outline-primary" th:href="@{/}">Start shopping</a>
+
+
+                <div class="d-flex flex-column justify-content-center align-items-center h-50 mt-4">
+                    <h4>Your order list is currently empty</h4>
+                    <p class="text-light-emphasis fs-7">You have no orders yet. Once you make a purchase, all your orders will appear here for easy tracking and management.</p>
+                    <a class="btn btn-outline-primary mt-3" th:href="@{/}">Start shopping</a>
                 </div>
+
+
             </div>
 
             <div th:if="${!orderList.isEmpty()}">
@@ -70,7 +75,8 @@
                             <span class="fw-bolder" th:text="${'#' + order.id}"></span>
                             <span class="fs-6" th:text="${ order.orderTime.toLocalDate()}"></span>
                             <div th:replace="~{order/order_fragments :: table_order_status(${order.orderStatus})}"></div>
-                            <div class="fw-bolder" th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></div>
+                            <div class="fw-bolder"
+                                 th:text="${order.transaction.displayAmount + ' ' + order.transaction.targetCurrency.symbol}"></div>
                         </div>
                         <div class="w-75">
                             <div th:replace="~{order/order_fragments :: table_order_images(${order.orderDetails}, ${order.id})}"></div>
@@ -93,7 +99,6 @@
 <th:block th:replace="~{common :: all()}"></th:block>
 <script type="text/javascript" th:src="@{/js/customer_order.js}"></script>
 <script type="text/javascript" th:src="@{/js/return_customer_order.js}"></script>
-
 
 
 </body>

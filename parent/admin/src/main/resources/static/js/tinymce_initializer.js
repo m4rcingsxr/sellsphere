@@ -9,7 +9,7 @@ function initEditor(editorId) {
         fullscreen_native: true,
         image_dimensions: false,
         image_class_list: [
-            {title: 'Responsive', value: 'img-fluid full-description-image lazy'}
+            {title: 'Responsive', value: 'w-100 img-fluid full-description-image lazy'}
         ],
         images_upload_handler: uploadImageHandler,
         setup: setupEditor

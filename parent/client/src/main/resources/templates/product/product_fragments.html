@@ -17,7 +17,7 @@
         <div class="col-lg-7 offset-lg-1">
             <div class="row gap-4">
                 <div class="col-lg-8  fw-bolder">
-                    <span class="fs-6 d-none d-sm-block" th:text="${product.name}"></span>
+                    <span class="fs-6 d-none d-sm-block" th:text="${product.name}" style="line-height: 1.8rem"></span>
                     <span class="d-sm-none fs-7" th:text="${product.name}"></span>
                 </div>
 
@@ -49,8 +49,7 @@
                 <span th:if="${!product.inStock}" class="ms-auto text-danger-emphasis">Not available</span>
             </div>
 
-            <div class="mt-4 rounded-2 p-3 d-md-block d-none">
-
+            <div class="mt-4 rounded-2 p-2  d-md-block d-none" style="line-height: 1.8rem;">
                 <div th:utext="${product.shortDescription}"></div>
             </div>
 
@@ -59,16 +58,11 @@
 
     <hr class="my-lg-5"/>
 
-    <section>
-        <div class="d-md-none">
-            <div th:utext="${product.shortDescription}"></div>
-            <hr/>
-
-        </div>
-        <div th:utext="${product.fullDescription}"></div>
+    <section class="lh-lg px-4">
+        <div class="mt-4" th:utext="${product.fullDescription}"></div>
     </section>
 
-    <hr class="my-5"/>
+    <hr class="my-lg-5"/>
 
     <section class="px-3">
         <div class="row">
@@ -153,7 +147,7 @@
     <!--carousel product card body-->
     <div class="mt-4 p-1">
         <a th:href="@{|/p/${product.alias}|}"
-           class="link-dark link-underline link-underline-opacity-0 fs-7 product-title"><span
+           class="link-dark link-underline link-underline-opacity-0 fs-7 product-title "><span
                 class="product-title" th:text="${product.name}"></span></a>
 
         <div th:replace="~{common :: product_price(${product.discountPrice}, ${product.discountPercent}, ${product.price})}"></div>

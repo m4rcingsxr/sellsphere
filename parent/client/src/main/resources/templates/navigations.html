@@ -99,7 +99,7 @@
                 </button>
                 <div class="dropdown-menu rounded-2 rounded-top-0 w-100 start-0 p-2 shadow-sm "
                     th:classappend="${isMainPage != null && isMainPage ? 'show' : ''}">
-                    <div th:each="category : ${categoryList}"
+                    <div th:each="category : ${categoryList}" th:data-id="${category.id}"
                         class="dropdown-item ms-2 d-flex gap-3 align-items-center mt-2 category-item list-group-item-action rounded rounded-3">
                         <th:block th:if="${category.categoryIcon != null}"
                                   th:utext="${category.categoryIcon.iconPath}"></th:block>
@@ -152,7 +152,7 @@
                     <div id="flush-collapseCategory" class="accordion-collapse collapse overflow-y-scroll"
                          data-bs-parent="#accordionCategory" style="max-height: 80vh">
                         <div class="accordion-body">
-                            <div th:each="category, stat : ${categoryList}" class="accordion accordion-flush"
+                            <div th:each="category, stat : ${categoryList }" class="accordion accordion-flush"
                                  th:id="${'accordion' + category.name}">
                                 <div class="accordion-item">
                                     <h2 class="accordion-header bg-light-subtle rounded rounded-2">

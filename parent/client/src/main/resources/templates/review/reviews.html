@@ -29,10 +29,12 @@
         <div class="col-lg-9 col-12 mt-4">
 
             <div th:if="${productMap.isEmpty()}" class="d-flex justify-content-center">
-                <div class="d-flex flex-column gap-3 align-items-center">
-                    <h2>You do not buy any product yet!</h2>
-                    <a class="btn btn-outline-primary" th:href="@{/}">Start shopping</a>
+                <div class="d-flex flex-column justify-content-center align-items-center h-50 mt-4">
+                    <h4>No Reviews Available</h4>
+                    <p class="text-light-emphasis fs-7">You can only leave a review after purchasing a product. Browse our products and make a purchase to share your experience.</p>
+                    <a class="btn btn-outline-primary mt-3" th:href="@{/}">Browse Products</a>
                 </div>
+
             </div>
             <div th:if="${!productMap.isEmpty()}">
                 <h2>Unreviewed Products</h2>
