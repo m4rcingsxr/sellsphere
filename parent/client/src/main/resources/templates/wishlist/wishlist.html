@@ -49,29 +49,8 @@
 </div>
 
 
-<div class="d-lg-none sticky-bottom bg-dark py-2">
-    <div class="container text-center">
-        <button id="toggleSidebar" class="btn btn-dark w-100">
-            <i class="bi bi-layout-sidebar-inset"
-               style="font-size: 1.5rem;"></i>
-        </button>
-    </div>
-</div>
-
-<div class="sidebar-nav" id="sidebarNav">
-    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
-</div>
-
-<div id="overlay" class="overlay"></div>
-<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
-
-
-<footer th:replace="~{navigations :: footer()}"></footer>
-<script th:replace="~{common :: configurations()}"></script>
-<script th:replace="~{common :: cart_initialization()}"></script>
-<script type="text/javascript" th:src="@{/js/wishlist.js}"></script>
-<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
-
+<th:block th:replace="~{common :: all()}"></th:block>
+<th:block th:replace="~{common :: customer_navigation()}"></th:block>
 
 </body>
 </html>

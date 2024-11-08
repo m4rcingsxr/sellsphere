@@ -36,27 +36,10 @@
     </div>
 </div>
 
-<div class="d-lg-none sticky-bottom bg-dark py-2">
-    <div class="container text-center">
-        <button id="toggleSidebar" class="btn btn-dark w-100"><i class="bi bi-layout-sidebar-inset"
-                                                                 style="font-size: 1.5rem;"></i>
-        </button>
-    </div>
-</div>
 
 
-<div class="sidebar-nav" id="sidebarNav">
-    <div th:replace="~{article/article_fragments :: sidebar()}"></div>
-</div>
+<th:block th:relace="~{common :: all()}"></th:block>
+<th:block th:replace="~{common :: customer_navigation()}"></th:block>
 
-<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
-
-<script th:replace="~{common :: configurations()}"></script>
-<script th:replace="~{common :: cart_initialization()}"></script>
-
-<div id="overlay" class="overlay"></div>
-<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
-
-<nav th:replace="navigations :: footer()"></nav>
 </body>
 </html>

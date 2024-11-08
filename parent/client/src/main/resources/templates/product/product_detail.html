@@ -68,14 +68,8 @@
 </div>
 
 
-<footer th:replace="~{navigations :: footer()}"></footer>
+<th:block th:replace="~{common :: all()}"></th:block>
 
-<div id="overlay" class="overlay"></div>
-<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
-<div th:replace="~{modal_fragments :: close_modal('info_modal')}"></div>
-
-<script th:replace="~{common :: configurations()}"></script>
-<script th:replace="~{common :: cart_initialization()}"></script>
 <script type="text/javascript" th:src="@{/js/votes_reviews.js}"></script>
 <script type="text/javascript" th:src="@{/js/lazy_loading.js}"></script>
 <script type="text/javascript" th:src="@{/js/quantity.js}"></script>

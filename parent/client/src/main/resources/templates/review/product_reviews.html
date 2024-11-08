@@ -60,15 +60,13 @@
 </section>
 
 
-<footer th:replace="~{navigations :: footer()}"></footer>
-<div th:replace="~{modal_fragments :: close_modal('info_modal')}"></div>
-<div id="overlay" class="overlay"></div>
+
+<th:block th:replace="~{common :: all()}"></th:block>
+
 <script type="text/javascript" th:src="@{/js/votes_reviews.js}"></script>
 <script type="text/javascript" th:src="@{/js/form_validation.js}"></script>
 
 <script type="text/javascript">
-    const MODULE_URL = "[[@{/}]]";
-    const LOGGED_IN = "[[${#authorization.expression('isAuthenticated()')}]]" === "true";
     const AVG_RATING = '[[${product.averageRating}]]';
     const PRODUCT_ALIAS = '[(${product.alias})]';
 

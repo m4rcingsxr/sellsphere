@@ -232,10 +232,7 @@
                     </button>
 
                     <div id="recaptcha-order" class="visually-hidden">
-                        <div class="mt-4 w-100" id="recaptcha-container"></div>
-                        <div id="recaptcha-error" class="invalid-feedback">
-                            Please verify
-                        </div>
+                        <div th:replace="~{common :: recaptcha()}"></div>
                     </div>
 
                 </div>
@@ -245,14 +242,8 @@
     </div>
 </main>
 
-<div id="overlay" class="overlay"></div>
+<th:block th:replace="~{common :: all()}"></th:block>
 
-<footer th:replace="~{navigations :: footer()}"></footer>
-
-<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
-
-<script th:replace="~{common :: configurations()}"></script>
-<script th:replace="~{common :: cart_initialization()}"></script>
 
 <script type="text/javascript">
     $(function () {

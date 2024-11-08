@@ -58,7 +58,5 @@ $(document).ready(function () {
 });
 
 async function fetchStates(countryId) {
-
     return await ajaxUtil.get(`${MODULE_URL}states/list_by_country/${countryId}`)
-
 }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <head th:replace="~{form_fragments :: common_head('Address book')}"></head>
+    <th:block th:replace="~{form_fragments :: common_head('Address book')}"></th:block>
 </head>
 <body>
 <nav th:replace="~{navigations :: header()}"></nav>
@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <form th:object="${customer}" method="POST" th:action="@{/address_book/update}">
+            <form id="updateForm" th:object="${customer}" method="POST" th:action="@{/address_book/update}">
                 <input type="hidden" th:field="*{id}"/>
                 <input type="hidden" th:field="*{firstName}"/>
                 <input type="hidden" th:field="*{lastName}"/>
@@ -171,35 +171,21 @@
     </div>
 </div>
 
-<div class="d-lg-none sticky-bottom bg-dark py-2">
-    <div class="container text-center">
-        <button id="toggleSidebar" class="btn btn-dark w-100"><i class="bi bi-layout-sidebar-inset"
-                                                                 style="font-size: 1.5rem;"></i>
-        </button>
-    </div>
-</div>
 
-<div class="sidebar-nav" id="sidebarNav">
-    <div th:replace="~{customer/customer_navigation :: sidebar_nav()}"></div>
-</div>
 
-<div id="overlay" class="overlay"></div>
 
-<footer th:replace="~{navigations :: footer()}"></footer>
+
+<th:block th:replace="~{common :: customer_navigation()}"></th:block>
+<th:block th:replace="~{common :: all()}"></th:block>
 
 <div th:replace="~{address/address_fragments :: newAddressModal()}"></div>
 <div th:replace="~{address/address_fragments :: deleteAddressModal()}"></div>
-<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
 
-
-<script th:replace="~{common :: configurations()}"></script>
-<script th:replace="~{common :: cart_initialization()}"></script>
 <script type="text/javascript" th:src="@{/js/addresses.js}"></script>
-<script type="text/javascript" th:src="@{/js/customer_navigation.js}"></script>
+
 
 <script type="text/javascript">
     $(function () {
-
         var validator = new FormValidator('mainForm', [
             {
                 name: 'firstName',
@@ -252,7 +238,6 @@
                 rules: "required"
             }
         ], handleValidations);
-
     })
 </script>
 </body>

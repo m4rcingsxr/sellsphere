@@ -97,14 +97,9 @@
 
 </main>
 
-<footer th:replace="~{navigations :: footer()}"></footer>
 
-<div id="overlay" class="overlay"></div>
 
-<div th:replace="~{modal_fragments :: close_modal('errorModal')}"></div>
-
-<script th:replace="~{common :: configurations()}"></script>
-<script th:replace="~{common :: cart_initialization()}"></script>
+<script th:replace="~{common :: all()}"></script>
 
 <script>
     $(function () {

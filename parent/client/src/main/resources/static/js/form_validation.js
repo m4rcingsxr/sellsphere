@@ -30,6 +30,7 @@ function handleValidations(errors) {
         });
 
         if (grecaptcha.getResponse().length == 0) {
+            console.log(grecaptcha.getResponse());
             recaptchaError.style.display = 'block';
         }
 
@@ -60,7 +61,6 @@ function renderReCaptcha() {
                 'sitekey': `${config.recaptchaSiteKey}`,
                 size: 'compact'
             });
-
 
         });
     }

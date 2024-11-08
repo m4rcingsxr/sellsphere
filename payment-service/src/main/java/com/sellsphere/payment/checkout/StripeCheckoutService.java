@@ -138,8 +138,9 @@ public class StripeCheckoutService {
                     .putExtraParam("components[payment_element][enabled]", true)
                     .putExtraParam("components[payment_element][features][payment_method_redisplay]", "enabled")
                     .putExtraParam("components[payment_element][features][payment_method_save]", "enabled")
-                    .putExtraParam("components[payment_element][features][payment_method_save_usage]", "on_session")
+                    .putExtraParam("components[payment_element][features][payment_method_save_usage]", "off_session") // Allow usage off-session for reuse
                     .putExtraParam("components[payment_element][features][payment_method_remove]", "enabled")
+                    .putExtraParam("components[payment_method_suggestions][enabled]", true) // Allow for payment method suggestions
                     .build();
 
             log.info("Creating customer session for Stripe ID: {}", stripeId);
