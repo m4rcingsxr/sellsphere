@@ -234,7 +234,6 @@ public class EasyshipIntegrationService implements EasyshipService {
                                                                                                .width(cartItem.getProduct().getWidth())
                                                                                                .height(cartItem.getProduct().getHeight())
                                                                                                .build())
-                                                                           .hsCode(Integer.parseInt(cartItem.getProduct().getHsCode()))
                                                                            .build()))
                                                     .build()).toList());
     }

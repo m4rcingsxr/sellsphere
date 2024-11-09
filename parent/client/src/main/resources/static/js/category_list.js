@@ -19,7 +19,17 @@ $(document).ready(function () {
                 const categoryId = this.dataset.id;
                 previousCategory = categoryId;
 
-                $(`#${categoryId}`).removeClass('d-none');
+                const $category = $(`#${categoryId}`);
+
+                if($category.children().length > 0) {
+                    $category.parent().removeClass('d-none');
+                    $category.removeClass('d-none');
+
+                } else {
+                    $category.parent().addClass('d-none');
+                    $category.addClass('d-none');
+
+                }
             }, 300);
         },
         function () {
