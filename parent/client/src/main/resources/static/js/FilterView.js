@@ -25,44 +25,61 @@ class FilterView {
     generateProductHtml(product) {
         const formattedDiscountPrice = formatPriceUtil.formatPrice(product.discountPrice);
         const formattedPrice = formatPriceUtil.formatPrice(product.price);
-        const productDetails = Array.isArray(product.details) ? product.details.slice(0, 5) : [];
+        let productDetails = Array.isArray(product.details) ? product.details.slice(0, 5) : [];
 
         // Properly encode the product alias for URLs
         const encodedAlias = encodeURIComponent(product.alias);
 
-        return `
-            
+        // Generate star rating HTML based on averageRating (assumes averageRating is from 1-5)
+        const generateStarRating = (averageRating) => {
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                starsHtml += i <= averageRating
+                    ? '<i class="fa-solid fa-star fa-xs text-warning"></i>'
+                    : '<i class="fa-regular fa-star fa-xs text-warning"></i>';
+            }
+            return starsHtml;
+        };
 
+        // Add rating as the first detail
+        if (product.averageRating !== undefined && product.averageRating !== null) {
+            productDetails.unshift({
+                name: 'Rating',
+                value: generateStarRating(product.averageRating)
+            });
+        }
+
+        return `
         <div class="col-md-4">
             <div class="product-carousel-card p-2 rounded-2 position-relative">
                 <div class="d-flex flex-column">
-                <a href="${MODULE_URL}p/${encodedAlias}" class="product-carousel-img-container mt-4 ">
-                    <img src="${product.mainImagePath}" class="card-img-top" alt="${product.name}">
-                </a>
-                
-                <div class="mt-4 p-1">
-                    <a href="/p/${encodedAlias}" class="link-dark link-underline link-underline-opacity-0 fs-7 product-title">
-                        <span class="product-title">${product.name}</span>
+                    <a href="${MODULE_URL}p/${encodedAlias}" class="product-carousel-img-container mt-4 ">
+                        <img src="${product.mainImagePath}" class="card-img-top" alt="${product.name}">
                     </a>
-                    <div class="d-flex gap-2 mt-auto">
-                        <strong>${formattedDiscountPrice}</strong>
-                        ${product.discountPercent > 0 ? `<span class="fw-lighter text-decoration-line-through">${formattedPrice}</span>` : ''}
+                    
+                    <div class="mt-4 p-1">
+                        <a href="/p/${encodedAlias}" class="link-dark link-underline link-underline-opacity-0 fs-7 product-title">
+                            <span class="product-title">${product.name}</span>
+                        </a>
+                        <div class="d-flex gap-2 mt-auto">
+                            <strong>${formattedDiscountPrice}</strong>
+                            ${product.discountPercent > 0 ? `<span class="fw-lighter text-decoration-line-through">${formattedPrice}</span>` : ''}
+                        </div>
                     </div>
-                </div>
-                
-                ${product.discountPercent > 0 ? `<div class="position-absolute top-0 p-1"><span class="badge bg-danger text-center fs-7">-${product.discountPercent}%</span></div>` : ''}
-                
-                <div class="position-absolute top-0 end-0">
-                    <a href="#" class="cart-icon link-dark d-block add-to-cart" data-product-id="${product.id}"><i class="bi bi-cart cart-icon-size"></i></a>
-                    <a href="#" class="heart-icon link-dark wishlist" data-product-id="${product.id}"><i class="bi ${product.onTheWishlist ? 'bi-heart-fill text-danger' : 'bi-heart'} cart-icon-size"></i></a>
-                </div>
-                
-                <div class="product-carousel-card-details p-2">
-                    <div class="row g-2">${productDetails.map(detail => `
-                        <div class="col-8 detail"><span class="text-light-emphasis">${detail.name}:</span></div>
-                        <div class="col-4 detail fw-bolder">${detail.value}</div>
-                    `).join('')}</div>
-                </div>
+                    
+                    ${product.discountPercent > 0 ? `<div class="position-absolute top-0 p-1"><span class="badge bg-danger text-center fs-7">-${product.discountPercent}%</span></div>` : ''}
+                    
+                    <div class="position-absolute top-0 end-0">
+                        <a href="#" class="cart-icon link-dark d-block add-to-cart" data-product-id="${product.id}"><i class="bi bi-cart cart-icon-size"></i></a>
+                        <a href="#" class="heart-icon link-dark wishlist" data-product-id="${product.id}"><i class="bi ${product.onTheWishlist ? 'bi-heart-fill text-danger' : 'bi-heart'} cart-icon-size"></i></a>
+                    </div>
+                    
+                    <div class="product-carousel-card-details p-2">
+                        <div class="row g-2">${productDetails.map(detail => `
+                            <div class="col-8 detail"><span class="text-light-emphasis">${detail.name}:</span></div>
+                            <div class="col-4 detail fw-bolder">${detail.value}</div>
+                        `).join('')}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -221,9 +238,30 @@ class FilterView {
             $lowerPrice.val(minPrice);
             $upperPrice.val(maxPrice);
 
-            $("#lower").attr("min", minPrice).attr("max", maxPrice).val(minPrice );
+            $("#lower").attr("min", minPrice).attr("max", maxPrice).val(minPrice);
             $("#upper").attr("min", minPrice).attr("max", maxPrice).val(maxPrice);
         }
+    }
+
+    setCurrentPriceRange(minPrice, maxPrice) {
+        $("#lowerPrice").val(minPrice);
+        $("#upperPrice").val(maxPrice);
+
+        let upperVal = parseInt(maxPrice);
+        let lowerVal = parseInt(minPrice);
+        if (upperVal < lowerVal + 1) {
+            $("#upper").val(lowerVal + 1);
+            upperVal = lowerVal + 1;
+        }
+        $(`#upper`).val(upperVal);
+        $(`#upperPrice`).val(upperVal);
+
+        if (lowerVal > upperVal - 1) {
+            $('#lower').val(upperVal - 1);
+            lowerVal = upperVal - 1;
+        }
+        $(`#lower`).val(lowerVal);
+        $(`#lowerPrice`).val(lowerVal);
     }
 
     /**
@@ -362,7 +400,6 @@ class FilterView {
             }
         }
     }
-
 
 
     /**

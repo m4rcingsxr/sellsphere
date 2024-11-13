@@ -34,6 +34,15 @@ const formatPriceUtil = {
         }
 
         return formattedPrice;
+    },
+
+    getPriceAsFloat(productPrice) {
+        if (!currencySettings) {
+            throw new Error("Currency settings must be defined!")
+        }
+
+        // Return the price formatted to the specified decimal digits as a float
+        return parseFloat(productPrice.toFixed(currencySettings.decimalDigits));
     }
 
 }

@@ -18,7 +18,6 @@ class FilterModel {
 
     async fetchAndHandleFilterCounts(filters) {
         try {
-            showFullScreenSpinner();
             const formattedFilters = this.formatFilters(filters);
             const countMap = await this.fetchFilterCounts(formattedFilters);
             this.view.renderProductFilters(countMap, filters);
@@ -26,8 +25,6 @@ class FilterModel {
             this.view.renderAllFilterNames(countMap);
         } catch (error) {
             throw error;
-        } finally {
-            hideFullScreenSpinner();
         }
     }
 
@@ -61,7 +58,7 @@ class FilterModel {
             this.currentPage = productsPage.page;
 
             this.view.renderProducts(productsPage);
-            this.view.setPriceBoundaries(productsPage.minPrice, productsPage.maxPrice);
+            this.view.setCurrentPriceRange(productsPage.minPrice, productsPage.maxPrice);
             this.view.renderPagination(productsPage);
 
         } catch (error) {
@@ -141,7 +138,7 @@ class FilterModel {
         const url = new URL(window.location.href);
         const pathname = url.pathname;
         const keywordParam = url.searchParams.get('keyword');
-        if(keywordParam) {
+        if (keywordParam) {
             params.append("keyword", keywordParam);
             console.log("keyword", keywordParam);
         }

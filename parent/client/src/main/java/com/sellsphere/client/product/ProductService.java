@@ -1,9 +1,6 @@
 package com.sellsphere.client.product;
 
-import com.sellsphere.common.entity.Customer;
-import com.sellsphere.common.entity.Product;
-import com.sellsphere.common.entity.ProductDetail;
-import com.sellsphere.common.entity.ProductNotFoundException;
+import com.sellsphere.common.entity.*;
 import com.sellsphere.common.entity.payload.BasicProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -73,6 +70,7 @@ public class ProductService {
                 .max(BigDecimal::compareTo)
                 .orElse(productPageRequest.getMaxPrice());
 
+
         // Build and return the response
         return ProductPageResponse.builder()
                 .content(productPage.map(product -> new BasicProductDTO(product, customer)).toList())
@@ -83,7 +81,6 @@ public class ProductService {
                 .maxPrice(maxPrice)
                 .build();
     }
-
 
 
     /**
@@ -147,7 +144,8 @@ public class ProductService {
                 .flatMap(product -> product.getDetails().stream())
                 .collect(
                         Collectors.groupingBy(detail -> cleanString(detail.getName()),
-                                              Collectors.groupingBy(detail -> cleanString(detail.getValue()), // Apply string cleanup
+                                              Collectors.groupingBy(detail -> cleanString(detail.getValue()),
+                                                                    // Apply string cleanup
                                                                     Collectors.counting()
                                               )
                         )
@@ -198,7 +196,8 @@ public class ProductService {
         // initializing counts to zero if not already present.
         for (Product product : allProducts) {
             for (ProductDetail detail : product.getDetails()) {
-                counts.computeIfAbsent(cleanString(detail.getName()), k -> new HashMap<>()).putIfAbsent(cleanString(detail.getValue()), 0L);
+                counts.computeIfAbsent(cleanString(detail.getName()), k -> new HashMap<>()).putIfAbsent(
+                        cleanString(detail.getValue()), 0L);
             }
 
             String brandName = product.getBrand().getName();
@@ -292,5 +291,21 @@ public class ProductService {
                 .replaceAll("\\p{M}", "")        // Remove diacritics
                 .replaceAll("\\p{C}", "")        // Remove invisible control characters
                 .trim();                         // Trim leading/trailing spaces
+    }
+
+    public BigDecimal findMinPrice() {
+        return productRepository.findMinPrice();
+    }
+
+    public BigDecimal findMaxPrice() {
+        return productRepository.findMaxPrice();
+    }
+
+    public BigDecimal findMinPriceForCategory(Category category) {
+        return productRepository.findMinPrice(category);
+    }
+
+    public BigDecimal findMaxPriceForCategory(Category category) {
+        return productRepository.findMaxPrice(category);
     }
 }

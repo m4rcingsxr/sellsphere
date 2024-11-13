@@ -25,10 +25,12 @@ class FilterController {
      * On failure, it shows an error modal.
      */
     loadFiltersFromUrl() {
+
+        showFullScreenSpinner();
         const filters = this.model.extractFiltersFromUrl(window.location.href);
         this.model.fetchAndHandleFilterCounts(filters)
-            .then(() => {
-                this.model.handleFilterChange(filters, 0)
+            .then(async () => {
+                await this.model.handleFilterChange(filters, 0)
                 this.view.renderActiveFilters(this.model.groupFilters(filters));
             })
             .catch(error => showErrorModal(error.response))

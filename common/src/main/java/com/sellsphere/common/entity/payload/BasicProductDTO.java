@@ -1,6 +1,7 @@
 package com.sellsphere.common.entity.payload;
 
 import com.sellsphere.common.entity.Customer;
+import com.sellsphere.common.entity.MoneyUtil;
 import com.sellsphere.common.entity.Product;
 import com.sellsphere.common.entity.ProductDetailDto;
 import jakarta.persistence.Transient;
@@ -56,6 +57,9 @@ public class BasicProductDTO implements Serializable {
 
     boolean isOnTheWishlist;
 
+    float averageRating;
+
+
 
     List<ProductDetailDto> details;
 
@@ -76,6 +80,7 @@ public class BasicProductDTO implements Serializable {
         this.brandName = other.getBrand().getName();
         this.mainImagePath = other.getMainImagePath();
         this.details = other.getDetails().stream().map(ProductDetailDto::new).toList();
+        this.averageRating = other.getAverageRating();
     }
 
     @Transient

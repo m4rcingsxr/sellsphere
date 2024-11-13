@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,11 @@ public class ProductController {
         Category category = categoryService.getCategoryByAlias(alias);
         List<Category> categoryParentList = categoryService.getCategoryParents(category);
 
+        BigDecimal minPrice = productService.findMinPriceForCategory(category);
+        BigDecimal maxPrice = productService.findMaxPriceForCategory(category);
+
+        model.addAttribute("minPrice", minPrice);
+        model.addAttribute("maxPrice", maxPrice);
         model.addAttribute("categoryParentList", categoryParentList);
         model.addAttribute("pageTitle", pageTitle.concat(category.getName()));
         model.addAttribute("category", category);
@@ -62,6 +68,12 @@ public class ProductController {
             @RequestParam(value = "keyword", required = false) String keyword,
             Model model
     ) {
+
+        BigDecimal minPrice = productService.findMinPrice();
+        BigDecimal maxPrice = productService.findMaxPrice();
+
+        model.addAttribute("minPrice", minPrice);
+        model.addAttribute("maxPrice", maxPrice);
         model.addAttribute("keyword", keyword);
         return PRODUCTS_PATH;
     }
