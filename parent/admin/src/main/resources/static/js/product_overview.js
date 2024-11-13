@@ -7,8 +7,6 @@ $(function () {
 
     // Set up a listener for when the brand selection changes
     initializeBrandChangeListener();
-
-
 });
 
 /**
@@ -48,6 +46,10 @@ const loadCategoriesForBrand = async (brandId) => {
                 const option = `<option value="${category.id}">${category.name}</option>`;
                 $categoryContainer.append(option);
             });
+
+            // Check and select the existing category if it matches any option
+            selectExistingCategory();
+
         } catch (error) {
             // Log the error and show an error modal if the fetch fails
             console.error("Error during fetching categories:", error.response);
@@ -55,6 +57,20 @@ const loadCategoriesForBrand = async (brandId) => {
         } finally {
             // Hide the spinner once loading is complete
             hideFullScreenSpinner();
+        }
+    }
+}
+
+/**
+ * Selects an existing category if it exists in the category dropdown options.
+ */
+function selectExistingCategory() {
+    const selectedCategoryId = $("#category").data("selected-category-id"); // Assuming you have set a data-selected-category-id attribute
+
+    if (selectedCategoryId) {
+        const $categoryOption = $("#category").find(`option[value="${selectedCategoryId}"]`);
+        if ($categoryOption.length) {
+            $("#category").val(selectedCategoryId).trigger('change'); // Select the option and trigger change if needed
         }
     }
 }

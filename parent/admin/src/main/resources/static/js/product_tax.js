@@ -7,10 +7,13 @@ $(function() {
 
     // Load product taxes associated with the selected type
     loadProductTaxesForType(type)
-        .then(handleLoadTaxes)
+        .then(taxes => {
+            handleLoadTaxes(taxes);
+            selectInitialTaxIfPresent(); // Check and select if an initial value exists
+        })
         .catch(error => {
             console.error(error);
-            showErrorModal(error.response)
+            showErrorModal(error.response);
         });
 
     initializeTaxCategoryChangeListener();
@@ -33,6 +36,21 @@ function initializeProductTaxSelect2() {
         templateResult: formatState,
         templateSelection: formatState
     });
+
+    // Select the initial value if present
+    selectInitialTaxIfPresent();
+}
+
+function selectInitialTaxIfPresent() {
+    const $taxSelect = $('#tax');
+    const initialTaxId = $taxSelect.data('selected-tax-id');
+
+    if (initialTaxId) {
+        const option = $taxSelect.find(`option[value="${initialTaxId}"]`);
+        if (option.length) {
+            $taxSelect.val(initialTaxId).trigger('change');
+        }
+    }
 }
 
 function initializeTaxCategoryChangeListener() {
@@ -40,16 +58,19 @@ function initializeTaxCategoryChangeListener() {
         const type = $(this).val();
 
         loadProductTaxesForType(type)
-            .then(handleLoadTaxes)
+            .then(taxes => {
+                handleLoadTaxes(taxes);
+                selectInitialTaxIfPresent(); // Re-check and select after loading new options
+            })
             .catch(error => {
                 console.error(error);
-                showErrorModal(error.response())
+                showErrorModal(error.response);
             });
     });
 }
 
 async function loadProductTaxesForType(type) {
-    return await ajaxUtil.get(`${MODULE_URL}products/tax/${type}`)
+    return await ajaxUtil.get(`${MODULE_URL}products/tax/${type}`);
 }
 
 function handleLoadTaxes(taxes) {
@@ -62,6 +83,4 @@ function handleLoadTaxes(taxes) {
             `<option data-tax-description="${tax.description}" value="${tax.id}">${tax.name}</option>`
         );
     });
-
 }
-

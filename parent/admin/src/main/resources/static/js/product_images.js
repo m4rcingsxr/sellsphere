@@ -81,7 +81,7 @@ function getImageSectionHtml(fileName, src, index) {
             <div class="card-body">
                 <h5 class="card-title">${isMainImage ? 'Main image' : 'Extra image'}</h5>
             </div>
-            <div class="entity-image-container" style="width: 100%; height: 300px">
+            <div class="entity-image-container" style="width: 100%; max-height: 300px;">
                 <img id="previewImage${index}" src="${src}" class="p-2 entity-image" style="object-fit: cover;">
             </div>
             ${!isMainImage ? `
