@@ -63,8 +63,8 @@ public class BrandRestController {
         Brand brand = brandService.getBrandById(brandId);
 
         // Get categories associated with the brand and build the hierarchy
-        Set<Category> brandCategories = brand.getCategories();
-        List<Category> hierarchy = categoryService.createHierarchy(brandCategories.stream().toList());
+        List<Category> rootCategories = categoryService.listCategoriesParents(brand.getCategories());
+        List<Category> hierarchy = categoryService.createHierarchy(rootCategories);
         List<CategoryDTO> hierarchyDTOs = hierarchy.stream().map(CategoryDTO::new).toList();
 
         return ResponseEntity.ok(hierarchyDTOs);

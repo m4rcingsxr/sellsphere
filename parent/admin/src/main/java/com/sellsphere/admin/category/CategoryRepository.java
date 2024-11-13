@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface CategoryRepository extends SearchRepository<Category, Integer> {
@@ -30,4 +31,6 @@ public interface CategoryRepository extends SearchRepository<Category, Integer> 
     Optional<Category> findByAlias(String alias);
 
     long countAllByEnabledIsTrue();
+
+    Optional<Category> findByParentIsNullAndAllParentIDsContains(String childId);
 }

@@ -4,10 +4,7 @@ import com.sellsphere.admin.FileService;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingHelper;
 import com.sellsphere.admin.product.ProductRepository;
-import com.sellsphere.common.entity.Category;
-import com.sellsphere.common.entity.CategoryIcon;
-import com.sellsphere.common.entity.CategoryIllegalStateException;
-import com.sellsphere.common.entity.CategoryNotFoundException;
+import com.sellsphere.common.entity.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -283,4 +282,15 @@ public class CategoryService {
     public List<Category> listAll(String name, Sort.Direction direction) {
         return categoryRepository.findAll(Sort.by(direction, name));
     }
+
+    public List<Category> listCategoriesParents(Set<Category> categories) {
+        return categories.stream().map(this::getRoot).toList();
+    }
+
+    private Category getRoot(Category category) {
+        if(category.getParent() == null) return category;
+        return getRoot(category.getParent());
+    }
+
+
 }

@@ -9,8 +9,13 @@
         <th:block
                 th:replace="~{form_fragments :: select_input('Brand', ${brandList}, 'brand',  ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')}, false)}"></th:block>
 
-        <th:block
-                th:replace="~{form_fragments :: select_input('Category', ${null}, 'category',  ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')}, false)}"></th:block>
+        <label class="col-sm-4 col-form-label">Category</label>
+        <div class="col-sm-8">
+            <select class="form-select" id="category" name="category" th:data-selected-category-id="${product.category != null ? product.category.id : '-1'}">
+                <option th:each="category : ${categoryList}" th:value="${category.id}" th:text="${category.name}"></option>
+            </select>
+            <span th:replace="~{form_fragments :: field_error('category')}"></span>
+        </div>
 
         <th:block
                 th:replace="~{form_fragments :: checkbox_input('Enabled', 'enabled' , ${product.enabled}, ${#authorization.expression('hasRole(''ROLE_SALESPERSON'')')})}"></th:block>

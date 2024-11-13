@@ -21,7 +21,7 @@
                     <div th:replace="~{common :: alerts()}"></div>
 
                     <!-- Search Bar -->
-                    <form th:replace="~{list_fragments :: search_bar('/products/page/0', 'Search for the product', 'firstName', ${keyword}, ${totalItems}, null)}"></form>
+                    <form th:replace="~{list_fragments :: search_bar('/products/page/0', 'Search for the product', 'id', ${keyword}, ${totalItems}, null)}"></form>
 
                     <div class="con-lg-xl-xxl">
                         <table class="table table-hover mt-4 large">
