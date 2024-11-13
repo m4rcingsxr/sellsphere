@@ -101,9 +101,6 @@ class ShoppingCartView {
         this.updateSaving(0);
         this.updateTotal(0);
 
-        this.updateTax(0);
-        this.updateShipping(0);
-
         $("tbody").empty();
     }
 

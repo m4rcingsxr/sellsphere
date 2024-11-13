@@ -104,7 +104,7 @@
                         <th:block th:if="${category.categoryIcon != null}"
                                   th:utext="${category.categoryIcon.iconPath}"></th:block>
                         <a th:href="@{|/c/${category.alias}|}"
-                           class="link-dark link-underline link-underline-opacity-0 fs-5 d-block"
+                           class="text-wrap link-dark link-underline link-underline-opacity-0 fs-5 d-block"
                            th:text="${category.name}"></a>
                         <i class="fa-solid fa-angle-right fa-lg d-block ms-auto me-2"></i>
                     </div>
@@ -217,7 +217,7 @@
                 </div>
             </div>
 
-            <a th:href="@{'/articles/' + ${navigationItemList[1].article.alias}}"
+            <a th:if="${navigationItemList != null and navigationItemList.size() > 0}" th:href="@{'/articles/' + ${navigationItemList[1].article.alias}}"
                class="btn bg-light-subtle rounded rounded-2 w-100 mt-3   p-2">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
