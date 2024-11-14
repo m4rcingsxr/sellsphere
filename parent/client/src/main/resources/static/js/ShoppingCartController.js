@@ -86,7 +86,7 @@ class ShoppingCartController {
             event.preventDefault();
             const $target = $(event.currentTarget);
             const productId = Number($target.data("product-id"));
-            const quantity = Number($target.parent().find(".quantity-input").val());
+            const quantity = Number($target.closest(".col-lg-3").find(".quantity-input").val());
 
             this.model.addItem(productId, quantity)
                 .then(() => this.updateNavigationQuantity())
@@ -131,7 +131,6 @@ class ShoppingCartController {
                 this.showCart(false);
             }
         })
-
     }
 
     /**
