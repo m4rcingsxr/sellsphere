@@ -131,7 +131,7 @@ public class CustomerProvider
 
     @Override
     public UserModel addUser(RealmModel realm, String username) {
-        // Do not persist here, just create the entity
+            // Do not persist here, just create the entity
 
             Customer entity = new Customer();
             entity.setEmail(username);
@@ -145,12 +145,17 @@ public class CustomerProvider
 
     @Override
     public boolean removeUser(RealmModel realm, UserModel user) {
-        String persistenceId = StorageId.externalId(user.getId());
-        Customer entity = entityManager.find(Customer.class, persistenceId);
-        if (entity == null) {
+        String email = StorageId.externalId(user.getId());
+        Customer customer = entityManager.createQuery(
+                        "SELECT c FROM Customer c WHERE c.email = :email", Customer.class)
+                .setParameter("email", email)
+                .getSingleResult();
+
+        if (customer == null) {
             return false;
         }
-        entityManager.remove(entity);
+
+        entityManager.remove(customer);
         return true;
     }
 
@@ -290,6 +295,7 @@ public class CustomerProvider
         if (userAdapter.isDirty()) {
             Customer customer = new Customer();
             customer.setEmail(user.getUsername());
+            customer.setStripeId(userAdapter.getStripeId());
             entityManager.persist(customer);
         }
     }

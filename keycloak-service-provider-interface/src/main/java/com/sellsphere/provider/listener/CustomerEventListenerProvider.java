@@ -37,25 +37,31 @@ public class CustomerEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(Event event) {
-        if (event.getType() == EventType.REGISTER) {
-            String email = event.getDetails().get("username");
-            if(email == null || email.isEmpty()) {
-                throw new IllegalStateException("Email cannot be null or empty");
-            }
+        if (event.getType() == EventType.REGISTER || event.getType() == EventType.SEND_IDENTITY_PROVIDER_LINK) {
+           createCustomer(event);
+        }
+    }
 
-            UserModel user = tx.findUser(email);
+    private void createCustomer(Event event) {
+        String email = event.getDetails().get("username");
+        if(email == null || email.isEmpty()) {
+            throw new IllegalStateException("Email cannot be null or empty");
+        }
 
-            Customer customer = new Customer();
-            customer.setEmail(email);
-            customer.setName(user.getFirstName() + " " + user.getLastName());
-            customer.setId(customer.getId());
+        UserModel user = tx.findUser(email);
 
-            try {
-                Customer savedCustomer = customerService.createCustomer(customer);
-                user.setSingleAttribute("stripe_id", savedCustomer.getId());
-            } catch (StripeException e) {
-                throw new RuntimeException(e);
-            }
+        Customer customer = new Customer();
+        customer.setEmail(email);
+        customer.setName(user.getFirstName() + " " + user.getLastName());
+        customer.setId(customer.getId());
+
+
+        try {
+            Customer savedCustomer = customerService.createCustomer(customer);
+            user.setSingleAttribute("stripe_id", savedCustomer.getId());
+        } catch (StripeException e) {
+            log.error("Failed to create customer", e);
+            throw new RuntimeException(e);
         }
     }
 

@@ -146,6 +146,7 @@ public class WebhookService {
             case "refund.updated":
                 break;
             case "customer.created":
+                handleCustomerCreated((com.stripe.model.Customer) stripeObject);
                 break;
             case "customer.updated":
                 break;
@@ -155,6 +156,13 @@ public class WebhookService {
             default:
                 log.info("Unhandled event type: {}", event.getType());
         }
+    }
+
+    private void handleCustomerCreated(com.stripe.model.Customer stripeObject) {
+        customerRepository.findByEmail(stripeObject.getEmail()).ifPresent(customer -> {
+            customer.setStripeId(stripeObject.getId());
+            customerRepository.save(customer);
+        });
     }
 
     protected void handlePaymentMethodDetached(com.stripe.model.PaymentMethod stripePaymentMethod) {

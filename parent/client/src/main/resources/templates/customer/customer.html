@@ -28,6 +28,7 @@
             <form method="POST" th:action="@{/customer/update}" th:object="${customer}"
                   class=" d-flex flex-column" name="mainForm" id="mainForm">
 
+
                 <div class="row gap-3 ">
 
                     <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
@@ -57,10 +58,12 @@
                 <div class="row mt-2">
                     <div class="col-12 offset-md-2 col-md-8 offset-lg-0">
                         <h5 class="mt-5 mb-3 display-7">Contact</h5>
-                        <div th:replace="~{form_fragments :: field_form_floating_email('email', 'Email')}"></div>
+                        <input type="text" class="form-control" th:field="*{email}" style="background-color: #f3f3f3" readonly>
+                        <span class="invalid-feedback"></span>
                     </div>
 
                 </div>
+
 
                 <div th:replace="~{common :: recaptcha()}"></div>
 
