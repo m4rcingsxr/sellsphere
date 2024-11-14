@@ -1,8 +1,8 @@
-# SellSphere - E-commerce Platform for Electronics
+# SellSphere - An E-commerce Platform for Electronics
 
 ## Overview
 
-SellSphere is a feature-rich e-commerce platform designed to sell electronics efficiently and effectively. The platform leverages modern technologies to deliver a smooth online shopping experience, structured with three modular applications:
+SellSphere is a project aimed at building an e-commerce platform for selling electronics. It’s made up of three main components:
 
 - **Admin Panel**: A powerful management interface for handling business operations.
 - **Client Application**: A customer-facing storefront for browsing and purchasing products.
@@ -13,17 +13,18 @@ SellSphere follows an MVC architecture and utilizes internal REST APIs to commun
 - **Stripe** for secure payment processing.
 - **Easyship** for obtaining real-time shipping rates.
 - **AWS S3** for scalable and secure file storage.
-- **Keycloak** for user authentication, integrated with a custom SPI to work seamlessly with the database customers, event listeners to include my email templates.
+- **Keycloak** for customer authentication.
 
 ### Tech Stack
 
 - **Backend**: Spring, Spring Boot, MySQL
-- **Frontend**: Thymeleaf templates, Bootstrap for responsive design
-- **Security**: Keycloak, reCAPTCHA v2 (client and server-side validation)
+- **Frontend**: Thymeleaf templates, Bootstrap, jQuery
+- **Security**: reCAPTCHA
+- **Database Versioning**: Liquibase
 - **Testing**: JUnit, Mockito
 - **Utilities**: Lombok, Google Guice, Gson
 
-## ERD
+## Entity Relationship Diagram
 ![erd.png](erd.png)
 
 ---
