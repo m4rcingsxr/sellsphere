@@ -75,22 +75,22 @@ public class CarouselService {
      * @throws PromotionNotFoundException if the promotion ID is invalid
      */
     public void save(Carousel carousel, Integer promotionId) throws PromotionNotFoundException {
-        int orderCount = (int) carouselRepository.count();
-        carousel.setCarouselOrder(orderCount);
+        if (carousel.getCarouselOrder() == null) {
+            int orderCount = (int) carouselRepository.count();
+            carousel.setCarouselOrder(orderCount);
+        }
+
         carousel.setBidirectionalRelationship();
 
         if (carousel.getType() == CarouselType.PROMOTION) {
             setPromotion(carousel, promotionId);
         } else if (carousel.getType() == CarouselType.IMAGE) {
+            // new or exist
             replaceMainCarousel();
             carousel.setCarouselOrder(0);
         }
 
         carouselRepository.save(carousel);
-    }
-
-    private boolean isMainCarouselAbsent() {
-        return carouselRepository.findFirstByType(CarouselType.IMAGE).isEmpty();
     }
 
     /**
@@ -110,5 +110,28 @@ public class CarouselService {
     private void replaceMainCarousel() {
         carouselRepository.findFirstByType(CarouselType.IMAGE).ifPresent(carouselRepository::delete);
         carouselRepository.flush();
+        refreshCarouselOrder(1);
     }
+
+
+
+    public void delete(Integer carouselId) throws CarouselNotFoundException {
+        Carousel carousel = carouselRepository.findById(carouselId).orElseThrow(CarouselNotFoundException::new);
+
+        if (carousel.getType().equals(CarouselType.PROMOTION) || carousel.getType().equals(CarouselType.ARTICLE)) {
+            carouselRepository.delete(carousel);
+        }
+
+        refreshCarouselOrder(0);
+    }
+
+    private void refreshCarouselOrder(int fromIndex) {
+        List<Carousel> carousels = carouselRepository.findAll();
+        for (Carousel carousel : carousels) {
+            carousel.setCarouselOrder(fromIndex++);
+            carouselRepository.save(carousel);
+        }
+    }
+
+
 }

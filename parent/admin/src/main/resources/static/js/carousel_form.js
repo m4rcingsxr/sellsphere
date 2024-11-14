@@ -75,6 +75,8 @@ async function handleCarouselTypeChange(type) {
             if(selectedPromotionProducts.length > 0) {
                 const products = await fetchEntityByName(selectedPromotionProducts, "PROMOTION");
                 handleProductCarousel(products);
+            } else {
+                await loadPromotionProducts($("#promotionList").find(":selected").text());
             }
 
             resetViewForPromotions();

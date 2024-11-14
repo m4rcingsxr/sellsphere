@@ -101,6 +101,8 @@ public class MainPageController {
         return "mainpage/carousel_form";
     }
 
+
+
     private void prepareCarouselFormModel(Model model, Set<Integer> idsSet, String pageTitle, Carousel carousel) {
         List<Article> articleList = articleService.findAllByArticleType(ArticleType.PROMOTION, "title",
                                                                         Sort.Direction.ASC
@@ -133,6 +135,14 @@ public class MainPageController {
                              "Successfully changed order from id [" + fromId + "] " + "to id [" + toId + "]"
         );
 
+        return DEFAULT_REDIRECT_URL;
+    }
+
+    @GetMapping("/main_page/delete/{carousel_id}")
+    public String deleteCarousel(@PathVariable("carousel_id") Integer carouselId, RedirectAttributes ra)
+            throws CarouselNotFoundException {
+        carouselService.delete(carouselId);
+        ra.addFlashAttribute(Constants.SUCCESS_MESSAGE, "Successfully removed carousel ID[" + carouselId + "]");
         return DEFAULT_REDIRECT_URL;
     }
 
