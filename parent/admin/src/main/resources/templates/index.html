@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html >
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-sc">
 <head>
     <th:block th:replace="common :: head_all('')"></th:block>
 <body>
@@ -20,7 +20,7 @@
             </div>
 
             <div class="row mt-5 g-3">
-                <div class="col-md-6">
+                <div class="col-md-6" sec:authorize="hasRole('ROLE_ADMIN')">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between">
                             <strong>General information</strong> <a th:href="@{/settings#general}" class="link-primary">Edit</a>
@@ -46,35 +46,39 @@
                     </div>
                 </div>
 
-                <div class="col-lg-2 col-sm-6">
+                <div class="col-lg-2 col-sm-6" sec:authorize="hasRole('ROLE_ADMIN')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Users ([[${userCount}]])</strong>
                         </div>
                         <div class="card-body">
                             <a th:href="@{/users/new}" class="link-primary d-block">Add User</a>
-                            <a th:href="@{/users/page/0?sortField=enabled&sortDir=desc&keyword=}" class="link-primary d-block">Enabled ([[${enabledUserCount}]])</a>
-                            <a th:href="@{/users/page/0?sortField=enabled&sortDir=asc&keyword=}" class="link-primary d-block">Disabled ([[${userCount - enabledUserCount}]])</a>
+                            <a th:href="@{/users/page/0?sortField=enabled&sortDir=desc&keyword=}"
+                               class="link-primary d-block">Enabled ([[${enabledUserCount}]])</a>
+                            <a th:href="@{/users/page/0?sortField=enabled&sortDir=asc&keyword=}"
+                               class="link-primary d-block">Disabled ([[${userCount - enabledUserCount}]])</a>
                             <a th:href="@{/users}" class="link-primary d-block">View all</a>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-2 col-sm-6">
+                <div class="col-lg-2 col-sm-6" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Categories ([[${categoryCount}]])</strong>
                         </div>
                         <div class="card-body">
                             <a th:href="@{/categories/new}" class="link-primary">Add Category</a>
-                            <a th:href="@{/categories/page/0?sortField=enabled&sortDir=desc&keyword=}" class="link-primary d-block">Enabled ([[${enabledCategoryCount}]])</a>
-                            <a th:href="@{/categories/page/0?sortField=enabled&sortDir=asc&keyword=}" class="link-primary d-block">Disabled ([[${categoryCount - enabledCategoryCount}]])</a>
+                            <a th:href="@{/categories/page/0?sortField=enabled&sortDir=desc&keyword=}"
+                               class="link-primary d-block">Enabled ([[${enabledCategoryCount}]])</a>
+                            <a th:href="@{/categories/page/0?sortField=enabled&sortDir=asc&keyword=}"
+                               class="link-primary d-block">Disabled ([[${categoryCount - enabledCategoryCount}]])</a>
                             <a th:href="@{/categories}" class="link-primary d-block">View all</a>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-2 col-sm-6">
+                <div class="col-lg-2 col-sm-6" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Brands ([[${brandCount}]])</strong>
@@ -86,69 +90,74 @@
                     </div>
                 </div>
 
-            </div>
 
-            <div class="row g-3 mt-5">
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-3" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Products ([[${productCount}]])</strong>
                         </div>
                         <div class="card-body">
                             <a th:href="@{/products/new}" class="link-primary">Add Product</a>
-                            <a th:href="@{/products/page/0?sortField=enabled&sortDir=desc&keyword=}" class="link-primary d-block">Enabled ([[${enabledProductCount}]])</a>
-                            <a th:href="@{/products/page/0?sortField=enabled&sortDir=asc&keyword=}" class="link-primary d-block">Disabled ([[${productCount - enabledProductCount}]])</a>
-                            <a th:href="@{/products/page/0?sortField=inStock&sortDir=desc&keyword=}" class="link-primary d-block">In Stock ([[${inStockProductCount}]])</a>
-                            <a th:href="@{/products/page/0?sortField=inStock&sortDir=asc&keyword=}" class="link-primary d-block">Out of Stock ([[${productCount - inStockProductCount}]])</a>
+                            <a th:href="@{/products/page/0?sortField=enabled&sortDir=desc&keyword=}"
+                               class="link-primary d-block">Enabled ([[${enabledProductCount}]])</a>
+                            <a th:href="@{/products/page/0?sortField=enabled&sortDir=asc&keyword=}"
+                               class="link-primary d-block">Disabled ([[${productCount - enabledProductCount}]])</a>
+                            <a th:href="@{/products/page/0?sortField=inStock&sortDir=desc&keyword=}"
+                               class="link-primary d-block">In Stock ([[${inStockProductCount}]])</a>
+                            <a th:href="@{/products/page/0?sortField=inStock&sortDir=asc&keyword=}"
+                               class="link-primary d-block">Out of Stock ([[${productCount - inStockProductCount}]])</a>
                             <a th:href="@{/products}" class="link-primary d-block">View all</a>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-3" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_ASSISTANT')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Questions ([[${questionCount}]])</strong>
                         </div>
                         <div class="card-body">
                             <a th:href="@{/questions}" class="link-primary d-block">View all</a>
-                            <a th:href="@{/questions/page/0?sortField=approvalStatus&sortDir=desc&keyword=}" class="link-primary d-block">Approved ([[${approvedQuestionCount}]])</a>
-                            <a th:href="@{/questions/page/0?sortField=approvalStatus&sortDir=asc&keyword=}" class="link-primary d-block">Un-approved ([[${questionCount - approvedQuestionCount}]])</a>
+                            <a th:href="@{/questions/page/0?sortField=approvalStatus&sortDir=desc&keyword=}"
+                               class="link-primary d-block">Approved ([[${approvedQuestionCount}]])</a>
+                            <a th:href="@{/questions/page/0?sortField=approvalStatus&sortDir=asc&keyword=}"
+                               class="link-primary d-block">Un-approved ([[${questionCount -
+                                approvedQuestionCount}]])</a>
                             <span class="d-block">Answered ([[${approvedQuestionCount}]])</span>
                             <span class="d-block">Un-answered ([[${questionCount - approvedQuestionCount}]])</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-3" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_ASSISTANT')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Reviews ([[${reviewCount}]])</strong>
                         </div>
                         <div class="card-body">
                             <a th:href="@{/reviews}" class="link-primary d-block">View all</a>
-                            <span class="d-block">Reviewed Products ([[${reviewCount}]])</span>
+                            <span class="d-block">Total Reviews ([[${reviewCount}]])</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-3" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SALESPERSON')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Customers ([[${customerCount}]])</strong>
                         </div>
                         <div class="card-body">
                             <a th:href="@{/customers}" class="link-primary d-block">View all</a>
-                            <a th:href="@{'/customers/page/0?sortField=enabled&sortDir=desc&keyword='}" class="link-primary d-block">Enabled ([[${enabledCustomerCount}]])</a>
-                            <a th:href="@{'/customers/page/0?sortField=enabled&sortDir=asc&keyword='}" class="link-primary d-block">Disabled ([[${customerCount - enabledCustomerCount}]])</a>
+                            <a th:href="@{'/customers/page/0?sortField=enabled&sortDir=desc&keyword='}"
+                               class="link-primary d-block">Enabled ([[${enabledCustomerCount}]])</a>
+                            <a th:href="@{'/customers/page/0?sortField=enabled&sortDir=asc&keyword='}"
+                               class="link-primary d-block">Disabled ([[${customerCount - enabledCustomerCount}]])</a>
                         </div>
                     </div>
                 </div>
 
-            </div>
 
-            <div class="row mt-5 g-3 mb-4">
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-3" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_SALESPERSON', 'ROLE_SHIPPER')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Orders ([[${orderCount}]])</strong>
@@ -160,7 +169,7 @@
                     </div>
                 </div>
 
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-3" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Articles ([[${articleCount}]])</strong>
@@ -173,7 +182,7 @@
                     </div>
                 </div>
 
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-3" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Carousels ([[${carouselCount}]])</strong>
@@ -186,7 +195,7 @@
                     </div>
                 </div>
 
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-3" sec:authorize="hasRole('ROLE_ADMIN')">
                     <div class="card">
                         <div class="card-header">
                             <strong>Settings</strong>

@@ -42,8 +42,7 @@
 
         <div class="mt-3 d-flex w-100 justify-content-center">
             <a data-bs-toggle="modal" data-bs-target="#loginModal" href="#" id="role-login"
-               class="link-dark link-underline-dark link-underline-opacity-0 link-underline-opacity-50-hover">Click
-                here to access role based login</a>
+               class="link-dark link-underline-dark link-underline-opacity-0 link-underline-opacity-50-hover">Role based user login</a>
         </div>
 
     </form>
@@ -56,8 +55,8 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header justify-content-between">
-                <div class="d-flex  align-items-center">
-                    <i class="fa-solid fa-user"></i> <span class="ps-3 ">Access any role with admin credentials</span>
+                <div class="p-3 d-flex  align-items-center">
+                    <i class="fa-solid fa-user"></i> <span class="ps-3 ">Access any role account with admin credentials</span>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
@@ -66,12 +65,13 @@
             <form th:action="@{/login-as}" method="POST" id="mainForm">
                 <div class="modal-body">
                     <div class="row p-4 row-gap-3">
-                        <label class="offset-sm-1 col-form-label col-sm-3">Username</label>
-                        <div class="col-sm-7">
+
+                        <div class="offset-sm-1 col-sm-10">
+                            <label class="">Username</label>
                             <input type="email" name="adminUsername" class="form-control"/>
                         </div>
-                        <label class="offset-sm-1 col-form-label col-sm-3">Password</label>
-                        <div class="col-sm-7">
+                        <div class="offset-sm-1 col-sm-10">
+                            <label class="">Password</label>
                             <input type="password" name="adminPassword" class="form-control"/>
                         </div>
                     </div>

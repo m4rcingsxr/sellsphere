@@ -1,6 +1,7 @@
 package com.sellsphere.admin;
 
 import com.sellsphere.admin.user.UserService;
+import com.sellsphere.common.entity.Constants;
 import com.sellsphere.common.entity.User;
 import com.sellsphere.common.entity.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,11 +72,15 @@ public class LoginController {
             @RequestParam String role,
             RedirectAttributes ra,
             HttpServletRequest request
-    ) throws UserNotFoundException {
-        User adminUser = authenticateAdminUser(adminUsername, adminPassword);
-        User targetUser = getTargetUserForRole(role);
+    ) {
+        User targetUser;
+        try {
+            User adminUser = authenticateAdminUser(adminUsername, adminPassword);
+            targetUser = getTargetUserForRole(role);
+        } catch(UserNotFoundException e) {
+            return "redirect:/login?error";
+        }
         authenticateTargetUser(targetUser, request);
-
         return "redirect:/?continue";
     }
 

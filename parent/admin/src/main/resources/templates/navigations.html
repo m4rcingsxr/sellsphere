@@ -109,7 +109,7 @@
                         Customers
                     </a>
                 </li>
-                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_ASSISTANT')" class="nav-item">
+                <li sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_EDITOR')" class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-2" th:href="@{/articles}"
                        th:classappend="${active == 'Articles' ? 'active' : ''}">
                         <i class="fa-solid fa-newspaper"
@@ -156,7 +156,7 @@
                         Account
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN')">
                     <a class="nav-link d-flex align-items-center gap-2" th:href="@{/settings}"
                        th:classappend="${active == 'Settings' ? 'active' : ''}">
                         <i class="fa-solid fa-gear"

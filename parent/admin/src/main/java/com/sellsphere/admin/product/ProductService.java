@@ -196,5 +196,9 @@ public class ProductService {
     public List<Product> findByIds(List<String> ids) {
         return productRepository.findAllById(ids.stream().map(Integer::parseInt).toList());
     }
+
+    public long countByBrandId(Integer id) {
+        return productRepository.countAllByBrandId(id);
+    }
 }
 

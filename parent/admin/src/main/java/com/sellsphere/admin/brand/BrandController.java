@@ -5,6 +5,7 @@ import com.sellsphere.admin.category.CategoryService;
 import com.sellsphere.admin.export.ExportUtil;
 import com.sellsphere.admin.page.PagingAndSortingHelper;
 import com.sellsphere.admin.page.PagingAndSortingParam;
+import com.sellsphere.admin.product.ProductService;
 import com.sellsphere.common.entity.Brand;
 import com.sellsphere.common.entity.BrandNotFoundException;
 import com.sellsphere.common.entity.Category;
@@ -38,6 +39,7 @@ public class BrandController {
 
     private final BrandService brandService;
     private final CategoryService categoryService;
+    private final ProductService productService;
 
     /**
      * Redirects to the first page of the brand list.
@@ -142,6 +144,13 @@ public class BrandController {
     @GetMapping("/brands/delete/{id}")
     public String deleteBrand(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes)
             throws BrandNotFoundException {
+        long count = productService.countByBrandId(id);
+
+        if (count > 0) {
+            redirectAttributes.addFlashAttribute(Constants.ERROR_MESSAGE, "Cannot delete brand that's assigned to products");
+            return DEFAULT_REDIRECT_URL;
+        }
+
         brandService.deleteBrandById(id);
         String successMessage = String.format("The Brand [ID: %d] has been deleted successfully.", id);
         redirectAttributes.addFlashAttribute(Constants.SUCCESS_MESSAGE, successMessage);
