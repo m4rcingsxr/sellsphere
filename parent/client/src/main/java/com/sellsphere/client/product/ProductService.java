@@ -302,10 +302,10 @@ public class ProductService {
     }
 
     public BigDecimal findMinPriceForCategory(Category category) {
-        return productRepository.findMinPrice(category);
+        return productRepository.findMinPrice(category.getId());
     }
 
     public BigDecimal findMaxPriceForCategory(Category category) {
-        return productRepository.findMaxPrice(category);
+        return productRepository.findMaxPrice(category.getId());
     }
 }

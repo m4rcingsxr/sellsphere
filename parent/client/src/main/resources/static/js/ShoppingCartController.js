@@ -203,10 +203,6 @@ class ShoppingCartController {
         this.view.updateSubtotal(this.model.getSubtotal());
         this.view.updateSaving(this.model.getSaving());
         this.view.updateTotal(this.model.getTotal());
-
-        // implement later
-        this.view.updateTax(this.model.getTax());
-        this.view.updateShipping(this.model.getShipping());
     }
 
     clear() {

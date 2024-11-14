@@ -249,6 +249,7 @@ class FilterView {
 
         let upperVal = parseInt(maxPrice);
         let lowerVal = parseInt(minPrice);
+
         if (upperVal < lowerVal + 1) {
             $("#upper").val(lowerVal + 1);
             upperVal = lowerVal + 1;

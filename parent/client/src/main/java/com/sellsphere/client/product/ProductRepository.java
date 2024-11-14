@@ -24,9 +24,19 @@ public interface ProductRepository extends JpaRepository<Product, Integer>,
     @Query("SELECT MAX(p.price - (p.price * (p.discountPercent / 100))) FROM Product p")
     BigDecimal findMaxPrice();
 
-    @Query("SELECT MAX(p.price - (p.price * (p.discountPercent / 100))) FROM Product p WHERE p.category = :category")
-    BigDecimal findMinPrice(@Param("category") Category category);
+    @Query(value = "SELECT MIN(p.price - (p.price * (p.discount_percent / 100))) AS max_discounted_price " +
+            "FROM products p " +
+            "JOIN categories c ON p.category_id = c.id " +
+            "WHERE p.category_id = :categoryId " +
+            "OR c.all_parent_ids LIKE CONCAT('%', :categoryId, '%')",
+            nativeQuery = true)
+    BigDecimal findMinPrice(@Param("categoryId") Integer categoryId);
 
-    @Query("SELECT MIN(p.price - (p.price * (p.discountPercent / 100))) FROM Product p WHERE p.category = :category")
-    BigDecimal findMaxPrice(@Param("category") Category category);
+    @Query(value = "SELECT MAX(p.price - (p.price * (p.discount_percent / 100))) AS max_discounted_price " +
+            "FROM products p " +
+            "JOIN categories c ON p.category_id = c.id " +
+            "WHERE p.category_id = :categoryId " +
+            "OR c.all_parent_ids LIKE CONCAT('%', :categoryId, '%')",
+            nativeQuery = true)
+    BigDecimal findMaxPrice(@Param("categoryId") Integer categoryId);
 }

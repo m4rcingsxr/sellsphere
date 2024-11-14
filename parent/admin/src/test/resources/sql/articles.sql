@@ -38,6 +38,3 @@ VALUES ('Best Budget Laptops', 'best-budget-laptops', 'Find out the best budget 
         '2024-10-13', TRUE, 'fitness-gadgets.png', 'FOOTER'),
        ('Affordable 4K Monitors', 'affordable-4k-monitors', 'Explore the best affordable 4K monitors.', 1, '2024-10-14',
         TRUE, '4k-monitors.png', 'FOOTER');
-
-
-
