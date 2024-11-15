@@ -29,6 +29,26 @@ SellSphere follows an MVC architecture and utilizes internal REST APIs to commun
 
 ---
 
+## Roles and Permissions Table 
+
+| Functionality                     | ADMIN | EDITOR | SALESPERSON | SHIPPER | ASSISTANT |
+|-----------------------------------|:-----:|:------:|:-----------:|:-------:|:---------:|
+| Users                             |   X   |        |             |         |           |
+| Categories                        |   X   |    X   |             |         |           |
+| Brands                            |   X   |    X   |             |         |           |
+| Products                          |   X   |    X   |             |         |           |
+| Settings                          |   X   |        |             |         |           |
+| Customers                         |   X   |        |      X      |         |           |
+| Transactions                      |   X   |        |      X      |         |           |
+| Orders                            |   X   |        |      X      |    X    |           |
+| Questions                         |   X   |        |             |         |     X     |
+| Reviews                           |   X   |        |             |         |     X     |
+| Articles                          |   X   |    X   |             |         |           |
+| Promotions                        |   X   |    X   |             |         |           |
+| Main Page                         |   X   |    X   |             |         |           |
+| Reports                           |   X   |        |      X      |         |           |
+
+
 ## Admin Panel Features
 
 The Admin Panel provides comprehensive tools for managing the e-commerce business:
